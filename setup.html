@@ -695,6 +695,14 @@ if [ "$INSTALL_OBSIDIAN" = "1" ]; then
   fi
 fi
 
+# ripgrep is required by vault recipes for fast vault search
+if have rg; then ok "ripgrep already installed"
+elif have brew; then
+  say "Installing ripgrep..."
+  brew install ripgrep && ok "ripgrep installed" || warn "brew install ripgrep failed — install manually: brew install ripgrep"
+else warn "ripgrep not found — install with: brew install ripgrep"
+fi
+
 if [ "$INSTALL_FIRECRAWL" = "1" ]; then
   if have firecrawl; then ok "firecrawl already installed"
   elif have npm; then
@@ -779,6 +787,7 @@ cat <<EOF
 Next steps:
 
   1. Open a NEW terminal (or run:  source "$SHELL_RC")
+     ⚠️  Required — API keys (FIRECRAWL_API_KEY, etc.) are only active in new shells.
   2. Verify Goose sees the providers:
        goose configure
 
