@@ -654,6 +654,12 @@ if [ "$INSTALL_GOOSE" = "1" ]; then
     say "Installing Goose via Homebrew..."
     if brew install --cask block-goose; then
       ok "Goose installed to /Applications"
+      if ! have goose; then
+        say "Installing Goose CLI..."
+        curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | bash \
+          && ok "Goose CLI installed" \
+          || warn "Goose CLI install failed — install manually: https://block.github.io/goose/docs/getting-started/installation"
+      fi
       open -a "Goose" 2>/dev/null || open /Applications/Goose.app 2>/dev/null || warn "Goose installed but auto-launch failed — open from Applications manually"
     else
       warn "brew install failed — install from https://goose-docs.ai"
