@@ -689,8 +689,22 @@ fi
 
 if [ "$INSTALL_FIRECRAWL" = "1" ]; then
   if have firecrawl; then ok "firecrawl already installed"
-  elif have npm; then say "Installing firecrawl-cli via npm..."; npm install -g firecrawl-cli || warn "npm install failed — see docs.firecrawl.dev"
-  else warn "npm not found — install Node.js then run: npm install -g firecrawl-cli"
+  elif have npm; then
+    NODE_MAJOR=$(node -e "process.stdout.write(String(process.versions.node.split('.')[0]))" 2>/dev/null || echo "0")
+    if [ "$NODE_MAJOR" -lt 22 ]; then
+      warn "firecrawl-cli requires Node 22+ (current: v$(node -v 2>/dev/null | tr -d v)). Skipping."
+      warn "Upgrade Node then run: npm install -g firecrawl-cli"
+    else
+      say "Installing firecrawl-cli via npm..."
+      NPM_PREFIX="$HOME/.npm-global"
+      mkdir -p "$NPM_PREFIX"
+      npm install -g --prefix "$NPM_PREFIX" firecrawl-cli && ok "firecrawl-cli installed" || warn "npm install failed — see docs.firecrawl.dev"
+      if ! grep -q 'npm-global' "$SHELL_RC" 2>/dev/null; then
+        printf '\nexport PATH="%s/bin:$PATH"\n' "$NPM_PREFIX" >> "$SHELL_RC"
+        ok "~/.npm-global/bin added to PATH in $SHELL_RC"
+      fi
+    fi
+  else warn "npm not found — install Node 22+ then run: npm install -g firecrawl-cli"
   fi
 fi
 
