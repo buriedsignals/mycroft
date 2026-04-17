@@ -1,0 +1,76 @@
+version: "1.0.0"
+title: "Apify social — X / Twitter"
+description: "Scrape X/Twitter profile tweets, a specific conversation, or keyword search. Uses apidojo actor 61RPP7dywgiy0JPD0."
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "X URL — profile (https://x.com/handle), single post (https://x.com/handle/status/ID), or search query URL"
+  - key: keywords
+    input_type: string
+    requirement: optional
+    description: "Optional comma-separated search terms (adds searchTerms input)"
+    default: ""
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max tweets (capped 100)"
+    default: 50
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape X/Twitter: {{ url }} (up to {{ max_items }}).
+
+  **Requires**: `APIFY_API_TOKEN`.
+
+  Build the input JSON:
+  - `startUrls`: [{{ url }}]
+  - `maxItems`: min({{ max_items }}, 100)
+  {% if keywords %}- `searchTerms`: {{ keywords }} split on comma{% endif %}
+  - If URL contains `/status/`: extract conversation ID → `conversationIds`
+  - Extract handle from URL path → `twitterHandles`
+
+  Run:
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  INPUT=$(python3 -c "
+  import json, sys
+  d={'startUrls':['{{ url }}'], 'maxItems': $CAP}
+  kw='{{ keywords }}'.strip()
+  if kw: d['searchTerms']=[k.strip() for k in kw.split(',') if k.strip()]
+  url='{{ url }}'
+  if '/status/' in url:
+      try: d['conversationIds']=[url.split('/status/')[1].split('/')[0]]
+      except Exception: pass
+  try:
+      parts=url.rstrip('/').split('/')
+      if 'status' in parts:
+          i=parts.index('status')
+          if i>0: d['twitterHandles']=[parts[i-1]]
+      elif parts: d['twitterHandles']=[parts[-1]]
+  except Exception: pass
+  print(json.dumps(d))
+  ")
+
+  curl -sS -X POST "https://api.apify.com/v2/acts/61RPP7dywgiy0JPD0/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "$INPUT" \
+    -o /tmp/apify-x-$$.json
+
+  jq 'length' /tmp/apify-x-$$.json
+  ```
+
+  Normalize to NormalizedPost: platform=x, handle, post_url, timestamp, text, replies, retweets, likes.
+
+  Return count + top 5 inline + file path to full dataset.
+
+  Cost: ~$0.01 per tweet. Flag runs >100.
+
+activities:
+  - "Get latest tweets from {{ url }}"
+  - "Get replies to this conversation"
+  - "Search tweets by keyword"

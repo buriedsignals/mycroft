@@ -1,0 +1,54 @@
+version: "1.0.0"
+title: "Apify social — LinkedIn post search"
+description: "Search LinkedIn posts by keyword or handle. Uses curious_coder/linkedin-post-search-scraper."
+
+parameters:
+  - key: query
+    input_type: string
+    requirement: required
+    description: "Search query OR LinkedIn profile/company URL"
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max posts (capped 100)"
+    default: 30
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  LinkedIn post search: {{ query }} (up to {{ max_items }}).
+
+  **Requires**: `APIFY_API_TOKEN`.
+
+  Build input depending on whether `{{ query }}` looks like a URL or a keyword:
+
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  Q='{{ query }}'
+  if echo "$Q" | grep -qE '^https?://'; then
+    INPUT="{\"startUrls\": [\"$Q\"], \"maxItems\": $CAP}"
+  else
+    INPUT="{\"keywords\": [\"$Q\"], \"maxItems\": $CAP}"
+  fi
+
+  curl -sS -X POST "https://api.apify.com/v2/acts/curious_coder~linkedin-post-search-scraper/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "$INPUT" \
+    -o /tmp/apify-linkedin-$$.json
+
+  jq 'length' /tmp/apify-linkedin-$$.json
+  ```
+
+  Normalize: platform=linkedin, post_url, author (name + handle + company), timestamp, text, reactions, comments, reshares.
+
+  Return count + top 5 inline + file path.
+
+  Cost: variable, flag runs >50.
+
+  Note: LinkedIn actively rate-limits scrapers. If the run returns 0 items and the query looks valid, suggest retrying in 10-30 min.
+
+activities:
+  - "Search LinkedIn for posts mentioning {{ query }}"
+  - "Get recent posts from LinkedIn profile {{ query }}"

@@ -1,0 +1,85 @@
+{
+  "name": "mycroft",
+  "version": "0.1.0",
+  "description": "Goose Extension Pack for investigative journalists. Declares MCP + CLI dependencies this pack expects.",
+  "mycroft_version": "0.1.0",
+  "mcp_extensions": [
+    {
+      "name": "firecrawl",
+      "required": true,
+      "install": "npm install -g firecrawl-cli",
+      "env": ["FIRECRAWL_API_KEY"],
+      "used_by": ["vault-qa", "fact-check", "source-verify", "morning-brief", "newsletter-summarize", "firecrawl-*"]
+    },
+    {
+      "name": "apify-rest",
+      "required": false,
+      "install": "No CLI — recipes call Apify REST API via curl",
+      "env": ["APIFY_API_TOKEN"],
+      "used_by": ["apify-social/*"]
+    },
+    {
+      "name": "agentmail-rest",
+      "required": false,
+      "install": "No CLI — recipes call AgentMail REST API via curl",
+      "env": ["AGENTMAIL_API_KEY"],
+      "used_by": ["morning-brief", "newsletter-summarize"]
+    },
+    {
+      "name": "ft-cli",
+      "required": false,
+      "install": "See Field Theory CLI repo",
+      "env": [],
+      "used_by": ["morning-brief", "ft-preflight"]
+    },
+    {
+      "name": "obsidian-cli",
+      "required": true,
+      "install": "brew install --cask obsidian (ships obsidian-cli; toggle on in Settings → General → Advanced)",
+      "env": [],
+      "used_by": ["morning-brief", "vault-sync"]
+    },
+    {
+      "name": "dev-browser",
+      "required": false,
+      "install": "Part of the buried_signals/kit toolkit — journalist install path TBD",
+      "env": [],
+      "used_by": ["dev-browser"]
+    },
+    {
+      "name": "liteparse",
+      "required": false,
+      "install": "Part of the buried_signals/kit toolkit — journalist install path TBD",
+      "env": [],
+      "used_by": ["liteparse"]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "spotlight",
+      "repo": "https://github.com/buriedsignals/spotlight",
+      "status": "launching with Mycroft",
+      "selectable_default": true
+    },
+    {
+      "name": "cojournalist",
+      "repo": "https://github.com/buriedsignals/cojournalist",
+      "status": "launching with Mycroft",
+      "selectable_default": true,
+      "modes": ["web", "local"]
+    },
+    {
+      "name": "datahound",
+      "repo": "https://github.com/buriedsignals/datahound",
+      "status": "May 2026",
+      "selectable_default": false,
+      "web_only": true
+    },
+    {
+      "name": "atelier",
+      "repo": "https://github.com/buriedsignals/atelier",
+      "status": "May 2026",
+      "selectable_default": false
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+version: "1.0.0"
+title: "Firecrawl — change tracking"
+description: "Scrape a URL with a per-investigation tag so later runs produce a diff. Useful for manually monitoring a page across sessions."
+
+instructions: |
+  Use firecrawl's changeTracking mode to record hashes + diffs across runs.
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "The URL to monitor"
+  - key: tag
+    input_type: string
+    requirement: required
+    description: "Investigation / project tag — all runs under the same tag are diffed against each other"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Track changes on {{ url }} under tag `{{ tag }}`.
+
+  Run:
+  ```sh
+  firecrawl scrape {{ url }} --formats "markdown,changeTracking" --change-tracking-modes "git-diff,json" --change-tracking-tag "{{ tag }}"
+  ```
+
+  Return the scraped content plus the `changeTracking` block. Highlight:
+  - Was anything new?
+  - What specifically changed (git-diff output)?
+  - Structured field changes (JSON-diff output), if applicable.
+
+  If this is the first run for this tag, note "baseline established — no prior snapshot to compare".

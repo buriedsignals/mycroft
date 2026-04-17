@@ -1,0 +1,44 @@
+version: "1.0.0"
+title: "Apify social — TikTok user videos"
+description: "Scrape recent videos from a TikTok user. Uses novi/tiktok-user-api."
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "TikTok user profile URL (e.g. https://www.tiktok.com/@username)"
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max videos (capped 100)"
+    default: 20
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape TikTok: {{ url }} (up to {{ max_items }} videos).
+
+  **Requires**: `APIFY_API_TOKEN`.
+
+  Run:
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  curl -sS -X POST "https://api.apify.com/v2/acts/novi~tiktok-user-api/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"urls\": [\"{{ url }}\"], \"limit\": $CAP}" \
+    -o /tmp/apify-tiktok-$$.json
+
+  jq 'length' /tmp/apify-tiktok-$$.json
+  ```
+
+  Normalize: platform=tiktok, handle (from URL), post_url (video URL), timestamp, text (caption), plays, likes, comments, shares, video_url.
+
+  Return count + top 5 inline + file path.
+
+  Cost: ~$0.02 per video.
+
+activities:
+  - "Scrape TikTok user {{ url }}"
+  - "Last 10 videos only"

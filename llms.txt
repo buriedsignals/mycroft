@@ -1,0 +1,43 @@
+# Mycroft
+
+> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (Fireworks, Together), and optional sovereign-mode local inference via a fine-tuned Qwen on MLX or llama-server. Plugins for Spotlight (OSINT investigations), coJournalist (beat monitoring), DataHound (open-data APIs), and Atelier (visual production) ship alongside.
+
+Mycroft is client-side-first: the setup page generates a bash install script with user API keys baked in locally. Keys never transit Buried Signals infrastructure. No backend, no telemetry, no surveillance.
+
+## Core docs
+
+- [README](README.md): top-level overview, install paths, what's shipping
+- [docs/architecture.md](docs/architecture.md): how recipes, providers, plugins, and Goose fit together
+- [docs/plugin-authoring.md](docs/plugin-authoring.md): how to add a new plugin to Mycroft
+- [docs/troubleshooting.md](docs/troubleshooting.md): common failure modes + fixes
+- [CHANGELOG.md](CHANGELOG.md): version history
+- [SECURITY.md](SECURITY.md): security disclosure process
+- [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute
+
+## Journalism posture
+
+- [instructions/journalism.md](instructions/journalism.md): SIFT framework, attribution rules, source protection, tone — loaded into every recipe as system context
+
+## Setup
+
+- [index.html](index.html): public landing page
+- [setup.html](setup.html): guided install form (client-side only)
+
+## Recipes
+
+- [recipes/](recipes/): Goose Recipe YAML files — morning-brief, fact-check, vault-qa, source-verify, newsletter-summarize, vault-sync, firecrawl-*, apify-social/*, dev-browser, liteparse, voice-setup, ft-preflight
+
+## Providers
+
+- [providers/](providers/): Goose custom provider JSONs — fireworks-qwen36plus, together-qwen, local-mlx, local-llama-server, openrouter-fallback (optional)
+
+## Optional
+
+- [extensions/manifest.json](extensions/manifest.json): declared MCP dependencies and install hooks
+- [tools/validate-recipes.py](tools/validate-recipes.py): schema validator for the recipe library
+
+## External
+
+- [Goose](https://goose-docs.ai/): upstream agent runtime
+- [Spotlight](https://github.com/buriedsignals/spotlight): OSINT investigation plugin
+- [coJournalist](https://github.com/buriedsignals/cojournalist): beat-monitoring plugin

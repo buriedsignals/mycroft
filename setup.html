@@ -1,0 +1,820 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mycroft — Setup</title>
+<meta name="description" content="Goose Extension Pack for investigative journalists. Privacy-preserving, ZDR-first, sovereign-capable.">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mycroft — Setup">
+<meta property="og:description" content="Guided install for the Goose Extension Pack for investigative journalists. Client-side only.">
+<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
+<meta property="og:url" content="https://mycroft.buriedsignals.com/setup.html">
+<meta name="twitter:card" content="summary_large_image">
+
+<!-- CSP — same policy as the landing -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="assets/logo/mycroft-imfell-M.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+  :root { --fg: #1a1a1a; --muted: #666; --bg: #ffffff; --border: #e1e4e8; --accent: #0969da; --ok: #d4edda; --ok-fg: #155724; --err: #f8d7da; --err-fg: #721c24; --warn: #fff8e5; --warn-fg: #7a5d00; --soft: #f6f8fa; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 780px; margin: 2rem auto; padding: 0 1.2rem 4rem; color: var(--fg); background: var(--bg); line-height: 1.5; }
+  header { border-bottom: 2px solid var(--fg); padding-bottom: .75rem; margin-bottom: 1.5rem; }
+  header h1 { font-size: 1.75rem; margin: 0 0 .25rem; font-weight: 700; }
+  header p { color: var(--muted); margin: 0; font-size: .95rem; }
+  h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; letter-spacing: .02em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+  .callout { background: var(--soft); border-left: 3px solid var(--fg); padding: .75rem 1rem; margin: 1rem 0; font-size: .9rem; }
+  .callout.warn { background: var(--warn); border-left-color: #b58900; color: var(--warn-fg); }
+  .callout.soft { background: var(--soft); border-left-color: var(--border); padding: .6rem .85rem; font-size: .82rem; color: var(--muted); margin: .5rem 0 0 0; }
+  .item { border: 1px solid var(--border); padding: 1rem; margin: .75rem 0; border-radius: 6px; transition: background .15s, border-color .15s; }
+  .item:has(input[type=checkbox]:checked:not([disabled])) { background: var(--soft); border-color: var(--fg); }
+  .item.required { border-left: 3px solid var(--accent); }
+  .item.info-only { background: #fafbfc; border-style: dashed; }
+  .item-header { display: flex; align-items: center; gap: .5rem; font-weight: 600; margin-bottom: .35rem; }
+  .item small, .item .note { display: block; color: var(--muted); margin: .35rem 0 .6rem; font-size: .85rem; }
+  .item input[type=text], .item input[type=password] { width: 100%; padding: .55rem .7rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88rem; border: 1px solid var(--border); border-radius: 4px; background: #fff; }
+  .item input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .item > label { display: flex; align-items: center; gap: .5rem; font-weight: 600; cursor: pointer; }
+  .item a { color: var(--accent); }
+  .field-label { display: block; font-size: .85rem; font-weight: 600; margin: .5rem 0 .2rem; }
+  .toggle-row { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; font-size: .9rem; }
+  .toggle-row input[type=checkbox] { margin: 0; }
+  .badge { font-weight: 400; font-size: .78rem; padding: .12em .45em; border-radius: 3px; margin-left: .25em; }
+  .badge.req { background: var(--accent); color: white; }
+  .badge.opt { background: #eee; color: var(--muted); }
+  .badge.soon { background: #fff8e5; color: var(--warn-fg); }
+  .badge.launch { background: #e8f4fa; color: #033d8b; }
+  .skip { position: absolute; top: -40px; left: 0; background: var(--fg); color: var(--bg); padding: .5rem 1rem; z-index: 100; }
+  .skip:focus { top: 0; }
+  .badge.info { background: #e8f4fa; color: var(--accent); }
+  .dl-btn { display: inline-flex; align-items: center; gap: .35rem; background: #fff; border: 1px solid var(--fg); color: var(--fg); padding: .35rem .75rem; border-radius: 4px; font-size: .85rem; text-decoration: none; font-weight: 500; margin: .35rem .35rem .35rem 0; }
+  .dl-btn:hover { background: var(--fg); color: #fff; }
+  details { margin: .5rem 0; font-size: .85rem; }
+  details summary { cursor: pointer; color: var(--accent); user-select: none; }
+  details ol, details ul { margin: .5rem 0; padding-left: 1.5rem; }
+  details code { background: #f0f0f0; padding: .1em .3em; border-radius: 2px; font-size: .8rem; }
+  .pricing { font-size: .82rem; color: var(--muted); margin: .4rem 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .pricing strong { color: var(--fg); }
+  .pref-block { display: flex; gap: 1rem; margin: 1rem 0; }
+  .pref-block label { flex: 1; border: 1px solid var(--border); padding: .75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; display: block; }
+  .pref-block input[type=radio] { margin-right: .5rem; }
+  .pref-block label:has(input:checked) { background: var(--soft); border-color: var(--fg); }
+  .sub-options { background: var(--soft); padding: .6rem .85rem; border-radius: 5px; margin: .5rem 0; font-size: .88rem; }
+  .sub-options label { display: flex; gap: .5rem; align-items: flex-start; padding: .3rem 0; cursor: pointer; font-weight: 500; }
+  .sub-options label input[type=radio] { margin-top: .2rem; }
+  .sub-options small { display: block; color: var(--muted); margin-left: 1.5rem; font-size: .82rem; margin-top: -.15rem; margin-bottom: .35rem; }
+  .install-bar { position: sticky; bottom: 1rem; background: var(--fg); color: #fff; padding: 1rem 1.25rem; border-radius: 8px; margin-top: 2rem; box-shadow: 0 4px 18px rgba(0,0,0,.15); display: flex; gap: 1rem; align-items: center; justify-content: space-between; z-index: 10; flex-wrap: wrap; }
+  @media (max-width: 600px) {
+    body { padding: 0 .75rem 3rem; margin-top: 1rem; }
+    .pref-block { flex-direction: column; }
+    .install-bar { position: static; flex-direction: column; align-items: stretch; }
+    .install-bar button { width: 100%; }
+    h1 { font-size: 1.4rem; }
+    h2 { font-size: 1rem; }
+  }
+  .install-bar button { background: #fff; color: var(--fg); padding: .6rem 1.3rem; border: none; font-size: .95rem; font-weight: 600; cursor: pointer; border-radius: 4px; }
+  .install-bar button:hover { background: #ddd; }
+  .install-bar .note { font-size: .8rem; opacity: .85; }
+  .success { background: var(--ok); color: var(--ok-fg); padding: 1rem 1.25rem; border-radius: 6px; margin-top: 1rem; display: none; }
+  .success.visible { display: block; }
+  .success code { background: rgba(0,0,0,.06); padding: .1em .35em; border-radius: 3px; }
+  pre.preview { background: #0d1117; color: #c9d1d9; padding: 1rem; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; max-height: 320px; overflow: auto; white-space: pre; line-height: 1.4; }
+  code { background: var(--soft); padding: .1em .35em; border-radius: 3px; font-size: .88em; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .8rem; color: var(--muted); }
+  body.mode-cloud .local-only { display: none; }
+  body.mode-local .cloud-only { display: none; }
+  .coj-web-only { display: none; }
+  .coj-mode-web .coj-web-only { display: block; }
+  /* Hide sub-options inside any unchecked item */
+  .item:has(> label > input[type=checkbox]:not(:checked)) .sub-options { display: none; }
+</style>
+</head>
+<body class="mode-cloud coj-mode-web">
+
+<a class="skip" href="#form">Skip to setup form</a>
+
+<header role="banner">
+  <h1>Mycroft — Setup</h1>
+  <p>Goose Extension Pack for investigative journalists. Client-side only — nothing leaves your browser until you run the script locally.</p>
+</header>
+
+<main id="main">
+<form id="form">
+
+  <h2>Sovereignty preference</h2>
+
+  <div class="pref-block">
+    <label>
+      <input type="radio" name="sovereignty" value="cloud" checked>
+      Cloud-first
+      <span style="display:block;font-weight:400;font-size:.82rem;color:var(--muted);margin-top:.25rem;">Recipes use cloud providers by default. Local model is a fallback / sovereign mode for sensitive work.</span>
+    </label>
+    <label>
+      <input type="radio" name="sovereignty" value="local">
+      Local-first
+      <span style="display:block;font-weight:400;font-size:.82rem;color:var(--muted);margin-top:.25rem;">Recipes route to your local fine-tuned Qwen by default. Cloud is fallback. Some features restricted by feature flag.</span>
+    </label>
+  </div>
+
+  <div class="callout soft">
+    All cloud providers listed are <strong>open-weight models, hosted in the US or Europe, with Zero Data Retention</strong> — prompts and completions are not logged, stored, or used for training.
+  </div>
+
+  <div class="cloud-only">
+
+    <h2>Cloud providers</h2>
+
+    <p class="note" style="font-size:.85rem;color:var(--muted);">Cost estimates: <em>moderate journalism use</em> — ~2 morning briefs, ~5 vault-qa, ~2 fact-checks, ~2 newsletter summaries / day (~7M input + 0.7M output tokens / month).</p>
+
+    <div class="item">
+      <label>
+        <input type="checkbox" name="fireworks_enabled" checked>
+        <strong>Fireworks AI — Qwen 3.6 Plus</strong>
+        <span class="badge req">recommended primary</span>
+      </label>
+      <div class="pricing" style="margin: .5rem 0;">
+        <strong>Privacy:</strong> US-hosted · Zero Data Retention (open-weight default)<br>
+        <strong>Cost:</strong> ~<strong>$6/mo</strong> moderate use · $0.50/$3.00 per 1M tokens (in/out)
+      </div>
+      <a class="dl-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key</a>
+      <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
+      <input type="password" id="fireworks_key" name="fireworks_key" autocomplete="off" spellcheck="false">
+      <details>
+        <summary>Model details + docs</summary>
+        <p style="margin: .5rem 0;">
+          <strong>Model ID:</strong> <code>accounts/fireworks/models/qwen3p6-plus</code> — open-weight Qwen by Alibaba, hosted in Fireworks US data centers.<br>
+          <strong>Context:</strong> 1,000,000 tokens.<br>
+          <strong>ZDR reference:</strong> <a href="https://docs.fireworks.ai/guides/security_compliance/data_security" target="_blank" rel="noreferrer">docs.fireworks.ai</a>.<br>
+          <strong>Heavy-use cost:</strong> ~$20-40/mo for investigative work at 5× baseline volume.<br>
+          <em>Cost assumes 7M input + 0.7M output tokens / month — roughly 2 morning briefs, 5 vault-qa sessions, 2 fact-checks, 2 newsletter summaries per day.</em>
+        </p>
+      </details>
+    </div>
+
+    <div class="item">
+      <label>
+        <input type="checkbox" name="together_enabled">
+        <strong>Together AI — Qwen 2.5-72B Instruct Turbo</strong>
+        <span class="badge opt">alternative primary</span>
+      </label>
+      <div class="pricing" style="margin: .5rem 0;">
+        <strong>Privacy:</strong> US-hosted · Zero Data Retention <em style="color:var(--warn-fg);">(opt-in — set before first use)</em><br>
+        <strong>Cost:</strong> ~<strong>$9/mo</strong> moderate use · $1.20/$1.20 per 1M tokens (in/out)
+      </div>
+      <a class="dl-btn" href="https://together.ai" target="_blank" rel="noreferrer">Get API key</a>
+      <label class="field-label" for="together_key">TOGETHER_API_KEY</label>
+      <input type="password" id="together_key" name="together_key" autocomplete="off" spellcheck="false">
+      <details>
+        <summary>Model details + ZDR setup</summary>
+        <p style="margin: .5rem 0;">
+          <strong>Model ID:</strong> <code>Qwen/Qwen2.5-72B-Instruct-Turbo</code> — open-weight, Together US data centers, SOC 2 Type 2.<br>
+          <strong>Context:</strong> 131,072 tokens.<br>
+          <strong>Enable ZDR:</strong> sign in to your Together dashboard and set <em>both</em> privacy toggles to "No" (<a href="https://www.together.ai/terms-of-service" target="_blank" rel="noreferrer">Together ToS</a>). Until you do, requests may be retained.<br>
+          <strong>Heavy-use cost:</strong> ~$25-50/mo.<br>
+          <strong>Note:</strong> Qwen 3.6 Plus is not yet available on Together — only Fireworks currently hosts it. This is Together's strongest open-weight option.
+        </p>
+      </details>
+    </div>
+
+  </div>
+
+  <div class="local-only">
+
+    <h2>Local model (sovereign mode)</h2>
+
+    <div class="item info-only">
+      <div class="item-header">
+        🤗&nbsp;<strong>Mycroft Qwen — abliterated journalism fine-tune</strong>
+        <span class="badge info">local</span>
+      </div>
+      <small>
+        Fine-tuned Qwen 3.5 on investigative methodology (SIFT, OSINT tool selection, evidence grounding, ethics). <strong>Abliterated</strong> — won't soft-refuse legitimate journalism queries. Two sizes:
+      </small>
+      <ul style="margin: .5rem 0; padding-left: 1.5rem; font-size: .85rem;">
+        <li><strong>9B (default)</strong> — runs on 16 GB+ unified memory / RAM · <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">🤗 qwen3.5-9b-abliterated-journalist-GGUF</a></li>
+        <li><strong>35B (power)</strong> — needs 64 GB+ unified memory · <a href="https://huggingface.co/tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">🤗 qwen3.5-35b-abliterated-journalist-GGUF</a> <em>(training in progress)</em></li>
+      </ul>
+      <small>Runtime: <code>llama-server</code> on port 8080 (cross-platform GGUF). Apple Silicon users get native-speed inference from llama.cpp too; an MLX build is optional (set up separately if you want it).</small>
+      <p class="pricing">
+        Cost: <strong>$0</strong> / month (hardware + electricity only)
+      </p>
+      <div class="callout soft" style="margin-top:.5rem;">
+        <strong>Download + start (after your setup script runs):</strong>
+        <pre style="margin:.35rem 0;background:var(--soft);padding:.5rem;border-radius:3px;font-size:.78rem;overflow:auto;"><code># 1. Install the HF CLI if you don't have it
+pip install -U "huggingface_hub[cli]"
+
+# 2. Download the 9B (pick a quantization — Q4_K_M is a good balance)
+hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \
+  --local-dir ~/.mycroft/models/qwen-journalist-9b \
+  --include "*Q4_K_M.gguf"
+
+# 3. Start llama-server
+llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf \
+  -c 32768 --port 8080</code></pre>
+        Goose will then route to it when sovereign mode is on. 35B build is in progress — same flow once released.
+      </div>
+    </div>
+
+  </div>
+
+  <h2>Required prerequisites</h2>
+
+  <div class="item required">
+    <div class="item-header">
+      <strong>Goose</strong>
+      <span class="badge req">required</span>
+    </div>
+    <small>The agent runtime Mycroft plugs into. Desktop app (recommended for non-terminal users) or CLI.</small>
+    <label class="toggle-row">
+      <input type="checkbox" name="install_goose" checked>
+      Install Goose for me (runs <code>brew install --cask block-goose</code>)
+    </label>
+    <a class="dl-btn" href="https://goose-docs.ai/docs/getting-started/installation" target="_blank" rel="noreferrer">Download manually</a>
+    <details>
+      <summary>Manual install (no Homebrew)</summary>
+      <ol>
+        <li><strong>Desktop:</strong> Download from the link above, unzip, run.</li>
+        <li><strong>CLI:</strong> <code>curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash</code></li>
+        <li>Verify: <code>goose --version</code>.</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="item required">
+    <div class="item-header">
+      <strong>Obsidian Desktop</strong>
+      <span class="badge req">required</span>
+    </div>
+    <small>Mycroft reads/writes your knowledge vault through Obsidian. Obsidian 1.12+ ships with a built-in CLI (<code>obsidian-cli</code>) — both the app and CLI come with a single Homebrew install.</small>
+    <label class="toggle-row">
+      <input type="checkbox" name="install_obsidian" checked>
+      Install Obsidian for me (runs <code>brew install --cask obsidian</code>)
+    </label>
+    <a class="dl-btn" href="https://obsidian.md" target="_blank" rel="noreferrer">Download manually</a>
+    <div class="callout warn" style="margin-top:.5rem;font-size:.82rem;">
+      <strong>Two manual steps (Obsidian 1.12+):</strong>
+      <ol style="margin:.35rem 0;padding-left:1.5rem;">
+        <li>After Obsidian launches, go to <strong>Settings → General → Advanced → Command Line Interface</strong> and toggle it <strong>ON</strong>. This can't be automated; Obsidian exposes it only through the app UI.</li>
+        <li>Leave Obsidian Desktop <strong>running</strong> whenever you invoke <code>morning-brief</code> or <code>vault-sync</code> — the CLI talks to the live app. Writes silently fail if it's closed.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="item required">
+    <div class="item-header">
+      <strong>Firecrawl CLI</strong>
+      <span class="badge req">required</span>
+    </div>
+    <small>Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</small>
+    <label class="toggle-row">
+      <input type="checkbox" name="install_firecrawl" checked>
+      Install Firecrawl CLI for me (runs <code>npm install -g firecrawl-cli</code>)
+    </label>
+    <a class="dl-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key at firecrawl.dev</a>
+    <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
+    <input type="password" id="firecrawl_key" name="firecrawl_key" autocomplete="off" spellcheck="false">
+  </div>
+
+  <h2>Optional tools</h2>
+
+  <div class="item">
+    <label>
+      <input type="checkbox" name="ft_enabled">
+      <strong>ft CLI (Field Theory)</strong>
+      <span class="badge opt">optional</span>
+    </label>
+    <small>Self-custody sync of X/Twitter bookmarks. Feeds <code>morning-brief</code>. Without it, the recipe skips bookmarks. A one-off preflight recipe runs in Goose after install to triage your existing bookmarks.</small>
+  </div>
+
+  <div class="item">
+    <label>
+      <input type="checkbox" name="agentmail_enabled">
+      <strong>AgentMail account</strong>
+      <span class="badge opt">optional but recommended</span>
+    </label>
+    <small>Dedicated inbox for newsletter subscriptions. <code>morning-brief</code> + <code>newsletter-summarize</code> consume via REST API (no CLI).</small>
+    <a class="dl-btn" href="https://agentmail.to" target="_blank" rel="noreferrer">Sign up at agentmail.to</a>
+    <label class="field-label" for="agentmail_key">AGENTMAIL_API_KEY</label>
+    <input type="password" id="agentmail_key" name="agentmail_key" autocomplete="off" spellcheck="false">
+  </div>
+
+  <div class="item">
+    <label>
+      <input type="checkbox" name="apify_enabled">
+      <strong>Apify account — social media scraping</strong>
+      <span class="badge opt">optional</span>
+    </label>
+    <small>Powers the <code>apify-social/*</code> recipes: Instagram posts + comments, X/Twitter, Facebook, TikTok, LinkedIn. Pay-per-actor-run pricing. REST API — no CLI install.</small>
+    <a class="dl-btn" href="https://apify.com" target="_blank" rel="noreferrer">Sign up at apify.com</a>
+    <label class="field-label" for="apify_token">APIFY_API_TOKEN</label>
+    <input type="password" id="apify_token" name="apify_token" autocomplete="off" spellcheck="false">
+  </div>
+
+  <h2>Plugins</h2>
+
+  <div class="callout warn">
+    Plugins are modular add-ons (MCP extensions + skills) maintained on their own repos. Mycroft wires them in.
+  </div>
+
+  <div class="item" id="spot-item">
+    <label>
+      <input type="checkbox" name="spotlight_enabled" id="spotlight_enabled" checked>
+      <strong>Spotlight</strong>
+      <span class="badge launch">launching with Mycroft</span>
+    </label>
+    <small>
+      OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. Runtime-agnostic (reads <code>AGENTS.md</code>). Repo: <a href="https://github.com/buriedsignals/spotlight" target="_blank" rel="noreferrer">buriedsignals/spotlight</a>.
+    </small>
+
+    <div class="sub-options">
+      <small style="color:var(--muted);margin-bottom:.5rem;">Spotlight reuses your Mycroft config (frontier provider, Firecrawl, Apify, Obsidian). These are the only Spotlight-specific things we need:</small>
+
+      <label class="field-label" for="spotlight_vault_path">Investigations vault path</label>
+      <input type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/intelligence" value="~/Documents/intelligence" autocomplete="off" spellcheck="false">
+      <small style="margin-top:.15rem;">Dedicated vault for investigation findings (separate from your notes vault). Script creates the folder if it's missing.</small>
+
+      <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span style="font-weight:400;color:var(--muted);">— optional</span></label>
+      <input type="password" id="osint_navigator_key" name="osint_navigator_key" autocomplete="off" spellcheck="false">
+      <small style="margin-top:.15rem;">Enables the 1000+ OSINT tool finder inside Spotlight's investigator + fact-checker agents. Skip if you don't have a key.</small>
+
+      <div style="margin-top:1rem;">
+        <strong style="font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;">Data feeds + integrations</strong>
+        <small style="margin-top:.25rem;">All optional. Skip the ones you don't need — Spotlight degrades gracefully.</small>
+
+        <div style="margin-top:.75rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
+          <label class="toggle-row" style="margin:0;">
+            <input type="checkbox" name="spot_browseruse">
+            <strong>browser-use</strong>
+            <span style="font-weight:400;color:var(--muted);font-size:.82rem;">— JS-heavy sites, auth forms. MIT, no key required.</span>
+          </label>
+        </div>
+
+        <div style="margin-top:.5rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
+          <strong style="font-size:.9rem;">ACLED <span style="font-weight:400;color:var(--muted);">— conflict event data</span></strong>
+          <small style="margin-top:.2rem;margin-bottom:.4rem;"><a href="https://developer.acleddata.com/" target="_blank" rel="noreferrer">Register for ACLED</a> — Armed Conflict Location &amp; Event Data. Battles, civilian violence, protests.</small>
+          <label class="field-label" for="acled_key">ACLED_API_KEY</label>
+          <input type="password" id="acled_key" name="acled_key" autocomplete="off" spellcheck="false">
+          <label class="field-label" for="acled_email">ACLED_EMAIL</label>
+          <input type="text" id="acled_email" name="acled_email" autocomplete="off" spellcheck="false">
+        </div>
+
+        <div style="margin-top:.5rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
+          <strong style="font-size:.9rem;">Junkipedia <span style="font-weight:400;color:var(--muted);">— misinformation tracking</span></strong>
+          <small style="margin-top:.2rem;margin-bottom:.4rem;"><a href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Apply at Junkipedia</a> — narrative / disinfo database used by 100+ newsrooms.</small>
+          <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY</label>
+          <input type="password" id="junkipedia_key" name="junkipedia_key" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="item" id="coj-item">
+    <label>
+      <input type="checkbox" name="cojournalist_enabled" id="cojournalist_enabled" checked>
+      <strong>coJournalist</strong>
+      <span class="badge launch">launching with Mycroft</span>
+    </label>
+    <small>
+      Beat-monitoring engine — scheduled scouts, change detection, relevance scoring. Repo: <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>.
+    </small>
+
+    <div class="sub-options coj-mode">
+      <label>
+        <input type="radio" name="cojournalist_mode" value="web" checked>
+        Web (hosted)
+        <small>Always-on — runs 24/7 on the coJournalist cloud backend. Scouts keep watching your beat even when your laptop is closed. Requires API key.</small>
+      </label>
+      <label>
+        <input type="radio" name="cojournalist_mode" value="local">
+        Local (self-host)
+        <small>Run the backend yourself (Docker + Supabase). Only active when your machine is on — not suited to overnight monitoring. <a href="https://github.com/buriedsignals/cojournalist#self-host" target="_blank" rel="noreferrer">Self-host docs</a>.</small>
+      </label>
+    </div>
+
+    <div class="coj-web-only">
+      <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
+      <input type="password" id="cojournalist_api_key" name="cojournalist_api_key" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <div class="item" style="opacity: .75;">
+    <label>
+      <input type="checkbox" disabled>
+      <strong>DataHound</strong>
+      <span class="badge soon">May 2026 · web-only · API key</span>
+    </label>
+    <small>
+      Government + public-data API discovery and automated monitoring — turn obscure open-data endpoints into structured, queryable beats. Web-only (no self-host). Requires <code>DATAHOUND_API_KEY</code> at launch.
+    </small>
+  </div>
+
+  <div class="item" style="opacity: .75;">
+    <label>
+      <input type="checkbox" disabled>
+      <strong>Atelier</strong>
+      <span class="badge soon">May 2026</span>
+    </label>
+    <small>
+      Full visual production for journalism — charts (Datawrapper or D3), maps (Maptiler), video, infographics, network graphs, social cards. Renders data + narrative into publication-ready visuals across every medium. (<em>Name provisional — candidates: Atelier, OpenAtlas, OpenStudio, OpenFrame, Studio, Render, Canvas.</em>)
+    </small>
+  </div>
+
+  <div class="item" style="opacity: .55; border-style: dashed;">
+    <div class="item-header"><strong>Your plugin here</strong> <span class="badge opt">extension point</span></div>
+    <small>Any Goose-compatible MCP extension plugs in. <a href="https://goose-docs.ai/extensions" target="_blank" rel="noreferrer">70+ in the Goose registry</a>.</small>
+  </div>
+
+  <h2>Your vault</h2>
+
+  <div class="item">
+    <small>Default Obsidian vault path — used by <code>vault-qa</code> and <code>morning-brief</code>.</small>
+    <label class="field-label" for="vault_path">Vault path</label>
+    <input type="text" id="vault_path" name="vault_path" placeholder="~/Documents/Mycroft" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
+  </div>
+
+  <h2>Preview script</h2>
+
+  <details>
+    <summary>Show the setup script that will be downloaded</summary>
+    <pre class="preview" id="preview">(preview loads on open)</pre>
+  </details>
+
+  <div class="install-bar">
+    <div>
+      <strong>Download your setup script</strong>
+      <div class="note">Client-side only — your API keys are embedded in the download, nothing is sent over the network.</div>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
+      <button type="button" id="copyBtn" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);">Copy to clipboard</button>
+      <button type="button" id="downloadBtn">Download mycroft-setup.command</button>
+    </div>
+  </div>
+
+  <div class="success" id="success">
+    <strong>Downloaded.</strong> To run it:
+    <pre style="margin:.5rem 0;background:rgba(0,0,0,.04);padding:.5rem;border-radius:3px;font-size:.82rem;"><code>chmod +x ~/Downloads/mycroft-setup.command
+~/Downloads/mycroft-setup.command</code></pre>
+    Or drag the file onto a Terminal window, or right-click → Open (macOS will ask once; unsigned scripts need explicit consent).<br>
+    After it finishes, open a new terminal so the shell rc updates take effect.
+  </div>
+
+</form>
+</main>
+
+<footer role="contentinfo">
+  <strong>How this works:</strong> this page runs entirely in your browser. When you click Download, JavaScript generates a bash script with your selections + API keys embedded, and your browser saves it locally. Nothing is sent to a server. Your keys never touch anyone's infrastructure but your own.<br>
+  Source: <a href="https://github.com/buriedsignals/mycroft">buriedsignals/mycroft</a>
+</footer>
+
+<script>
+function applySovereigntyMode() {
+  const v = document.querySelector('input[name="sovereignty"]:checked').value;
+  document.body.classList.toggle('mode-cloud', v === 'cloud');
+  document.body.classList.toggle('mode-local', v === 'local');
+  refreshPreview();
+}
+document.querySelectorAll('input[name="sovereignty"]').forEach(el => el.addEventListener('change', applySovereigntyMode));
+
+function applyCoJournalistMode() {
+  const enabled = document.getElementById('cojournalist_enabled').checked;
+  const modeEl = document.querySelector('input[name="cojournalist_mode"]:checked');
+  const mode = modeEl ? modeEl.value : 'web';
+  document.body.classList.toggle('coj-mode-web', enabled && mode === 'web');
+  refreshPreview();
+}
+document.getElementById('cojournalist_enabled').addEventListener('change', applyCoJournalistMode);
+document.querySelectorAll('input[name="cojournalist_mode"]').forEach(el => el.addEventListener('change', applyCoJournalistMode));
+
+function shq(s) { return "'" + String(s == null ? '' : s).replace(/'/g, "'\\''") + "'"; }
+function bool(v) { return v ? '1' : '0'; }
+
+function readForm() {
+  const f = document.getElementById('form');
+  const g = n => f.elements[n];
+  const val = n => (g(n) ? (g(n).value || '') : '').trim();
+  const chk = n => (g(n) ? !!g(n).checked : false);
+
+  const sovereignty = document.querySelector('input[name="sovereignty"]:checked').value;
+  const cojMode = (document.querySelector('input[name="cojournalist_mode"]:checked') || {}).value || 'web';
+
+  return {
+    sovereignty,
+    localOnly: sovereignty === 'local',
+    vault: val('vault_path') || '~/Documents/Mycroft',
+    installGoose: chk('install_goose'),
+    installObsidian: chk('install_obsidian'),
+    installFirecrawl: chk('install_firecrawl'),
+    ftEnabled: chk('ft_enabled'),
+    agentmailEnabled: chk('agentmail_enabled'),
+    apifyEnabled: chk('apify_enabled'),
+    fireworks: chk('fireworks_enabled') && sovereignty === 'cloud',
+    together: chk('together_enabled') && sovereignty === 'cloud',
+    spotlight: chk('spotlight_enabled'),
+    cojournalist: chk('cojournalist_enabled'),
+    cojMode,
+    fireworksKey: val('fireworks_key'),
+    togetherKey: val('together_key'),
+    firecrawlKey: val('firecrawl_key'),
+    apifyToken: val('apify_token'),
+    agentmailKey: val('agentmail_key'),
+    cojournalistKey: val('cojournalist_api_key'),
+    spotlightVaultPath: val('spotlight_vault_path') || '~/Documents/intelligence',
+    osintNavigatorKey: val('osint_navigator_key'),
+    spotBrowseruse: chk('spot_browseruse'),
+    acledKey: val('acled_key'),
+    acledEmail: val('acled_email'),
+    junkipediaKey: val('junkipedia_key'),
+  };
+}
+
+function buildScript(d) {
+  const exportLines = [];
+  if (d.fireworksKey)  exportLines.push(`export FIREWORKS_API_KEY=${shq(d.fireworksKey)}`);
+  if (d.togetherKey)   exportLines.push(`export TOGETHER_API_KEY=${shq(d.togetherKey)}`);
+  if (d.firecrawlKey)  exportLines.push(`export FIRECRAWL_API_KEY=${shq(d.firecrawlKey)}`);
+  if (d.apifyToken)    exportLines.push(`export APIFY_API_TOKEN=${shq(d.apifyToken)}`);
+  if (d.agentmailKey)  exportLines.push(`export AGENTMAIL_API_KEY=${shq(d.agentmailKey)}`);
+  if (d.cojournalist && d.cojMode === 'web' && d.cojournalistKey) {
+    exportLines.push(`export COJOURNALIST_API_KEY=${shq(d.cojournalistKey)}`);
+  }
+  if (d.spotlight) {
+    if (d.osintNavigatorKey)  exportLines.push(`export OSINT_NAVIGATOR_API_KEY=${shq(d.osintNavigatorKey)}`);
+    if (d.acledKey)           exportLines.push(`export ACLED_API_KEY=${shq(d.acledKey)}`);
+    if (d.acledEmail)         exportLines.push(`export ACLED_EMAIL=${shq(d.acledEmail)}`);
+    if (d.junkipediaKey)      exportLines.push(`export JUNKIPEDIA_API_KEY=${shq(d.junkipediaKey)}`);
+    if (d.spotBrowseruse)     exportLines.push(`export SPOTLIGHT_BROWSERUSE=1`);
+    exportLines.push(`export SPOTLIGHT_VAULT_PATH=${shq(d.spotlightVaultPath)}`);
+  }
+
+  const providerCopies = [
+    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/" && ok "local-mlx provider installed"',
+    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/" && ok "local-llama-server provider installed"',
+  ];
+  if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/" && ok "Fireworks Qwen 3.6 Plus provider installed"');
+  if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/" && ok "Together AI provider installed"');
+
+  const pluginBlock = [];
+  if (d.spotlight) {
+    pluginBlock.push(`say "Installing Spotlight plugin..."`);
+    pluginBlock.push(`if [ ! -d "$MYCROFT_DIR/plugins/spotlight/.git" ]; then`);
+    pluginBlock.push(`  mkdir -p "$MYCROFT_DIR/plugins"`);
+    pluginBlock.push(`  git clone https://github.com/buriedsignals/spotlight.git "$MYCROFT_DIR/plugins/spotlight" 2>/dev/null && ok "Spotlight cloned" || warn "Spotlight repo not yet public — will install automatically at Mycroft launch"`);
+    pluginBlock.push(`else`);
+    pluginBlock.push(`  (cd "$MYCROFT_DIR/plugins/spotlight" && git pull --ff-only 2>/dev/null) && ok "Spotlight updated"`);
+    pluginBlock.push(`fi`);
+    pluginBlock.push(`mkdir -p ${shq(d.spotlightVaultPath)} && ok ${shq('investigations vault at ' + d.spotlightVaultPath)}`);
+  }
+  if (d.cojournalist) {
+    if (d.cojMode === 'web') {
+      pluginBlock.push(`ok "coJournalist: configured for web (24/7 hosted)"`);
+      if (!d.cojournalistKey) pluginBlock.push(`warn "coJournalist API key not set — add COJOURNALIST_API_KEY to ${ '$SHELL_RC' } when you have one"`);
+    } else {
+      pluginBlock.push(`say "coJournalist: self-host mode selected"`);
+      pluginBlock.push(`echo "  See self-host docs: https://github.com/buriedsignals/cojournalist#self-host"`);
+    }
+  }
+
+  const rcBlockLines = [
+    '  printf \'\\n%s\\n\' "$MARKER_START"',
+    '  printf \'export GOOSE_RECIPE_PATH="%s"\\n\' "$MYCROFT_DIR/recipes"',
+    '  printf \'export MYCROFT_DEFAULT_SOVEREIGNTY="%s"\\n\' "$SOVEREIGNTY"',
+    '  [ "$LOCAL_ONLY" = "1" ] && printf \'export MYCROFT_LOCAL_ONLY="1"\\n\'',
+  ];
+  for (const line of exportLines) {
+    rcBlockLines.push(`  printf '%s\\n' ${shq(line)}`);
+  }
+  rcBlockLines.push('  printf \'%s\\n\' "$MARKER_END"');
+
+  return `#!/usr/bin/env bash
+# Mycroft setup — generated by buriedsignals/mycroft setup page
+# https://github.com/buriedsignals/mycroft
+#
+# Review this script before running. Your API keys are baked in below.
+# Touches only: ~/.mycroft/, ~/.config/goose/, your shell rc.
+
+set -euo pipefail
+
+# ───── Platform guard ─────
+
+case "$(uname -s)" in
+  Darwin*) ;;
+  Linux*)
+    printf "\\n\\033[1;33m!\\033[0m Linux support is experimental. brew/open-a steps will skip; install Goose + Obsidian manually.\\n"
+    ;;
+  *)
+    printf "\\n\\033[1;31mX\\033[0m Unsupported platform: $(uname -s). Mycroft targets macOS (Linux experimental).\\n" >&2
+    exit 1
+    ;;
+esac
+
+# ───── Your selections (from the setup form) ─────
+SOVEREIGNTY=${shq(d.sovereignty)}
+LOCAL_ONLY=${shq(bool(d.localOnly))}
+VAULT_PATH=${shq(d.vault)}
+
+INSTALL_GOOSE=${shq(bool(d.installGoose))}
+INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
+INSTALL_FIRECRAWL=${shq(bool(d.installFirecrawl))}
+
+# ───── Constants ─────
+MYCROFT_REPO='https://github.com/buriedsignals/mycroft.git'
+MYCROFT_DIR="$HOME/.mycroft"
+GOOSE_CONFIG="$HOME/.config/goose"
+PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
+HINTS_DST="$GOOSE_CONFIG/.goosehints"
+
+if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
+else SHELL_RC="$HOME/.zshrc"; touch "$SHELL_RC"
+fi
+
+# ───── Helpers ─────
+have() { command -v "$1" >/dev/null 2>&1; }
+say()  { printf "\\n\\033[1;34m>\\033[0m %s\\n" "$*"; }
+ok()   { printf "  \\033[1;32m+\\033[0m %s\\n" "$*"; }
+warn() { printf "  \\033[1;33m!\\033[0m %s\\n" "$*"; }
+err()  { printf "  \\033[1;31mX\\033[0m %s\\n" "$*" >&2; }
+
+say "Mycroft setup starting"
+echo "  sovereignty: $SOVEREIGNTY"
+echo "  vault path:  $VAULT_PATH"
+echo "  shell rc:    $SHELL_RC"
+
+# ───── Prereq installs ─────
+
+if [ "$INSTALL_GOOSE" = "1" ]; then
+  if have goose; then ok "goose already installed"
+  elif have brew; then
+    say "Installing Goose via Homebrew..."
+    if brew install --cask block-goose; then
+      ok "Goose installed to /Applications"
+      open -a "Goose" 2>/dev/null || open /Applications/Goose.app 2>/dev/null || warn "Goose installed but auto-launch failed — open from Applications manually"
+    else
+      warn "brew install failed — install from https://goose-docs.ai"
+    fi
+  else warn "Homebrew not found — install Goose manually from https://goose-docs.ai"
+  fi
+fi
+
+if [ "$INSTALL_OBSIDIAN" = "1" ]; then
+  if have obsidian-cli || have obsidian; then ok "Obsidian already installed"
+  elif have brew; then
+    say "Installing Obsidian via Homebrew..."
+    if brew install --cask obsidian; then
+      ok "Obsidian installed to /Applications"
+      open -a "Obsidian" 2>/dev/null && sleep 3 && ok "Obsidian launched — leave it running for morning-brief + vault-sync" || warn "Obsidian installed but auto-launch failed — open from Applications manually"
+    else
+      warn "brew install failed — install from https://obsidian.md"
+    fi
+  else warn "Homebrew not found — install Obsidian manually from https://obsidian.md"
+  fi
+fi
+
+if [ "$INSTALL_FIRECRAWL" = "1" ]; then
+  if have firecrawl; then ok "firecrawl already installed"
+  elif have npm; then say "Installing firecrawl-cli via npm..."; npm install -g firecrawl-cli || warn "npm install failed — see docs.firecrawl.dev"
+  else warn "npm not found — install Node.js then run: npm install -g firecrawl-cli"
+  fi
+fi
+
+# ───── Fetch / update the Mycroft pack ─────
+
+say "Fetching Mycroft pack..."
+if ! have git; then
+  err "git is required. Install from https://git-scm.com or via: brew install git"
+  exit 1
+fi
+
+if [ -d "$MYCROFT_DIR/.git" ]; then
+  (cd "$MYCROFT_DIR" && git pull --ff-only) && ok "Mycroft updated at $MYCROFT_DIR"
+else
+  git clone "$MYCROFT_REPO" "$MYCROFT_DIR" && ok "Mycroft cloned to $MYCROFT_DIR"
+fi
+
+# ───── Copy provider configs ─────
+
+say "Installing provider configs..."
+mkdir -p "$PROVIDERS_DST"
+${providerCopies.join('\n')}
+
+# ───── Install journalism instructions ─────
+
+say "Installing journalism instructions..."
+mkdir -p "$GOOSE_CONFIG"
+cp "$MYCROFT_DIR/instructions/journalism.md" "$HINTS_DST"
+ok "journalism.md -> $HINTS_DST"
+
+# ───── Plugins ─────
+
+say "Configuring plugins..."
+${pluginBlock.length ? pluginBlock.join('\n') : '# (no plugins selected)'}
+
+# ───── Update shell rc (idempotent) ─────
+
+say "Updating $SHELL_RC..."
+
+MARKER_START='# === mycroft ==='
+MARKER_END='# === /mycroft ==='
+
+if grep -qF "$MARKER_START" "$SHELL_RC" 2>/dev/null; then
+  python3 - "$SHELL_RC" "$MARKER_START" "$MARKER_END" <<'PYEOF'
+import re, sys
+path, start, end = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(path) as f: content = f.read()
+pattern = re.compile(re.escape(start) + r'.*?' + re.escape(end) + r'\\n?', re.DOTALL)
+with open(path, 'w') as f: f.write(pattern.sub('', content))
+PYEOF
+  ok "removed prior mycroft block"
+fi
+
+{
+${rcBlockLines.join('\n')}
+} >> "$SHELL_RC"
+ok "shell rc block appended"
+
+# ───── Done ─────
+
+say "Mycroft setup complete"
+cat <<EOF
+
+Next steps:
+
+  1. Open a NEW terminal (or run:  source "$SHELL_RC")
+  2. Verify Goose sees the providers:
+       goose configure
+
+  3. Try a recipe:
+       goose run --recipe vault-qa.yaml \\\\
+         --params question="What do I have on ..." \\\\
+         --params vault_path=$VAULT_PATH
+
+  4. Morning brief (requires Obsidian Desktop RUNNING):
+       goose run --recipe morning-brief.yaml \\\\
+         --params vault_path=$VAULT_PATH \\\\
+         --params vault_name=\\$(basename "$VAULT_PATH")
+
+  5. (Sovereign mode) Download the Mycroft Qwen abliterated fine-tune:
+       # 9B (default — 16 GB+ systems)
+       hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \\\\
+         --local-dir ~/.mycroft/models/qwen-journalist-9b \\\\
+         --include "*Q4_K_M.gguf"
+       # Then start the server:
+       llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080
+
+Mycroft is ready.
+EOF
+`;
+}
+
+function refreshPreview() {
+  const pre = document.getElementById('preview');
+  if (!pre) return;
+  try { pre.textContent = buildScript(readForm()); }
+  catch (e) { pre.textContent = 'Error generating preview: ' + e.message; }
+}
+
+function download() {
+  const script = buildScript(readForm());
+  const blob = new Blob([script], {type: 'application/x-sh'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mycroft-setup.command';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+  document.getElementById('success').classList.add('visible');
+}
+
+document.getElementById('downloadBtn').addEventListener('click', download);
+
+async function copyToClipboard() {
+  const btn = document.getElementById('copyBtn');
+  const originalText = btn.textContent;
+  try {
+    await navigator.clipboard.writeText(buildScript(readForm()));
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = originalText; }, 2000);
+  } catch (err) {
+    btn.textContent = 'Copy failed';
+    setTimeout(() => { btn.textContent = originalText; }, 2000);
+  }
+}
+document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
+document.getElementById('form').addEventListener('input', refreshPreview);
+document.getElementById('form').addEventListener('change', refreshPreview);
+document.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => { if (d.open) refreshPreview(); }));
+
+applySovereigntyMode();
+applyCoJournalistMode();
+refreshPreview();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+version: "1.0.0"
+title: "Newsletter summarize"
+description: "Summarize a newsletter (URL, AgentMail message, or pasted text) with journalism-relevant extraction: headline, gist, sources, cited data, action items."
+
+instructions: |
+  Load the Mycroft journalism instructions as session context.
+  Extract signal, not the newsletter's editorial voice. No rewriting.
+
+parameters:
+  - key: source
+    input_type: string
+    requirement: required
+    description: "URL, AgentMail message ID, or 'paste' to accept inline text"
+  - key: inline_text
+    input_type: string
+    requirement: optional
+    description: "Raw newsletter text (used when source='paste')"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Summarize the newsletter at: {{ source }}
+
+  **Fetch**:
+  - If source is a URL: `firecrawl scrape {{ source }}` — markdown output.
+  - If source is an AgentMail message ID: `curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" https://api.agentmail.to/v1/messages/{{ source }}`
+  - If source is `paste`: use the inline_text parameter:
+    ```
+    {{ inline_text }}
+    ```
+  - Never use WebFetch, curl for arbitrary URLs, or apify-rag.
+
+  **Extract** and return:
+
+  ```markdown
+  # {{ source_title }}
+  **From**: [newsletter name + author if present]
+  **Date**: [publication date]
+
+  ## Gist
+  [2-3 sentences — what the newsletter actually says, not a paraphrase of its framing]
+
+  ## Items worth following
+  - **[Item headline]** — [what + so-what] — [source URL from within the newsletter]
+  [... one line per item, max 8]
+
+  ## Data points (if any)
+  | Stat | Value | Source cited in newsletter |
+  |---|---|---|
+  [... only if the newsletter cites specific numbers]
+
+  ## Potential angles
+  - [angle: what a journalist could pursue from this, 1 sentence]
+  [... max 3]
+
+  ## Attribution
+  - Newsletter link: [original URL]
+  - Author: [name or handle if given]
+  ```
+
+  **Rules**:
+  - Preserve attribution — the newsletter's sources are YOUR sources now, cite them through.
+  - Do not repeat the newsletter's editorial opinion as fact.
+  - Flag weak/anonymous/unsourced claims as `unverified`.
+
+activities:
+  - "Summarize this newsletter: {{ source }}"
+  - "Extract just the data points from this newsletter"
+  - "What's worth following from this week's issue?"

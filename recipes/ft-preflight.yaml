@@ -1,0 +1,138 @@
+version: "1.0.0"
+title: "ft preflight — bookmark triage"
+description: "One-off preflight that syncs your X/Twitter bookmarks via ft CLI, classifies them, shows you the proposed category map, and archives items older than a cutoff so morning-brief stays focused."
+
+instructions: |
+  Run this ONCE when you first set up Mycroft with the optional ft-cli tool, then anytime you want to re-triage a growing bookmark pile.
+
+  Two hard rules:
+    1. Never delete bookmarks. Only tag or move-to-processed.
+    2. Never run `ft classify` for real until the journalist approves the proposed categories.
+
+  ft classify requires either `claude` or `codex` CLI to be on PATH — it uses an LLM to assign categories. If neither is installed, stop early and tell the journalist how to install one.
+
+parameters:
+  - key: cutoff_days
+    input_type: number
+    requirement: optional
+    description: "Bookmarks older than this many days get moved to 'processed' after triage, so morning-brief ignores them in future runs."
+    default: 30
+  - key: re_triage
+    input_type: boolean
+    requirement: optional
+    description: "Re-classify bookmarks that already have a category (normally skipped). Set true when you want to re-run after editing category names."
+    default: false
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access — runs the ft CLI and reads/writes results"
+
+prompt: |
+  Preflight triage of ft-cli bookmarks.
+
+  ## Step 0 — Verify prereqs
+
+  Check that `ft` is on PATH:
+  ```
+  ft --version
+  ```
+  If not found, stop and tell the journalist to install it. Don't improvise a workaround.
+
+  Check that `claude` OR `codex` is on PATH (ft classify needs one). If neither:
+  - Tell the journalist exactly: "ft classify needs an LLM CLI. Install `claude` (`npm install -g @anthropic-ai/claude-code`) or `codex` (`npm install -g @openai/codex`) and re-run."
+  - Stop.
+
+  ## Step 1 — Sync latest bookmarks (non-blocking)
+
+  ```
+  ft sync
+  ```
+  Wait up to 30 seconds. If it fails or times out, log the error as a warning and continue with whatever's already in the local cache — don't block the triage on sync.
+
+  ## Step 2 — Get classification proposal (dry-run)
+
+  ```
+  ft classify --dry-run --json {{ "--re-classify" if re_triage else "" }}
+  ```
+
+  Parse the JSON output. Extract:
+    - Total bookmark count being classified
+    - Proposed category distribution: list of `(category_name, count)` tuples, sorted by count descending
+    - Up to 3 example bookmarks per category (with title + URL)
+
+  If the dry-run returns zero bookmarks to classify:
+  - Tell the journalist: "All bookmarks are already categorized. Nothing to triage."
+  - Jump to Step 5 (archive).
+
+  ## Step 3 — Present proposal for approval
+
+  Print a table for the journalist:
+
+  ```
+  Proposed classification — {total} bookmarks
+
+  | Category            | Count | Examples (title — url)                         |
+  |---------------------|-------|------------------------------------------------|
+  | ai                  | 48    | "Claude 4.7 released" — https://…              |
+  |                     |       | "Qwen 3.6 benchmarks" — https://…              |
+  |                     |       | "Open-weight landscape Q2 2026" — https://…    |
+  | journalism          | 22    | …                                              |
+  …
+  ```
+
+  Then ask EXACTLY:
+  > "Accept these categories as proposed? Options:
+  >   (a) Yes — apply
+  >   (b) Edit — tell me which category labels to rename or merge
+  >   (c) Cancel — exit without changing anything"
+
+  Wait for explicit journalist response. Do NOT auto-pick.
+
+  ## Step 4 — Apply based on response
+
+  **If (a) Yes — apply:**
+  Run: `ft classify {{ "--re-classify" if re_triage else "" }}`
+  Report: "Classified N bookmarks into K categories."
+
+  **If (b) Edit:**
+  Ask the journalist which category labels to change. Accept free-form input like "rename `ai` to `ai-landscape`" or "merge `tools` and `tooling` into `tools`".
+  Apply the edits via the appropriate ft commands (or by re-prompting ft classify with a hint file — consult the ft CLI docs). Then re-run Step 2 (dry-run proposal) with the new labels and loop back to Step 3.
+
+  **If (c) Cancel:**
+  Exit cleanly. No state changed.
+
+  ## Step 5 — Archive older-than-cutoff
+
+  After successful classification, find bookmarks older than {{ cutoff_days }} days:
+  ```
+  ft list --older-than {{ cutoff_days }}d --json
+  ```
+  For each item, move it to a `processed` tag (exact ft subcommand depends on the CLI — try `ft tag <id> processed`, fall back to editing the database file if ft doesn't expose a tag command):
+  ```
+  ft tag <bookmark_id> processed
+  ```
+
+  Count how many moved to processed.
+
+  ## Step 6 — Summary
+
+  Print:
+  ```
+  ft preflight complete.
+
+    Classified:     {N} bookmarks
+    Categories:     {K} — {list}
+    Moved to processed (older than {{ cutoff_days }} days): {M}
+
+  morning-brief will now include only bookmarks not tagged `processed`.
+  Re-run this recipe when you want to triage newly-synced bookmarks.
+  ```
+
+  Nothing else. No follow-up questions. The preflight is over.
+
+activities:
+  - "message: **ft preflight** classifies your X/Twitter bookmarks, confirms the categories with you, and archives old items so morning-brief stays focused."
+  - "Run preflight triage"
+  - "Re-triage with a fresh proposal"
+  - "Archive anything older than 14 days"

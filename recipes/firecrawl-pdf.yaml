@@ -1,0 +1,42 @@
+version: "1.0.0"
+title: "Firecrawl — PDF / civic docs"
+description: "Fast-mode PDF extraction for civic documents — court filings, council packets, government reports. Handles large PDFs (200+ pages)."
+
+instructions: |
+  Use firecrawl with Fire-PDF fast mode for efficient PDF handling.
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "URL pointing directly to a PDF (or a page hosting one)"
+  - key: extract_query
+    input_type: string
+    requirement: optional
+    description: "Specific question to answer from the PDF (skip if just extracting full text)"
+    default: ""
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Extract content from the PDF at {{ url }}.
+
+  Run:
+  ```sh
+  firecrawl scrape {{ url }} --parsers pdf-fast --format markdown
+  ```
+
+  {% if extract_query %}
+  After extraction, answer this question from the content: **{{ extract_query }}**
+  Cite the relevant PDF page numbers inline where possible.
+  {% else %}
+  Return the extracted markdown. Preserve headings and page breaks if present.
+  {% endif %}
+
+  If the PDF is very large (>100 pages), return:
+  1. Table of contents / section headings
+  2. First page + last page in full
+  3. Summary of structure
+  4. Ask the journalist which sections to extract in detail

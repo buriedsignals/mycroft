@@ -1,0 +1,46 @@
+version: "1.0.0"
+title: "Liteparse — fast doc parsing"
+description: "Cheap/fast structured extraction from PDF, HTML, docx, or text documents. Faster and cheaper than full LLM extraction for structured civic docs, court filings, leak bundles."
+
+instructions: |
+  Use the liteparse CLI (buried_signals/kit/claude/liteparse). Designed for pure extraction — no reasoning over content.
+
+parameters:
+  - key: input_path
+    input_type: string
+    requirement: required
+    description: "Path to the document to parse (pdf, html, md, docx, txt)"
+  - key: extract
+    input_type: select
+    requirement: optional
+    description: "What to extract"
+    default: "text"
+    options: ["text", "tables", "headings", "entities", "all"]
+  - key: output_path
+    input_type: string
+    requirement: optional
+    description: "Where to save the structured output. Omit to return inline."
+    default: ""
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Parse the document at `{{ input_path }}` — extract: **{{ extract }}**.
+
+  Run:
+  ```sh
+  liteparse "{{ input_path }}" --extract "{{ extract }}" {% if output_path %}--out "{{ output_path }}"{% endif %}
+  ```
+
+  Return the structured output:
+  - **text**: full plain text (preserving paragraph breaks)
+  - **tables**: list of tables as JSON/markdown
+  - **headings**: hierarchical TOC
+  - **entities**: named entities (PERSON, ORG, LOCATION, DATE, MONEY)
+  - **all**: combined structured output
+
+  If the file is very large (>500 pages equivalent), summarise structure first and ask whether to run the full extract.
+
+  Report any pages that failed extraction (OCR failures, corrupted pages).

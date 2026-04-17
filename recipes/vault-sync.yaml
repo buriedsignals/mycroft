@@ -1,0 +1,82 @@
+version: "1.0.0"
+title: "Vault sync"
+description: "Write findings from the current Goose session into the Obsidian vault — investigation notes, entity files, source records — with proper frontmatter and wiki-links."
+
+instructions: |
+  Load the Mycroft journalism instructions.
+  Use the obsidian CLI (requires Obsidian app running) for all writes.
+  Vault conventions: investigations/{project}/, shared/entities/, shared/sources/, shared/methodology/.
+
+parameters:
+  - key: vault_name
+    input_type: string
+    requirement: required
+    description: "Target vault name: intelligence | knowledge | buried-signals"
+    default: "intelligence"
+  - key: project
+    input_type: string
+    requirement: optional
+    description: "Investigation project slug (creates investigations/{project}/ tree). Leave empty for shared/."
+    default: ""
+  - key: findings
+    input_type: string
+    requirement: required
+    description: "The findings to write — free-text or structured (entities, sources, events)"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Sync these findings into the vault `{{ vault_name }}`:
+
+  ```
+  {{ findings }}
+  ```
+
+  **Step 1 — Structure the findings** into:
+  - **Entities**: people, organizations, places (one note per entity under `shared/entities/`)
+  - **Sources**: documents, URLs, interviews (one note per source under `shared/sources/`)
+  - **Methodology**: techniques used, one note per technique under `shared/methodology/` (only if novel)
+  - **Project notes**: if {{ project }} is set, per-project notes under `investigations/{{ project }}/`
+
+  **Step 2 — For each note**:
+
+  Frontmatter template:
+  ```yaml
+  ---
+  type: [entity | source | methodology | investigation-note]
+  name: [canonical name]
+  aliases: [list of alternates]
+  tags: [tag1, tag2]
+  created: YYYY-MM-DD
+  updated: YYYY-MM-DD
+  project: [{{ project }} or "" if shared]
+  confidence: [verified | partial | unverified]
+  ---
+  ```
+
+  Body: concise. Wiki-links to related entities via `[[entity-name]]`. Evidence citations inline.
+
+  **Step 3 — Write via obsidian CLI**:
+
+  For each note:
+  ```sh
+  obsidian vault="{{ vault_name }}" create path="<path>/<slug>.md" content="<frontmatter + body>"
+  ```
+
+  If the note exists, use `obsidian append` with a dated section instead of overwriting.
+
+  **Step 4 — Report back**:
+  - List every file created / updated.
+  - Flag any entities that couldn't be fully resolved (ambiguous names, no confirming source).
+
+  **Rules**:
+  - Do not write to `consulting/` or `journals/` vaults — those are off-limits unless explicitly targeted.
+  - Require Obsidian app to be running; if CLI fails, report clearly and write to a fallback dir ({{ vault_name }}-pending/) that the user can import later.
+  - Never fabricate entity details. If a fact is missing, leave the field blank rather than guessing.
+
+activities:
+  - "Sync these findings to the {{ vault_name }} vault"
+  - "Write these entities and sources into investigations/{{ project }}/"
+  - "Update the shared/entities for {{ entity_name }}"

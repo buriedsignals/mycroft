@@ -1,0 +1,16 @@
+{
+  "name": "fireworks-qwen36plus",
+  "engine": "openai",
+  "display_name": "Fireworks — Qwen 3.6 Plus (ZDR)",
+  "description": "Fireworks AI with Qwen 3.6 Plus — open-weight Qwen by Alibaba, US-hosted, Zero Data Retention. 1M context window. Primary default frontier provider.",
+  "api_key_env": "FIREWORKS_API_KEY",
+  "base_url": "https://api.fireworks.ai/inference/v1/chat/completions",
+  "models": [
+    {
+      "name": "accounts/fireworks/models/qwen3p6-plus",
+      "context_limit": 1048576
+    }
+  ],
+  "supports_streaming": true,
+  "requires_auth": true
+}

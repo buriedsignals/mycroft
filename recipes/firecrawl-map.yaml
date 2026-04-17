@@ -1,0 +1,39 @@
+version: "1.0.0"
+title: "Firecrawl — map domain"
+description: "Discover all accessible URLs on a domain. Useful when investigating a site's full coverage of a topic or scoping a scrape."
+
+instructions: |
+  Use firecrawl map to enumerate URLs on a domain. Do not recursively scrape from the map — use separate recipes for that.
+
+parameters:
+  - key: domain
+    input_type: string
+    requirement: required
+    description: "Root URL of the domain to map (e.g. https://example.org)"
+  - key: search
+    input_type: string
+    requirement: optional
+    description: "Filter URLs by keyword (firecrawl's built-in filter)"
+    default: ""
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Map URLs on {{ domain }}.
+
+  Run:
+  ```sh
+  {% if search %}firecrawl map {{ domain }} --search "{{ search }}"{% else %}firecrawl map {{ domain }}{% endif %}
+  ```
+
+  Return the discovered URL list organised by apparent category (if URL structure makes it obvious: `/news/`, `/about/`, `/docs/`, etc.).
+
+  Report:
+  - Total URL count
+  - Breakdown by path prefix
+  - Notable paths worth scraping (e.g. `/press-releases/`, `/board-minutes/`)
+  - Paths that look like they host structured civic data
+
+  Do NOT auto-scrape all URLs — surface the map for the journalist to decide.

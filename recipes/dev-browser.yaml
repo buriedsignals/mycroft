@@ -1,0 +1,58 @@
+version: "1.0.0"
+title: "Dev browser"
+description: "Interactive browser-based source acquisition — court records, corporate registries, paywalled pages, government portals requiring auth. Produces timestamped screenshots as evidence."
+
+instructions: |
+  Use the dev-browser CLI (buried_signals/kit) to drive a real browser session the journalist can interact with when authentication or form submission is needed.
+  Every capture is archived with a hash + timestamp for chain-of-custody.
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "Starting URL (the journalist will navigate from there)"
+  - key: save_path
+    input_type: string
+    requirement: required
+    description: "Directory to save screenshots + archives (typically inside your investigation folder)"
+  - key: mode
+    input_type: select
+    requirement: optional
+    description: "Mode"
+    default: "interactive"
+    options: ["interactive", "headless-capture"]
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Launch the dev-browser to acquire content from {{ url }} ({{ mode }} mode).
+
+  Run:
+  ```sh
+  dev-browser open --url "{{ url }}" --save "{{ save_path }}" --mode "{{ mode }}"
+  ```
+
+  **Interactive mode**: a browser window opens. The journalist:
+  - Navigates, authenticates, clicks through forms as needed
+  - Presses Cmd+Shift+S (or equivalent) to capture a page snapshot
+  - Each capture writes: HTML, PNG screenshot, metadata JSON (URL, timestamp, SHA-256), to {{ save_path }}
+
+  **Headless-capture mode**: fetch once, no interaction; useful when you just need the evidence record of an already-public page but want chain-of-custody.
+
+  After the session ends, report:
+  - Number of captures
+  - File paths
+  - Any pages that required authentication (flag for the journalist)
+  - Any captures that appear to differ from the public version (possible state-specific rendering)
+
+  **Rules**:
+  - This tool is for evidence collection, not bulk scraping. For bulk, use firecrawl-batch.
+  - Never store passwords — the journalist enters them in the browser, they stay in the browser session, they don't hit our logs.
+  - Flag any page that sets tracking cookies that might identify the journalist's session.
+
+activities:
+  - "Capture evidence from {{ url }}"
+  - "Walk me through authenticating to this portal"
+  - "Save the current page with timestamp"

@@ -1,0 +1,47 @@
+version: "1.0.0"
+title: "Firecrawl — batch scrape"
+description: "Scrape N URLs in parallel (respects firecrawl rate limits). Useful for source comparison, beat sweeps, or bulk extraction."
+
+instructions: |
+  Batch scrape via firecrawl. Respect rate limits; retry with backoff on 429.
+
+parameters:
+  - key: urls
+    input_type: string
+    requirement: required
+    description: "Newline-separated URLs, or a path to a file with one URL per line"
+  - key: format
+    input_type: select
+    requirement: optional
+    description: "Output format"
+    default: "markdown"
+    options: ["markdown", "html", "links"]
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Batch scrape these URLs:
+
+  ```
+  {{ urls }}
+  ```
+
+  If `{{ urls }}` is a path, read the file first. Normalize to one URL per line.
+
+  Run each via `firecrawl scrape <url> --format {{ format }}`. Parallelize with `xargs -P 4` (max 4 concurrent to respect rate limits):
+
+  ```sh
+  echo "<URLS>" | xargs -P 4 -I {} sh -c 'firecrawl scrape {} --format {{ format }} > /tmp/fc-$(echo {} | md5 | cut -c1-8).md; echo "DONE: {}"'
+  ```
+
+  For each URL, report:
+  - URL
+  - Success / failed (with error)
+  - Byte count
+  - First 200 chars of content (for quick inspection)
+
+  Return a summary table + saved file paths. Do NOT dump full content into the conversation for every URL — refer the journalist to the files.
+
+  On rate-limit (429), back off 30s and retry once.

@@ -1,0 +1,45 @@
+version: "1.0.0"
+title: "Apify social — Instagram comments"
+description: "Scrape comments from a specific Instagram post. Uses apify/instagram-comment-scraper."
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "Instagram POST URL (not profile) — e.g. https://www.instagram.com/p/ABC123/"
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max comments (capped 500; default 50 for cost control at ~$0.0023/comment)"
+    default: 50
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape Instagram comments on: {{ url }} (up to {{ max_items }}).
+
+  **Requires**: `APIFY_API_TOKEN`.
+  **Validate**: url must match /p/ or /reel/ — if it's a profile URL, stop and tell the journalist to use `apify-social/instagram.yaml` instead.
+
+  Run:
+  ```sh
+  CAP=$(( {{ max_items }} > 500 ? 500 : {{ max_items }} ))
+  curl -sS -X POST "https://api.apify.com/v2/acts/apify~instagram-comment-scraper/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"directUrls\": [\"{{ url }}\"], \"resultsLimit\": $CAP}" \
+    -o /tmp/apify-ig-comments-$$.json
+
+  jq 'length' /tmp/apify-ig-comments-$$.json
+  ```
+
+  Normalize: platform=instagram-comments, post_url (the target), comment_id, author_handle, timestamp, text, likes.
+
+  Return count + sample of 5 comments inline (author + first 200 chars) + file path.
+
+  Cost: ~$0.0023 per comment. Warn explicitly if max_items > 200.
+
+activities:
+  - "Scrape 50 comments from this Instagram post"
+  - "Get all comments (up to 500)"

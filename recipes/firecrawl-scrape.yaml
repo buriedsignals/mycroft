@@ -1,0 +1,31 @@
+version: "1.0.0"
+title: "Firecrawl — scrape"
+description: "Scrape a single URL to clean markdown via the firecrawl CLI. Preferred primitive for fetching a known page."
+
+instructions: |
+  Use the firecrawl CLI directly. Never WebFetch, curl, or any other browser tool.
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "The URL to scrape"
+  - key: format
+    input_type: select
+    requirement: optional
+    description: "Output format"
+    default: "markdown"
+    options: ["markdown", "html", "links"]
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape {{ url }} and return {{ format }}.
+
+  Run: `firecrawl scrape {{ url }} --format {{ format }}`
+
+  Output verbatim — do NOT summarize unless asked. The caller can request summary separately.
+
+  If firecrawl errors (paywall, 403, timeout), report the error clearly with the command that failed.

@@ -1,0 +1,76 @@
+version: "1.0.0"
+title: "Source verify"
+description: "Apply SIFT to a single source: who's behind it, track record, funding, interest, and how its claims stack up against independent reporting."
+
+instructions: |
+  Load the Mycroft journalism instructions as session context.
+  This is NOT fact-checking a draft (use fact-check.yaml for that). This is evaluating
+  ONE source's credibility for use in reporting.
+
+parameters:
+  - key: source
+    input_type: string
+    requirement: required
+    description: "URL, outlet name, author handle, or organization name to investigate"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Investigate and assess this source for journalistic use: **{{ source }}**
+
+  Apply SIFT rigorously; each step uses firecrawl for web evidence.
+
+  **1. Stop** — note first impressions without accepting them.
+
+  **2. Investigate the source**:
+  - Who owns / runs it (company filings, about page, Wikipedia, DBpedia)
+  - Funding / business model (advertising, paywall, grants, state-backed, PR arm)
+  - Editorial track record: major corrections, retractions, known misattributions
+  - Political / ideological orientation if evident (cite evidence, not vibes)
+  - `firecrawl search "<source> owner"`, `firecrawl search "<source> funding"`, `firecrawl search "<source> retraction"`
+
+  **3. Find better coverage**:
+  - Find 2-3 independent outlets covering the same beats as {{ source }}.
+  - For a recent notable claim by {{ source }}, check what other outlets said.
+
+  **4. Trace claims to origin**:
+  - Pick one recent quantitative or sourced claim from {{ source }}.
+  - Trace back to the primary source (original study, document, press release).
+  - Did {{ source }} represent the original accurately?
+
+  **Output** as markdown:
+
+  ```markdown
+  # Source assessment: {{ source }}
+
+  **Type**: [outlet / person / org / aggregator / social]
+  **Ownership**: [fact + citation]
+  **Funding**: [fact + citation]
+  **Editorial track record**: [verified / mixed / concerns / unknown]
+
+  ## Strengths
+  - [specific, cited]
+
+  ## Weaknesses
+  - [specific, cited]
+
+  ## Usage recommendation
+  [one of: primary source OK / secondary source OK / attribute carefully / use only with independent confirmation / avoid]
+
+  **Rationale**: [2-3 sentences grounded in findings above]
+
+  ## Evidence trail
+  [bulleted list of URLs + what each supports]
+  ```
+
+  **Rules**:
+  - Do not conclude from vibes. Every qualitative judgement needs a cited fact.
+  - If evidence is thin, say so — "insufficient public evidence to assess X".
+  - Never use WebFetch/curl — firecrawl only.
+
+activities:
+  - "Verify {{ source }} as a journalism source"
+  - "What's the funding/ownership of {{ source }}?"
+  - "Has {{ source }} had major retractions?"

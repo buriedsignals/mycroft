@@ -1,0 +1,44 @@
+version: "1.0.0"
+title: "Apify social — Facebook profile/page posts"
+description: "Scrape posts from a Facebook profile or page. Uses cleansyntax/facebook-profile-posts-scraper."
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "Facebook profile or page URL"
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max posts (capped 100)"
+    default: 50
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape Facebook: {{ url }} (up to {{ max_items }}).
+
+  **Requires**: `APIFY_API_TOKEN`.
+
+  Run:
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  curl -sS -X POST "https://api.apify.com/v2/acts/cleansyntax~facebook-profile-posts-scraper/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"endpoint\": \"profile_posts_by_url\", \"urls_text\": \"{{ url }}\", \"max_posts\": $CAP}" \
+    -o /tmp/apify-fb-$$.json
+
+  jq 'length' /tmp/apify-fb-$$.json
+  ```
+
+  Normalize: platform=facebook, handle (from URL), post_url, timestamp, text, reactions, comments, shares, media_urls[].
+
+  Return count + top 5 inline + file path.
+
+  Cost: variable (~$0.01-0.03 per post).
+
+activities:
+  - "Scrape Facebook page posts from {{ url }}"
+  - "Last 20 posts only"

@@ -1,0 +1,20 @@
+{
+  "name": "together-qwen",
+  "engine": "openai",
+  "display_name": "Together AI — Qwen (ZDR)",
+  "description": "Together AI with open-weight Qwen models. Zero Data Retention. Alternative to Fireworks; same ZDR posture, different scale/pricing profile.",
+  "api_key_env": "TOGETHER_API_KEY",
+  "base_url": "https://api.together.xyz/v1/chat/completions",
+  "models": [
+    {
+      "name": "Qwen/Qwen2.5-72B-Instruct-Turbo",
+      "context_limit": 131072
+    },
+    {
+      "name": "Qwen/Qwen2.5-Coder-32B-Instruct",
+      "context_limit": 32768
+    }
+  ],
+  "supports_streaming": true,
+  "requires_auth": true
+}

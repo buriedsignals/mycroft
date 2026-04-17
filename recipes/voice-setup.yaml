@@ -1,0 +1,86 @@
+version: "1.0.0"
+title: "Voice setup (TTS + STT)"
+description: "Configure Goose to read briefings aloud (TTS) and accept dictation (STT). Defaults to free/local backends — Edge for TTS, local whisper for STT."
+
+instructions: |
+  One-time setup for voice features. Writes config to ~/.config/goose/voice.yaml.
+  Opt-in; not required for any other recipe.
+
+parameters:
+  - key: tts_provider
+    input_type: select
+    requirement: optional
+    description: "TTS provider"
+    default: "edge"
+    options: ["edge", "elevenlabs", "openai", "mistral", "neutts", "off"]
+  - key: stt_provider
+    input_type: select
+    requirement: optional
+    description: "STT provider"
+    default: "local"
+    options: ["local", "openai", "mistral", "off"]
+  - key: tts_voice
+    input_type: string
+    requirement: optional
+    description: "Voice ID (edge default: en-US-AriaNeural; elevenlabs default: pNInz6obpgDQGcFmaJgB)"
+    default: "en-US-AriaNeural"
+  - key: record_key
+    input_type: string
+    requirement: optional
+    description: "Keyboard shortcut to trigger dictation (e.g. ctrl+b)"
+    default: "ctrl+b"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Configure voice. Write to `~/.config/goose/mycroft-voice.yaml`:
+
+  ```yaml
+  tts:
+    provider: {{ tts_provider }}
+    edge:
+      voice: "{{ tts_voice }}"
+    elevenlabs:
+      voice_id: "{{ tts_voice }}"
+      model_id: "eleven_multilingual_v2"
+    openai:
+      model: "gpt-4o-mini-tts"
+      voice: "alloy"
+    mistral:
+      model: "voxtral-mini-tts-2603"
+    neutts:
+      model: "neuphonic/neutts-air-q4-gguf"
+      device: "cpu"
+
+  stt:
+    enabled: {{ stt_provider != "off" }}
+    provider: {{ stt_provider }}
+    local:
+      model: "base"
+    openai:
+      model: "whisper-1"
+    mistral:
+      model: "voxtral-mini-latest"
+
+  voice:
+    record_key: "{{ record_key }}"
+    max_recording_seconds: 120
+    silence_threshold: 200
+    silence_duration: 3.0
+  ```
+
+  After writing, print a "voice configured" summary:
+  - TTS: {{ tts_provider }} ({{ tts_voice }})
+  - STT: {{ stt_provider }}
+  - Record key: {{ record_key }}
+
+  If elevenlabs / openai / mistral selected: remind the journalist to set the respective API key in their shell rc (ELEVENLABS_API_KEY, OPENAI_API_KEY, MISTRAL_API_KEY) — the pack does not ship these.
+
+  For STT local: confirm whisper is installed (`whisper --help`) or prompt to install via `pip install openai-whisper`.
+
+activities:
+  - "Configure voice with free defaults"
+  - "Switch TTS to elevenlabs"
+  - "Disable voice entirely"

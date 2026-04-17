@@ -1,0 +1,81 @@
+version: "1.0.0"
+title: "Fact-check (SIFT)"
+description: "Run SIFT methodology against a draft article. Returns per-claim verdicts with cited sources."
+
+instructions: |
+  Load the Mycroft journalism instructions (ethics, SIFT, no fabrication) as session context.
+  Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
+  Do not rewrite the draft; do not moralise. Report, let the journalist decide.
+
+parameters:
+  - key: draft_path
+    input_type: string
+    requirement: optional
+    description: "Path to the draft file (markdown, text, docx)"
+  - key: draft_text
+    input_type: string
+    requirement: optional
+    description: "Draft text inline (use when draft is short and pastable)"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access — reads the draft, invokes firecrawl CLI for verification"
+
+prompt: |
+  SIFT fact-check.
+
+  Apply the SIFT framework:
+    - **S**top — don't accept claims at face value
+    - **I**nvestigate the source — who, what track record, what interest
+    - **F**ind better coverage — more authoritative or independent confirmation
+    - **T**race claims to original context — did the source accurately represent the original?
+
+  Draft source:
+  {% if draft_path %}Read the file at `{{ draft_path }}`.{% endif %}
+  {% if draft_text %}
+  ```
+  {{ draft_text }}
+  ```
+  {% endif %}
+
+  Process:
+
+  1. Extract every factual claim: numbers, dates, quotes, named individuals, events, attributions, causal assertions.
+
+  2. For each claim, assign a verdict from this closed set:
+     - **verified** — confirmed by 2+ authoritative independent sources (cite all)
+     - **partially verified** — one source confirms, others silent; or partial aspects confirmed
+     - **unverified** — not found in available sources; flag as needs reporting
+     - **contradicted** — a more authoritative source disagrees (cite the contradiction explicitly)
+     - **mischaracterized** — source exists but the claim misrepresents it (cite original + explain the gap)
+
+  3. Use the firecrawl CLI for verification:
+     - `firecrawl search "query"` for discovery
+     - `firecrawl scrape <url>` for specific pages
+     - Never use WebFetch, curl, or any other browser tool.
+
+  4. Output as a markdown table:
+
+     | # | Claim | Verdict | Primary source | Notes |
+     |---|-------|---------|----------------|-------|
+     | 1 | ... | verified | https://... | ... |
+
+  5. End with a summary block:
+     - Verdict counts (verified / partially / unverified / contradicted / mischaracterized)
+     - Claims needing additional reporting (list with specific next steps)
+     - Strongest-supported claim(s)
+     - Weakest/most-at-risk claim(s)
+
+  Rules:
+  - Do not rewrite the draft.
+  - Do not moralise.
+  - If you cannot verify a claim and cannot find a contradiction, verdict is `unverified` — that is not a failure, it is the correct verdict.
+  - Never fabricate sources.
+
+activities:
+  - "message: **SIFT fact-check ready.** Paste a draft or point to a file. I'll return per-claim verdicts."
+  - "Fact-check my latest draft"
+  - "Verify just the numeric claims in this draft"
+  - "Re-run after I update the sources"
+  - "Focus on quotes and attributions only"

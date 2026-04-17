@@ -1,0 +1,103 @@
+version: "1.0.0"
+title: "Morning brief"
+description: "Daily digest pulled from X bookmarks (ft), AgentMail inbox, and recent changes in your intelligence + knowledge vaults. Writes a dated note into your vault."
+
+instructions: |
+  Load the Mycroft journalism instructions as session context.
+  Aggregate overnight inputs. Rank by editorial relevance to the journalist's beat (from USER.md / context/beat-notes.md).
+  Cite every item. No fabrication.
+  Write the result to {{ vault_path }}/drafts/morning-brief-YYYY-MM-DD.md via the obsidian CLI.
+
+parameters:
+  - key: vault_path
+    input_type: string
+    requirement: required
+    description: "Absolute path to your primary vault (intelligence or knowledge)"
+    default: "~/Documents/intelligence"
+  - key: vault_name
+    input_type: string
+    requirement: required
+    description: "Obsidian vault name (used by `obsidian vault=<name>`). E.g. 'intelligence', 'knowledge'."
+    default: "intelligence"
+  - key: beat
+    input_type: string
+    requirement: optional
+    description: "Short beat descriptor to rank by (falls back to USER.md if empty)"
+    default: ""
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access for CLI invocations and vault writes"
+
+prompt: |
+  Build today's morning brief. Current date is today's date in the journalist's timezone.
+
+  **Inputs** (gather in parallel; skip any that are unavailable):
+
+  1. **X/Twitter bookmarks via ft CLI** (optional):
+     - Run `ft sync` to refresh (if the command succeeds within 20s; otherwise skip — not blocking).
+     - Then `ft list --since "24 hours ago" --json` (or equivalent) to get newly bookmarked items.
+     - If `ft` is not installed or fails, note this in the brief's "Sources checked" section and proceed.
+
+  2. **AgentMail inbox** (optional, needs AGENTMAIL_API_KEY):
+     - `curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" https://api.agentmail.to/v1/inboxes/default/messages?unread=true&limit=25`
+     - Extract headlines + gist per message. Classify: newsletter / alert / relevant-to-beat / spam.
+     - Do NOT archive or mark read — read-only pass.
+     - If key is missing, note it and skip.
+
+  3. **Vault recent changes**:
+     - `find {{ vault_path }} -type f -name '*.md' -mtime -1 -not -path '*/.obsidian/*'` for files changed in the last 24h.
+     - For each, read the diff of content (most recent N lines or first H1 + first paragraph) to see what changed.
+
+  4. **Live web supplement** (only if beat is explicit):
+     - `firecrawl search "<beat> news past 24h"` — optional 1-2 queries max to catch overnight breaking news.
+     - NEVER use WebFetch, curl for pages, or apify-rag.
+
+  **Synthesize**:
+
+  Produce a markdown note with this structure:
+
+  ```markdown
+  # Morning brief — YYYY-MM-DD
+
+  **Theme of the day**: [one sentence]
+
+  ## Top items
+  1. **[Headline]**
+     - Source: [X / newsletter / vault / web] — [citation: ft id / AgentMail subject / vault path / URL]
+     - Why it matters: [1 sentence]
+     - Summary: [2 sentences]
+
+  [... up to 10 items, ranked by relevance]
+
+  ## Story angles
+  - [angle — what to pursue and why]
+
+  ## Sources checked
+  - ft: [status, count]
+  - AgentMail: [status, count]
+  - Vault ({{ vault_path }}): [status, count]
+  - Web (firecrawl): [if queried, list queries]
+  ```
+
+  **Write to vault** using obsidian CLI (requires Obsidian app running):
+
+  ```sh
+  obsidian vault="{{ vault_name }}" create path="drafts/morning-brief-$(date +%F).md" content="<escaped markdown here>"
+  ```
+
+  If obsidian CLI is missing or Obsidian is not running, fall back to writing the file directly:
+  `{{ vault_path }}/drafts/morning-brief-$(date +%F).md`.
+
+  **Rules**:
+  - Do not fabricate facts, quotes, or links.
+  - Flag any unverified claim with `unverified:`.
+  - Prioritise: (1) timely, (2) relevant to the journalist's beat, (3) actionable.
+  - Exclude items from `consulting/` or `journals/` vaults entirely.
+
+activities:
+  - "message: **Morning brief ready.** Pulls from X bookmarks, AgentMail, and recent vault changes."
+  - "Run today's morning brief"
+  - "Run brief with emphasis on {{ beat }}"
+  - "Show me just the AgentMail digest"

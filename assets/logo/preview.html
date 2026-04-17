@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mycroft — logo reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 2rem; background: #fff; color: #1a1a1a; line-height: 1.5; }
+  h1 { margin: 0 0 .25rem; font-size: 1.5rem; }
+  .sub { color: #666; margin: 0 0 1.5rem; font-size: .95rem; }
+  h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; margin: 2rem 0 .75rem; font-weight: 600; }
+  .card { border: 1px solid #e1e4e8; border-radius: 8px; overflow: hidden; margin-bottom: 1rem; }
+  .card .label { padding: .65rem .95rem; background: #f6f8fa; border-bottom: 1px solid #e1e4e8; font-size: .88rem; font-weight: 600; }
+  .mode { padding: 1.3rem; display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+  .mode.light { background: #ffffff; color: #1a1a1a; }
+  .mode.dark  { background: #0d1117; color: #e8ecf1; }
+  .mode.paper { background: #f5efe3; color: #1a1a1a; }
+  .mode.accent{ background: #0969da; color: #ffffff; }
+  .sizes { display: flex; align-items: flex-end; gap: 1.25rem; }
+  .size { display: flex; flex-direction: column; align-items: center; gap: .35rem; }
+  .size span { font-size: .68rem; opacity: .6; font-family: ui-monospace, monospace; }
+  .imfell { font-family: 'IM Fell English', 'Libre Caslon Text', 'Hoefler Text', Georgia, serif; }
+  svg.logo { display: block; fill: currentColor; }
+  svg.logo text { fill: currentColor; }
+  .footer { margin-top: 2rem; color: #666; font-size: .85rem; }
+  .footer code { background: #f6f8fa; padding: .1em .35em; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<h1>Mycroft — IM Fell English (locked)</h1>
+<p class="sub">Logotype only. Not used for reading type or headers — see <code>index.html</code> which uses a system-font stack for all non-logo text.</p>
+
+<h2>Mark — the capital M alone (favicon + tight spaces)</h2>
+<section class="card">
+  <div class="label">At favicon sizes</div>
+  <div class="mode light">
+    <div class="sizes">
+      <div class="size"><svg class="logo" width="128" height="128" viewBox="0 0 100 100"><text class="imfell" x="50" y="80" text-anchor="middle" font-size="96">M</text></svg><span>128</span></div>
+      <div class="size"><svg class="logo" width="64"  height="64"  viewBox="0 0 100 100"><text class="imfell" x="50" y="80" text-anchor="middle" font-size="96">M</text></svg><span>64</span></div>
+      <div class="size"><svg class="logo" width="32"  height="32"  viewBox="0 0 100 100"><text class="imfell" x="50" y="80" text-anchor="middle" font-size="96">M</text></svg><span>32</span></div>
+      <div class="size"><svg class="logo" width="16"  height="16"  viewBox="0 0 100 100"><text class="imfell" x="50" y="80" text-anchor="middle" font-size="96">M</text></svg><span>16</span></div>
+    </div>
+  </div>
+</section>
+
+<h2>Wordmark across backgrounds</h2>
+<section class="card">
+  <div class="label">"Mycroft" — as used in the site header</div>
+  <div class="mode light">
+    <svg class="logo" width="420" height="90" viewBox="0 0 420 90"><text class="imfell" x="210" y="66" text-anchor="middle" font-size="68" letter-spacing="0.005em">Mycroft</text></svg>
+  </div>
+  <div class="mode paper">
+    <svg class="logo" width="420" height="90" viewBox="0 0 420 90"><text class="imfell" x="210" y="66" text-anchor="middle" font-size="68" letter-spacing="0.005em">Mycroft</text></svg>
+  </div>
+  <div class="mode dark">
+    <svg class="logo" width="420" height="90" viewBox="0 0 420 90"><text class="imfell" x="210" y="66" text-anchor="middle" font-size="68" letter-spacing="0.005em">Mycroft</text></svg>
+  </div>
+  <div class="mode accent">
+    <svg class="logo" width="420" height="90" viewBox="0 0 420 90"><text class="imfell" x="210" y="66" text-anchor="middle" font-size="68" letter-spacing="0.005em">Mycroft</text></svg>
+  </div>
+</section>
+
+<p class="footer">
+  Source files: <code>mycroft-imfell-M.svg</code> (mark), <code>mycroft-imfell-wordmark.svg</code> (wordmark). Both use <code>currentColor</code> so they inherit from the surrounding text.
+</p>
+
+</body>
+</html>

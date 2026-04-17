@@ -1,0 +1,20 @@
+{
+  "name": "local-llama-server",
+  "engine": "openai",
+  "display_name": "Local llama-server (Mycroft Qwen journalist, sovereign)",
+  "description": "Points at a llama-server running a Mycroft Qwen journalist fine-tune (abliterated, GGUF). Cross-platform — runs on macOS (Apple Silicon or Intel), Linux, Windows. Zero network egress. Start with: `llama-server -m <path-to-gguf> -c 32768 --port 8080`. Models downloaded from Hugging Face — see the 9B for most hardware, 35B for 64GB+ machines.",
+  "api_key_env": "LLAMA_SERVER_API_KEY",
+  "base_url": "http://127.0.0.1:8080/v1/chat/completions",
+  "models": [
+    {
+      "name": "qwen3.5-9b-abliterated-journalist",
+      "context_limit": 32768
+    },
+    {
+      "name": "qwen3.5-35b-abliterated-journalist",
+      "context_limit": 32768
+    }
+  ],
+  "supports_streaming": true,
+  "requires_auth": false
+}

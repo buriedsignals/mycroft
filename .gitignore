@@ -1,0 +1,25 @@
+# Session archive — reference material, not part of the pack
+archive/
+
+# macOS
+.DS_Store
+
+# Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
+
+# Editor scratch
+.vscode/
+.idea/
+*.swp
+*~
+
+# Scratch
+.firecrawl/
+.claude/

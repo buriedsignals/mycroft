@@ -1,0 +1,58 @@
+version: "1.0.0"
+title: "Apify social — select actor"
+description: "Router. Given a natural-language intent (platform + target), dispatches to the correct apify-social/{platform} recipe."
+
+instructions: |
+  You are a curation-aware router over six Apify actors. The journalist gives an intent in plain language;
+  you identify (a) which platform and (b) which exact input shape, then run the matching recipe.
+
+parameters:
+  - key: intent
+    input_type: string
+    requirement: required
+    description: "What the journalist wants, e.g. 'get recent posts from @somehandle on Instagram' or 'scrape TikTok user koko'"
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Journalist intent: **{{ intent }}**
+
+  Decide the target platform + operation from this menu:
+
+  | Platform | Operation | Recipe |
+  |---|---|---|
+  | Instagram | profile posts | `apify-social/instagram.yaml` |
+  | Instagram | post comments | `apify-social/instagram-comments.yaml` |
+  | X / Twitter | profile tweets OR single conversation OR keyword search | `apify-social/x.yaml` |
+  | Facebook | profile/page posts | `apify-social/facebook.yaml` |
+  | TikTok | user videos | `apify-social/tiktok.yaml` |
+  | LinkedIn | post search | `apify-social/linkedin.yaml` |
+
+  **Process**:
+
+  1. Identify platform from the intent (handle prefix, URL substring, explicit platform name).
+  2. Identify operation (profile / post-specific / search).
+  3. Normalize the input:
+     - Handles like `@someone` or `someone` → full profile URL
+     - Post URLs → keep as-is
+     - Search keywords → bare string
+  4. Invoke the matching recipe:
+     ```
+     goose run --recipe apify-social/<platform>.yaml --params url="<normalized>" --params max_items=<reasonable_default>
+     ```
+  5. Report back with: the platform/recipe chosen, the normalized input, and the results.
+
+  **If the intent is ambiguous** (e.g. "Scrape Koko" — could be user or keyword, on which platform):
+  - Do NOT guess. Ask one clarifying question.
+  - Surface the options menu.
+
+  **Rules**:
+  - Respect per-actor cost hints in the child recipe. Do not override max_items upward without explicit user ask.
+  - Never run a recipe for a platform the journalist didn't name.
+
+activities:
+  - "Scrape Instagram profile @handle"
+  - "Get recent tweets from a user"
+  - "Monitor comments on this Instagram post"

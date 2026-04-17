@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mycroft — AI for investigative journalism</title>
+<meta name="description" content="An opinionated AI assistant for investigative journalists. Open-weight models, zero data retention, local-capable, $6/month. Morning briefs, fact-checks, vault Q&amp;A, investigations.">
+<meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+
+<!-- Open Graph / Twitter -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mycroft — AI for investigative journalism">
+<meta property="og:description" content="An opinionated AI assistant for investigative journalists. Open-weight models, zero data retention, local-capable, ~$6/month.">
+<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
+<meta property="og:url" content="https://mycroft.buriedsignals.com/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mycroft — AI for investigative journalism">
+<meta name="twitter:description" content="Open-weight models, zero data retention, local-capable. ~$6/month or $0 local.">
+<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
+
+<!-- CSP (static hosting — inline styles + inline scripts accepted; Google Fonts allow-listed) -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
+
+<!-- Favicons -->
+<link rel="icon" type="image/svg+xml" href="assets/logo/mycroft-imfell-M.svg">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fg: #1a1a1a; --muted: #56606e; --bg: #ffffff; --bg-2: #f6f8fa; --border: #d1d5da;
+    --accent: #0969da; --accent-2: #033d8b; --amber: #b58900; --ok: #2f7a35;
+    --radius: 8px; --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #e8ecf1; --muted: #8891a0; --bg: #0d1117; --bg-2: #161b22; --border: #30363d;
+      --accent: #7cb7ff; --accent-2: #a6cbff; --amber: #d9a441; --ok: #6ebf6e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 16px; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0; background: var(--bg); color: var(--fg); line-height: 1.6;
+    text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover, a:focus-visible { text-decoration: underline; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Skip link for screen readers + keyboard users */
+  .skip { position: absolute; top: -40px; left: 0; background: var(--fg); color: var(--bg); padding: .5rem 1rem; z-index: 100; }
+  .skip:focus { top: 0; }
+
+  /* Layout */
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 1.5rem; }
+  header.site { border-bottom: 1px solid var(--border); }
+  header.site .wrap { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; padding-bottom: 1rem; }
+  header.site a.brand { color: var(--fg); display: inline-flex; align-items: center; line-height: 0; }
+  header.site a.brand svg { height: 1.75rem; width: auto; display: block; }
+  header.site nav { display: flex; gap: 1.5rem; align-items: center; }
+  header.site nav a { color: var(--muted); font-size: .92rem; font-weight: 500; }
+  header.site nav a.cta { background: var(--fg); color: var(--bg); padding: .5rem 1rem; border-radius: 6px; }
+  header.site nav a.cta:hover { text-decoration: none; background: var(--accent); }
+
+  /* Hero */
+  .hero { padding: 4rem 0 3rem; }
+  .hero .eyebrow { color: var(--muted); font-size: .9rem; letter-spacing: .04em; text-transform: uppercase; font-weight: 600; margin-bottom: 1rem; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); line-height: 1.1; margin: 0 0 1rem; letter-spacing: -.02em; font-weight: 700; }
+  .hero .lede { font-size: clamp(1.1rem, 2vw, 1.35rem); color: var(--muted); max-width: 42rem; margin: 0 0 2rem; line-height: 1.5; }
+  .hero .ctas { display: flex; flex-wrap: wrap; gap: .75rem; }
+  .btn { display: inline-block; padding: .8rem 1.5rem; border-radius: 6px; font-weight: 600; font-size: .98rem; border: 1px solid transparent; cursor: pointer; text-decoration: none; }
+  .btn.primary { background: var(--fg); color: var(--bg); }
+  .btn.primary:hover { background: var(--accent); text-decoration: none; }
+  .btn.secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+  .btn.secondary:hover { border-color: var(--fg); text-decoration: none; }
+  .hero .meta { margin-top: 1.5rem; font-size: .88rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 1.25rem; }
+  .hero .meta strong { color: var(--fg); }
+
+  /* Section headings */
+  section { padding: 3rem 0; border-top: 1px solid var(--border); }
+  section h2 { font-size: 1.75rem; margin: 0 0 1.5rem; letter-spacing: -.01em; font-weight: 700; }
+  section > .wrap > p.lead { font-size: 1.05rem; color: var(--muted); max-width: 42rem; margin: 0 0 2rem; }
+
+  /* Day cards */
+  .day-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+  .day-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+  .day-card .time { color: var(--accent); font-weight: 700; font-size: .85rem; letter-spacing: .04em; text-transform: uppercase; display: block; margin-bottom: .5rem; }
+  .day-card h3 { margin: 0 0 .5rem; font-size: 1.15rem; font-weight: 600; }
+  .day-card p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .day-card code { background: var(--bg); padding: .1em .35em; border-radius: 3px; font-size: .86em; color: var(--fg); border: 1px solid var(--border); }
+
+  /* Privacy list */
+  .privacy-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; list-style: none; padding: 0; margin: 0; }
+  .privacy-list li { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.1rem 1.25rem; }
+  .privacy-list li strong { display: block; font-size: 1rem; margin-bottom: .25rem; }
+  .privacy-list li span { color: var(--muted); font-size: .92rem; }
+
+  /* Install steps */
+  .steps { counter-reset: step; list-style: none; padding: 0; margin: 0 0 2rem; }
+  .steps li {
+    counter-increment: step;
+    padding: 1rem 1.25rem 1rem 3.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: .75rem;
+    position: relative;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 1rem; top: 1rem;
+    width: 1.75rem; height: 1.75rem; border-radius: 50%;
+    background: var(--fg); color: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .9rem;
+  }
+  .steps li strong { display: block; font-size: 1.02rem; margin-bottom: .25rem; }
+  .steps li span { color: var(--muted); font-size: .92rem; }
+  .steps li code { background: var(--bg); padding: .1em .35em; border-radius: 3px; font-size: .86em; border: 1px solid var(--border); }
+
+  /* Plugins */
+  .plugins-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+  .plugin-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; position: relative; }
+  .plugin-card .badge { display: inline-block; font-size: .72rem; padding: .1em .5em; border-radius: 3px; font-weight: 500; margin-bottom: .5rem; }
+  .plugin-card .badge.now { background: var(--ok); color: #fff; }
+  .plugin-card .badge.soon { background: var(--amber); color: #fff; }
+  .plugin-card h3 { margin: 0 0 .35rem; font-size: 1.1rem; font-weight: 600; }
+  .plugin-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+  /* CTA footer section */
+  .cta-footer { text-align: center; padding: 4rem 0 5rem; }
+  .cta-footer h2 { margin-bottom: 1rem; }
+  .cta-footer p { color: var(--muted); font-size: 1.05rem; margin: 0 auto 2rem; max-width: 32rem; }
+
+  /* Footer */
+  footer.site { border-top: 1px solid var(--border); padding: 2rem 0; color: var(--muted); font-size: .88rem; }
+  footer.site .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; }
+  footer.site a { color: var(--muted); }
+  footer.site a:hover { color: var(--fg); }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="site" role="banner">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Mycroft — home">
+      <svg viewBox="0 0 420 90" fill="currentColor" aria-hidden="true" focusable="false">
+        <text x="210" y="66" text-anchor="middle"
+              font-family="'IM Fell English', 'Libre Caslon Text', 'Hoefler Text', Georgia, serif"
+              font-size="68" letter-spacing="0.005em">Mycroft</text>
+      </svg>
+    </a>
+    <nav aria-label="Primary">
+      <a href="#what">What it does</a>
+      <a href="#model">Model</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#install">Install</a>
+      <a href="setup.html" class="cta">Set up</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="wrap">
+      <div class="eyebrow">AI for journalists</div>
+      <h1 id="hero-h">Your morning brief, before coffee<br>Your fact-check, in minutes<br>Your sources, kept private</h1>
+      <p class="lede">
+        Mycroft is an opinionated extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a> — the open-source agent runtime. It turns your laptop into a journalism workstation: daily digests from your beat, SIFT fact-checking, vault Q&amp;A with citations, investigations via Spotlight, social scraping via Apify.
+      </p>
+      <div class="ctas">
+        <a class="btn primary" href="setup.html">Set up Mycroft</a>
+        <a class="btn secondary" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">View on GitHub</a>
+      </div>
+      <div class="meta">
+        <span><strong>~$6/month</strong> moderate use · <strong>$0</strong> in local mode</span>
+        <span>Zero data retention by default</span>
+        <span>Open-weight models only</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="what" aria-labelledby="what-h">
+    <div class="wrap">
+      <h2 id="what-h">A day with Mycroft</h2>
+      <p class="lead">Not a chatbot bolted on. Recipes designed for the way investigative journalists actually work — built into your vault, your beat sources, your writing flow.</p>
+
+      <div class="day-grid">
+
+        <article class="day-card">
+          <span class="time">7&nbsp;am</span>
+          <h3>Morning brief</h3>
+          <p>Open your laptop. A digest is in your vault: 8&nbsp;items ranked by editorial value. Pulled from your X/Twitter bookmarks, your AgentMail newsletters, and overnight web coverage for your beat. Every claim cited, every source linked.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">10&nbsp;am</span>
+          <h3>Fact-check a draft</h3>
+          <p>Run <code>fact-check</code> on an article draft. Mycroft returns per-claim verdicts — verified, unverified, contradicted, mischaracterized — via SIFT methodology. Every quote traced to origin. Every statistic cited to the primary source.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">2&nbsp;pm</span>
+          <h3>Investigate a lead</h3>
+          <p>Tell Mycroft to investigate. Spotlight takes over: multi-phase OSINT research, adversarial SIFT fact-checking, evidence grounding, knowledge-vault ingestion. Full audit trail for editorial and legal defensibility.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">4&nbsp;pm</span>
+          <h3>Vault Q&amp;A</h3>
+          <p>"What do I already have on this topic?" Mycroft answers from your own notes + live web in a single shot, with every claim cited to a vault path or URL. Reviewing three months of reporting takes minutes, not hours.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">Evening</span>
+          <h3>Newsletter in, signal out</h3>
+          <p>A newsletter lands in your AgentMail inbox. Mycroft extracts the data points, names the sources, flags the unverified claims, and writes it into your vault with entity cross-references. You read the output, not the inbox.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">Ongoing</span>
+          <h3>Monitored beat</h3>
+          <p>coJournalist runs 24/7 on its cloud backend — scheduled scouts watch the sources you care about (web pages, social handles, council calendars, court filings). New signal feeds tomorrow's morning brief.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="model" aria-labelledby="model-h">
+    <div class="wrap">
+      <h2 id="model-h">A model trained on journalism</h2>
+      <p class="lead">Most AI tools run on generalists — chatbots trained on web crawls, instruction-tuned to be agreeable. Mycroft ships with a fine-tuned, <strong>abliterated</strong> Qwen 3.5 trained specifically on investigative journalism methodology. Open-weight. Yours to own. Two sizes — 9B (16&nbsp;GB+ laptops) and 35B (64&nbsp;GB+ workstations).</p>
+
+      <div class="day-grid">
+
+        <article class="day-card">
+          <span class="time">What it knows</span>
+          <h3>Methodology, not small talk</h3>
+          <p>SIFT framework for verification. 1000+ OSINT tools catalogued. Source protection protocols. Attribution rules. Evidence grounding. Chain of custody for investigative work.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">Where it runs</span>
+          <h3>Your laptop. Your weights.</h3>
+          <p>llama-server (GGUF) on macOS, Linux, Windows. Zero network egress. Download <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">the 9B from Hugging Face</a>, audit the weights, run it forever. No vendor can take it away.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">What it costs</span>
+          <h3>$0 after download</h3>
+          <p>No per-token billing, no subscription, no credits. Electricity and ~5 GB of SSD for the 9B (Q4_K_M). For investigative work at volume, local inference beats cloud on every axis — including cost.</p>
+        </article>
+
+        <article class="day-card">
+          <span class="time">Why it matters</span>
+          <h3>The right reflexes, baked in</h3>
+          <p><strong>Abliterated</strong> — this model won't soft-refuse legitimate research requests the way stock Claude / GPT will. Trained instead to cite every claim, flag unverified assertions, and decline requests that would actually burn a source.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy" aria-labelledby="privacy-h">
+    <div class="wrap">
+      <h2 id="privacy-h">Privacy by default</h2>
+      <p class="lead">Investigative journalism has a threat model. Mycroft is built to match it.</p>
+
+      <ul class="privacy-list">
+        <li>
+          <strong>Zero Data Retention</strong>
+          <span>Only providers with ZDR (Fireworks, Together) are shipped defaults. No Claude, OpenAI, or Gemini — their retention policies aren't suitable. All models are open-weight. Hosted in the US or Europe.</span>
+        </li>
+        <li>
+          <strong>Local-first mode</strong>
+          <span>Flip one toggle and every inference runs on your machine — a fine-tuned Qwen on MLX or llama-server. Zero network egress. $0/month. For sensitive sources and confidential documents.</span>
+        </li>
+        <li>
+          <strong>Your keys, your machine</strong>
+          <span>The setup page runs entirely in your browser. API keys are embedded in the <code>.command</code> you download. Nothing passes through any server we own. The setup form has no backend.</span>
+        </li>
+        <li>
+          <strong>Firecrawl only for the web</strong>
+          <span>Web fetching is the most-abused surface. Mycroft uses Firecrawl exclusively — no WebFetch, no surveillance-adjacent scraping middlemen. Your query patterns stay yours.</span>
+        </li>
+        <li>
+          <strong>Your vault stays on disk</strong>
+          <span>Findings write to your Obsidian vault. Nothing syncs to our infrastructure. Local files, local search, local memory.</span>
+        </li>
+        <li>
+          <strong>No telemetry</strong>
+          <span>No analytics, no crash reporting, no phone home. Mycroft and Goose are open-source; you can read every line.</span>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="install" aria-labelledby="install-h">
+    <div class="wrap">
+      <h2 id="install-h">Install in five minutes</h2>
+      <p class="lead">No terminal-wrangling. The setup page generates a single script with your config baked in. One file, one run.</p>
+
+      <ol class="steps">
+        <li>
+          <strong>Fill in the setup form</strong>
+          <span>Pick cloud or local mode, add your API keys (optional ones can be skipped), select the plugins you want. Everything stays in your browser.</span>
+        </li>
+        <li>
+          <strong>Download <code>mycroft-setup.command</code></strong>
+          <span>A bash script with your selections embedded. Review it first — nothing hidden, your keys are right there in plain sight.</span>
+        </li>
+        <li>
+          <strong>Run it</strong>
+          <span>Double-click or paste <code>~/Downloads/mycroft-setup.command</code> into Terminal. The script brew-installs Goose + Obsidian if missing, clones the pack, configures your shell. Open a new terminal and you're working.</span>
+        </li>
+      </ol>
+
+      <div class="ctas">
+        <a class="btn primary" href="setup.html">Set up Mycroft →</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="plugins" aria-labelledby="plugins-h">
+    <div class="wrap">
+      <h2 id="plugins-h">Plugins</h2>
+      <p class="lead">Mycroft is the spine. Plugins clip in and ship on their own cadence.</p>
+
+      <div class="plugins-grid">
+
+        <article class="plugin-card">
+          <span class="badge now">at launch</span>
+          <h3>Spotlight</h3>
+          <p>OSINT investigation system. Multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge-vault ingestion.</p>
+        </article>
+
+        <article class="plugin-card">
+          <span class="badge now">at launch</span>
+          <h3>coJournalist</h3>
+          <p>Beat-monitoring engine. Scheduled scouts, change detection, relevance scoring. Web-hosted runs 24/7; self-host option available.</p>
+        </article>
+
+        <article class="plugin-card">
+          <span class="badge soon">May 2026</span>
+          <h3>DataHound</h3>
+          <p>Government and public-data API discovery with automated monitoring. Turn obscure open-data endpoints into queryable beats.</p>
+        </article>
+
+        <article class="plugin-card">
+          <span class="badge soon">May 2026</span>
+          <h3>Atelier</h3>
+          <p>Visual production — charts (Datawrapper, D3), maps (Maptiler), video, infographics, social cards. Data and narrative to publication-ready visuals.</p>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-footer" aria-labelledby="cta-h">
+    <div class="wrap">
+      <h2 id="cta-h">Built by journalists, for journalists.</h2>
+      <p>Open source. Self-hostable. No lock-in. No surveillance. Just the tool you wish you'd had three investigations ago.</p>
+      <div class="ctas" style="justify-content: center;">
+        <a class="btn primary" href="setup.html">Set up Mycroft</a>
+        <a class="btn secondary" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">View on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site" role="contentinfo">
+  <div class="wrap">
+    <div>Mycroft is a <a href="https://github.com/buriedsignals">Buried Signals</a> project.</div>
+    <nav aria-label="Footer">
+      <a href="https://github.com/buriedsignals/mycroft">Source</a> ·
+      <a href="setup.html">Set up</a> ·
+      <a href="https://goose-docs.ai/">Goose</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

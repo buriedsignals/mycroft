@@ -1,0 +1,51 @@
+version: "1.0.0"
+title: "Apify social — Instagram profile"
+description: "Scrape recent posts from an Instagram profile. Uses apidojo/instagram-scraper (actor culc72xb7MP3EbaeX)."
+
+parameters:
+  - key: url
+    input_type: string
+    requirement: required
+    description: "Full Instagram profile URL (e.g. https://www.instagram.com/some.handle/)"
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Maximum posts to fetch (capped at 100 for cost control)"
+    default: 50
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Scrape Instagram profile: {{ url }} (up to {{ max_items }} posts).
+
+  **Requires**: `APIFY_API_TOKEN` env var.
+
+  Run sync endpoint (waits until done, returns items):
+
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  curl -sS -X POST "https://api.apify.com/v2/acts/culc72xb7MP3EbaeX/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"startUrls\": [\"{{ url }}\"], \"maxItems\": $CAP}" \
+    -o /tmp/apify-instagram-$$.json
+
+  jq 'length' /tmp/apify-instagram-$$.json
+  ```
+
+  Normalize each item to NormalizedPost shape:
+  - `platform`: "instagram"
+  - `handle`: profile handle (from URL)
+  - `post_url`, `timestamp`, `text`, `likes`, `comments`, `media_urls[]`
+
+  Return:
+  - Post count
+  - Normalized JSON array (stored to `/tmp/apify-instagram-$$.json` — reference the file; don't dump all of it into chat)
+  - A top-5 summary inline (timestamp + first 140 chars of text + link)
+
+  Cost: ~$0.02 per post (apidojo/instagram-scraper). Flag if max_items > 50.
+
+activities:
+  - "Scrape latest 50 posts from {{ url }}"
+  - "Last 10 posts only"
