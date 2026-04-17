@@ -564,7 +564,7 @@ function buildScript(d) {
     pluginBlock.push(`say "Installing Spotlight plugin..."`);
     pluginBlock.push(`if [ ! -d "$MYCROFT_DIR/plugins/spotlight/.git" ]; then`);
     pluginBlock.push(`  mkdir -p "$MYCROFT_DIR/plugins"`);
-    pluginBlock.push(`  git clone https://github.com/buriedsignals/spotlight.git "$MYCROFT_DIR/plugins/spotlight" 2>/dev/null && ok "Spotlight cloned" || warn "Spotlight repo not yet public — will install automatically at Mycroft launch"`);
+    pluginBlock.push(`  SPOTLIGHT_REPO='git@github.com:buriedsignals/spotlight.git'; have gh && gh auth status >/dev/null 2>&1 && SPOTLIGHT_REPO=$(gh repo view buriedsignals/spotlight --json sshUrl -q .sshUrl 2>/dev/null || echo "$SPOTLIGHT_REPO"); git clone "$SPOTLIGHT_REPO" "$MYCROFT_DIR/plugins/spotlight" 2>/dev/null && ok "Spotlight cloned" || warn "Spotlight repo not yet public — will install automatically at Mycroft launch"`);
     pluginBlock.push(`else`);
     pluginBlock.push(`  (cd "$MYCROFT_DIR/plugins/spotlight" && git pull --ff-only 2>/dev/null) && ok "Spotlight updated"`);
     pluginBlock.push(`fi`);
