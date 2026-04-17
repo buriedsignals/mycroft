@@ -616,8 +616,7 @@ esac
 # ───── Your selections (from the setup form) ─────
 SOVEREIGNTY=${shq(d.sovereignty)}
 LOCAL_ONLY=${shq(bool(d.localOnly))}
-VAULT_PATH=${shq(d.vault)}
-VAULT_PATH="\${VAULT_PATH/#\\~/\$HOME}"
+VAULT_PATH="${d.vault.replace(/^~\//, '$HOME/')}"
 
 INSTALL_GOOSE=${shq(bool(d.installGoose))}
 INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
