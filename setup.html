@@ -568,7 +568,7 @@ function buildScript(d) {
     pluginBlock.push(`else`);
     pluginBlock.push(`  (cd "$MYCROFT_DIR/plugins/spotlight" && git pull --ff-only 2>/dev/null) && ok "Spotlight updated"`);
     pluginBlock.push(`fi`);
-    pluginBlock.push(`mkdir -p "${d.spotlightVaultPath}" && ok "investigations vault at ${d.spotlightVaultPath}"`);
+    pluginBlock.push(`mkdir -p "${d.spotlightVaultPath.replace(/^~\//, '$HOME/')}" && ok "investigations vault at ${d.spotlightVaultPath}"`);
   }
   if (d.cojournalist) {
     if (d.cojMode === 'web') {
@@ -617,6 +617,7 @@ esac
 SOVEREIGNTY=${shq(d.sovereignty)}
 LOCAL_ONLY=${shq(bool(d.localOnly))}
 VAULT_PATH=${shq(d.vault)}
+VAULT_PATH="\${VAULT_PATH/#\\~/\$HOME}"
 
 INSTALL_GOOSE=${shq(bool(d.installGoose))}
 INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
