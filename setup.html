@@ -822,7 +822,20 @@ function refreshPreview() {
 }
 
 function download() {
-  const script = buildScript(readForm());
+  const d = readForm();
+  const missing = [];
+  if (d.installFirecrawl && !d.firecrawlKey) missing.push('FIRECRAWL_API_KEY');
+  if (d.fireworks && !d.fireworksKey) missing.push('FIREWORKS_API_KEY');
+  if (d.together && !d.togetherKey) missing.push('TOGETHER_API_KEY');
+  if (missing.length) {
+    const proceed = confirm(
+      'The following required API keys are missing:\n\n' +
+      missing.map(k => '  • ' + k).join('\n') +
+      '\n\nWithout them, some recipes will not work. Generate the script anyway?'
+    );
+    if (!proceed) return;
+  }
+  const script = buildScript(d);
   const blob = new Blob([script], {type: 'application/x-sh'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
