@@ -568,7 +568,7 @@ function buildScript(d) {
     pluginBlock.push(`else`);
     pluginBlock.push(`  (cd "$MYCROFT_DIR/plugins/spotlight" && git pull --ff-only 2>/dev/null) && ok "Spotlight updated"`);
     pluginBlock.push(`fi`);
-    pluginBlock.push(`mkdir -p ${shq(d.spotlightVaultPath)} && ok ${shq('investigations vault at ' + d.spotlightVaultPath)}`);
+    pluginBlock.push(`mkdir -p "${d.spotlightVaultPath}" && ok "investigations vault at ${d.spotlightVaultPath}"`);
   }
   if (d.cojournalist) {
     if (d.cojMode === 'web') {
@@ -651,6 +651,8 @@ else
   err "  - Or install gh CLI and run: gh auth login"
   exit 1
 fi
+
+mkdir -p "$VAULT_PATH" && ok "vault directory ready at $VAULT_PATH" || warn "Could not create vault directory at $VAULT_PATH — create it manually"
 
 say "Mycroft setup starting"
 echo "  sovereignty: $SOVEREIGNTY"
