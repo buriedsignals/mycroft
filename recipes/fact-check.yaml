@@ -12,10 +12,12 @@ parameters:
     input_type: string
     requirement: optional
     description: "Path to the draft file (markdown, text, docx)"
+    default: ""
   - key: draft_text
     input_type: string
     requirement: optional
     description: "Draft text inline (use when draft is short and pastable)"
+    default: ""
 
 extensions:
   - type: builtin

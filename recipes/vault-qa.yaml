@@ -17,6 +17,11 @@ parameters:
     requirement: required
     description: "Absolute or ~-expanded path to the journalist's vault root"
     default: "~/Documents/Mycroft"
+  - key: entity
+    input_type: string
+    requirement: optional
+    description: "Entity name for activity suggestions (person, org, topic)"
+    default: "[entity]"
 
 extensions:
   - type: builtin
