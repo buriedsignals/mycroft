@@ -700,6 +700,11 @@ function tickHero(now) {
   const targetOpacity = activePose === 'hero' ? 1 : (activePose === 'footer' ? 1 : 0.55);
   sheetMat.opacity += (targetOpacity - sheetMat.opacity) * Math.min(1, 3 * dt);
 
+  camera.position.x += (0 - camera.position.x) * 2 * dt;
+  camera.position.y += (camTarget.y - camera.position.y) * 2 * dt;
+  camera.position.z += (camTarget.z - camera.position.z) * 2 * dt;
+  camera.lookAt(0, camTarget.y, 0);
+
   writeMatrices();
   renderer.render(scene, camera);
   raf = requestAnimationFrame(tickHero);
@@ -796,6 +801,7 @@ const obs = new IntersectionObserver((entries) => {
   if (pose && pose !== activePose) {
     activePose = pose;
     (POSE_BUILDERS[pose] || (() => {}))();
+    camTarget = POSE_CAM[pose] || POSE_CAM.drift;
   }
 }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
 
@@ -807,10 +813,21 @@ const obs = new IntersectionObserver((entries) => {
 const footerEl = document.querySelector('footer.site');
 if (footerEl) {
   const fobs = new IntersectionObserver((es) => {
-    if (es[0].isIntersecting) { activePose = 'footer'; buildFooterPile(); }
+    if (es[0].isIntersecting) { activePose = 'footer'; buildFooterPile(); camTarget = POSE_CAM.footer; }
   }, { threshold: 0.05 });
   fobs.observe(footerEl);
 }
+
+const POSE_CAM = {
+  hero:    { y: 0,    z: 4.6 },
+  day:     { y: 0,    z: 4.0 },
+  plugins: { y: 0,    z: 4.6 },
+  pricing: { y: 0,    z: 4.2 },
+  privacy: { y: 0,    z: 4.0 },
+  drift:   { y: 0,    z: 5.5 },
+  footer:  { y: -0.6, z: 4.0 },
+};
+let camTarget = POSE_CAM.hero;
 
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
