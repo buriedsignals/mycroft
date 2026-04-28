@@ -255,6 +255,8 @@ footer.site .giant {
 }
 @media (max-width: 900px) { footer.site .wrap { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 600px) { footer.site .wrap { grid-template-columns: 1fr; } }
+.hero .brand-mark { transition: opacity .4s ease; }
+.hero.settled .brand-mark { opacity: 0; }
 </style>
 </head>
 <body>
@@ -580,6 +582,30 @@ function writeMatrices() {
 }
 writeMatrices();
 
+function sampleTextPoints(text, fontFamily, fontSize, count) {
+  const off = document.createElement('canvas');
+  off.width = 1024; off.height = 256;
+  const ctx = off.getContext('2d');
+  ctx.fillStyle = '#000';
+  ctx.font = `${fontSize}px ${fontFamily}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, off.width / 2, off.height / 2);
+  const data = ctx.getImageData(0, 0, off.width, off.height).data;
+  const pts = [];
+  while (pts.length < count) {
+    const x = Math.floor(Math.random() * off.width);
+    const y = Math.floor(Math.random() * off.height);
+    if (data[(y * off.width + x) * 4 + 3] > 128) {
+      const wx = (x / off.width - 0.5) * 3.0;
+      const wy = -(y / off.height - 0.5) * 0.8;
+      pts.push([wx, wy, 0]);
+    }
+  }
+  return pts;
+}
+const heroEndTargets = sampleTextPoints('Mycroft', '"IM Fell English", serif', 200, COUNT);
+
 const velocities = new Float32Array(COUNT * 3);
 const PARTICLE_R = RECEIPT_H * 0.5;
 const raycaster = new THREE.Raycaster();
@@ -595,6 +621,17 @@ addEventListener('pointermove', (e) => {
   if (raycaster.ray.intersectPlane(mousePlane, mousePoint)) mouseActive = true;
 });
 addEventListener('pointerleave', () => { mouseActive = false; });
+
+let heroSettle = 0;
+const heroEl = document.getElementById('hero');
+function updateHeroSettle() {
+  const rect = heroEl.getBoundingClientRect();
+  const p = 1 - Math.max(0, Math.min(1, (rect.bottom - 200) / (innerHeight - 200)));
+  heroSettle = p;
+  heroEl.classList.toggle('settled', heroSettle > 0.4);
+}
+addEventListener('scroll', updateHeroSettle, { passive: true });
+updateHeroSettle();
 
 let raf = null;
 let elapsed = 0;
@@ -612,12 +649,15 @@ function tickHero(now) {
   for (let i = 0; i < COUNT; i++) {
     const ix = i*3, iy = i*3+1, iz = i*3+2;
     const px = positions[ix], py = positions[iy], pz = positions[iz];
-    const dist = Math.hypot(px, py, pz) || 0.001;
-    velocities[ix] += (px / dist) * dispersion * 0.04 * dt;
-    velocities[iy] += (py / dist) * dispersion * 0.04 * dt;
-    velocities[iz] += (pz / dist) * dispersion * 0.04 * dt;
 
-    if (mouseActive) {
+    if (heroSettle < 0.05) {
+      const dist = Math.hypot(px, py, pz) || 0.001;
+      velocities[ix] += (px / dist) * dispersion * 0.04 * dt;
+      velocities[iy] += (py / dist) * dispersion * 0.04 * dt;
+      velocities[iz] += (pz / dist) * dispersion * 0.04 * dt;
+    }
+
+    if (mouseActive && heroSettle < 0.1) {
       const dx = px - mousePoint.x, dy = py - mousePoint.y, dz = pz - mousePoint.z;
       const d2 = dx*dx + dy*dy + dz*dz;
       if (d2 < 0.6) {
@@ -631,12 +671,22 @@ function tickHero(now) {
 
     velocities[ix] *= 0.96; velocities[iy] *= 0.96; velocities[iz] *= 0.96;
 
-    positions[ix] += velocities[ix];
-    positions[iy] += velocities[iy];
-    positions[iz] += velocities[iz];
-
-    rotations[ix] += dt * 0.4;
-    rotations[iy] += dt * 0.6;
+    if (heroSettle > 0.01) {
+      const tx = heroEndTargets[i][0], ty = heroEndTargets[i][1], tz = heroEndTargets[i][2];
+      const k = 4 * dt * heroSettle;
+      positions[ix] += (tx - px) * k;
+      positions[iy] += (ty - py) * k;
+      positions[iz] += (tz - pz) * k;
+      rotations[ix] += (0 - rotations[ix]) * k;
+      rotations[iy] += (0 - rotations[iy]) * k;
+      velocities[ix] *= 0.6; velocities[iy] *= 0.6; velocities[iz] *= 0.6;
+    } else {
+      positions[ix] += velocities[ix];
+      positions[iy] += velocities[iy];
+      positions[iz] += velocities[iz];
+      rotations[ix] += dt * 0.4;
+      rotations[iy] += dt * 0.6;
+    }
   }
 
   writeMatrices();
