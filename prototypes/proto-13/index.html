@@ -38,12 +38,37 @@ a:hover, a:focus-visible { text-decoration: underline; }
 .skip:focus { top: 0; }
 canvas#paper-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 main, header.site, footer.site { position: relative; z-index: 1; }
+header.site { padding: 1.25rem 0; }
+header.site .wrap { max-width: 1240px; margin: 0 auto; padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; }
+header.site a.brand { color: var(--ink); display: inline-flex; align-items: center; line-height: 0; }
+header.site a.brand svg { height: 1.6rem; width: auto; display: block; }
+header.site nav { display: flex; gap: 1.75rem; align-items: center; }
+header.site nav a { color: var(--ink-muted); font-size: .9rem; font-weight: 500; }
+header.site nav a:hover { color: var(--ink); text-decoration: none; }
+header.site nav a.cta { background: var(--ink); color: var(--bg); padding: .5rem 1rem; border-radius: 999px; font-weight: 600; }
+header.site nav a.cta:hover { background: var(--moss); }
+@media (max-width: 720px) { header.site nav a:not(.cta) { display: none; } }
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to main content</a>
 <canvas id="paper-canvas" aria-hidden="true"></canvas>
-<header class="site"><!-- task 2 --></header>
+<header class="site" role="banner">
+  <div class="wrap">
+    <a class="brand" href="#" aria-label="Mycroft — home">
+      <svg viewBox="0 0 320 60" fill="currentColor" aria-hidden="true">
+        <text x="0" y="46" font-family="IM Fell English, serif" font-size="48" letter-spacing="0.005em">Mycroft</text>
+      </svg>
+    </a>
+    <nav aria-label="Primary">
+      <a href="#day">A day with Mycroft</a>
+      <a href="#plugins">Plugins</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#pricing">Pricing</a>
+      <a href="../../setup.html" class="cta">Set up</a>
+    </nav>
+  </div>
+</header>
 <main id="main"><!-- tasks 3-12 --></main>
 <footer class="site"><!-- task 13 --></footer>
 <script type="importmap">
