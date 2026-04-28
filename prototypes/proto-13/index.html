@@ -117,6 +117,23 @@ header.site nav a.cta:hover { background: var(--moss); }
 .intro .pair .icon-card strong { font-size: .9rem; font-weight: 700; }
 .intro .pair .icon-card span { font-size: .82rem; color: var(--ink-muted); text-align: center; }
 @media (max-width: 600px) { .intro .pair { grid-template-columns: 1fr; } }
+.day { background: var(--moss); color: var(--bg); padding: 5rem 0; border-radius: var(--radius-lg); margin: 0 1.5rem; }
+.day .wrap { max-width: 1180px; margin: 0 auto; padding: 0 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+.day h2 { font-family: var(--sans); font-size: clamp(1.8rem, 3vw, 2.4rem); line-height: 1.15; margin: 0 0 2rem; font-weight: 600; letter-spacing: -.01em; }
+.day ol { list-style: none; padding: 0; margin: 0; }
+.day ol li { display: grid; grid-template-columns: auto 1fr auto; gap: 1.25rem; align-items: center; padding: 1.1rem 1rem; border-bottom: 1px solid rgba(255,255,255,.12); cursor: pointer; transition: background-color .2s ease; }
+.day ol li:last-child { border-bottom: none; }
+.day ol li[aria-current="true"] { background: rgba(255,255,255,.06); border-radius: var(--radius); }
+.day ol li .num { font-family: var(--serif); font-size: 1rem; color: rgba(255,255,255,.55); width: 2ch; }
+.day ol li[aria-current="true"] .num { color: var(--moss-light); }
+.day ol li .title { font-size: 1.05rem; font-weight: 500; }
+.day ol li .arrow { width: 28px; height: 28px; border-radius: 50%; background: var(--moss-light); color: var(--moss); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .2s ease; }
+.day ol li[aria-current="true"] .arrow { opacity: 1; }
+.day .paper-zone { aspect-ratio: 1; border-radius: var(--radius-lg); position: relative; min-height: 320px; }
+.day .paper-zone .paper-text { position: absolute; inset: 1.5rem; background: var(--bg); color: var(--ink); border-radius: var(--radius); padding: 1.5rem; box-shadow: 0 30px 60px rgba(0,0,0,.3); }
+.day .paper-zone .paper-text h3 { margin: 0 0 .5rem; font-size: 1.1rem; font-family: var(--sans); }
+.day .paper-zone .paper-text p { margin: 0; font-size: .92rem; color: var(--ink-muted); line-height: 1.55; }
+@media (max-width: 900px) { .day { margin: 0; border-radius: 0; } .day .wrap { grid-template-columns: 1fr; gap: 2rem; padding: 0 1.5rem; } .day .paper-zone { min-height: 240px; } }
 </style>
 </head>
 <body>
@@ -178,7 +195,27 @@ header.site nav a.cta:hover { background: var(--moss); }
     </div>
   </div>
 </section>
-<!-- tasks 6-12 -->
+<section class="day" id="day" aria-labelledby="day-h">
+  <div class="wrap">
+    <div>
+      <p class="eyebrow" style="color: var(--moss-light); margin: 0 0 1rem;">Built for journalists, powered by AI</p>
+      <h2 id="day-h">A day with Mycroft</h2>
+      <ol id="day-list">
+        <li data-day="brief" aria-current="true"><span class="num">01.</span><span class="title">Morning brief — 7am</span><span class="arrow" aria-hidden="true">→</span></li>
+        <li data-day="factcheck"><span class="num">02.</span><span class="title">Fact-check a draft — 10am</span><span class="arrow" aria-hidden="true">→</span></li>
+        <li data-day="investigate"><span class="num">03.</span><span class="title">Investigate a lead — 2pm</span><span class="arrow" aria-hidden="true">→</span></li>
+        <li data-day="vault"><span class="num">04.</span><span class="title">Vault Q&amp;A — 4pm</span><span class="arrow" aria-hidden="true">→</span></li>
+      </ol>
+    </div>
+    <div class="paper-zone" id="day-paper-zone">
+      <div class="paper-text" id="day-paper-text">
+        <h3>Morning brief</h3>
+        <p>Open your laptop. A digest is in your vault: 8 items ranked by editorial value, pulled from your X bookmarks, AgentMail newsletters, and overnight web coverage. Every claim cited.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- tasks 7-12 -->
 </main>
 <footer class="site"><!-- task 13 --></footer>
 <script type="importmap">
@@ -186,6 +223,22 @@ header.site nav a.cta:hover { background: var(--moss); }
 </script>
 <script type="module">
 // scene module — populated in Phase B
+const DAY_CONTENT = {
+  brief: { title: 'Morning brief', body: 'Open your laptop. A digest is in your vault: 8 items ranked by editorial value, pulled from your X bookmarks, AgentMail newsletters, and overnight web coverage. Every claim cited.' },
+  factcheck: { title: 'Fact-check a draft', body: 'Run fact-check on an article draft. Mycroft returns per-claim verdicts — verified, unverified, contradicted — via SIFT methodology. Every quote traced to origin.' },
+  investigate: { title: 'Investigate a lead', body: 'Spotlight takes over: multi-phase OSINT research, adversarial SIFT fact-checking, evidence grounding, knowledge-vault ingestion. Full audit trail for editorial defensibility.' },
+  vault: { title: 'Vault Q&A', body: '"What do I already have on this topic?" Mycroft answers from your own notes + live web in a single shot, with every claim cited to a vault path or URL.' },
+};
+const dayList = document.getElementById('day-list');
+const dayText = document.getElementById('day-paper-text');
+dayList?.addEventListener('click', (e) => {
+  const li = e.target.closest('li[data-day]');
+  if (!li) return;
+  dayList.querySelectorAll('li').forEach(el => el.setAttribute('aria-current', 'false'));
+  li.setAttribute('aria-current', 'true');
+  const c = DAY_CONTENT[li.dataset.day];
+  if (c) dayText.innerHTML = `<h3>${c.title}</h3><p>${c.body}</p>`;
+});
 </script>
 </body>
 </html>
