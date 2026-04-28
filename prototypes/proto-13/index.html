@@ -689,9 +689,30 @@ function tickHero(now) {
       rotations[iy] += dt * 0.6;
     } else {
       const k = 2.5 * dt;
-      positions[ix] += (sectionTargets[ix] - px) * k;
-      positions[iy] += (sectionTargets[iy] - py) * k;
-      positions[iz] += (sectionTargets[iz] - pz) * k;
+      let tx = sectionTargets[ix], ty = sectionTargets[iy], tz = sectionTargets[iz];
+
+      if (activePose === 'plugins') {
+        const bucket = i % 4;
+        const t = now * 0.001;
+        if (bucket === 0) {
+          const sweep = Math.sin(t * 0.8 + (i * 0.001));
+          tx += sweep * 0.05;
+        } else if (bucket === 1) {
+          const pulse = 0.95 + 0.05 * Math.sin(t * (Math.PI * 2 / 4));
+          tx = sectionTargets[ix] * pulse;
+          ty = sectionTargets[iy] * pulse;
+        } else if (bucket === 2) {
+          ty = sectionTargets[iy] + Math.sin(t * 0.6 + (i * 0.05)) * 0.04;
+        } else {
+          const cycle = Math.floor((t / 6) % 3);
+          if (cycle === 1) { tx = sectionTargets[ix] + Math.cos(i * 0.5) * 0.05; ty = sectionTargets[iy] + Math.sin(i * 0.5) * 0.05; }
+          else if (cycle === 2) { tx = sectionTargets[ix] + Math.cos(i) * 0.06; ty = sectionTargets[iy] + Math.abs(Math.sin(i * 0.3)) * 0.06; }
+        }
+      }
+
+      positions[ix] += (tx - px) * k;
+      positions[iy] += (ty - py) * k;
+      positions[iz] += (tz - pz) * k;
       rotations[ix] += dt * 0.15;
       rotations[iy] += dt * 0.2;
     }
