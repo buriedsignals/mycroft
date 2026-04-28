@@ -148,6 +148,24 @@ header.site nav a.cta:hover { background: var(--moss); }
 .plugin-card h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
 .plugin-card p { margin: .25rem 0 0; font-size: .9rem; color: var(--ink-muted); line-height: 1.55; }
 @media (max-width: 720px) { .plugins-grid { grid-template-columns: 1fr; } }
+.pricing { padding: 5rem 0; }
+.pricing .wrap { max-width: 1180px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+.pricing .head .eyebrow { font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); font-weight: 600; margin: 0 0 .75rem; }
+.pricing h2 { font-family: var(--sans); font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0 0 1rem; font-weight: 600; letter-spacing: -.01em; }
+.pricing .lede { color: var(--ink-muted); font-size: 1rem; margin: 0 0 2rem; max-width: 36ch; }
+.pricing-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+.pricing-card .tabs { display: flex; gap: .5rem; background: var(--bg); border-radius: 999px; padding: .25rem; margin: 0 0 1.25rem; border: 1px solid var(--border); }
+.pricing-card .tabs button { flex: 1; padding: .55rem 1rem; border-radius: 999px; border: none; background: transparent; cursor: pointer; font-family: inherit; font-size: .9rem; color: var(--ink-muted); }
+.pricing-card .tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+.pricing-card .tier-name { font-weight: 600; font-size: .9rem; display: flex; gap: .5rem; align-items: center; }
+.pricing-card .tier-name .pill { background: var(--moss); color: var(--bg); font-size: .68rem; padding: .15em .5em; border-radius: 999px; font-weight: 700; }
+.pricing-card .price { font-family: var(--sans); font-size: 3rem; line-height: 1; font-weight: 700; margin: .75rem 0; letter-spacing: -.02em; }
+.pricing-card .price small { font-size: 1rem; font-weight: 400; color: var(--ink-muted); }
+.pricing-card ul.bullets { list-style: none; padding: 0; margin: 1rem 0 1.25rem; }
+.pricing-card ul.bullets li { padding: .35rem 0 .35rem 1.5rem; font-size: .92rem; color: var(--ink); position: relative; }
+.pricing-card ul.bullets li::before { content: "✓"; position: absolute; left: 0; color: var(--moss); font-weight: 700; }
+.pricing-card .tier-cta { width: 100%; }
+@media (max-width: 900px) { .pricing .wrap { grid-template-columns: 1fr; gap: 2rem; } }
 </style>
 </head>
 <body>
@@ -271,7 +289,33 @@ header.site nav a.cta:hover { background: var(--moss); }
     </div>
   </div>
 </section>
-<!-- tasks 8-12 -->
+<section class="pricing" id="pricing" aria-labelledby="pricing-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Pricing</p>
+      <h2 id="pricing-h">Choose how you run Mycroft</h2>
+      <p class="lede">Two modes ship by default. Switch between them with one toggle in your config — your vault and beats stay the same either way.</p>
+    </div>
+    <div class="pricing-card">
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tier="cloud">Cloud</button>
+        <button role="tab" aria-selected="false" data-tier="local">Local</button>
+      </div>
+      <div class="tier-body" id="tier-body">
+        <div class="tier-name">Cloud <span class="pill">Default</span></div>
+        <div class="price">~$6<small>/month, moderate use</small></div>
+        <ul class="bullets">
+          <li>Zero-retention providers only (Fireworks, Together)</li>
+          <li>Open-weight models, no GPT/Claude/Gemini</li>
+          <li>Hosted in US or Europe</li>
+          <li>Pay-per-use, cancel anytime</li>
+        </ul>
+        <a class="btn primary tier-cta" href="../../setup.html">Set up Cloud mode</a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- tasks 9-12 -->
 </main>
 <footer class="site"><!-- task 13 --></footer>
 <script type="importmap">
@@ -294,6 +338,22 @@ dayList?.addEventListener('click', (e) => {
   li.setAttribute('aria-current', 'true');
   const c = DAY_CONTENT[li.dataset.day];
   if (c) dayText.innerHTML = `<h3>${c.title}</h3><p>${c.body}</p>`;
+});
+const TIERS = {
+  cloud: { name: 'Cloud', pill: 'Default', price: '~$6', unit: '/month, moderate use', bullets: ['Zero-retention providers only (Fireworks, Together)','Open-weight models, no GPT/Claude/Gemini','Hosted in US or Europe','Pay-per-use, cancel anytime'], cta: 'Set up Cloud mode' },
+  local: { name: 'Local', pill: 'Private', price: '$0', unit: '/month, your machine', bullets: ['Runs Qwen 3.5 on llama-server / MLX','Zero network egress, ever','5 GB SSD for the 9B (Q4_K_M)','For sensitive sources & confidential docs'], cta: 'Set up Local mode' },
+};
+const tierBody = document.getElementById('tier-body');
+document.querySelectorAll('.pricing-card .tabs button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pricing-card .tabs button').forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
+    const t = TIERS[btn.dataset.tier];
+    tierBody.innerHTML = `
+      <div class="tier-name">${t.name} <span class="pill">${t.pill}</span></div>
+      <div class="price">${t.price}<small>${t.unit}</small></div>
+      <ul class="bullets">${t.bullets.map(b => `<li>${b}</li>`).join('')}</ul>
+      <a class="btn primary tier-cta" href="../../setup.html">${t.cta}</a>`;
+  });
 });
 </script>
 </body>
