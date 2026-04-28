@@ -680,12 +680,19 @@ function tickHero(now) {
       rotations[ix] += (0 - rotations[ix]) * k;
       rotations[iy] += (0 - rotations[iy]) * k;
       velocities[ix] *= 0.6; velocities[iy] *= 0.6; velocities[iz] *= 0.6;
-    } else {
+    } else if (activePose === 'hero') {
       positions[ix] += velocities[ix];
       positions[iy] += velocities[iy];
       positions[iz] += velocities[iz];
       rotations[ix] += dt * 0.4;
       rotations[iy] += dt * 0.6;
+    } else {
+      const k = 2.5 * dt;
+      positions[ix] += (sectionTargets[ix] - px) * k;
+      positions[iy] += (sectionTargets[iy] - py) * k;
+      positions[iz] += (sectionTargets[iz] - pz) * k;
+      rotations[ix] += dt * 0.15;
+      rotations[iy] += dt * 0.2;
     }
   }
 
@@ -695,6 +702,111 @@ function tickHero(now) {
 }
 prev = performance.now();
 raf = requestAnimationFrame(tickHero);
+
+const sectionTargets = new Float32Array(COUNT * 3);
+let activePose = 'hero';
+
+function buildDayClock() {
+  const centers = [[1.0, 0.7, 0], [1.4, 0.25, 0], [1.4, -0.25, 0], [1.0, -0.7, 0]];
+  for (let i = 0; i < COUNT; i++) {
+    const c = centers[i % 4];
+    const r = 0.18 * Math.sqrt(Math.random());
+    const a = Math.random() * Math.PI * 2;
+    sectionTargets[i*3+0] = c[0] + Math.cos(a) * r;
+    sectionTargets[i*3+1] = c[1] + Math.sin(a) * r;
+    sectionTargets[i*3+2] = c[2] + (Math.random() - 0.5) * 0.1;
+  }
+}
+function buildPluginsOrbits() {
+  const centers = [[-0.9, 0.6, 0], [0.9, 0.6, 0], [-0.9, -0.6, 0], [0.9, -0.6, 0]];
+  for (let i = 0; i < COUNT; i++) {
+    const c = centers[i % 4];
+    const r = 0.25 * Math.sqrt(Math.random());
+    const a = Math.random() * Math.PI * 2;
+    sectionTargets[i*3+0] = c[0] + Math.cos(a) * r;
+    sectionTargets[i*3+1] = c[1] + Math.sin(a) * r;
+    sectionTargets[i*3+2] = c[2] + (Math.random() - 0.5) * 0.15;
+  }
+}
+function buildPricingCluster() {
+  const cx = 1.2, cy = 0;
+  for (let i = 0; i < COUNT; i++) {
+    const r = 0.6 * Math.sqrt(Math.random());
+    const a = Math.random() * Math.PI * 2;
+    sectionTargets[i*3+0] = cx + Math.cos(a) * r * 0.6;
+    sectionTargets[i*3+1] = cy + Math.sin(a) * r * 0.6;
+    sectionTargets[i*3+2] = (Math.random() - 0.5) * 0.4;
+  }
+}
+function buildPrivacyCube() {
+  for (let i = 0; i < COUNT; i++) {
+    sectionTargets[i*3+0] = 1.0 + (Math.random() - 0.5) * 0.8;
+    sectionTargets[i*3+1] = (Math.random() - 0.5) * 0.8;
+    sectionTargets[i*3+2] = (Math.random() - 0.5) * 0.8;
+  }
+}
+function buildDrift() {
+  for (let i = 0; i < COUNT; i++) {
+    sectionTargets[i*3+0] = (Math.random() - 0.5) * 4;
+    sectionTargets[i*3+1] = 1.5 + Math.random() * 1.5;
+    sectionTargets[i*3+2] = (Math.random() - 0.5) * 1.5;
+  }
+}
+function buildFooterPile() {
+  for (let i = 0; i < COUNT; i++) {
+    sectionTargets[i*3+0] = (Math.random() - 0.5) * 3.5;
+    sectionTargets[i*3+1] = -1.4 + (Math.random() ** 4) * 0.6;
+    sectionTargets[i*3+2] = (Math.random() - 0.5) * 0.6;
+  }
+}
+
+const POSE_BUILDERS = {
+  hero: () => {},
+  day: buildDayClock,
+  plugins: buildPluginsOrbits,
+  pricing: buildPricingCluster,
+  privacy: buildPrivacyCube,
+  drift: buildDrift,
+  footer: buildFooterPile,
+};
+
+const SECTION_POSE = {
+  'hero': 'hero',
+  'day': 'day',
+  'plugins': 'plugins',
+  'pricing': 'pricing',
+  'privacy': 'privacy',
+  'trusted': 'drift',
+  'studio': 'drift',
+  'cta': 'drift',
+};
+
+const obs = new IntersectionObserver((entries) => {
+  let best = null;
+  entries.forEach(e => {
+    if (!best || e.intersectionRatio > best.intersectionRatio) best = e;
+  });
+  if (!best || best.intersectionRatio < 0.25) return;
+  const id = best.target.id;
+  const pose = SECTION_POSE[id];
+  if (pose && pose !== activePose) {
+    activePose = pose;
+    (POSE_BUILDERS[pose] || (() => {}))();
+  }
+}, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+
+['hero','day','plugins','pricing','privacy','trusted','studio','cta'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) obs.observe(el);
+});
+
+const footerEl = document.querySelector('footer.site');
+if (footerEl) {
+  const fobs = new IntersectionObserver((es) => {
+    if (es[0].isIntersecting) { activePose = 'footer'; buildFooterPile(); }
+  }, { threshold: 0.05 });
+  fobs.observe(footerEl);
+}
 
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
