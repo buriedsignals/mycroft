@@ -513,7 +513,86 @@ footer.site .giant {
 { "imports": { "three": "https://esm.sh/three@0.162.0", "three/addons/": "https://esm.sh/three@0.162.0/examples/jsm/" } }
 </script>
 <script type="module">
-// scene module — populated in Phase B
+import * as THREE from 'three';
+
+const COUNT = (navigator.hardwareConcurrency || 4) >= 8 ? 900 : 600;
+const SPHERE_RADIUS = 1.25;
+const RECEIPT_W = 0.14;
+const RECEIPT_H = 0.10;
+
+const canvas = document.getElementById('paper-canvas');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xf3eddf, 4.5, 9);
+
+const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.05, 50);
+camera.position.set(0, 0, 4.6);
+
+const hemi = new THREE.HemisphereLight(0xffffff, 0xc8b89e, 0.9);
+scene.add(hemi);
+const dir = new THREE.DirectionalLight(0xffffff, 0.6);
+dir.position.set(2, 3, 2);
+scene.add(dir);
+
+const sheetGeo = new THREE.PlaneGeometry(RECEIPT_W, RECEIPT_H);
+const sheetMat = new THREE.MeshStandardMaterial({
+  color: 0xece1ca, roughness: 0.95, metalness: 0,
+  side: THREE.DoubleSide, flatShading: true,
+});
+const sheets = new THREE.InstancedMesh(sheetGeo, sheetMat, COUNT);
+sheets.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+scene.add(sheets);
+
+const positions = new Float32Array(COUNT * 3);
+const targets = new Float32Array(COUNT * 3);
+const rotations = new Float32Array(COUNT * 3);
+
+function initSphere() {
+  for (let i = 0; i < COUNT; i++) {
+    const u = Math.random(), v = Math.random();
+    const theta = 2 * Math.PI * u;
+    const phi = Math.acos(2 * v - 1);
+    const r = SPHERE_RADIUS * (0.85 + Math.random() * 0.15);
+    positions[i*3+0] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i*3+2] = r * Math.cos(phi);
+    rotations[i*3+0] = Math.random() * Math.PI * 2;
+    rotations[i*3+1] = Math.random() * Math.PI * 2;
+    rotations[i*3+2] = Math.random() * Math.PI * 2;
+  }
+  targets.set(positions);
+}
+initSphere();
+
+const dummy = new THREE.Object3D();
+function writeMatrices() {
+  for (let i = 0; i < COUNT; i++) {
+    dummy.position.set(positions[i*3], positions[i*3+1], positions[i*3+2]);
+    dummy.rotation.set(rotations[i*3], rotations[i*3+1], rotations[i*3+2]);
+    dummy.updateMatrix();
+    sheets.setMatrixAt(i, dummy.matrix);
+  }
+  sheets.instanceMatrix.needsUpdate = true;
+}
+writeMatrices();
+
+let raf = null;
+function tick(t) {
+  sheets.rotation.y = t * 0.0001;
+  renderer.render(scene, camera);
+  raf = requestAnimationFrame(tick);
+}
+raf = requestAnimationFrame(tick);
+
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+});
 const DAY_CONTENT = {
   brief: { title: 'Morning brief', body: 'Open your laptop. A digest is in your vault: 8 items ranked by editorial value, pulled from your X bookmarks, AgentMail newsletters, and overnight web coverage. Every claim cited.' },
   factcheck: { title: 'Fact-check a draft', body: 'Run fact-check on an article draft. Mycroft returns per-claim verdicts — verified, unverified, contradicted — via SIFT methodology. Every quote traced to origin.' },
