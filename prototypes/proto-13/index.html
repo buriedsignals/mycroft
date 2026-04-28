@@ -671,7 +671,7 @@ function tickHero(now) {
 
     velocities[ix] *= 0.96; velocities[iy] *= 0.96; velocities[iz] *= 0.96;
 
-    if (heroSettle > 0.01) {
+    if (activePose === 'hero' && heroSettle > 0.01) {
       const tx = heroEndTargets[i][0], ty = heroEndTargets[i][1], tz = heroEndTargets[i][2];
       const k = 4 * dt * heroSettle;
       positions[ix] += (tx - px) * k;
