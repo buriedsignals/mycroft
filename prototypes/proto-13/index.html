@@ -257,6 +257,9 @@ footer.site .giant {
 @media (max-width: 600px) { footer.site .wrap { grid-template-columns: 1fr; } }
 .hero .brand-mark { transition: opacity .4s ease; }
 .hero.settled .brand-mark { opacity: 0; }
+.paper-burst { position: fixed; pointer-events: none; width: 8px; height: 6px; background: var(--paper-top); border: 1px solid var(--paper-bot); border-radius: 1px; z-index: 50; animation: burst .7s ease-out forwards; }
+@keyframes burst { to { transform: translate(var(--dx,0), var(--dy,-90px)) rotate(var(--rot,12deg)); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .paper-burst { display: none; } }
 </style>
 </head>
 <body>
@@ -516,6 +519,8 @@ footer.site .giant {
 </script>
 <script type="module">
 import * as THREE from 'three';
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile = innerWidth < 768;
 
 const COUNT = (navigator.hardwareConcurrency || 4) >= 8 ? 900 : 600;
 const SPHERE_RADIUS = 1.25;
@@ -641,6 +646,8 @@ const DISPERSE_START = 1500;
 const DISPERSE_DURATION = 4000;
 
 function tickHero(now) {
+  if (isMobile && now - (tickHero._last || 0) < 33) { raf = requestAnimationFrame(tickHero); return; }
+  tickHero._last = now;
   const dt = Math.min(0.05, (now - prev) / 1000);
   prev = now;
   elapsed += dt * 1000;
@@ -651,14 +658,14 @@ function tickHero(now) {
     const ix = i*3, iy = i*3+1, iz = i*3+2;
     const px = positions[ix], py = positions[iy], pz = positions[iz];
 
-    if (heroSettle < 0.05) {
+    if (!reducedMotion && heroSettle < 0.05) {
       const dist = Math.hypot(px, py, pz) || 0.001;
       velocities[ix] += (px / dist) * dispersion * 0.04 * dt;
       velocities[iy] += (py / dist) * dispersion * 0.04 * dt;
       velocities[iz] += (pz / dist) * dispersion * 0.04 * dt;
     }
 
-    if (mouseActive && heroSettle < 0.1) {
+    if (!reducedMotion && mouseActive && heroSettle < 0.1) {
       const dx = px - mousePoint.x, dy = py - mousePoint.y, dz = pz - mousePoint.z;
       const d2 = dx*dx + dy*dy + dz*dz;
       if (d2 < 0.6) {
@@ -908,6 +915,24 @@ sForm?.addEventListener('submit', async (e) => {
     else { let m = 'Something went wrong. Please try again.'; try { const d = await r.json(); if (d?.detail) m = d.detail; } catch (_) {} sErr.textContent = m; sErr.hidden = false; }
   } catch (_) { sErr.textContent = 'Something went wrong. Please try again.'; sErr.hidden = false; }
   finally { sBtn.disabled = false; sBtn.textContent = orig; }
+});
+
+document.addEventListener('click', (e) => {
+  if (reducedMotion) return;
+  const btn = e.target.closest('.btn');
+  if (!btn) return;
+  const r = btn.getBoundingClientRect();
+  for (let i = 0; i < 5; i++) {
+    const p = document.createElement('div');
+    p.className = 'paper-burst';
+    p.style.left = (r.right - 12) + 'px';
+    p.style.top = (r.top + 6) + 'px';
+    p.style.setProperty('--dx', (Math.random() * 40 - 20) + 'px');
+    p.style.setProperty('--dy', (-60 - Math.random() * 60) + 'px');
+    p.style.setProperty('--rot', (Math.random() * 60 - 30) + 'deg');
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 750);
+  }
 });
 </script>
 </body>
