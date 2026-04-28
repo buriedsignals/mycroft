@@ -134,6 +134,20 @@ header.site nav a.cta:hover { background: var(--moss); }
 .day .paper-zone .paper-text h3 { margin: 0 0 .5rem; font-size: 1.1rem; font-family: var(--sans); }
 .day .paper-zone .paper-text p { margin: 0; font-size: .92rem; color: var(--ink-muted); line-height: 1.55; }
 @media (max-width: 900px) { .day { margin: 0; border-radius: 0; } .day .wrap { grid-template-columns: 1fr; gap: 2rem; padding: 0 1.5rem; } .day .paper-zone { min-height: 240px; } }
+.plugins { padding: 6rem 0 4rem; }
+.plugins .wrap { max-width: 1180px; margin: 0 auto; padding: 0 2rem; }
+.plugins .head { text-align: center; margin: 0 0 3rem; }
+.plugins .head .eyebrow { font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-muted); font-weight: 600; margin: 0 0 .75rem; }
+.plugins h2 { font-family: var(--sans); font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0; font-weight: 600; letter-spacing: -.01em; }
+.plugins-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+.plugin-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.plugin-card .visual { aspect-ratio: 4 / 3; background: var(--paper-top); position: relative; border-bottom: 1px solid var(--border); }
+.plugin-card .body { padding: 1.25rem 1.5rem 1.5rem; display: flex; flex-direction: column; gap: .35rem; }
+.plugin-card .badges { display: flex; justify-content: space-between; font-size: .78rem; color: var(--ink-muted); margin-bottom: .25rem; }
+.plugin-card .badges .when { color: var(--moss); font-weight: 600; }
+.plugin-card h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.plugin-card p { margin: .25rem 0 0; font-size: .9rem; color: var(--ink-muted); line-height: 1.55; }
+@media (max-width: 720px) { .plugins-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -215,7 +229,49 @@ header.site nav a.cta:hover { background: var(--moss); }
     </div>
   </div>
 </section>
-<!-- tasks 7-12 -->
+<section class="plugins" id="plugins" aria-labelledby="plugins-h">
+  <div class="wrap">
+    <div class="head">
+      <p class="eyebrow">Plugins</p>
+      <h2 id="plugins-h">What ships with Mycroft</h2>
+    </div>
+    <div class="plugins-grid">
+      <article class="plugin-card" data-plugin="spotlight">
+        <div class="visual" aria-hidden="true"></div>
+        <div class="body">
+          <div class="badges"><span>2026</span><span class="when">at launch</span></div>
+          <h3>Spotlight</h3>
+          <p>OSINT investigation system. Multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge-vault ingestion.</p>
+        </div>
+      </article>
+      <article class="plugin-card" data-plugin="cojournalist">
+        <div class="visual" aria-hidden="true"></div>
+        <div class="body">
+          <div class="badges"><span>2026</span><span class="when">at launch</span></div>
+          <h3>coJournalist</h3>
+          <p>Beat-monitoring engine. Scheduled scouts, change detection, relevance scoring. Web-hosted runs 24/7; self-host option available.</p>
+        </div>
+      </article>
+      <article class="plugin-card" data-plugin="datahound">
+        <div class="visual" aria-hidden="true"></div>
+        <div class="body">
+          <div class="badges"><span>2026</span><span class="when">May 2026</span></div>
+          <h3>DataHound</h3>
+          <p>Government and public-data API discovery with automated monitoring. Turn obscure open-data endpoints into queryable beats.</p>
+        </div>
+      </article>
+      <article class="plugin-card" data-plugin="atelier">
+        <div class="visual" aria-hidden="true"></div>
+        <div class="body">
+          <div class="badges"><span>2026</span><span class="when">May 2026</span></div>
+          <h3>Atelier</h3>
+          <p>Visual production — charts, maps, video, infographics, social cards. Data and narrative to publication-ready visuals.</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+<!-- tasks 8-12 -->
 </main>
 <footer class="site"><!-- task 13 --></footer>
 <script type="importmap">
