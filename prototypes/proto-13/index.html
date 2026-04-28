@@ -580,13 +580,71 @@ function writeMatrices() {
 }
 writeMatrices();
 
+const velocities = new Float32Array(COUNT * 3);
+const PARTICLE_R = RECEIPT_H * 0.5;
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+let mouseActive = false;
+const mousePoint = new THREE.Vector3();
+const mousePlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+
+addEventListener('pointermove', (e) => {
+  ndc.x = (e.clientX / innerWidth) * 2 - 1;
+  ndc.y = -(e.clientY / innerHeight) * 2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  if (raycaster.ray.intersectPlane(mousePlane, mousePoint)) mouseActive = true;
+});
+addEventListener('pointerleave', () => { mouseActive = false; });
+
 let raf = null;
-function tick(t) {
-  sheets.rotation.y = t * 0.0001;
+let elapsed = 0;
+let prev = performance.now();
+const DISPERSE_START = 1500;
+const DISPERSE_DURATION = 4000;
+
+function tickHero(now) {
+  const dt = Math.min(0.05, (now - prev) / 1000);
+  prev = now;
+  elapsed += dt * 1000;
+
+  const dispersion = Math.max(0, Math.min(1, (elapsed - DISPERSE_START) / DISPERSE_DURATION));
+
+  for (let i = 0; i < COUNT; i++) {
+    const ix = i*3, iy = i*3+1, iz = i*3+2;
+    const px = positions[ix], py = positions[iy], pz = positions[iz];
+    const dist = Math.hypot(px, py, pz) || 0.001;
+    velocities[ix] += (px / dist) * dispersion * 0.04 * dt;
+    velocities[iy] += (py / dist) * dispersion * 0.04 * dt;
+    velocities[iz] += (pz / dist) * dispersion * 0.04 * dt;
+
+    if (mouseActive) {
+      const dx = px - mousePoint.x, dy = py - mousePoint.y, dz = pz - mousePoint.z;
+      const d2 = dx*dx + dy*dy + dz*dz;
+      if (d2 < 0.6) {
+        const f = (0.6 - d2) * 8 * dt;
+        const inv = 1 / Math.sqrt(d2 + 1e-4);
+        velocities[ix] += dx * inv * f;
+        velocities[iy] += dy * inv * f;
+        velocities[iz] += dz * inv * f;
+      }
+    }
+
+    velocities[ix] *= 0.96; velocities[iy] *= 0.96; velocities[iz] *= 0.96;
+
+    positions[ix] += velocities[ix];
+    positions[iy] += velocities[iy];
+    positions[iz] += velocities[iz];
+
+    rotations[ix] += dt * 0.4;
+    rotations[iy] += dt * 0.6;
+  }
+
+  writeMatrices();
   renderer.render(scene, camera);
-  raf = requestAnimationFrame(tick);
+  raf = requestAnimationFrame(tickHero);
 }
-raf = requestAnimationFrame(tick);
+prev = performance.now();
+raf = requestAnimationFrame(tickHero);
 
 addEventListener('resize', () => {
   renderer.setSize(innerWidth, innerHeight);
