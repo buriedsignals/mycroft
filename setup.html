@@ -1,478 +1,3589 @@
 <!doctype html>
+<!--
+  Mycroft · proto-19-v3 — Setup
+  Re-skin of /setup.html using proto-19-v3's full design rhythm.
+  No WebGL — typography, palette, hairlines, asymmetric grids only.
+  Form IDs and recipe-generation logic preserved verbatim.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mycroft — Setup</title>
 <meta name="description" content="Goose Extension Pack for investigative journalists. Privacy-preserving, ZDR-first, sovereign-capable.">
-
-<!-- Open Graph / Twitter -->
+<meta name="theme-color" content="#E8E0CF">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-50%20-50%20100%20100%22%3E%3Cg%20stroke%3D%22%23131013%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%22-20.5%22%20x2%3D%2212.7%22%20y2%3D%22-12.7%22%2F%3E%3Cline%20x1%3D%2232%22%20y1%3D%220%22%20x2%3D%2218%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2212.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%220%22%20y1%3D%2232%22%20x2%3D%220%22%20y2%3D%2218%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%2220.5%22%20x2%3D%22-12.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%22-32%22%20y1%3D%220%22%20x2%3D%22-18%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%22-20.5%22%20x2%3D%22-12.7%22%20y2%3D%22-12.7%22%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%220%22%20y1%3D%22-34%22%20x2%3D%220%22%20y2%3D%22-16%22%20stroke%3D%22%234A7363%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Mycroft — Setup">
-<meta property="og:description" content="Guided install for the Goose Extension Pack for investigative journalists. Client-side only.">
+<meta property="og:title" content="Mycroft — your morning brief, before coffee.">
+<meta property="og:description" content="An opinionated extension pack for Goose. Three jobs done right, on your laptop, with your keys.">
 <meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
-<meta property="og:url" content="https://mycroft.buriedsignals.com/setup.html">
+<meta property="og:url" content="https://mycroft.buriedsignals.com/">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mycroft — your morning brief, before coffee.">
+<meta name="twitter:description" content="Three jobs done right, on your laptop, with your keys.">
+<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
 
-<!-- CSP — same policy as the landing -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'">
-
-<!-- Favicons -->
-<link rel="icon" type="image/svg+xml" href="assets/logo/mycroft-imfell-M.svg">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<!-- Set the .js flag synchronously BEFORE the stylesheet so reveal/header
+     initial states (opacity:0) are applied during the first paint. Without
+     this, app.js (defer) sets it too late and the transitions never fire. -->
+<script>document.documentElement.classList.add('js');</script>
 <style>
-  :root { --fg: #1a1a1a; --muted: #666; --bg: #ffffff; --border: #e1e4e8; --accent: #0969da; --ok: #d4edda; --ok-fg: #155724; --err: #f8d7da; --err-fg: #721c24; --warn: #fff8e5; --warn-fg: #7a5d00; --soft: #f6f8fa; }
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 780px; margin: 2rem auto; padding: 0 1.2rem 4rem; color: var(--fg); background: var(--bg); line-height: 1.5; }
-  header { border-bottom: 2px solid var(--fg); padding-bottom: .75rem; margin-bottom: 1.5rem; }
-  header h1 { font-size: 1.75rem; margin: 0 0 .25rem; font-weight: 700; }
-  header p { color: var(--muted); margin: 0; font-size: .95rem; }
-  h2 { font-size: 1.05rem; margin: 2rem 0 .75rem; letter-spacing: .02em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
-  .callout { background: var(--soft); border-left: 3px solid var(--fg); padding: .75rem 1rem; margin: 1rem 0; font-size: .9rem; }
-  .callout.warn { background: var(--warn); border-left-color: #b58900; color: var(--warn-fg); }
-  .callout.soft { background: var(--soft); border-left-color: var(--border); padding: .6rem .85rem; font-size: .82rem; color: var(--muted); margin: .5rem 0 0 0; }
-  .item { border: 1px solid var(--border); padding: 1rem; margin: .75rem 0; border-radius: 6px; transition: background .15s, border-color .15s; }
-  .item:has(input[type=checkbox]:checked:not([disabled])) { background: var(--soft); border-color: var(--fg); }
-  .item.required { border-left: 3px solid var(--accent); }
-  .item.info-only { background: #fafbfc; border-style: dashed; }
-  .item-header { display: flex; align-items: center; gap: .5rem; font-weight: 600; margin-bottom: .35rem; }
-  .item small, .item .note { display: block; color: var(--muted); margin: .35rem 0 .6rem; font-size: .85rem; }
-  .item input[type=text], .item input[type=password] { width: 100%; padding: .55rem .7rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .88rem; border: 1px solid var(--border); border-radius: 4px; background: #fff; }
-  .item input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
-  .item > label { display: flex; align-items: center; gap: .5rem; font-weight: 600; cursor: pointer; }
-  .item a { color: var(--accent); }
-  .field-label { display: block; font-size: .85rem; font-weight: 600; margin: .5rem 0 .2rem; }
-  .toggle-row { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; font-size: .9rem; }
-  .toggle-row input[type=checkbox] { margin: 0; }
-  .badge { font-weight: 400; font-size: .78rem; padding: .12em .45em; border-radius: 3px; margin-left: .25em; }
-  .badge.req { background: var(--accent); color: white; }
-  .badge.opt { background: #eee; color: var(--muted); }
-  .badge.soon { background: #fff8e5; color: var(--warn-fg); }
-  .badge.launch { background: #e8f4fa; color: #033d8b; }
-  .skip { position: absolute; top: -40px; left: 0; background: var(--fg); color: var(--bg); padding: .5rem 1rem; z-index: 100; }
-  .skip:focus { top: 0; }
-  .badge.info { background: #e8f4fa; color: var(--accent); }
-  .dl-btn { display: inline-flex; align-items: center; gap: .35rem; background: #fff; border: 1px solid var(--fg); color: var(--fg); padding: .35rem .75rem; border-radius: 4px; font-size: .85rem; text-decoration: none; font-weight: 500; margin: .35rem .35rem .35rem 0; }
-  .dl-btn:hover { background: var(--fg); color: #fff; }
-  details { margin: .5rem 0; font-size: .85rem; }
-  details summary { cursor: pointer; color: var(--accent); user-select: none; }
-  details ol, details ul { margin: .5rem 0; padding-left: 1.5rem; }
-  details code { background: #f0f0f0; padding: .1em .3em; border-radius: 2px; font-size: .8rem; }
-  .pricing { font-size: .82rem; color: var(--muted); margin: .4rem 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-  .pricing strong { color: var(--fg); }
-  .pref-block { display: flex; gap: 1rem; margin: 1rem 0; }
-  .pref-block label { flex: 1; border: 1px solid var(--border); padding: .75rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; display: block; }
-  .pref-block input[type=radio] { margin-right: .5rem; }
-  .pref-block label:has(input:checked) { background: var(--soft); border-color: var(--fg); }
-  .sub-options { background: var(--soft); padding: .6rem .85rem; border-radius: 5px; margin: .5rem 0; font-size: .88rem; }
-  .sub-options label { display: flex; gap: .5rem; align-items: flex-start; padding: .3rem 0; cursor: pointer; font-weight: 500; }
-  .sub-options label input[type=radio] { margin-top: .2rem; }
-  .sub-options small { display: block; color: var(--muted); margin-left: 1.5rem; font-size: .82rem; margin-top: -.15rem; margin-bottom: .35rem; }
-  .install-bar { position: sticky; bottom: 1rem; background: var(--fg); color: #fff; padding: 1rem 1.25rem; border-radius: 8px; margin-top: 2rem; box-shadow: 0 4px 18px rgba(0,0,0,.15); display: flex; gap: 1rem; align-items: center; justify-content: space-between; z-index: 10; flex-wrap: wrap; }
-  @media (max-width: 600px) {
-    body { padding: 0 .75rem 3rem; margin-top: 1rem; }
-    .pref-block { flex-direction: column; }
-    .install-bar { position: static; flex-direction: column; align-items: stretch; }
-    .install-bar button { width: 100%; }
-    h1 { font-size: 1.4rem; }
-    h2 { font-size: 1rem; }
+
+/* Smooth scroll on anchor links (#hero, #install, etc.) */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Mycroft · proto-19-v2 stylesheet
+   Faithful to DESIGN-SYSTEM.md — single source of truth.
+   Mobile-first. Breakpoints: 600 / 980 / 1100.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Fonts ─────────────────────────────────────────────────────── */
+@font-face {
+  font-family: "Migra";
+  src: url("fonts/Migra-Extralight.woff2") format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Migra";
+  src: url("fonts/Migra-Extrabold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Migra";
+  src: url("fonts/MigraItalic-ExtralightItalic.woff2") format("woff2");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Migra";
+  src: url("fonts/MigraItalic-ExtraboldItalic.woff2") format("woff2");
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ── 1 · Tokens ───────────────────────────────────────────────── */
+:root {
+  /* color */
+  --vellum: #e8e0cf;
+  --vellum-2: #dfd5be;
+  --vellum-bright: #faf5e8;
+  --vellum-glow: #fffcf0;
+  --pigment: #131013;
+  --ink: #1a1a1f;
+  --ink-soft: #4a4439;
+  --ink-dim: #8e8676;
+  --oxide: #4a7363;
+  --oxide-active: #2b5247;
+  --rule: #c8bfa8;
+
+  /* type */
+  --serif: "Migra", "Editorial New", Georgia, serif;
+  --sans: "Inter Tight", Inter, system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+  --cap-xs: 10px;
+  --cap-sm: 11px;
+  --cap-md: 12px;
+
+  /* spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 22px;
+  --sp-6: 28px;
+  --sp-7: 36px;
+  --sp-8: 48px;
+  --sp-9: 64px;
+  --sp-10: 96px;
+
+  --gut: clamp(20px, 4vw, 56px);
+  --sp-section-y: clamp(96px, 18vh, 200px);
+  --sp-section-yb: clamp(72px, 14vh, 160px);
+
+  /* layout */
+  --shell-max: 1600px;
+  --head-h: 72px;
+  --col-1: min(420px, 100%);
+  --col-read: 50ch;
+  --col-srv: 42ch;
+  --col-h2: 16ch;
+
+  /* border + radius */
+  --hairline: 1px solid var(--rule);
+  --hairline-dashed: 1px dashed var(--rule);
+  --border-overlay: 1px solid var(--pigment);
+  --rad-pill: 999px;
+  --rad-frame: 0;
+  --rad-sm: 4px;
+
+  /* motion */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --dur-1: 180ms;
+  --dur-2: 250ms;
+  --dur-3: 600ms;
+  --dur-4: 900ms;
+  --stagger: 100ms;
+}
+
+@media (min-width: 980px) {
+  :root {
+    --head-h: 96px;
   }
-  .install-bar button { background: #fff; color: var(--fg); padding: .6rem 1.3rem; border: none; font-size: .95rem; font-weight: 600; cursor: pointer; border-radius: 4px; }
-  .install-bar button:hover { background: #ddd; }
-  .install-bar .note { font-size: .8rem; opacity: .85; }
-  .success { background: var(--ok); color: var(--ok-fg); padding: 1rem 1.25rem; border-radius: 6px; margin-top: 1rem; display: none; }
-  .success.visible { display: block; }
-  .success code { background: rgba(0,0,0,.06); padding: .1em .35em; border-radius: 3px; }
-  pre.preview { background: #0d1117; color: #c9d1d9; padding: 1rem; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem; max-height: 320px; overflow: auto; white-space: pre; line-height: 1.4; }
-  code { background: var(--soft); padding: .1em .35em; border-radius: 3px; font-size: .88em; }
-  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: .8rem; color: var(--muted); }
-  body.mode-cloud .local-only { display: none; }
-  body.mode-local .cloud-only { display: none; }
-  .coj-web-only { display: none; }
-  .coj-mode-web .coj-web-only { display: block; }
-  /* Hide sub-options inside any unchecked item */
-  .item:has(> label > input[type=checkbox]:not(:checked)) .sub-options { display: none; }
+}
+
+/* ── 2 · Reset ────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  /* vellum is the default canvas — section bg planes overlay it for any
+     section that needs a different shade (only #04 install in this proto).
+     This means header padding-top, footer area, and any uncovered region
+     all naturally sit on vellum without extra plane geometry. */
+  background: var(--vellum);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  position: relative;
+}
+/* hero gradient on body::before disabled while 3D planes paint the bg */
+body::before {
+  content: none;
+}
+
+/* ── v3 · 3D stack ─────────────────────────────────────────────
+   Three layers stacked above body, all position:fixed, viewport-sized.
+     #layer-back  — WebGLRenderer for bg shader + back 3D props (z 1)
+     #layer-html  — CSS3DRenderer wrapping #page-3d (z 2, interactive)
+     #layer-front — WebGLRenderer for front 3D props (z 3)
+   The renderer DOM elements get their fixed positioning set inline by
+   main.js. We only style the page wrapper + scroll sentinel here.
+   ────────────────────────────────────────────────────────────── */
+
+/* CSS3DRenderer hard-codes pointer-events:none on its inner cameraElement
+   (the only direct child of #layer-html). Override it via CSS as a backup
+   to the JS patch in main.js — without this, text selection silently
+   fails on browsers that ignore the descendant pointer-events:auto re-
+   enablement during text-selection drags. */
+#layer-html > div {
+  pointer-events: auto !important;
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* the page itself, lifted into a CSS3DObject by main.js.
+   Pre-lift it lays out in normal flow so we can measure section rects.
+   Post-lift main.js sets position:absolute and applies CSS3D transforms. */
+#page-3d {
+  position: relative;
+  width: 100vw;
+  pointer-events: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#page-3d * {
+  /* let inline children inherit selectability; site-head__menu etc. that
+     genuinely need user-select:none can re-set it locally. */
+  -webkit-user-select: inherit;
+}
+
+/* header transparent so it sits over whichever section bg is currently
+   behind it (vellum on light sections, dark on the install slab — the
+   .is-on-dark class flips text colors via existing rules). */
+#page-3d .site-head,
+#page-3d .site-head__bar {
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+/* footer area has no section bg plane in WebGL — it relies on body's
+   vellum bg showing through the transparent canvas pixels. */
+#page-3d .site-foot {
+  background: transparent;
+}
+
+/* the scroll sentinel mirrors the page height into <body> so native
+   scroll continues to work. main.js sets its height after measuring. */
+#scroll-sentinel {
+  position: relative;
+  width: 1px;
+  pointer-events: none;
+}
+
+/* CSS3DRenderer moves #page-3d out of body flow into its own internal
+   container and applies a matrix3d transform via element.style.transform.
+   We must NOT override position here — forcing `position: fixed` made the
+   transformed element a containing block in a way that broke text-selection
+   hit-testing on Safari/Firefox. Let CSS3DRenderer manage the visual
+   placement; #page-3d keeps its `position: relative` from the rule above. */
+html.is-3d-lifted body {
+  overflow-x: hidden;
+}
+
+/* Belt-and-braces: ensure no global rule reaches inside the lifted page
+   and disables selection. */
+html,
+body,
+#page-3d,
+#page-3d * {
+  -webkit-user-select: auto;
+}
+
+/* zero-specificity resets so third-party widgets (lil-gui etc.) can
+   override without specificity wars */
+:where(a) {
+  color: inherit;
+  text-decoration: none;
+}
+:where(button) {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+:where(p, h1, h2, h3, h4) {
+  margin: 0;
+}
+:where(ul) {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+:where(img, svg) {
+  display: block;
+  max-width: 100%;
+}
+:where(code) {
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+/* lil-gui live tweak panel · always above the fold and clickable */
+.lil-gui {
+  z-index: 1000 !important;
+  pointer-events: auto !important;
+}
+
+::selection {
+  background: var(--oxide);
+  color: var(--vellum);
+}
+
+:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ── 3 · Atoms ────────────────────────────────────────────────── */
+
+/* brand */
+.brand {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  color: var(--ink);
+}
+.brand__dot {
+  color: var(--oxide);
+  font-weight: 200;
+  font-style: italic;
+}
+@media (min-width: 980px) {
+  .brand {
+    font-size: 32px;
+  }
+}
+
+/* eyebrow */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 var(--sp-7);
+}
+.eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 1px;
+  background: var(--ink-dim);
+}
+
+/* section numeral */
+.num {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 var(--sp-6);
+}
+.num__n {
+  color: var(--oxide);
+}
+
+/* lead */
+.lead {
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.15vw, 18px);
+  color: var(--ink-soft);
+  line-height: 1.6;
+  max-width: var(--col-read);
+  margin: 0;
+}
+.lead a {
+  color: var(--ink);
+  border-bottom: 1px solid var(--ink-dim);
+  padding-bottom: 1px;
+  transition: border-color var(--dur-1) var(--ease);
+}
+.lead a:hover {
+  border-color: var(--ink);
+}
+
+/* meta line */
+.meta {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  line-height: 1.65;
+  margin: 0;
+}
+.meta strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* dots */
+.dot {
+  width: 6px;
+  height: 6px;
+  background: var(--oxide);
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  flex: 0 0 auto;
+}
+.dot--pulse {
+  position: relative;
+  animation: dot-pulse 2.4s var(--ease) infinite;
+}
+@keyframes dot-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--oxide) 60%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 9px transparent;
+  }
+}
+
+/* corner brackets */
+.crn {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 1px solid currentColor;
+  pointer-events: none;
+  opacity: 0.55;
+}
+.crn--tl {
+  top: 10px;
+  left: 10px;
+  border-right: 0;
+  border-bottom: 0;
+}
+.crn--tr {
+  top: 10px;
+  right: 10px;
+  border-left: 0;
+  border-bottom: 0;
+}
+.crn--bl {
+  bottom: 10px;
+  left: 10px;
+  border-right: 0;
+  border-top: 0;
+}
+.crn--br {
+  bottom: 10px;
+  right: 10px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* ── 4 · Buttons ──────────────────────────────────────────────── */
+/* one base · same height (44px) across all variants · 3 modifiers */
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink);
+  --btn-bd: var(--ink);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font: 500 14px/1 var(--sans);
+  height: 39px;
+  padding: 0 22px;
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--rad-pill);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  cursor: pointer;
+  transition:
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease);
+  white-space: nowrap;
+}
+.btn:hover {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--vellum);
+  --btn-bd: var(--ink);
+}
+.btn .btn__arr {
+  transition: transform var(--dur-2) var(--ease);
+  display: inline-block;
+}
+.btn:hover .btn__arr {
+  transform: translateX(4px);
+}
+
+.btn--solid {
+  --btn-bg: var(--oxide);
+  --btn-fg: var(--vellum);
+  --btn-bd: var(--oxide);
+}
+.btn--solid:hover {
+  --btn-bg: var(--oxide-active);
+  --btn-bd: var(--oxide-active);
+  --btn-fg: var(--vellum);
+}
+
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: var(--ink-soft);
+  --btn-bd: transparent;
+  padding: 0 12px;
+}
+.btn--ghost:hover {
+  --btn-fg: var(--ink);
+  --btn-bg: transparent;
+  --btn-bd: transparent;
+}
+
+/* mono · same height, different font */
+.btn--mono {
+  font: 500 var(--cap-sm)/1 var(--mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0 18px;
+  gap: 10px;
+}
+.btn--mono.btn--ghost {
+  padding: 0 12px;
+}
+
+.btn .icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+/* ── 5 · Site header (masthead) ───────────────────────────────── */
+/* The header is a blur-mask veil: a fixed pseudo-element with
+   backdrop-filter blur, masked by a vertical gradient so the blur
+   strength fades smoothly to 0 at the bottom. No fixed bg color is
+   used — the veil adapts to whatever sits behind (hero gradient,
+   vellum, pigment). Foreground text color flips on .is-on-dark. */
+.site-head {
+  position: fixed;
+  top: 0;
+  inset-inline: 0;
+  z-index: 50;
+  pointer-events: none;
+  --head-fg: var(--ink);
+  color: var(--head-fg);
+}
+.site-head > * {
+  pointer-events: auto;
+}
+
+/* no veil · header sits transparent over the page · text color flips
+   on .is-on-dark when the header is over a dark section. */
+
+/* foreground · adapts text color to the underlying section */
+.site-head.is-on-dark {
+  --head-fg: var(--vellum);
+}
+.site-head .brand,
+.site-head .site-nav__link {
+  color: var(--head-fg);
+  transition: color var(--dur-3) var(--ease);
+}
+.site-head .site-head__menu span {
+  background: var(--head-fg);
+  transition: background var(--dur-3) var(--ease);
+}
+.site-head .btn--ghost {
+  --btn-fg: var(--head-fg);
+  transition: color var(--dur-3) var(--ease);
+}
+.site-head .btn--ghost:hover {
+  --btn-fg: var(--head-fg);
+  opacity: 0.75;
+}
+.site-head.is-on-dark .btn:not(.btn--solid):not(.btn--ghost):not(.btn--mono) {
+  --btn-fg: var(--head-fg);
+  --btn-bd: color-mix(in oklab, var(--head-fg) 60%, transparent);
+}
+.site-head__bar {
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: 14px var(--gut);
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+
+/* nav */
+.site-nav {
+  display: none;
+  justify-self: center;
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.site-nav__link {
+  position: relative;
+  padding: 6px 0;
+  margin: 0 14px;
+  color: var(--ink);
+  transition: color var(--dur-1) var(--ease);
+}
+.site-nav__link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--oxide);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-2) var(--ease);
+}
+.site-nav__link:hover {
+  color: var(--oxide);
+}
+.site-nav__link:hover::after {
+  transform: scaleX(1);
+}
+.site-nav__link.is-active {
+  color: var(--oxide);
+}
+.site-nav__link.is-active::after {
+  transform: scaleX(1);
+}
+
+/* actions */
+.site-head__actions {
+  display: none;
+  gap: 10px;
+  align-items: center;
+  justify-self: end;
+}
+
+/* burger */
+.site-head__menu {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  justify-self: end;
+}
+.site-head__menu span {
+  display: block;
+  width: 22px;
+  height: 1.5px;
+  background: var(--ink);
+  transition:
+    transform var(--dur-2) var(--ease),
+    opacity var(--dur-2) var(--ease);
+}
+.site-head.is-menu-open .site-head__menu span:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+.site-head.is-menu-open .site-head__menu span:nth-child(2) {
+  opacity: 0;
+}
+.site-head.is-menu-open .site-head__menu span:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+/* mobile drawer */
+@media (max-width: 979px) {
+  .site-head.is-menu-open {
+    background: color-mix(in oklab, var(--vellum) 96%, transparent);
+    border-bottom-color: var(--rule);
+  }
+  .site-head.is-menu-open .site-nav {
+    display: flex;
+    flex-direction: column;
+    grid-column: 1 / -1;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 18px var(--gut) 24px;
+    border-top: 1px dashed var(--rule);
+    margin-top: 14px;
+  }
+  .site-head.is-menu-open .site-nav__link {
+    margin: 0;
+  }
+  .site-head.is-menu-open .site-head__actions {
+    display: flex;
+    grid-column: 1 / -1;
+    padding: 0 var(--gut) 22px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 980px) {
+  .site-nav {
+    display: flex;
+    align-items: center;
+  }
+  .site-head__actions {
+    display: flex;
+  }
+  .site-head__menu {
+    display: none;
+  }
+}
+
+/* ── 6 · Shell + sections ────────────────────────────────────── */
+/* page-projection test · canvas fully opaque, no mask, no quiet mode,
+   visible on mobile too. Cleans up the watermark behaviour while we
+   verify the 3D-to-page alignment. */
+.hero-flow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  display: block;
+  opacity: 1;
+}
+.hero-flow.is-quiet {
+  opacity: 1;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: 0 var(--gut);
+  padding-top: var(--head-h);
+}
+main,
+.site-foot {
+  position: relative;
+  z-index: 1;
+}
+
+.sec {
+  padding: var(--sp-section-y) 0 var(--sp-section-yb);
+  border-bottom: var(--hairline);
+}
+.sec:last-of-type {
+  border-bottom: 0;
+}
+
+/* hero · always fits the viewport · vertically centred so big screens
+   don't push content past the fold */
+.sec--hero {
+  min-height: calc(100svh - var(--head-h));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(24px, 4vh, 56px);
+  padding-bottom: clamp(24px, 4vh, 56px);
+  border-bottom: 0;
+}
+.sec--hero .lead {
+  margin-bottom: clamp(16px, 2.5vh, 28px);
+  max-width: 60ch;
+}
+.sec--hero .ctas {
+  margin-bottom: clamp(20px, 3vh, 36px);
+}
+/* hairline sits ABOVE the meta strip · only as wide as the text + a
+   small extension, like a printer's rule under a credit line */
+.sec--hero .meta {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  padding-top: clamp(16px, 2.5vh, 24px);
+  padding-right: clamp(24px, 5vw, 80px);
+  border-top: var(--hairline);
+}
+
+.sec-head {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-7);
+  margin-bottom: var(--sp-9);
+}
+@media (min-width: 1100px) {
+  .sec-head {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 80px;
+    align-items: end;
+  }
+}
+
+/* ── 7 · Display headings ─────────────────────────────────────── */
+.display {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--ink);
+}
+.display em {
+  font-weight: 200;
+  color: var(--oxide);
+}
+
+.display--hero {
+  /* min(7vw, 11vh) caps font on shorter viewports so 3 lines always fit */
+  font-size: clamp(34px, min(7vw, 11vh), 100px);
+  line-height: 1.05;
+  margin-bottom: clamp(16px, 2.5vh, 32px);
+}
+.display--section {
+  font-size: clamp(40px, 6.6vw, 108px);
+  line-height: 1;
+  max-width: var(--col-h2);
+}
+
+/* ── 8 · Hero CTAs + meta ────────────────────────────────────── */
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+  margin: 0 0 var(--sp-7);
+}
+
+/* ── 9 · Day timeline (What it does) ─────────────────────────── */
+.day-timeline {
+  position: relative;
+  padding-left: clamp(80px, 12vw, 180px);
+}
+.day-rail {
+  position: absolute;
+  top: 6vh;
+  bottom: 6vh;
+  left: clamp(28px, 4vw, 64px);
+  width: 1px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.day-rail__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--day-progress, 0%);
+  background: var(--oxide);
+}
+
+.day-frame {
+  position: relative;
+  padding: clamp(64px, 12vh, 140px) 0;
+  display: grid;
+  grid-template-columns: clamp(110px, 14vw, 200px) 1fr;
+  gap: clamp(24px, 5vw, 64px);
+  align-items: start;
+}
+
+.day-time {
+  position: relative;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding-top: 14px;
+  transition: color var(--dur-2) var(--ease);
+}
+.day-time__hour {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  color: var(--oxide);
+  font-size: clamp(56px, 7.5vw, 120px);
+  line-height: 0.85;
+  letter-spacing: -0.025em;
+}
+.day-time__ampm {
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+/* bullet · sits on the rail · turns oxide on .is-in */
+.day-time::before {
+  content: "";
+  position: absolute;
+  left: -42px;
+  top: 36px;
+  width: 11px;
+  height: 11px;
+  border: 1.5px solid var(--rule);
+  background: var(--vellum);
+  border-radius: 50%;
+  transition:
+    background var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+.day-frame.is-in .day-time::before {
+  background: var(--oxide);
+  border-color: var(--oxide);
+  transform: scale(1.1);
+}
+
+/* the falling card · tilted · paper shadow */
+.day-card {
+  position: relative;
+  padding: clamp(32px, 4vw, 56px);
+  background: #fbf6e8;
+  border: 1px solid var(--rule);
+  border-radius: var(--rad-sm);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 30px 60px -30px rgba(19, 16, 19, 0.18),
+    0 8px 20px -16px rgba(19, 16, 19, 0.12);
+  max-width: 720px;
+  opacity: 0;
+  transform: translate3d(var(--offset, 0), -120px, 0)
+    rotate(calc(var(--tilt, 0deg) - 6deg)) scale(0.96);
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform 0.95s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: var(--delay, 0ms);
+}
+.day-frame.is-in .day-card {
+  opacity: 1;
+  transform: translate3d(var(--offset, 0), 0, 0) rotate(var(--tilt, 0deg))
+    scale(1);
+}
+
+.card__kicker {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding: 0 0 var(--sp-3);
+  border-bottom: var(--hairline-dashed);
+  margin: 0 0 var(--sp-5);
+}
+.card__kicker strong {
+  color: var(--oxide);
+  font-weight: 500;
+}
+.card__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(28px, 3.4vw, 56px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--sp-5);
+  max-width: 18ch;
+  color: var(--ink);
+}
+.card__title em {
+  font-weight: 200;
+  color: var(--oxide);
+}
+.card__body {
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin: 0 0 var(--sp-5);
+  max-width: 48ch;
+}
+.card__body em {
+  font-style: italic;
+  color: var(--ink);
+}
+.card__foot {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0;
+  padding-top: var(--sp-4);
+  border-top: var(--hairline-dashed);
+}
+
+@media (max-width: 760px) {
+  .day-timeline {
+    padding-left: 64px;
+  }
+  .day-rail {
+    left: 18px;
+  }
+  .day-frame {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 60px 0;
+  }
+  .day-time {
+    padding-top: 0;
+  }
+  .day-time::before {
+    left: -32px;
+    top: 30px;
+  }
+  .day-card {
+    padding: 28px;
+  }
+}
+
+/* ── 10 · Band (coming / proof) ──────────────────────────────── */
+.band {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding: var(--sp-5) 0;
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+  margin-top: var(--sp-9);
+  flex-wrap: wrap;
+}
+.band strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+.band--proof {
+  margin-top: 0;
+  margin-bottom: var(--sp-7);
+  border-top: 0;
+  border-bottom: var(--hairline-dashed);
+  padding: var(--sp-3) 0;
+}
+.band--proof strong {
+  color: var(--oxide);
+}
+
+/* ── 11 · Equation (Runtime) ─────────────────────────────────── */
+.equation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 48px);
+  padding: clamp(48px, 8vh, 120px) 0 clamp(32px, 6vh, 64px);
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+}
+@media (min-width: 980px) {
+  .equation {
+    flex-wrap: nowrap;
+  }
+}
+
+.term {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-2);
+  opacity: 0;
+  transform: translateY(40px);
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform var(--dur-4) var(--ease);
+  transition-delay: var(--delay, 0ms);
+}
+.equation.is-in .term {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* the + operator · italic Migra 200 oxide · scale + rotate spring on entry */
+.term-op {
+  flex: 0 0 auto;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  color: var(--oxide);
+  font-size: clamp(36px, 4.4vw, 64px);
+  line-height: 1;
+  text-align: center;
+  align-self: center;
+  margin-top: 18px; /* baseline-align with term names */
+  user-select: none;
+  opacity: 0;
+  transform: scale(0.6) rotate(-8deg);
+  transition:
+    opacity var(--dur-3) var(--ease),
+    transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: var(--delay, 0ms);
+}
+.equation.is-in .term-op {
+  opacity: 1;
+  transform: scale(1) rotate(0);
+}
+
+.term__pre {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin-bottom: 4px;
+}
+.term__name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(40px, 5.4vw, 92px);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0;
+  white-space: nowrap;
+}
+.term__dot {
+  color: var(--oxide);
+  font-weight: 200;
+  font-style: italic;
+}
+.term__rule {
+  display: block;
+  width: 0;
+  height: 1px;
+  background: var(--oxide);
+  margin: 14px 0;
+  transition: width var(--dur-4) var(--ease);
+  transition-delay: calc(var(--delay, 0ms) + 200ms);
+}
+.equation.is-in .term__rule {
+  width: 70%;
+}
+.term__role {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  color: var(--ink-soft);
+  font-size: clamp(14px, 1.05vw, 17px);
+  margin: 0;
+}
+.term__spec {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 4px 0 0;
+}
+
+/* ── 12 · Equation (Studio · 2 cols, subgrid) ────────────────── */
+.equation--studio {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  gap: 0;
+  padding: var(--sp-9) 0 var(--sp-7);
+  border-bottom: 0;
+}
+.term--studio {
+  align-items: stretch;
+  text-align: left;
+  padding: 0;
+  gap: 0;
+}
+.term--studio + .term--studio {
+  margin-top: var(--sp-9);
+  padding-top: var(--sp-9);
+  border-top: var(--hairline);
+}
+
+@media (min-width: 980px) {
+  .equation--studio {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto auto auto auto 1fr;
+  }
+  .term--studio {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 6;
+    padding: 0 clamp(20px, 3vw, 56px);
+    margin-top: 0;
+    border-top: 0;
+  }
+  .term--studio + .term--studio {
+    border-top: 0;
+    margin-top: 0;
+    padding-top: 0;
+    border-left: var(--hairline);
+  }
+  .term--studio > .term__pre {
+    align-self: end;
+    margin-bottom: 6px;
+  }
+  .term--studio > .term__name {
+    align-self: end;
+  }
+  .term--studio > .term__rule {
+    align-self: center;
+  }
+  .term--studio > .term__role {
+    align-self: start;
+    margin-top: var(--sp-2);
+  }
+  .term--studio > .term__spec {
+    align-self: start;
+  }
+}
+
+.equation--studio .term__name {
+  font-size: clamp(36px, 4.4vw, 76px);
+}
+.equation--studio .term__rule {
+  width: 0;
+}
+.equation--studio.is-in .term__rule {
+  width: 100%;
+}
+
+/* studio body block */
+.term__body {
+  width: 100%;
+  align-self: stretch;
+  margin-top: var(--sp-7);
+  padding-top: var(--sp-6);
+  border-top: var(--hairline-dashed);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+}
+@media (min-width: 980px) {
+  .term__body {
+    grid-row: 6;
+  }
+}
+
+.term__sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(17px, 1.35vw, 22px);
+  color: var(--ink-soft);
+  line-height: 1.45;
+  margin: 0;
+  max-width: var(--col-1);
+}
+.term__sub em {
+  color: var(--oxide);
+}
+
+.term__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+  align-items: center;
+}
+
+/* ── 13 · Service items ──────────────────────────────────────── */
+.srv-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  max-width: var(--col-1);
+}
+.srv {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.srv__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(18px, 1.4vw, 22px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.srv__desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: var(--col-srv);
+  margin: 0;
+}
+.srv__meta {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: var(--sp-1) 0 0;
+}
+
+/* ── 14 · Signup ─────────────────────────────────────────────── */
+.signup {
+  display: flex;
+  gap: var(--sp-2);
+  width: var(--col-1);
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.signup__input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 12px 16px;
+  border: 1px solid var(--ink);
+  border-radius: var(--rad-pill);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease);
+}
+.signup__input:focus {
+  border-color: var(--oxide);
+}
+.signup__submit {
+  flex: 0 0 auto;
+}
+
+/* ── 15 · Links row ──────────────────────────────────────────── */
+.links-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6);
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-top: var(--sp-7);
+}
+.links-row a {
+  color: var(--ink);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 3px;
+  transition:
+    border-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
+}
+.links-row a:hover {
+  color: var(--oxide);
+  border-color: var(--oxide);
+}
+
+/* ── 16 · Stamps (Privacy) ───────────────────────────────────── */
+.stamps {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+  align-items: stretch; /* equal heights · keeps the row tidy */
+}
+@media (min-width: 600px) {
+  .stamps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 1100px) {
+  .stamps {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.stamp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--sp-7) var(--sp-6) var(--sp-6);
+  border: var(--hairline);
+  border-radius: 8px;
+  background: #fbf6e8;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 14px 30px -22px rgba(19, 16, 19, 0.16);
+  transform: translateY(20px);
+  opacity: 0;
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform var(--dur-4) var(--ease);
+  transition-delay: var(--delay, 0ms);
+}
+.stamp.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* seal · cleaner mark · tiny rotation, single ring, mono caps */
+.stamp__seal {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--oxide);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--oxide);
+  transform: rotate(calc(var(--seal-tilt, 0deg) * -1)) scale(0.5);
+  opacity: 0;
+  transition:
+    transform var(--dur-4) cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity var(--dur-3) var(--ease);
+  transition-delay: calc(var(--delay, 0ms) + 220ms);
+}
+.stamp__seal span {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--oxide);
+  font-weight: 500;
+  line-height: 1;
+}
+.stamp.is-in .stamp__seal {
+  transform: rotate(var(--seal-tilt, 0deg)) scale(1);
+  opacity: 1;
+}
+
+/* content · vertically distributed so footer always sits at bottom */
+.stamp__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  margin: 0 0 var(--sp-3);
+  color: var(--ink);
+  max-width: 11ch; /* keep title clear of the seal */
+  padding-right: 50px;
+}
+.stamp__body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0;
+  flex: 1 1 auto; /* push the foot down · equal heights win */
+}
+.stamp__foot {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: var(--sp-5) 0 0;
+  padding-top: var(--sp-3);
+  border-top: var(--hairline-dashed);
+}
+
+/* ── 17 · Section dark + terminal (Install) ──────────────────── */
+.sec--dark {
+  position: relative;
+  padding: var(--sp-section-y) 0 var(--sp-section-yb);
+  margin: 0 calc(var(--gut) * -1);
+  padding-inline: var(--gut);
+  /* page-projection test · transparent so the 3D canvas is visible
+     through the section. The terminal keeps its own dark bg so the
+     code stays readable. */
+  background: transparent;
+  color: var(--vellum);
+  border-bottom: 0;
+}
+.sec--dark .num {
+  color: rgba(232, 224, 207, 0.55);
+}
+.sec--dark .num__n {
+  color: var(--oxide);
+}
+.sec--dark .display {
+  color: var(--vellum);
+}
+.sec--dark .display em {
+  color: var(--oxide);
+}
+.sec--dark .lead {
+  color: rgba(232, 224, 207, 0.7);
+}
+
+.terminal {
+  margin: 0 auto;
+  max-width: 920px;
+  background: #0e0c0e;
+  border: 1px solid #2a2426;
+  border-radius: var(--rad-sm);
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(232, 224, 207, 0.85);
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform var(--dur-4) var(--ease);
+}
+.terminal.is-on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #161214;
+  border-bottom: 1px solid #2a2426;
+}
+.terminal__bar > span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.terminal__bar > span:nth-child(1) {
+  background: #d04848;
+}
+.terminal__bar > span:nth-child(2) {
+  background: #d0a248;
+}
+.terminal__bar > span:nth-child(3) {
+  background: #6cb255;
+}
+.terminal__label {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(232, 224, 207, 0.5);
+  margin-left: var(--sp-3);
+}
+
+.terminal__body {
+  padding: var(--sp-6) clamp(16px, 3vw, 32px);
+}
+
+.t-block {
+  margin-bottom: var(--sp-5);
+}
+.t-line {
+  display: block;
+  margin: 0 0 4px;
+}
+
+.t-line--cmt {
+  color: rgba(232, 224, 207, 0.55);
+  font-style: italic;
+}
+.t-rn {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  color: var(--oxide);
+  margin-right: 6px;
+}
+
+.t-line--cmd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.t-prompt {
+  color: #d0a248;
+  font-weight: 500;
+}
+.t-cmd {
+  color: #e8d8a8;
+  font-weight: 500;
+}
+.t-flag {
+  color: #b8a878;
+}
+.t-arg {
+  color: var(--vellum);
+}
+.t-op {
+  color: rgba(232, 224, 207, 0.4);
+}
+
+.t-line--out {
+  padding-left: 18px;
+  color: rgba(232, 224, 207, 0.5);
+  font-style: italic;
+  position: relative;
+}
+.t-line--out::before {
+  content: "↳";
+  position: absolute;
+  left: 0;
+  color: var(--oxide);
+  font-style: normal;
+}
+
+.t-divider {
+  border-top: 1px dashed rgba(232, 224, 207, 0.2);
+  margin: var(--sp-5) 0;
+}
+
+.t-line--ok {
+  color: rgba(232, 224, 207, 0.85);
+}
+.t-line--ok .t-tick {
+  color: #7fb56d;
+  margin-right: 8px;
+  font-weight: 500;
+}
+.t-line--ok-final {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px dashed rgba(127, 181, 109, 0.35);
+  color: var(--vellum);
+}
+.t-line--ok-final .t-tick {
+  color: #9fd083;
+}
+.t-line--ok-final .t-arg {
+  color: var(--vellum);
+}
+
+/* armed · all stream elements start hidden, .reveal exposes them */
+.terminal[data-arm="armed"] .t-line--cmt,
+.terminal[data-arm="armed"] .t-line--cmd,
+.terminal[data-arm="armed"] .t-line--out,
+.terminal[data-arm="armed"] .t-divider,
+.terminal[data-arm="armed"] .t-line--ok {
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity var(--dur-3) var(--ease),
+    transform var(--dur-3) var(--ease);
+}
+.terminal[data-arm="armed"] .reveal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* typing caret · only on the line currently being typed */
+.t-line--cmd.is-typing::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  background: var(--vellum);
+  margin-left: 4px;
+  vertical-align: -2px;
+  animation: t-blink 1.05s steps(1) infinite;
+}
+@keyframes t-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.terminal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-5);
+  padding: var(--sp-5) clamp(16px, 3vw, 32px);
+  border-top: 1px solid #2a2426;
+  background: #0c0a0c;
+}
+.terminal__meta {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(232, 224, 207, 0.5);
+}
+
+/* ── 18 · Closing ────────────────────────────────────────────── */
+.sec--closing {
+  text-align: center;
+  padding: var(--sp-section-y) 0 var(--sp-section-yb);
+  border-bottom: 0;
+}
+.sec--closing .display {
+  margin: var(--sp-6) auto var(--sp-7);
+  max-width: 22ch;
+}
+.closing__tag {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: inline-block;
+  padding-top: var(--sp-5);
+  border-top: var(--hairline);
+  margin: 0 auto;
+}
+.closing__line {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+/* ── 19 · Site footer (colophon) ─────────────────────────────── */
+.site-foot {
+  border-top: var(--hairline);
+  background: transparent;
+  margin-top: var(--sp-10);
+}
+.site-foot a:hover {
+  color: var(--oxide);
+}
+
+.site-foot__cols {
+  max-width: var(--shell-max);
+  margin: 0 auto;
+  padding: clamp(40px, 6vh, 72px) var(--gut) clamp(28px, 4vh, 48px);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-7);
+}
+@media (min-width: 600px) {
+  .site-foot__cols {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-8);
+  }
+}
+@media (min-width: 980px) {
+  .site-foot__cols {
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: clamp(24px, 4vw, 64px);
+  }
+}
+
+.site-foot__brand {
+  grid-column: 1 / -1;
+}
+@media (min-width: 980px) {
+  .site-foot__brand {
+    grid-column: auto;
+  }
+}
+
+.brand-mark {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(40px, 4vw, 64px);
+  line-height: 0.9;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 var(--sp-4);
+}
+.brand-mark .brand__dot {
+  color: var(--oxide);
+  font-weight: 200;
+}
+
+.site-foot__line {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(15px, 1.05vw, 17px);
+  color: var(--ink-soft);
+  max-width: 32ch;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.site-foot__heading {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  font-weight: 400;
+  margin: 0 0 var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: var(--hairline-dashed);
+}
+.site-foot__col ul {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--ink);
+}
+.site-foot__col a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  transition: color var(--dur-1) var(--ease);
+}
+
+.site-foot__strip {
+  border-top: var(--hairline);
+  padding: var(--sp-4) var(--gut);
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
+/* ── 20 · Reveal (intersection observer) ─────────────────────── */
+/* Items are hidden ONLY if JS has tagged the document with .js. If
+   the script fails to load, everything stays visible — no flash, no
+   broken page. */
+html.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform var(--dur-4) var(--ease);
+  transition-delay: var(--delay, 0ms);
+  will-change: opacity, transform;
+}
+html.js [data-reveal].is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Title word-split · press-line reveal.
+   Each word sits in a clipped mask wrapper (.tw). The inner span
+   (.tw__in) rises from below the mask + dissolves a soft blur.
+   Italic <em> styling cascades onto words it wraps. */
+
+/* a split title is shown immediately; words handle the reveal */
+html.js [data-reveal].title-split {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+html.js .tw {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  padding: 0.06em 0 0.22em;
+  margin: -0.06em 0 -0.22em;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+html.js .tw__in {
+  display: inline-block;
+  transform: translateY(105%);
+  filter: blur(8px);
+  opacity: 0;
+  transform-origin: 0 100%;
+  transition:
+    transform 1100ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 800ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--delay, 0ms) + 220ms + var(--i, 0) * 80ms);
+  will-change: transform, filter, opacity;
+}
+/* trigger · when any reveal-bearing ancestor enters */
+html.js [data-reveal].is-in .tw__in,
+html.js .day-frame.is-in .tw__in,
+html.js .equation.is-in .tw__in,
+html.js .stamp.is-in .tw__in,
+html.js .is-in .tw__in {
+  transform: translateY(0);
+  filter: blur(0);
+  opacity: 1;
+}
+
+/* ── 21 · Reduced motion ─────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+  .day-frame,
+  .stamp,
+  .term,
+  .terminal,
+  html.js [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+  html.js .tw__in {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+  .term__rule,
+  .equation--studio.is-in .term__rule {
+    width: 70%;
+  }
+}
+
+</style>
+
+<style>
+/* ════════════════════════════════════════════════════════════════════
+   Setup — full editorial rhythm.
+   Reuses .shell, .sec, .sec-head, .display, .lead, .eyebrow, .num,
+   .meta, .btn, .site-foot from styles.css. Setup-only patterns below.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* tighter section rhythm than the landing — setup is a form, not a story.
+   Hero + closing-dark keep their own clamps. */
+main.shell > form > .sec:not(.sec--setup-hero):not(.sec--closing-dark) {
+  padding: clamp(48px, 7vh, 88px) 0 clamp(40px, 6vh, 72px);
+}
+.sec .sec-head { margin-bottom: var(--sp-7); }
+
+/* hero — strictly fits within one viewport (header included) */
+.sec--setup-hero {
+  height: calc(100svh - var(--head-h));
+  min-height: 560px;
+  max-height: calc(100svh - var(--head-h));
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(24px, 3vh, 48px);
+  align-content: center;
+  padding-top: clamp(24px, 4vh, 56px);
+  padding-bottom: clamp(24px, 4vh, 56px);
+  border-bottom: var(--hairline);
+  overflow: hidden;
+}
+@media (min-width: 1100px) {
+  .sec--setup-hero {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: clamp(48px, 5vw, 96px);
+    align-items: center;
+  }
+}
+.sec--setup-hero .display--hero {
+  max-width: 14ch;
+  font-size: clamp(32px, min(6vw, 9vh), 80px);
+  margin: 0;
+}
+.hero-pitch { display: flex; flex-direction: column; gap: clamp(14px, 2vh, 22px); min-width: 0; }
+
+/* "vital signs" — three mono-caps stats under the lead */
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+  padding-top: var(--sp-4);
+  border-top: var(--hairline);
+  margin: 0;
+}
+@media (max-width: 760px) { .vitals { grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); } }
+.vitals dt {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 6px;
+}
+.vitals dd {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(16px, 1.4vw, 22px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+.vitals dd em { font-weight: 200; color: var(--oxide); }
+
+/* CTA pair under the vitals */
+.hero-cta {
+  display: flex; flex-wrap: wrap; gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+
+/* TOC card — the right side of the hero, the 8 chapters of the form */
+.toc {
+  border: var(--hairline);
+  background: var(--vellum-bright);
+  padding: clamp(16px, 2vw, 28px);
+  max-height: 100%;
+  overflow: auto;
+}
+.toc__head {
+  font-family: var(--mono); font-size: var(--cap-xs);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-bottom: var(--sp-2);
+  border-bottom: var(--hairline);
+  margin: 0 0 var(--sp-2);
+}
+.toc ol { list-style: none; padding: 0; margin: 0; }
+.toc li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding: 10px 0;
+  border-bottom: var(--hairline-dashed);
+}
+.toc li:last-child { border-bottom: 0; }
+.toc__num {
+  font-family: var(--mono); font-size: var(--cap-sm);
+  letter-spacing: 0.15em; color: var(--oxide);
+  min-width: 22px;
+}
+.toc__title {
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: 15px; letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.toc__title em { font-weight: 200; color: var(--oxide); }
+.toc a {
+  display: contents;
+  text-decoration: none;
+}
+.toc a:hover .toc__title { color: var(--oxide); }
+.toc__meta {
+  font-family: var(--mono); font-size: var(--cap-xs);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink-dim); white-space: nowrap;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SOVEREIGNTY — full-bleed split, two huge editorial choices
+   ────────────────────────────────────────────────────────── */
+.sovereignty-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: var(--hairline);
+  background: var(--vellum-bright);
+}
+@media (max-width: 900px) { .sovereignty-split { grid-template-columns: 1fr; } }
+.sovereignty-split label {
+  position: relative;
+  display: block;
+  cursor: pointer;
+  padding: clamp(40px, 6vw, 72px) clamp(28px, 4vw, 56px);
+  border-right: var(--hairline);
+  transition: background var(--dur-2) var(--ease);
+}
+.sovereignty-split label:last-of-type { border-right: 0; border-top: 0; }
+@media (max-width: 900px) {
+  .sovereignty-split label { border-right: 0; border-bottom: var(--hairline); }
+  .sovereignty-split label:last-of-type { border-bottom: 0; }
+}
+.sovereignty-split label:hover { background: #fff; }
+.sovereignty-split label:has(input:checked) {
+  background: #fff;
+  box-shadow: inset 0 6px 0 0 var(--oxide);
+}
+.sovereignty-split input[type=radio] {
+  position: absolute; top: clamp(24px, 3vw, 36px); right: clamp(24px, 3vw, 36px);
+  margin: 0; accent-color: var(--oxide);
+  width: 18px; height: 18px;
+}
+.sov-num {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-5);
+  display: flex; align-items: baseline; gap: 14px;
+}
+.sov-num em { color: var(--oxide); font-style: normal; }
+.sov-title {
+  display: block;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(40px, 5.2vw, 76px);
+  line-height: 0.95;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  margin: 0 0 var(--sp-5);
+}
+.sov-title em { font-weight: 200; color: var(--oxide); }
+.sov-desc {
+  font-family: var(--sans);
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 38ch;
+  margin: 0 0 var(--sp-4);
+}
+.sov-meta {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  padding-top: var(--sp-4);
+  border-top: var(--hairline-dashed);
+  margin: 0;
+}
+.sov-meta strong { color: var(--ink); font-weight: 500; }
+
+/* ──────────────────────────────────────────────────────────
+   CARD GRIDS — providers (2-col), required (3-col), optional (3-col)
+   ────────────────────────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: var(--hairline); border-bottom: 0; }
+.grid-2 > * { border-right: var(--hairline); border-bottom: var(--hairline); }
+.grid-2 > *:nth-child(2n) { border-right: 0; }
+@media (max-width: 760px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-2 > * { border-right: 0; }
+}
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: var(--hairline); border-bottom: 0; }
+.grid-3 > * { border-right: var(--hairline); border-bottom: var(--hairline); }
+.grid-3 > *:nth-child(3n) { border-right: 0; }
+@media (max-width: 1100px) {
+  .grid-3 { grid-template-columns: 1fr 1fr; }
+  .grid-3 > * { border-right: var(--hairline); }
+  .grid-3 > *:nth-child(3n) { border-right: var(--hairline); }
+  .grid-3 > *:nth-child(2n) { border-right: 0; }
+}
+@media (max-width: 700px) {
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-3 > * { border-right: 0 !important; }
+}
+
+/* ──────────────────────────────────────────────────────────
+   ITEM — base card. Lives inside .grid-* or stand-alone.
+   ────────────────────────────────────────────────────────── */
+.item {
+  position: relative;
+  background: transparent;
+  padding: clamp(24px, 3vw, 36px) clamp(24px, 3vw, 36px);
+  display: flex;
+  flex-direction: column;
+  transition: background var(--dur-2) var(--ease);
+}
+.item:has(> .item__head input[type=checkbox]:checked:not([disabled])),
+.item:has(> .item__head .item__check input[type=checkbox]:checked:not([disabled])) {
+  background: var(--vellum-bright);
+}
+.item.disabled { opacity: 0.55; }
+
+.item__num {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-4);
+  display: flex; align-items: baseline; gap: 14px;
+}
+.item__num em { color: var(--oxide); font-style: normal; }
+
+.item__head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+}
+.item__check { display: inline-flex; align-items: center; gap: var(--sp-3); cursor: pointer; }
+.item__check input[type=checkbox] {
+  margin: 0; accent-color: var(--oxide);
+  width: 18px; height: 18px;
+}
+.item__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(22px, 2vw, 28px);
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.item__title em { font-weight: 200; color: var(--oxide); }
+
+.item__lede {
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 50ch;
+  margin: 0 0 var(--sp-4);
+}
+.item__lede a { color: var(--ink); border-bottom: 1px solid var(--ink-dim); padding-bottom: 1px; transition: border-color var(--dur-1) var(--ease); }
+.item__lede a:hover { border-color: var(--ink); }
+.item__lede code { font-family: var(--mono); font-size: 12px; background: var(--vellum); padding: 1px 5px; border: 1px solid var(--rule); }
+
+.item__body { display: flex; flex-direction: column; gap: var(--sp-3); }
+
+/* PRICING — big editorial price tag */
+.price {
+  padding: var(--sp-4) 0;
+  border-top: var(--hairline-dashed);
+  border-bottom: var(--hairline-dashed);
+  margin: 0 0 var(--sp-3);
+  display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3);
+  align-items: baseline;
+}
+.price__amt {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: 36px;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.price__amt em { font-weight: 200; color: var(--oxide); font-size: 0.65em; margin-left: 4px; }
+.price__detail {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.12em;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
+.price__detail strong { color: var(--ink); font-weight: 500; }
+
+/* BADGES */
+.badge {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border: 1px solid var(--rule);
+  background: transparent;
+  color: var(--ink-dim);
+  white-space: nowrap;
+  line-height: 1;
+}
+.badge.req { background: var(--oxide); color: var(--vellum); border-color: var(--oxide); }
+.badge.launch { background: var(--ink); color: var(--vellum); border-color: var(--ink); }
+.badge.soon { color: var(--ink-dim); border-color: var(--rule); background: var(--vellum-2); }
+.badge.info { color: var(--oxide); border-color: var(--oxide); }
+
+/* FIELDS */
+.field-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: var(--sp-3) 0 8px;
+}
+.field-label .opt { color: var(--ink-dim); font-weight: 400; text-transform: none; letter-spacing: 0.05em; }
+input[type=text].fld,
+input[type=password].fld {
+  display: block;
+  width: 100%;
+  padding: 13px 16px;
+  font-family: var(--mono);
+  font-size: 13px;
+  background: #fff;
+  color: var(--ink);
+  border: var(--hairline);
+  border-radius: 0;
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
+}
+input.fld:focus { border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--oxide); }
+
+/* TOGGLE ROW */
+.toggle {
+  display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--sans); font-size: 14px; color: var(--ink);
+  padding: 12px 16px;
+  background: var(--vellum);
+  border: var(--hairline);
+  cursor: pointer;
+  margin: 0;
+}
+.toggle input[type=checkbox] { margin: 0; accent-color: var(--oxide); width: 14px; height: 14px; }
+.toggle code { font-family: var(--mono); font-size: 12px; }
+
+/* MINI BUTTON */
+.mini-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  width: fit-content; align-self: flex-start;
+  height: 30px; padding: 0 14px;
+  font: 500 var(--cap-xs)/1 var(--mono);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ink); background: transparent;
+  border: 1px solid var(--ink); border-radius: var(--rad-pill);
+  text-decoration: none;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.mini-btn:hover { background: var(--ink); color: var(--vellum); }
+
+/* DETAILS DISCLOSURE */
+.item details { font-family: var(--sans); font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin-top: var(--sp-3); }
+.item details summary {
+  cursor: pointer; user-select: none;
+  font-family: var(--mono); font-size: var(--cap-xs);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink-dim);
+  padding: var(--sp-2) 0;
+  border-top: var(--hairline-dashed);
+}
+.item details[open] summary { color: var(--ink); }
+.item details summary:hover { color: var(--ink); }
+.item details p { margin: var(--sp-3) 0; }
+.item details code { font-family: var(--mono); font-size: 12px; background: var(--vellum); padding: 1px 5px; border: 1px solid var(--rule); }
+
+/* CALLOUTS — neutral, warn */
+.callout {
+  font-family: var(--sans); font-size: 13px; line-height: 1.6;
+  color: var(--ink-soft);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--vellum);
+  border-left: 3px solid var(--oxide);
+  margin: var(--sp-3) 0 0;
+}
+.callout strong { color: var(--ink); }
+.callout.warn { border-left-color: var(--ink); background: var(--vellum-2); color: var(--ink-soft); }
+.callout.warn strong { color: var(--ink); }
+.callout ol, .callout ul { margin: var(--sp-2) 0 0; padding-left: var(--sp-5); }
+
+/* ──────────────────────────────────────────────────────────
+   PLUGINS — hero plugin (full-width feature) + grid below
+   ────────────────────────────────────────────────────────── */
+.plugin-hero {
+  border: var(--hairline);
+  background: var(--vellum-bright);
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 0 -1px;
+}
+@media (max-width: 1100px) { .plugin-hero { grid-template-columns: 1fr; } }
+.plugin-hero__intro { padding: clamp(28px, 3.5vw, 48px); border-right: var(--hairline); }
+.plugin-hero__config { padding: clamp(28px, 3.5vw, 48px); background: #fff; }
+@media (max-width: 1100px) { .plugin-hero__intro { border-right: 0; border-bottom: var(--hairline); } }
+.plugin-hero__title {
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 0.95; letter-spacing: -0.025em;
+  color: var(--ink); margin: 0 0 var(--sp-4);
+}
+.plugin-hero__title em { font-weight: 200; color: var(--oxide); }
+.plugin-hero__lede {
+  font-family: var(--sans); font-size: 15px; line-height: 1.6;
+  color: var(--ink-soft); max-width: 42ch; margin: 0 0 var(--sp-5);
+}
+.plugin-hero__lede a { color: var(--ink); border-bottom: 1px solid var(--ink-dim); padding-bottom: 1px; }
+.plugin-hero__lede code { font-family: var(--mono); font-size: 13px; background: var(--vellum); padding: 1px 5px; border: 1px solid var(--rule); }
+.plugin-hero__head { display: flex; align-items: center; gap: var(--sp-3); margin: 0 0 var(--sp-4); }
+.plugin-hero__head input[type=checkbox] { margin: 0; accent-color: var(--oxide); width: 18px; height: 18px; }
+
+.feed-row {
+  display: grid; grid-template-columns: auto 1fr auto auto;
+  align-items: center; gap: var(--sp-4);
+  padding: var(--sp-4) 0;
+  border-top: var(--hairline-dashed);
+}
+.feed-row:last-child { border-bottom: var(--hairline-dashed); }
+.feed-row__name {
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: 17px; letter-spacing: -0.01em; color: var(--ink);
+}
+.feed-row__desc { font-family: var(--sans); font-size: 13px; color: var(--ink-dim); }
+@media (max-width: 760px) {
+  .feed-row { grid-template-columns: 1fr; gap: var(--sp-2); }
+}
+.feed-row__keys { display: flex; flex-direction: column; gap: 8px; grid-column: 1 / -1; margin-top: var(--sp-2); }
+
+/* COJ MODE — radio segment */
+.seg {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border: var(--hairline); margin: var(--sp-3) 0;
+}
+@media (max-width: 600px) { .seg { grid-template-columns: 1fr; } }
+.seg label {
+  cursor: pointer; padding: var(--sp-4) var(--sp-5);
+  background: var(--vellum); border-right: var(--hairline);
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: 18px; letter-spacing: -0.01em; color: var(--ink);
+  transition: background var(--dur-2) var(--ease);
+}
+.seg label:last-child { border-right: 0; }
+@media (max-width: 600px) {
+  .seg label { border-right: 0; border-bottom: var(--hairline); }
+  .seg label:last-child { border-bottom: 0; }
+}
+.seg label:has(input:checked) { background: #fff; box-shadow: inset 0 4px 0 0 var(--oxide); }
+.seg label input[type=radio] { margin: 0 var(--sp-2) 0 0; accent-color: var(--oxide); }
+.seg label small {
+  display: block; font-style: normal; font-weight: 400; font-family: var(--sans);
+  font-size: 13px; color: var(--ink-soft); margin: 6px 0 0 24px;
+}
+
+/* hide unchecked sub-options */
+.item:has(> .item__head .item__check input[type=checkbox]:not(:checked)) .item__body > .nested,
+.plugin-hero:has(> .plugin-hero__intro .plugin-hero__head input[type=checkbox]:not(:checked)) .plugin-hero__config { display: none; }
+
+/* ──────────────────────────────────────────────────────────
+   PREVIEW + INSTALL — closing dramatic dark section
+   ────────────────────────────────────────────────────────── */
+/* full-bleed escape from the .shell padding so the dark section spans
+   edge-to-edge of the viewport */
+.sec--closing-dark {
+  background: var(--ink);
+  color: var(--vellum);
+  margin-top: var(--sp-10);
+  padding: clamp(60px, 8vh, 120px) var(--gut) clamp(60px, 8vh, 120px);
+  border: 0;
+  width: 100vw;
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+}
+.sec--closing-dark > * {
+  max-width: var(--shell-max);
+  margin-left: auto;
+  margin-right: auto;
+}
+/* the footer's default margin-top creates a vellum gap right after the
+   dark section — collapse it so the dark closes cleanly into the foot. */
+body:has(.sec--closing-dark) .site-foot { margin-top: 0; }
+.sec--closing-dark .display { color: var(--vellum-bright); }
+.sec--closing-dark .display em { color: color-mix(in oklab, var(--oxide) 75%, var(--vellum)); }
+.sec--closing-dark .lead { color: color-mix(in oklab, var(--vellum) 80%, transparent); }
+.sec--closing-dark .eyebrow { color: color-mix(in oklab, var(--vellum) 60%, transparent); }
+.sec--closing-dark .eyebrow::before { background: color-mix(in oklab, var(--vellum) 50%, transparent); }
+
+pre.preview {
+  background: var(--pigment);
+  color: var(--vellum-bright);
+  padding: var(--sp-6);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  max-height: 380px;
+  overflow: auto;
+  white-space: pre;
+  margin: 0;
+  border: 1px solid color-mix(in oklab, var(--vellum) 15%, transparent);
+}
+.preview-wrap { margin: var(--sp-7) 0 0; }
+.preview-wrap summary {
+  display: inline-flex; align-items: center; gap: 10px;
+  cursor: pointer; user-select: none;
+  height: 39px; padding: 0 22px;
+  font: 500 var(--cap-sm)/1 var(--mono);
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--vellum);
+  background: transparent;
+  border: 1px solid color-mix(in oklab, var(--vellum) 50%, transparent);
+  border-radius: var(--rad-pill);
+  list-style: none;
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.preview-wrap summary::-webkit-details-marker { display: none; }
+.preview-wrap summary::after {
+  content: "+";
+  font-family: var(--serif);
+  font-style: normal;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform var(--dur-2) var(--ease);
+}
+.preview-wrap[open] summary::after { content: "−"; }
+.preview-wrap summary:hover {
+  color: var(--vellum-bright);
+  border-color: var(--vellum);
+  background: color-mix(in oklab, var(--vellum) 8%, transparent);
+}
+.preview-wrap[open] pre.preview { margin-top: var(--sp-4); }
+
+/* INSTALL BAR — sits inside the dark closing section. Oxide rule on top
+   to echo the closing section's CTA accent. */
+.install-bar {
+  background: var(--pigment);
+  color: var(--vellum);
+  padding: var(--sp-6) clamp(28px, 4vw, 56px);
+  margin: var(--sp-8) 0 0;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--sp-6);
+  align-items: center;
+  border-top: 4px solid var(--oxide);
+  border: 1px solid color-mix(in oklab, var(--vellum) 15%, transparent);
+  border-top: 4px solid var(--oxide);
+}
+@media (max-width: 760px) {
+  .install-bar { grid-template-columns: 1fr; padding: var(--sp-5); }
+}
+.install-bar__copy strong {
+  display: block;
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: clamp(22px, 2.5vw, 32px); line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--vellum-bright);
+}
+.install-bar__copy strong em { font-weight: 200; color: var(--oxide); }
+.install-bar__copy span {
+  display: block;
+  font-family: var(--mono); font-size: var(--cap-xs);
+  letter-spacing: 0.18em;
+  color: color-mix(in oklab, var(--vellum) 55%, transparent);
+  margin-top: var(--sp-2); max-width: 56ch;
+}
+.install-bar__actions { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
+.install-bar__actions button {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 44px; padding: 0 24px;
+  font: 500 14px/1 var(--sans);
+  border-radius: var(--rad-pill); cursor: pointer;
+  border: 1px solid var(--vellum-bright);
+  background: var(--vellum-bright); color: var(--ink);
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.install-bar__actions button:hover { background: #fff; }
+.install-bar__actions button.btn--secondary {
+  background: transparent; color: var(--vellum);
+  border-color: color-mix(in oklab, var(--vellum) 50%, transparent);
+}
+.install-bar__actions button.btn--secondary:hover {
+  background: color-mix(in oklab, var(--vellum) 10%, transparent);
+  border-color: var(--vellum);
+}
+
+/* SUCCESS BLOCK */
+.success {
+  display: none;
+  background: var(--vellum-bright);
+  border: var(--hairline);
+  border-left: 3px solid var(--oxide);
+  padding: var(--sp-6);
+  margin: var(--sp-5) 0;
+  font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--ink);
+}
+.success.visible { display: block; }
+.success > strong {
+  display: block;
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: 26px; letter-spacing: -0.015em;
+  margin: 0 0 var(--sp-3); color: var(--ink);
+}
+.success pre {
+  background: var(--vellum); border: 1px solid var(--rule);
+  padding: var(--sp-3); margin: var(--sp-3) 0;
+  font-family: var(--mono); font-size: 12px; white-space: pre-wrap;
+}
+
+/* HEADER ENTRANCE — fade + slight slide on load, mirrors hero rhythm */
+html.js .site-head {
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity var(--dur-4) var(--ease), transform var(--dur-4) var(--ease);
+}
+html.js .site-head.is-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* SKIP LINK */
+.skip {
+  position: absolute; top: -50px; left: 0;
+  background: var(--ink); color: var(--vellum);
+  padding: 12px 18px;
+  font: 500 var(--cap-xs)/1 var(--mono);
+  letter-spacing: 0.18em; text-transform: uppercase;
+  z-index: 100;
+  transition: top var(--dur-1) var(--ease);
+}
+.skip:focus { top: var(--sp-3); }
+
+/* MODE TOGGLES — preserve existing JS class API */
+body.mode-cloud .local-only { display: none; }
+body.mode-local .cloud-only { display: none; }
+.coj-web-only { display: none; }
+.coj-mode-web .coj-web-only { display: block; }
+
+/* small typographic helpers re-used inside cards */
+.note-mono {
+  font-family: var(--mono); font-size: var(--cap-xs);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: var(--sp-3) 0 0;
+}
 </style>
 </head>
 <body class="mode-cloud coj-mode-web">
 
 <a class="skip" href="#form">Skip to setup form</a>
 
-<header role="banner">
-  <h1>Mycroft — Setup</h1>
-  <p>Goose Extension Pack for investigative journalists. Client-side only — nothing leaves your browser until you run the script locally.</p>
+<!-- ────────── HEADER · masthead ────────── -->
+<header class="site-head" role="banner">
+  <div class="site-head__bar">
+    <a class="brand" href="index.html" aria-label="Mycroft, home">
+      Mycroft<em class="brand__dot">.</em>
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a class="site-nav__link" href="#sovereignty">Sovereignty</a>
+      <a class="site-nav__link" href="#providers">Providers</a>
+      <a class="site-nav__link" href="#prereqs">Required</a>
+      <a class="site-nav__link" href="#plugins">Plugins</a>
+      <a class="site-nav__link" href="#install">The script</a>
+    </nav>
+    <div class="site-head__actions">
+      <a class="btn btn--ghost btn--mono" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">
+        <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        Source
+      </a>
+      <a class="btn btn--solid btn--mono" href="#install">Download <span class="btn__arr">→</span></a>
+    </div>
+    <button class="site-head__menu" type="button" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </header>
 
-<main id="main">
+<main class="shell">
 <form id="form">
 
-  <h2>Sovereignty preference</h2>
-
-  <div class="pref-block">
-    <label>
-      <input type="radio" name="sovereignty" value="cloud" checked>
-      Cloud-first
-      <span style="display:block;font-weight:400;font-size:.82rem;color:var(--muted);margin-top:.25rem;">Recipes use cloud providers by default. Local model is a fallback / sovereign mode for sensitive work.</span>
-    </label>
-    <label>
-      <input type="radio" name="sovereignty" value="local">
-      Local-first
-      <span style="display:block;font-weight:400;font-size:.82rem;color:var(--muted);margin-top:.25rem;">Recipes route to your local fine-tuned Qwen by default. Cloud is fallback. Some features restricted by feature flag.</span>
-    </label>
-  </div>
-
-  <div class="callout soft">
-    All cloud providers listed are <strong>open-weight models, hosted in the US or Europe, with Zero Data Retention</strong> — prompts and completions are not logged, stored, or used for training.
-  </div>
-
-  <div class="cloud-only">
-
-    <h2>Cloud providers</h2>
-
-    <p class="note" style="font-size:.85rem;color:var(--muted);">Cost estimates: <em>moderate journalism use</em> — ~2 morning briefs, ~5 vault-qa, ~2 fact-checks, ~2 newsletter summaries / day (~7M input + 0.7M output tokens / month).</p>
-
-    <div class="item">
-      <label>
-        <input type="checkbox" name="fireworks_enabled" checked>
-        <strong>Fireworks AI — Qwen 3.6 Plus</strong>
-        <span class="badge req">recommended primary</span>
-      </label>
-      <div class="pricing" style="margin: .5rem 0;">
-        <strong>Privacy:</strong> US-hosted · Zero Data Retention (open-weight default)<br>
-        <strong>Cost:</strong> ~<strong>$6/mo</strong> moderate use · $0.50/$3.00 per 1M tokens (in/out)
-      </div>
-      <a class="dl-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key</a>
-      <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
-      <input type="password" id="fireworks_key" name="fireworks_key" autocomplete="off" spellcheck="false">
-      <details>
-        <summary>Model details + docs</summary>
-        <p style="margin: .5rem 0;">
-          <strong>Model ID:</strong> <code>accounts/fireworks/models/qwen3p6-plus</code> — open-weight Qwen by Alibaba, hosted in Fireworks US data centers.<br>
-          <strong>Context:</strong> 1,000,000 tokens.<br>
-          <strong>ZDR reference:</strong> <a href="https://docs.fireworks.ai/guides/security_compliance/data_security" target="_blank" rel="noreferrer">docs.fireworks.ai</a>.<br>
-          <strong>Heavy-use cost:</strong> ~$20-40/mo for investigative work at 5× baseline volume.<br>
-          <em>Cost assumes 7M input + 0.7M output tokens / month — roughly 2 morning briefs, 5 vault-qa sessions, 2 fact-checks, 2 newsletter summaries per day.</em>
-        </p>
-      </details>
-    </div>
-
-    <div class="item">
-      <label>
-        <input type="checkbox" name="together_enabled">
-        <strong>Together AI — Qwen 2.5-72B Instruct Turbo</strong>
-        <span class="badge opt">alternative primary</span>
-      </label>
-      <div class="pricing" style="margin: .5rem 0;">
-        <strong>Privacy:</strong> US-hosted · Zero Data Retention <em style="color:var(--warn-fg);">(opt-in — set before first use)</em><br>
-        <strong>Cost:</strong> ~<strong>$9/mo</strong> moderate use · $1.20/$1.20 per 1M tokens (in/out)
-      </div>
-      <a class="dl-btn" href="https://together.ai" target="_blank" rel="noreferrer">Get API key</a>
-      <label class="field-label" for="together_key">TOGETHER_API_KEY</label>
-      <input type="password" id="together_key" name="together_key" autocomplete="off" spellcheck="false">
-      <details>
-        <summary>Model details + ZDR setup</summary>
-        <p style="margin: .5rem 0;">
-          <strong>Model ID:</strong> <code>Qwen/Qwen2.5-72B-Instruct-Turbo</code> — open-weight, Together US data centers, SOC 2 Type 2.<br>
-          <strong>Context:</strong> 131,072 tokens.<br>
-          <strong>Enable ZDR:</strong> sign in to your Together dashboard and set <em>both</em> privacy toggles to "No" (<a href="https://www.together.ai/terms-of-service" target="_blank" rel="noreferrer">Together ToS</a>). Until you do, requests may be retained.<br>
-          <strong>Heavy-use cost:</strong> ~$25-50/mo.<br>
-          <strong>Note:</strong> Qwen 3.6 Plus is not yet available on Together — only Fireworks currently hosts it. This is Together's strongest open-weight option.
-        </p>
-      </details>
-    </div>
-
-  </div>
-
-  <div class="local-only">
-
-    <h2>Local model (sovereign mode)</h2>
-
-    <div class="item info-only">
-      <div class="item-header">
-        🤗&nbsp;<strong>Mycroft Qwen — abliterated journalism fine-tune</strong>
-        <span class="badge info">local</span>
-      </div>
-      <small>
-        Fine-tuned Qwen 3.5 on investigative methodology (SIFT, OSINT tool selection, evidence grounding, ethics). <strong>Abliterated</strong> — won't soft-refuse legitimate journalism queries. Two sizes:
-      </small>
-      <ul style="margin: .5rem 0; padding-left: 1.5rem; font-size: .85rem;">
-        <li><strong>9B (default)</strong> — runs on 16 GB+ unified memory / RAM · <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">🤗 qwen3.5-9b-abliterated-journalist-GGUF</a></li>
-        <li><strong>35B (power)</strong> — needs 64 GB+ unified memory · <a href="https://huggingface.co/tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">🤗 qwen3.5-35b-abliterated-journalist-GGUF</a> <em>(training in progress)</em></li>
-      </ul>
-      <small>Runtime: <code>llama-server</code> on port 8080 (cross-platform GGUF). Apple Silicon users get native-speed inference from llama.cpp too; an MLX build is optional (set up separately if you want it).</small>
-      <p class="pricing">
-        Cost: <strong>$0</strong> / month (hardware + electricity only)
+  <!-- ────────── 01 · HERO ────────── -->
+  <section class="sec sec--hero sec--setup-hero" id="hero">
+    <div class="hero-pitch">
+      <p class="eyebrow" data-reveal style="--delay: 0ms">Install · macOS · Client-side</p>
+      <h1 class="display display--hero" data-reveal style="--delay: 120ms">
+        Configure.<br>Download.<br><em>Run.</em>
+      </h1>
+      <p class="lead" data-reveal style="--delay: 220ms">
+        Fill the form below. Your selections — including API keys — get baked into a bash script you download. Nothing reaches a server. Seven short steps, ~30 seconds to fill, ~30 seconds to run.
       </p>
-      <div class="callout soft" style="margin-top:.5rem;">
-        <strong>Download + start (after your setup script runs):</strong>
-        <pre style="margin:.35rem 0;background:var(--soft);padding:.5rem;border-radius:3px;font-size:.78rem;overflow:auto;"><code># 1. Install the HF CLI if you don't have it
+      <dl class="vitals" data-reveal style="--delay: 280ms">
+        <div><dt>Time</dt><dd>~30 <em>sec.</em></dd></div>
+        <div><dt>Surface</dt><dd>Local <em>only.</em></dd></div>
+        <div><dt>Touches</dt><dd>3 <em>paths.</em></dd></div>
+      </dl>
+      <div class="hero-cta" data-reveal style="--delay: 360ms">
+        <a class="btn btn--solid btn--mono" href="#sovereignty">Start setup <span class="btn__arr">→</span></a>
+        <a class="btn btn--ghost btn--mono" href="#install">Jump to download</a>
+      </div>
+    </div>
+
+    <aside class="toc" data-reveal style="--delay: 200ms" aria-label="Setup chapters">
+      <p class="toc__head">Seven steps</p>
+      <ol>
+        <li><a href="#sovereignty"><span class="toc__num">01</span><span class="toc__title">Sovereignty<em>.</em></span><span class="toc__meta">Choose</span></a></li>
+        <li><a href="#providers"><span class="toc__num">02</span><span class="toc__title">Providers<em>.</em></span><span class="toc__meta">Keys</span></a></li>
+        <li><a href="#prereqs"><span class="toc__num">03</span><span class="toc__title">Required<em>.</em></span><span class="toc__meta">3 tools</span></a></li>
+        <li><a href="#optional"><span class="toc__num">04</span><span class="toc__title">Optional<em>.</em></span><span class="toc__meta">Pick</span></a></li>
+        <li><a href="#plugins"><span class="toc__num">05</span><span class="toc__title">Plugins<em>.</em></span><span class="toc__meta">Toggle</span></a></li>
+        <li><a href="#vault"><span class="toc__num">06</span><span class="toc__title">Vault<em>.</em></span><span class="toc__meta">Path</span></a></li>
+        <li><a href="#install"><span class="toc__num">07</span><span class="toc__title">The script<em>.</em></span><span class="toc__meta">Download</span></a></li>
+      </ol>
+    </aside>
+  </section>
+
+  <!-- ────────── 02 · SOVEREIGNTY ────────── -->
+  <section class="sec" id="sovereignty">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">01</span> Sovereignty</p>
+        <h2 class="display display--section">Where the work <em>happens.</em></h2>
+      </div>
+      <p class="lead">
+        <strong>Pick one below.</strong> Cloud is fast and cheap — ZDR open-weight providers in the US/EU. Local is yours, fully — a fine-tuned Qwen on your machine. Whichever you choose is the default; the other side stays available as fallback.
+      </p>
+    </div>
+
+    <div class="sovereignty-split" data-reveal style="--delay: 120ms">
+      <label>
+        <input type="radio" name="sovereignty" value="cloud" checked>
+        <p class="sov-num"><em>01</em> Cloud-first</p>
+        <span class="sov-title">Fast.<br><em>Cheap.</em></span>
+        <p class="sov-desc">Recipes route to your cloud provider by default. Local model is the sovereign-mode fallback for sensitive work.</p>
+        <p class="sov-meta"><strong>~$6 / mo</strong> · ZDR · open-weight</p>
+      </label>
+      <label>
+        <input type="radio" name="sovereignty" value="local">
+        <p class="sov-num"><em>02</em> Local-first</p>
+        <span class="sov-title">Yours.<br><em>Fully.</em></span>
+        <p class="sov-desc">Recipes route to your local fine-tuned Qwen by default. Cloud is fallback. Some features feature-flagged off.</p>
+        <p class="sov-meta"><strong>$0 / mo</strong> · 16 GB+ RAM · llama-server</p>
+      </label>
+    </div>
+  </section>
+
+  <!-- ────────── 03a · CLOUD PROVIDERS ────────── -->
+  <section class="sec cloud-only" id="providers">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">02</span> Providers</p>
+        <h2 class="display display--section">Open-weight, <em>ZDR.</em></h2>
+      </div>
+      <p class="lead">
+        <strong>Toggle the providers you want and paste your keys.</strong> Cost estimates assume <em>moderate journalism use</em> (~2 morning briefs, ~5 vault-qa, ~2 fact-checks, ~2 newsletter summaries / day).
+      </p>
+    </div>
+
+    <div class="grid-2" data-reveal style="--delay: 120ms">
+      <div class="item">
+        <p class="item__num"><em>A</em> Recommended</p>
+        <div class="item__head">
+          <label class="item__check">
+            <input type="checkbox" name="fireworks_enabled" checked>
+            <span class="item__title">Fireworks AI<br><em>Qwen 3.6 Plus</em></span>
+          </label>
+          <span class="badge req">primary</span>
+        </div>
+        <p class="item__lede">Open-weight Qwen by Alibaba, hosted in Fireworks US data centers. 1M-token context. ZDR by default — no opt-in needed.</p>
+        <div class="price">
+          <span class="price__amt">$6<em>/mo</em></span>
+          <span class="price__detail"><strong>$0.50</strong> in · <strong>$3.00</strong> out · per 1M tokens</span>
+        </div>
+        <div class="item__body">
+          <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key →</a>
+          <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
+          <input class="fld" type="password" id="fireworks_key" name="fireworks_key" placeholder="fw_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          <details>
+            <summary>Model details + ZDR docs</summary>
+            <p><strong>Model:</strong> <code>accounts/fireworks/models/qwen3p6-plus</code><br>
+              <strong>Context:</strong> 1,000,000 tokens<br>
+              <strong>ZDR ref:</strong> <a href="https://docs.fireworks.ai/guides/security_compliance/data_security" target="_blank" rel="noreferrer">docs.fireworks.ai</a><br>
+              <strong>Heavy use:</strong> ~$20-40/mo at 5× baseline</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="item">
+        <p class="item__num"><em>B</em> Alternative</p>
+        <div class="item__head">
+          <label class="item__check">
+            <input type="checkbox" name="together_enabled">
+            <span class="item__title">Together AI<br><em>Qwen 2.5-72B Turbo</em></span>
+          </label>
+          <span class="badge">alt</span>
+        </div>
+        <p class="item__lede">Open-weight, Together US data centers, SOC 2 Type 2. ZDR is opt-in — set <em>both</em> dashboard toggles to "No" before first use.</p>
+        <div class="price">
+          <span class="price__amt">$9<em>/mo</em></span>
+          <span class="price__detail"><strong>$1.20</strong> in · <strong>$1.20</strong> out · per 1M tokens</span>
+        </div>
+        <div class="item__body">
+          <a class="mini-btn" href="https://together.ai" target="_blank" rel="noreferrer">Get API key →</a>
+          <label class="field-label" for="together_key">TOGETHER_API_KEY</label>
+          <input class="fld" type="password" id="together_key" name="together_key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          <details>
+            <summary>Model details + ZDR setup</summary>
+            <p><strong>Model:</strong> <code>Qwen/Qwen2.5-72B-Instruct-Turbo</code><br>
+              <strong>Context:</strong> 131,072 tokens<br>
+              <strong>Enable ZDR:</strong> dashboard → set both privacy toggles to "No" (<a href="https://www.together.ai/terms-of-service" target="_blank" rel="noreferrer">ToS</a>)<br>
+              <strong>Heavy use:</strong> ~$25-50/mo</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ────────── 03b · LOCAL MODEL ────────── -->
+  <section class="sec local-only" id="local-model">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">02</span> Local model</p>
+        <h2 class="display display--section">Mycroft <em>Qwen.</em></h2>
+      </div>
+      <p class="lead">
+        Fine-tuned Qwen 3.5 on investigative methodology — SIFT, OSINT tool selection, evidence grounding, ethics. <em>Abliterated</em>: won't soft-refuse legitimate journalism queries.
+      </p>
+    </div>
+
+    <div class="grid-2" data-reveal style="--delay: 120ms">
+      <div class="item">
+        <p class="item__num"><em>9B</em> Default</p>
+        <div class="item__head">
+          <span class="item__title">9B<br><em>Daily driver.</em></span>
+          <span class="badge info">local</span>
+        </div>
+        <p class="item__lede">Runs on 16 GB+ unified memory / RAM. Apple Silicon: native llama.cpp speeds. <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.5-9b-abliterated-journalist-GGUF</a></p>
+        <div class="price">
+          <span class="price__amt">$0<em>/mo</em></span>
+          <span class="price__detail">hardware + electricity only</span>
+        </div>
+      </div>
+
+      <div class="item">
+        <p class="item__num"><em>35B</em> Power</p>
+        <div class="item__head">
+          <span class="item__title">35B<br><em>Heavy lifting.</em></span>
+          <span class="badge soon">training</span>
+        </div>
+        <p class="item__lede">Needs 64 GB+ unified memory. <em>Training in progress</em> — same flow once released. <a href="https://huggingface.co/tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.5-35b-abliterated-journalist-GGUF</a></p>
+        <div class="price">
+          <span class="price__amt">$0<em>/mo</em></span>
+          <span class="price__detail">hardware + electricity only</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout" data-reveal style="--delay: 200ms">
+      <strong>Download + start (after your setup script runs):</strong>
+      <pre class="preview" style="margin-top:var(--sp-3);max-height:none;"><code># 1. Install the HF CLI
 pip install -U "huggingface_hub[cli]"
 
-# 2. Download the 9B (pick a quantization — Q4_K_M is a good balance)
+# 2. Pull the 9B (Q4_K_M is a good balance)
 hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \
   --local-dir ~/.mycroft/models/qwen-journalist-9b \
   --include "*Q4_K_M.gguf"
 
 # 3. Start llama-server
-llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf \
-  -c 32768 --port 8080</code></pre>
-        Goose will then route to it when sovereign mode is on. 35B build is in progress — same flow once released.
+llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080</code></pre>
+    </div>
+  </section>
+
+  <!-- ────────── 04 · REQUIRED PREREQS ────────── -->
+  <section class="sec" id="prereqs">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">03</span> Required</p>
+        <h2 class="display display--section">Three <em>pieces.</em></h2>
+      </div>
+      <p class="lead"><strong>All three are required.</strong> Leave the auto-install boxes ticked to let the script handle them, or untick and install manually.</p>
+    </div>
+
+    <div class="grid-3" data-reveal style="--delay: 120ms">
+      <div class="item required">
+        <p class="item__num"><em>01</em> Runtime</p>
+        <div class="item__head"><span class="item__title">Goose<em>.</em></span><span class="badge req">required</span></div>
+        <p class="item__lede">The agent runtime Mycroft plugs into. Desktop or CLI.</p>
+        <div class="item__body">
+          <label class="toggle">
+            <input type="checkbox" name="install_goose" checked>
+            Auto-install <code>brew install --cask block-goose</code>
+          </label>
+          <a class="mini-btn" href="https://goose-docs.ai/docs/getting-started/installation" target="_blank" rel="noreferrer">Manual download</a>
+        </div>
+      </div>
+
+      <div class="item required">
+        <p class="item__num"><em>02</em> Vault</p>
+        <div class="item__head"><span class="item__title">Obsidian<em>.</em></span><span class="badge req">required</span></div>
+        <p class="item__lede">Mycroft reads/writes your knowledge vault through Obsidian's built-in CLI.</p>
+        <div class="item__body">
+          <label class="toggle">
+            <input type="checkbox" name="install_obsidian" checked>
+            Auto-install <code>brew install --cask obsidian</code>
+          </label>
+          <div class="callout warn" style="margin:var(--sp-2) 0 0;">
+            <strong>Two manual steps after first launch:</strong>
+            <ol>
+              <li>Settings → General → Advanced → <strong>CLI: ON</strong></li>
+              <li>Keep Obsidian <strong>running</strong> for vault recipes</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="item required">
+        <p class="item__num"><em>03</em> Web</p>
+        <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge req">required</span></div>
+        <p class="item__lede">Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</p>
+        <div class="item__body">
+          <label class="toggle">
+            <input type="checkbox" name="install_firecrawl" checked>
+            Auto-install via <code>npm install -g</code>
+          </label>
+          <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
+          <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
+          <input class="fld" type="password" id="firecrawl_key" name="firecrawl_key" placeholder="fc-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
       </div>
     </div>
+  </section>
 
-  </div>
-
-  <h2>Required prerequisites</h2>
-
-  <div class="item required">
-    <div class="item-header">
-      <strong>Goose</strong>
-      <span class="badge req">required</span>
+  <!-- ────────── 05 · OPTIONAL TOOLS ────────── -->
+  <section class="sec" id="optional">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">04</span> Optional</p>
+        <h2 class="display display--section">Plug, or <em>skip.</em></h2>
+      </div>
+      <p class="lead"><strong>Tick what you use, skip the rest.</strong> Recipes that depend on a missing tool degrade gracefully — they just skip that data source.</p>
     </div>
-    <small>The agent runtime Mycroft plugs into. Desktop app (recommended for non-terminal users) or CLI.</small>
-    <label class="toggle-row">
-      <input type="checkbox" name="install_goose" checked>
-      Install Goose for me (runs <code>brew install --cask block-goose</code>)
-    </label>
-    <a class="dl-btn" href="https://goose-docs.ai/docs/getting-started/installation" target="_blank" rel="noreferrer">Download manually</a>
-    <details>
-      <summary>Manual install (no Homebrew)</summary>
-      <ol>
-        <li><strong>Desktop:</strong> Download from the link above, unzip, run.</li>
-        <li><strong>CLI:</strong> <code>curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash</code></li>
-        <li>Verify: <code>goose --version</code>.</li>
-      </ol>
-    </details>
-  </div>
 
-  <div class="item required">
-    <div class="item-header">
-      <strong>Obsidian Desktop</strong>
-      <span class="badge req">required</span>
+    <div class="grid-3" data-reveal style="--delay: 120ms">
+      <div class="item">
+        <p class="item__num"><em>—</em> Bookmarks</p>
+        <label class="item__check item__head" style="margin-bottom: var(--sp-3);">
+          <input type="checkbox" name="ft_enabled">
+          <span class="item__title">ft<em> CLI.</em></span>
+        </label>
+        <p class="item__lede">Self-custody sync of X/Twitter bookmarks. Feeds <code>morning-brief</code>. Without it, the recipe skips bookmarks.</p>
+      </div>
+
+      <div class="item">
+        <p class="item__num"><em>—</em> Newsletters</p>
+        <label class="item__check item__head" style="margin-bottom: var(--sp-3);">
+          <input type="checkbox" name="agentmail_enabled">
+          <span class="item__title">AgentMail<em>.</em></span>
+        </label>
+        <p class="item__lede">Dedicated inbox for newsletter subs. Feeds <code>morning-brief</code> + <code>newsletter-summarize</code>.</p>
+        <div class="item__body">
+          <a class="mini-btn" href="https://agentmail.to" target="_blank" rel="noreferrer">Sign up →</a>
+          <label class="field-label" for="agentmail_key">AGENTMAIL_API_KEY</label>
+          <input class="fld" type="password" id="agentmail_key" name="agentmail_key" placeholder="am_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+
+      <div class="item">
+        <p class="item__num"><em>—</em> Social</p>
+        <label class="item__check item__head" style="margin-bottom: var(--sp-3);">
+          <input type="checkbox" name="apify_enabled">
+          <span class="item__title">Apify<em>.</em></span>
+        </label>
+        <p class="item__lede">Powers <code>apify-social/*</code> recipes — IG, X, FB, TikTok, LinkedIn. Pay-per-run.</p>
+        <div class="item__body">
+          <a class="mini-btn" href="https://apify.com" target="_blank" rel="noreferrer">Sign up →</a>
+          <label class="field-label" for="apify_token">APIFY_API_TOKEN</label>
+          <input class="fld" type="password" id="apify_token" name="apify_token" placeholder="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
     </div>
-    <small>Mycroft reads/writes your knowledge vault through Obsidian. Obsidian 1.12+ ships with a built-in CLI (<code>obsidian-cli</code>) — both the app and CLI come with a single Homebrew install.</small>
-    <label class="toggle-row">
-      <input type="checkbox" name="install_obsidian" checked>
-      Install Obsidian for me (runs <code>brew install --cask obsidian</code>)
-    </label>
-    <a class="dl-btn" href="https://obsidian.md" target="_blank" rel="noreferrer">Download manually</a>
-    <div class="callout warn" style="margin-top:.5rem;font-size:.82rem;">
-      <strong>Two manual steps (Obsidian 1.12+):</strong>
-      <ol style="margin:.35rem 0;padding-left:1.5rem;">
-        <li>After Obsidian launches, go to <strong>Settings → General → Advanced → Command Line Interface</strong> and toggle it <strong>ON</strong>. This can't be automated; Obsidian exposes it only through the app UI.</li>
-        <li>Leave Obsidian Desktop <strong>running</strong> whenever you invoke <code>morning-brief</code> or <code>vault-sync</code> — the CLI talks to the live app. Writes silently fail if it's closed.</li>
-      </ol>
+  </section>
+
+  <!-- ────────── 06 · PLUGINS ────────── -->
+  <section class="sec" id="plugins">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">05</span> Plugins</p>
+        <h2 class="display display--section">Specialized <em>engines.</em></h2>
+      </div>
+      <p class="lead"><strong>Toggle the plugins you want and configure them inline.</strong> Each is its own tool — investigation, beat-monitoring, visual production — living in its own repo. The script wires them in.</p>
     </div>
-  </div>
 
-  <div class="item required">
-    <div class="item-header">
-      <strong>Firecrawl CLI</strong>
-      <span class="badge req">required</span>
-    </div>
-    <small>Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</small>
-    <label class="toggle-row">
-      <input type="checkbox" name="install_firecrawl" checked>
-      Install Firecrawl CLI for me (runs <code>npm install -g firecrawl-cli</code>)
-    </label>
-    <a class="dl-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key at firecrawl.dev</a>
-    <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
-    <input type="password" id="firecrawl_key" name="firecrawl_key" autocomplete="off" spellcheck="false">
-  </div>
+    <!-- Spotlight — hero plugin, full-width feature -->
+    <div class="plugin-hero" id="spot-item" data-reveal style="--delay: 120ms">
+      <div class="plugin-hero__intro">
+        <div class="plugin-hero__head">
+          <input type="checkbox" name="spotlight_enabled" id="spotlight_enabled" checked>
+          <span class="badge launch">launching with Mycroft</span>
+        </div>
+        <h3 class="plugin-hero__title"><em>Spotlight.</em></h3>
+        <p class="plugin-hero__lede">
+          OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. Runtime-agnostic (reads <code>AGENTS.md</code>).
+        </p>
+        <p class="plugin-hero__lede" style="margin-bottom:0;">
+          <a href="https://github.com/buriedsignals/spotlight" target="_blank" rel="noreferrer">buriedsignals/spotlight</a>
+        </p>
+      </div>
+      <div class="plugin-hero__config">
+        <p class="note-mono">Configuration</p>
 
-  <h2>Optional tools</h2>
+        <label class="field-label" for="spotlight_vault_path">Investigations vault</label>
+        <input class="fld" type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/intelligence" value="~/Documents/intelligence" autocomplete="off" spellcheck="false">
 
-  <div class="item">
-    <label>
-      <input type="checkbox" name="ft_enabled">
-      <strong>ft CLI (Field Theory)</strong>
-      <span class="badge opt">optional</span>
-    </label>
-    <small>Self-custody sync of X/Twitter bookmarks. Feeds <code>morning-brief</code>. Without it, the recipe skips bookmarks. A one-off preflight recipe runs in Goose after install to triage your existing bookmarks.</small>
-  </div>
+        <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span class="opt">— optional</span></label>
+        <input class="fld" type="password" id="osint_navigator_key" name="osint_navigator_key" placeholder="ont_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
 
-  <div class="item">
-    <label>
-      <input type="checkbox" name="agentmail_enabled">
-      <strong>AgentMail account</strong>
-      <span class="badge opt">optional but recommended</span>
-    </label>
-    <small>Dedicated inbox for newsletter subscriptions. <code>morning-brief</code> + <code>newsletter-summarize</code> consume via REST API (no CLI).</small>
-    <a class="dl-btn" href="https://agentmail.to" target="_blank" rel="noreferrer">Sign up at agentmail.to</a>
-    <label class="field-label" for="agentmail_key">AGENTMAIL_API_KEY</label>
-    <input type="password" id="agentmail_key" name="agentmail_key" autocomplete="off" spellcheck="false">
-  </div>
+        <p class="note-mono" style="margin-top:var(--sp-6);">Data feeds — all optional</p>
 
-  <div class="item">
-    <label>
-      <input type="checkbox" name="apify_enabled">
-      <strong>Apify account — social media scraping</strong>
-      <span class="badge opt">optional</span>
-    </label>
-    <small>Powers the <code>apify-social/*</code> recipes: Instagram posts + comments, X/Twitter, Facebook, TikTok, LinkedIn. Pay-per-actor-run pricing. REST API — no CLI install.</small>
-    <a class="dl-btn" href="https://apify.com" target="_blank" rel="noreferrer">Sign up at apify.com</a>
-    <label class="field-label" for="apify_token">APIFY_API_TOKEN</label>
-    <input type="password" id="apify_token" name="apify_token" autocomplete="off" spellcheck="false">
-  </div>
-
-  <h2>Plugins</h2>
-
-  <div class="callout warn">
-    Plugins are modular add-ons (MCP extensions + skills) maintained on their own repos. Mycroft wires them in.
-  </div>
-
-  <div class="item" id="spot-item">
-    <label>
-      <input type="checkbox" name="spotlight_enabled" id="spotlight_enabled" checked>
-      <strong>Spotlight</strong>
-      <span class="badge launch">launching with Mycroft</span>
-    </label>
-    <small>
-      OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. Runtime-agnostic (reads <code>AGENTS.md</code>). Repo: <a href="https://github.com/buriedsignals/spotlight" target="_blank" rel="noreferrer">buriedsignals/spotlight</a>.
-    </small>
-
-    <div class="sub-options">
-      <small style="color:var(--muted);margin-bottom:.5rem;">Spotlight reuses your Mycroft config (frontier provider, Firecrawl, Apify, Obsidian). These are the only Spotlight-specific things we need:</small>
-
-      <label class="field-label" for="spotlight_vault_path">Investigations vault path</label>
-      <input type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/intelligence" value="~/Documents/intelligence" autocomplete="off" spellcheck="false">
-      <small style="margin-top:.15rem;">Dedicated vault for investigation findings (separate from your notes vault). Script creates the folder if it's missing.</small>
-
-      <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span style="font-weight:400;color:var(--muted);">— optional</span></label>
-      <input type="password" id="osint_navigator_key" name="osint_navigator_key" autocomplete="off" spellcheck="false">
-      <small style="margin-top:.15rem;">Enables the 1000+ OSINT tool finder inside Spotlight's investigator + fact-checker agents. Skip if you don't have a key.</small>
-
-      <div style="margin-top:1rem;">
-        <strong style="font-size:.85rem;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;">Data feeds + integrations</strong>
-        <small style="margin-top:.25rem;">All optional. Skip the ones you don't need — Spotlight degrades gracefully.</small>
-
-        <div style="margin-top:.75rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
-          <label class="toggle-row" style="margin:0;">
+        <div class="feed-row">
+          <span class="feed-row__name">browser-use</span>
+          <span class="feed-row__desc">JS-heavy sites, auth forms · MIT, no key</span>
+          <span></span>
+          <label class="toggle" style="padding:6px 12px;">
             <input type="checkbox" name="spot_browseruse">
-            <strong>browser-use</strong>
-            <span style="font-weight:400;color:var(--muted);font-size:.82rem;">— JS-heavy sites, auth forms. MIT, no key required.</span>
+            Enable
           </label>
         </div>
 
-        <div style="margin-top:.5rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
-          <strong style="font-size:.9rem;">ACLED <span style="font-weight:400;color:var(--muted);">— conflict event data</span></strong>
-          <small style="margin-top:.2rem;margin-bottom:.4rem;"><a href="https://developer.acleddata.com/" target="_blank" rel="noreferrer">Register for ACLED</a> — Armed Conflict Location &amp; Event Data. Battles, civilian violence, protests.</small>
-          <label class="field-label" for="acled_key">ACLED_API_KEY</label>
-          <input type="password" id="acled_key" name="acled_key" autocomplete="off" spellcheck="false">
-          <label class="field-label" for="acled_email">ACLED_EMAIL</label>
-          <input type="text" id="acled_email" name="acled_email" autocomplete="off" spellcheck="false">
+        <div class="feed-row">
+          <span class="feed-row__name">ACLED</span>
+          <span class="feed-row__desc">Conflict event data · battles, civilian violence, protests</span>
+          <span></span>
+          <a class="mini-btn" href="https://developer.acleddata.com/" target="_blank" rel="noreferrer">Register →</a>
+          <div class="feed-row__keys">
+            <label class="field-label" for="acled_key">ACLED_API_KEY</label>
+            <input class="fld" type="password" id="acled_key" name="acled_key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+            <label class="field-label" for="acled_email">ACLED_EMAIL</label>
+            <input class="fld" type="text" id="acled_email" name="acled_email" placeholder="you@newsroom.org" autocomplete="off" spellcheck="false">
+          </div>
         </div>
 
-        <div style="margin-top:.5rem;padding:.65rem .85rem;background:var(--soft);border-radius:5px;">
-          <strong style="font-size:.9rem;">Junkipedia <span style="font-weight:400;color:var(--muted);">— misinformation tracking</span></strong>
-          <small style="margin-top:.2rem;margin-bottom:.4rem;"><a href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Apply at Junkipedia</a> — narrative / disinfo database used by 100+ newsrooms.</small>
-          <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY</label>
-          <input type="password" id="junkipedia_key" name="junkipedia_key" autocomplete="off" spellcheck="false">
+        <div class="feed-row">
+          <span class="feed-row__name">Junkipedia</span>
+          <span class="feed-row__desc">Misinformation tracking · 100+ newsrooms</span>
+          <span></span>
+          <a class="mini-btn" href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Apply →</a>
+          <div class="feed-row__keys">
+            <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY</label>
+            <input class="fld" type="password" id="junkipedia_key" name="junkipedia_key" placeholder="jk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="item" id="coj-item">
-    <label>
-      <input type="checkbox" name="cojournalist_enabled" id="cojournalist_enabled" checked>
-      <strong>coJournalist</strong>
-      <span class="badge launch">launching with Mycroft</span>
-    </label>
-    <small>
-      Beat-monitoring engine — scheduled scouts, change detection, relevance scoring. Repo: <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>.
-    </small>
-
-    <div class="sub-options coj-mode">
-      <label>
-        <input type="radio" name="cojournalist_mode" value="web" checked>
-        Web (hosted)
-        <small>Always-on — runs 24/7 on the coJournalist cloud backend. Scouts keep watching your beat even when your laptop is closed. Requires API key.</small>
-      </label>
-      <label>
-        <input type="radio" name="cojournalist_mode" value="local">
-        Local (self-host)
-        <small>Run the backend yourself (Docker + Supabase). Only active when your machine is on — not suited to overnight monitoring. <a href="https://github.com/buriedsignals/cojournalist#self-host" target="_blank" rel="noreferrer">Self-host docs</a>.</small>
-      </label>
+    <!-- coJournalist — second feature plugin, same hero treatment -->
+    <div class="plugin-hero" id="coj-item" data-reveal style="--delay: 200ms">
+      <div class="plugin-hero__intro">
+        <div class="plugin-hero__head">
+          <input type="checkbox" name="cojournalist_enabled" id="cojournalist_enabled" checked>
+          <span class="badge launch">launching with Mycroft</span>
+        </div>
+        <h3 class="plugin-hero__title">co<em>Journalist.</em></h3>
+        <p class="plugin-hero__lede">
+          Beat-monitoring engine — scheduled scouts watch your sources, detect change, score relevance. Web-hosted (24/7) or self-host.
+        </p>
+        <p class="plugin-hero__lede" style="margin-bottom:0;">
+          <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>
+        </p>
+      </div>
+      <div class="plugin-hero__config">
+        <p class="note-mono">Mode</p>
+        <div class="seg">
+          <label>
+            <input type="radio" name="cojournalist_mode" value="web" checked>
+            Web (hosted)
+            <small>24/7. Scouts run even when your laptop is closed. Requires API key.</small>
+          </label>
+          <label>
+            <input type="radio" name="cojournalist_mode" value="local">
+            Local (self-host)
+            <small>Docker + Supabase. Active only when your machine is on.</small>
+          </label>
+        </div>
+        <div class="coj-web-only">
+          <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
+          <input class="fld" type="password" id="cojournalist_api_key" name="cojournalist_api_key" placeholder="coj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
     </div>
 
-    <div class="coj-web-only">
-      <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
-      <input type="password" id="cojournalist_api_key" name="cojournalist_api_key" autocomplete="off" spellcheck="false">
+    <!-- Coming-soon + extension point — 3-col footer grid -->
+    <p class="note-mono" data-reveal style="margin: var(--sp-8) 0 var(--sp-3);">Coming soon · Extension point</p>
+    <div class="grid-3" data-reveal>
+      <div class="item disabled">
+        <p class="item__num"><em>—</em> Open data</p>
+        <div class="item__head">
+          <span class="item__title">Data<em>Hound.</em></span>
+          <span class="badge soon">May 2026</span>
+        </div>
+        <p class="item__lede">
+          Government + public-data API discovery and monitoring — turns obscure open-data endpoints into queryable beats. Web-only.
+        </p>
+      </div>
+
+      <div class="item disabled">
+        <p class="item__num"><em>—</em> Visuals</p>
+        <div class="item__head">
+          <span class="item__title">Atelier<em>.</em></span>
+          <span class="badge soon">May 2026</span>
+        </div>
+        <p class="item__lede">
+          Full visual production — Datawrapper, D3, Maptiler, video, infographics, network graphs, social cards.
+        </p>
+      </div>
+
+      <div class="item disabled">
+        <p class="item__num"><em>+</em> Extension point</p>
+        <div class="item__head">
+          <span class="item__title">Your <em>plugin.</em></span>
+        </div>
+        <p class="item__lede">Any Goose-compatible MCP extension plugs in. <a href="https://goose-docs.ai/extensions" target="_blank" rel="noreferrer">70+ in the registry →</a></p>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="item" style="opacity: .75;">
-    <label>
-      <input type="checkbox" disabled>
-      <strong>DataHound</strong>
-      <span class="badge soon">May 2026 · web-only · API key</span>
-    </label>
-    <small>
-      Government + public-data API discovery and automated monitoring — turn obscure open-data endpoints into structured, queryable beats. Web-only (no self-host). Requires <code>DATAHOUND_API_KEY</code> at launch.
-    </small>
-  </div>
-
-  <div class="item" style="opacity: .75;">
-    <label>
-      <input type="checkbox" disabled>
-      <strong>Atelier</strong>
-      <span class="badge soon">May 2026</span>
-    </label>
-    <small>
-      Full visual production for journalism — charts (Datawrapper or D3), maps (Maptiler), video, infographics, network graphs, social cards. Renders data + narrative into publication-ready visuals across every medium. (<em>Name provisional — candidates: Atelier, OpenAtlas, OpenStudio, OpenFrame, Studio, Render, Canvas.</em>)
-    </small>
-  </div>
-
-  <div class="item" style="opacity: .55; border-style: dashed;">
-    <div class="item-header"><strong>Your plugin here</strong> <span class="badge opt">extension point</span></div>
-    <small>Any Goose-compatible MCP extension plugs in. <a href="https://goose-docs.ai/extensions" target="_blank" rel="noreferrer">70+ in the Goose registry</a>.</small>
-  </div>
-
-  <h2>Your vault</h2>
-
-  <div class="item">
-    <small>Default Obsidian vault path — used by <code>vault-qa</code> and <code>morning-brief</code>.</small>
-    <label class="field-label" for="vault_path">Vault path</label>
-    <input type="text" id="vault_path" name="vault_path" placeholder="~/Documents/Mycroft" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
-  </div>
-
-  <h2>Preview script</h2>
-
-  <details>
-    <summary>Show the setup script that will be downloaded</summary>
-    <pre class="preview" id="preview">(preview loads on open)</pre>
-  </details>
-
-  <div class="install-bar">
-    <div>
-      <strong>Download your setup script</strong>
-      <div class="note">Client-side only — your API keys are embedded in the download, nothing is sent over the network.</div>
+  <!-- ────────── 07 · VAULT ────────── -->
+  <section class="sec" id="vault">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">06</span> Your vault</p>
+        <h2 class="display display--section">Where notes <em>live.</em></h2>
+      </div>
+      <p class="lead">Default Obsidian vault path — used by <code>vault-qa</code> and <code>morning-brief</code>.</p>
     </div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end;">
-      <button type="button" id="copyBtn" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);">Copy to clipboard</button>
-      <button type="button" id="downloadBtn">Download mycroft-setup.command</button>
-    </div>
-  </div>
 
-  <div class="success" id="success">
-    <strong>Downloaded.</strong> To run it:
-    <pre style="margin:.5rem 0;background:rgba(0,0,0,.04);padding:.5rem;border-radius:3px;font-size:.82rem;"><code>chmod +x ~/Downloads/mycroft-setup.command
+    <div data-reveal style="--delay: 120ms" style="border:var(--hairline);padding:clamp(28px,3vw,40px);background:var(--vellum-bright);max-width:680px;">
+      <label class="field-label" for="vault_path">Vault path</label>
+      <input class="fld" type="text" id="vault_path" name="vault_path" placeholder="~/Documents/Mycroft" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
+    </div>
+  </section>
+
+  <!-- ────────── 08 · PREVIEW + INSTALL ────────── -->
+  <section class="sec sec--dark sec--closing-dark" id="install">
+    <div class="sec-head" data-reveal>
+      <div>
+        <p class="num"><span class="num__n">07</span> The script</p>
+        <h2 class="display display--section">Review.<br>Then <em>run.</em></h2>
+      </div>
+      <p class="lead">
+        The exact bash that will land in your downloads folder. Your keys are baked in plaintext — review before running. Touches only <code>~/.mycroft/</code>, <code>~/.config/goose/</code>, your shell rc.
+      </p>
+    </div>
+
+    <details class="preview-wrap" data-reveal>
+      <summary>Show / hide preview</summary>
+      <pre class="preview" id="preview">(preview loads on open)</pre>
+    </details>
+
+    <div class="install-bar" data-reveal>
+      <div class="install-bar__copy">
+        <strong>Download.<em> Run.</em></strong>
+        <span>Client-side only — your API keys are embedded in the file, nothing is sent over the network.</span>
+      </div>
+      <div class="install-bar__actions">
+        <button type="button" id="copyBtn" class="btn--secondary">Copy script</button>
+        <button type="button" id="downloadBtn">Download <span aria-hidden="true">→</span></button>
+      </div>
+    </div>
+
+    <div class="success" id="success">
+      <strong>Downloaded.</strong>
+      To run it:
+      <pre><code>chmod +x ~/Downloads/mycroft-setup.command
 ~/Downloads/mycroft-setup.command</code></pre>
-    Or drag the file onto a Terminal window, or right-click → Open (macOS will ask once; unsigned scripts need explicit consent).<br>
-    After it finishes, open a new terminal so the shell rc updates take effect.
-  </div>
+      Or drag the file onto a Terminal window, or right-click → Open (macOS will ask once; unsigned scripts need explicit consent). After it finishes, open a new terminal so the shell rc updates take effect.
+    </div>
+  </section>
 
 </form>
 </main>
 
-<footer role="contentinfo">
-  <strong>How this works:</strong> this page runs entirely in your browser. When you click Download, JavaScript generates a bash script with your selections + API keys embedded, and your browser saves it locally. Nothing is sent to a server. Your keys never touch anyone's infrastructure but your own.<br>
-  Source: <a href="https://github.com/buriedsignals/mycroft">buriedsignals/mycroft</a>
+<!-- ────────── FOOTER ────────── -->
+<footer class="site-foot" role="contentinfo">
+  <div class="site-foot__cols">
+    <div class="site-foot__brand" data-reveal>
+      <p class="brand-mark">Mycroft<em class="brand__dot">.</em></p>
+      <p class="site-foot__line">An opinionated extension pack for Goose. Built by journalists, for journalists.</p>
+    </div>
+    <nav class="site-foot__col" aria-label="Sections" data-reveal style="--delay: 100ms">
+      <h4 class="site-foot__heading">Sections</h4>
+      <ul>
+        <li><a href="index.html#what">What it does</a></li>
+        <li><a href="index.html#runtime">Runtime</a></li>
+        <li><a href="index.html#privacy">Privacy</a></li>
+        <li><a href="setup.html">Install</a></li>
+        <li><a href="index.html#team">Team</a></li>
+      </ul>
+    </nav>
+    <div class="site-foot__col" data-reveal style="--delay: 160ms">
+      <h4 class="site-foot__heading">Setup</h4>
+      <ul>
+        <li><a href="#sovereignty">Sovereignty</a></li>
+        <li><a href="#providers">Providers</a></li>
+        <li><a href="#prereqs">Required</a></li>
+        <li><a href="#plugins">Plugins</a></li>
+        <li><a href="#install">The script</a></li>
+      </ul>
+    </div>
+    <div class="site-foot__col" data-reveal style="--delay: 220ms">
+      <h4 class="site-foot__heading">Source</h4>
+      <ul>
+        <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">buriedsignals/mycroft</a></li>
+        <li><a href="https://github.com/buriedsignals/mycroft/blob/main/SECURITY.md" target="_blank" rel="noreferrer">Security</a></li>
+        <li><a href="https://github.com/buriedsignals/mycroft/blob/main/LICENSE" target="_blank" rel="noreferrer">License</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="site-foot__strip">
+    Open source · Self-hostable · No lock-in · No surveillance
+  </div>
 </footer>
 
 <script>
+/* Header entrance — double-rAF so the initial opacity:0 state actually
+   paints once before .is-in flips it; otherwise the browser collapses
+   the two states into a single render with no transition. */
+{
+  const head = document.querySelector('.site-head');
+  if (head) {
+    requestAnimationFrame(() => requestAnimationFrame(() => head.classList.add('is-in')));
+  }
+}
+
+/* Auto-tag every meaningful element with [data-reveal] + staggered --delay
+   so app.js's IntersectionObserver animates them in. Runs synchronously
+   BEFORE app.js so the observer picks up the freshly-tagged nodes. */
+(() => {
+  const groups = [
+    '.sovereignty-split > label',
+    '.grid-2 > .item',
+    '.grid-3 > .item',
+    '.plugin-hero > div',
+    '.feed-row',
+    '.toc li',
+    '.vitals > div',
+    '.hero-cta > .btn',
+    '.callout',
+    '.preview-wrap',
+    '.install-bar',
+    '.success',
+  ];
+  const STEP = 70;
+  for (const sel of groups) {
+    document.querySelectorAll(sel).forEach((el) => {
+      if (el.hasAttribute('data-reveal')) return;
+      el.setAttribute('data-reveal', '');
+      const idx = Array.prototype.indexOf.call(el.parentNode.children, el);
+      const existing = el.style.getPropertyValue('--delay');
+      if (!existing) el.style.setProperty('--delay', (idx * STEP) + 'ms');
+    });
+  }
+})();
+</script>
+<script defer>
+// Mycroft · proto-19-v2
+// Progressive enhancement layer.
+// - Header: bg toggle on scroll
+// - Reveal cascades for animated organisms (parent .is-in)
+// - Day timeline: rail progress fill driven by scroll
+// - Stamps: per-stamp .is-in with stagger
+// - Equations: per-term .is-in by parent class
+// - Site nav: active link based on visible section
+// - Mobile menu: open / close
+// - Terminal: real character-by-character typewriter for $ lines,
+//   chunk fade for comments and validations.
+
+// tag the document so CSS can apply hidden initial states only when JS
+// is actually running (avoids invisible content if app.js fails to load)
+document.documentElement.classList.add("js");
+
+(() => {
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // ── Title word-split · press-line reveal ────────────────────
+  // Each word of a title is wrapped in a clipped mask. The inner span
+  // rises from below + slight blur dissolve. Existing nested elements
+  // (em, br) are preserved so italic + oxide styling still applies.
+  const splitTitle = (root) => {
+    if (root.dataset.split === "1") return;
+    root.dataset.split = "1";
+    root.classList.add("title-split");
+    let i = 0;
+    const wrapWord = (word) => {
+      const w = document.createElement("span");
+      w.className = "tw";
+      w.style.setProperty("--i", String(i++));
+      const inner = document.createElement("span");
+      inner.className = "tw__in";
+      inner.textContent = word;
+      w.appendChild(inner);
+      return w;
+    };
+    const walk = (parent) => {
+      const kids = [...parent.childNodes];
+      parent.textContent = "";
+      kids.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          // split text into [word, space, word, space, ...]
+          const tokens = node.nodeValue.split(/(\s+)/);
+          tokens.forEach((tok) => {
+            if (!tok) return;
+            if (/^\s+$/.test(tok)) {
+              // collapse newlines/tabs into a single space
+              parent.appendChild(document.createTextNode(" "));
+            } else {
+              parent.appendChild(wrapWord(tok));
+            }
+          });
+        } else if (node.nodeName === "BR") {
+          parent.appendChild(node);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          parent.appendChild(node);
+          walk(node);
+        }
+      });
+    };
+    walk(root);
+  };
+
+  if (!REDUCED) {
+    document
+      .querySelectorAll(".display, .card__title, .term__sub")
+      .forEach(splitTitle);
+  }
+
+  // ── Header chrome on scroll ─────────────────────────────────
+  // The header is a gradient mask · the bg color follows the section
+  // currently sitting under the header (light by default, dark on .sec--dark).
+  const head = document.querySelector(".site-head");
+  if (head) {
+    const darkSections = document.querySelectorAll(".sec--dark");
+    const headH = () => head.getBoundingClientRect().height || 96;
+    const update = () => {
+      let onDark = false;
+      darkSections.forEach((s) => {
+        const r = s.getBoundingClientRect();
+        const probe = headH() * 0.5; // probe near top of header
+        if (r.top <= probe && r.bottom >= probe) onDark = true;
+      });
+      head.classList.toggle("is-on-dark", onDark);
+    };
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", update);
+    update();
+  }
+
+  // ── Mobile menu ─────────────────────────────────────────────
+  const menuBtn = document.querySelector(".site-head__menu");
+  if (menuBtn && head) {
+    menuBtn.addEventListener("click", () => {
+      const open = head.classList.toggle("is-menu-open");
+      menuBtn.setAttribute("aria-expanded", String(open));
+    });
+    head
+      .querySelectorAll(".site-nav__link, .site-head__actions a")
+      .forEach((a) => {
+        a.addEventListener("click", () => {
+          head.classList.remove("is-menu-open");
+          menuBtn.setAttribute("aria-expanded", "false");
+        });
+      });
+  }
+
+  // ── Generic reveal · any [data-reveal] element ──────────────
+  // Hero items reveal immediately on load (above the fold).
+  // Everything else reveals when it crosses ~85% of the viewport.
+  const revealItems = document.querySelectorAll("[data-reveal]");
+  const heroReveals = document.querySelectorAll(".sec--hero [data-reveal]");
+  if (REDUCED) {
+    revealItems.forEach((el) => el.classList.add("is-in"));
+  } else {
+    // hero: trigger on next frame · CSS transition handles stagger via --delay
+    requestAnimationFrame(() => {
+      heroReveals.forEach((el) => el.classList.add("is-in"));
+    });
+    // everything else: scroll-triggered
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("is-in");
+              io.unobserve(e.target);
+            }
+          }),
+        { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+      );
+      revealItems.forEach((el) => {
+        if (!el.closest(".sec--hero")) io.observe(el);
+      });
+    } else {
+      revealItems.forEach((el) => el.classList.add("is-in"));
+    }
+  }
+
+  // ── Day frames · drop-in cascade (per-frame .is-in) ─────────
+  const dayFrames = document.querySelectorAll(".day-frame");
+  if (dayFrames.length) {
+    if ("IntersectionObserver" in window && !REDUCED) {
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              e.target.classList.add("is-in");
+              io.unobserve(e.target);
+            }
+          }),
+        { threshold: 0.3, rootMargin: "0px 0px -8% 0px" },
+      );
+      dayFrames.forEach((f) => io.observe(f));
+    } else {
+      dayFrames.forEach((f) => f.classList.add("is-in"));
+    }
+  }
+
+  // ── Day rail progress fill ──────────────────────────────────
+  const dayTimeline = document.querySelector(".day-timeline");
+  const dayRailFill = document.querySelector(".day-rail__fill");
+  if (dayTimeline && dayRailFill) {
+    const update = () => {
+      const r = dayTimeline.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const top = r.top;
+      const height = r.height;
+      // start filling when top hits 70vh, full when bottom hits 30vh
+      const start = vh * 0.7;
+      const end = vh * 0.3;
+      const progressed = start - top;
+      const range = height - (start - end);
+      const t = Math.max(0, Math.min(1, progressed / range));
+      dayTimeline.style.setProperty(
+        "--day-progress",
+        (t * 100).toFixed(1) + "%",
+      );
+    };
+    addEventListener("scroll", update, { passive: true });
+    addEventListener("resize", update);
+    update();
+  }
+
+  // ── Stamps · per-stamp staggered reveal ─────────────────────
+  const stampGroups = document.querySelectorAll(".stamps");
+  stampGroups.forEach((group) => {
+    const stamps = group.querySelectorAll(".stamp");
+    if (!stamps.length) return;
+    if ("IntersectionObserver" in window && !REDUCED) {
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              stamps.forEach((s, i) =>
+                setTimeout(() => s.classList.add("is-in"), i * 110),
+              );
+              io.disconnect();
+            }
+          }),
+        { threshold: 0.25, rootMargin: "0px 0px -8% 0px" },
+      );
+      io.observe(group);
+    } else {
+      stamps.forEach((s) => s.classList.add("is-in"));
+    }
+  });
+
+  // ── Equations · runtime + studio · parent .is-in cascade ────
+  document.querySelectorAll(".equation").forEach((eq) => {
+    if ("IntersectionObserver" in window && !REDUCED) {
+      const io = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              eq.classList.add("is-in");
+              io.disconnect();
+            }
+          }),
+        { threshold: 0.35 },
+      );
+      io.observe(eq);
+    } else {
+      eq.classList.add("is-in");
+    }
+  });
+
+  // ── Site nav active state ───────────────────────────────────
+  const links = document.querySelectorAll('.site-nav__link[href^="#"]');
+  const sectionMap = new Map();
+  links.forEach((a) => {
+    const id = a.getAttribute("href").slice(1);
+    const sec = document.getElementById(id);
+    if (sec) sectionMap.set(sec, a);
+  });
+  if (sectionMap.size && "IntersectionObserver" in window) {
+    const navIO = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          const link = sectionMap.get(e.target);
+          if (!link) return;
+          if (e.isIntersecting) {
+            links.forEach((l) => l.classList.remove("is-active"));
+            link.classList.add("is-active");
+          }
+        });
+      },
+      { rootMargin: "-40% 0px -50% 0px", threshold: 0 },
+    );
+    sectionMap.forEach((_, sec) => navIO.observe(sec));
+  }
+
+  // ── Terminal · real typewriter sequence ─────────────────────
+  // Whole terminal frame appears as one object, then:
+  //  - comments (.t-line--cmt) fade in as chunks
+  //  - command lines (.t-line--cmd) type character-by-character
+  //  - output lines (.t-line--out) fade in
+  //  - dashed divider fades in
+  //  - validation lines (.t-line--ok) fade one by one
+  const terminal = document.querySelector(".terminal");
+  if (terminal) {
+    // collect text nodes inside an element (preserves nested coloured spans)
+    const collectTextNodes = (el) => {
+      const nodes = [];
+      const walk = (n) => {
+        for (const c of n.childNodes) {
+          if (c.nodeType === Node.TEXT_NODE) {
+            if (c.nodeValue && c.nodeValue.length) nodes.push(c);
+          } else walk(c);
+        }
+      };
+      walk(el);
+      return nodes;
+    };
+
+    const typeUser = async (el, baseDelay = 18) => {
+      const nodes = collectTextNodes(el);
+      const originals = nodes.map((n) => n.nodeValue);
+      nodes.forEach((n) => (n.nodeValue = ""));
+      el.classList.add("reveal", "is-typing");
+      await wait(180);
+      for (let i = 0; i < nodes.length; i++) {
+        const text = originals[i];
+        for (let k = 0; k < text.length; k++) {
+          nodes[i].nodeValue = text.slice(0, k + 1);
+          const ch = text[k];
+          let d = baseDelay + (Math.random() * 4 - 2);
+          if (ch === " ") d += 6;
+          if (".,".includes(ch)) d += 90;
+          await wait(d);
+        }
+      }
+      el.classList.remove("is-typing");
+    };
+
+    const revealChunk = (el) => el.classList.add("reveal");
+
+    let started = false;
+    const runSequence = async () => {
+      if (started) return;
+      started = true;
+
+      terminal.classList.add("is-on");
+      terminal.dataset.arm = "armed";
+      await wait(900);
+
+      // dialogue · per-block: comment fade · command typing · output fade
+      const blocks = terminal.querySelectorAll(".t-block");
+      for (const b of blocks) {
+        const cmt = b.querySelector(".t-line--cmt");
+        const cmd = b.querySelector(".t-line--cmd");
+        const out = b.querySelector(".t-line--out");
+        if (cmt) {
+          revealChunk(cmt);
+          await wait(220);
+        }
+        if (cmd) {
+          await typeUser(cmd, 18);
+          await wait(220);
+        }
+        if (out) {
+          revealChunk(out);
+          await wait(360);
+        }
+      }
+
+      const divider = terminal.querySelector(".t-divider");
+      if (divider) {
+        revealChunk(divider);
+        await wait(260);
+      }
+
+      const okLines = terminal.querySelectorAll(".t-line--ok");
+      for (const l of okLines) {
+        revealChunk(l);
+        await wait(180);
+      }
+    };
+
+    if (REDUCED) {
+      terminal.classList.add("is-on");
+      terminal.dataset.arm = "armed";
+      terminal
+        .querySelectorAll(
+          ".t-line--cmt, .t-line--cmd, .t-line--out, .t-divider, .t-line--ok",
+        )
+        .forEach((el) => el.classList.add("reveal"));
+    } else if ("IntersectionObserver" in window) {
+      const tIO = new IntersectionObserver(
+        (entries) =>
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              runSequence();
+              tIO.disconnect();
+            }
+          }),
+        { threshold: 0.35 },
+      );
+      tIO.observe(terminal);
+    } else {
+      runSequence();
+    }
+  }
+})();
+
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   Form logic — preserved from /setup.html. IDs match exactly.
+   ════════════════════════════════════════════════════════════════════ */
+
 function applySovereigntyMode() {
   const v = document.querySelector('input[name="sovereignty"]:checked').value;
   document.body.classList.toggle('mode-cloud', v === 'cloud');
@@ -544,41 +3655,24 @@ function buildScript(d) {
     exportLines.push(`export COJOURNALIST_API_KEY=${shq(d.cojournalistKey)}`);
   }
   if (d.spotlight) {
-    if (d.osintNavigatorKey)  exportLines.push(`export OSINT_NAVIGATOR_API_KEY=${shq(d.osintNavigatorKey)}`);
-    if (d.acledKey)           exportLines.push(`export ACLED_API_KEY=${shq(d.acledKey)}`);
-    if (d.acledEmail)         exportLines.push(`export ACLED_EMAIL=${shq(d.acledEmail)}`);
-    if (d.junkipediaKey)      exportLines.push(`export JUNKIPEDIA_API_KEY=${shq(d.junkipediaKey)}`);
-    if (d.spotBrowseruse)     exportLines.push(`export SPOTLIGHT_BROWSERUSE=1`);
+    if (d.osintNavigatorKey) exportLines.push(`export OSINT_NAVIGATOR_API_KEY=${shq(d.osintNavigatorKey)}`);
+    if (d.acledKey) exportLines.push(`export ACLED_API_KEY=${shq(d.acledKey)}`);
+    if (d.acledEmail) exportLines.push(`export ACLED_EMAIL=${shq(d.acledEmail)}`);
+    if (d.junkipediaKey) exportLines.push(`export JUNKIPEDIA_API_KEY=${shq(d.junkipediaKey)}`);
+    if (d.spotBrowseruse) exportLines.push(`export SPOTLIGHT_BROWSERUSE=1`);
     exportLines.push(`export SPOTLIGHT_VAULT_PATH=${shq(d.spotlightVaultPath)}`);
   }
 
   const providerCopies = [
-    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/" && ok "local-mlx provider installed"',
-    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/" && ok "local-llama-server provider installed"',
+    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/" && ok "local-mlx"',
+    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/" && ok "local-llama-server"',
   ];
-  if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/" && ok "Fireworks Qwen 3.6 Plus provider installed"');
-  if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/" && ok "Together AI provider installed"');
+  if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/" && ok "Fireworks"');
+  if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/" && ok "Together"');
 
   const pluginBlock = [];
-  if (d.spotlight) {
-    pluginBlock.push(`say "Installing Spotlight plugin..."`);
-    pluginBlock.push(`if [ ! -d "$MYCROFT_DIR/plugins/spotlight/.git" ]; then`);
-    pluginBlock.push(`  mkdir -p "$MYCROFT_DIR/plugins"`);
-    pluginBlock.push(`  SPOTLIGHT_REPO='git@github.com:buriedsignals/spotlight.git'; have gh && gh auth status >/dev/null 2>&1 && SPOTLIGHT_REPO=$(gh repo view buriedsignals/spotlight --json sshUrl -q .sshUrl 2>/dev/null || echo "$SPOTLIGHT_REPO"); git clone "$SPOTLIGHT_REPO" "$MYCROFT_DIR/plugins/spotlight" 2>/dev/null && ok "Spotlight cloned" || warn "Spotlight repo not yet public — will install automatically at Mycroft launch"`);
-    pluginBlock.push(`else`);
-    pluginBlock.push(`  (cd "$MYCROFT_DIR/plugins/spotlight" && git pull --ff-only 2>/dev/null) && ok "Spotlight updated"`);
-    pluginBlock.push(`fi`);
-    pluginBlock.push(`mkdir -p "${d.spotlightVaultPath.replace(/^~\//, '$HOME/')}" && ok "investigations vault at ${d.spotlightVaultPath}"`);
-  }
-  if (d.cojournalist) {
-    if (d.cojMode === 'web') {
-      pluginBlock.push(`ok "coJournalist: configured for web (24/7 hosted)"`);
-      if (!d.cojournalistKey) pluginBlock.push(`warn "coJournalist API key not set — add COJOURNALIST_API_KEY to ${ '$SHELL_RC' } when you have one"`);
-    } else {
-      pluginBlock.push(`say "coJournalist: self-host mode selected"`);
-      pluginBlock.push(`echo "  See self-host docs: https://github.com/buriedsignals/cojournalist#self-host"`);
-    }
-  }
+  if (d.spotlight) pluginBlock.push(`mkdir -p "${d.spotlightVaultPath.replace(/^~\//, '$HOME/')}" && ok "Spotlight vault"`);
+  if (d.cojournalist) pluginBlock.push(d.cojMode === 'web' ? `ok "coJournalist: web"` : `say "coJournalist: self-host"`);
 
   const rcBlockLines = [
     '  printf \'\\n%s\\n\' "$MARKER_START"',
@@ -586,34 +3680,13 @@ function buildScript(d) {
     '  printf \'export MYCROFT_DEFAULT_SOVEREIGNTY="%s"\\n\' "$SOVEREIGNTY"',
     '  [ "$LOCAL_ONLY" = "1" ] && printf \'export MYCROFT_LOCAL_ONLY="1"\\n\'',
   ];
-  for (const line of exportLines) {
-    rcBlockLines.push(`  printf '%s\\n' ${shq(line)}`);
-  }
+  for (const line of exportLines) rcBlockLines.push(`  printf '%s\\n' ${shq(line)}`);
   rcBlockLines.push('  printf \'%s\\n\' "$MARKER_END"');
 
   return `#!/usr/bin/env bash
-# Mycroft setup — generated by buriedsignals/mycroft setup page
-# https://github.com/buriedsignals/mycroft
-#
-# Review this script before running. Your API keys are baked in below.
-# Touches only: ~/.mycroft/, ~/.config/goose/, your shell rc.
-
+# Mycroft setup — generated by buriedsignals/mycroft
 set -euo pipefail
 
-# ───── Platform guard ─────
-
-case "$(uname -s)" in
-  Darwin*) ;;
-  Linux*)
-    printf "\\n\\033[1;33m!\\033[0m Linux support is experimental. brew/open-a steps will skip; install Goose + Obsidian manually.\\n"
-    ;;
-  *)
-    printf "\\n\\033[1;31mX\\033[0m Unsupported platform: $(uname -s). Mycroft targets macOS (Linux experimental).\\n" >&2
-    exit 1
-    ;;
-esac
-
-# ───── Your selections (from the setup form) ─────
 SOVEREIGNTY=${shq(d.sovereignty)}
 LOCAL_ONLY=${shq(bool(d.localOnly))}
 VAULT_PATH="${d.vault.replace(/^~\//, '$HOME/')}"
@@ -622,195 +3695,42 @@ INSTALL_GOOSE=${shq(bool(d.installGoose))}
 INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
 INSTALL_FIRECRAWL=${shq(bool(d.installFirecrawl))}
 
-# ───── Constants ─────
 MYCROFT_DIR="$HOME/.mycroft"
 GOOSE_CONFIG="$HOME/.config/goose"
 PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
-HINTS_DST="$GOOSE_CONFIG/.goosehints"
 
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
 else SHELL_RC="$HOME/.zshrc"; touch "$SHELL_RC"
 fi
 
-# ───── Helpers ─────
 have() { command -v "$1" >/dev/null 2>&1; }
 say()  { printf "\\n\\033[1;34m>\\033[0m %s\\n" "$*"; }
 ok()   { printf "  \\033[1;32m+\\033[0m %s\\n" "$*"; }
 warn() { printf "  \\033[1;33m!\\033[0m %s\\n" "$*"; }
-err()  { printf "  \\033[1;31mX\\033[0m %s\\n" "$*" >&2; }
 
-# Resolve clone URL: SSH > gh CLI (HTTPS with token) > fail with actionable message
-if ssh -o BatchMode=yes -o ConnectTimeout=5 -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
-  MYCROFT_REPO='git@github.com:buriedsignals/mycroft.git'
-elif have gh && gh auth status >/dev/null 2>&1; then
-  MYCROFT_REPO=$(gh repo view buriedsignals/mycroft --json sshUrl -q .sshUrl 2>/dev/null || echo 'git@github.com:buriedsignals/mycroft.git')
-else
-  err "Cannot authenticate with GitHub. Either:"
-  err "  - Add your SSH key: https://github.com/settings/keys"
-  err "  - Or install gh CLI and run: gh auth login"
-  exit 1
+mkdir -p "$VAULT_PATH" && ok "vault $VAULT_PATH"
+
+[ "$INSTALL_GOOSE" = "1" ]     && have brew && brew install --cask block-goose && ok "Goose"
+[ "$INSTALL_OBSIDIAN" = "1" ]  && have brew && brew install --cask obsidian    && ok "Obsidian"
+[ "$INSTALL_FIRECRAWL" = "1" ] && have npm  && npm install -g firecrawl-cli   && ok "firecrawl"
+
+if [ -d "$MYCROFT_DIR/.git" ]; then (cd "$MYCROFT_DIR" && git pull --ff-only) && ok "updated"
+else git clone git@github.com:buriedsignals/mycroft.git "$MYCROFT_DIR" && ok "cloned"
 fi
 
-mkdir -p "$VAULT_PATH" && ok "vault directory ready at $VAULT_PATH" || warn "Could not create vault directory at $VAULT_PATH — create it manually"
-
-say "Mycroft setup starting"
-echo "  sovereignty: $SOVEREIGNTY"
-echo "  vault path:  $VAULT_PATH"
-echo "  shell rc:    $SHELL_RC"
-
-# ───── Prereq installs ─────
-
-if [ "$INSTALL_GOOSE" = "1" ]; then
-  if have goose; then ok "goose already installed"
-  elif have brew; then
-    say "Installing Goose via Homebrew..."
-    if brew install --cask block-goose; then
-      ok "Goose installed to /Applications"
-      if ! have goose; then
-        say "Installing Goose CLI..."
-        curl -fsSL https://github.com/block/goose/releases/download/stable/download_cli.sh | bash \
-          && ok "Goose CLI installed" \
-          || warn "Goose CLI install failed — install manually: https://block.github.io/goose/docs/getting-started/installation"
-      fi
-      open -a "Goose" 2>/dev/null || open /Applications/Goose.app 2>/dev/null || warn "Goose installed but auto-launch failed — open from Applications manually"
-    else
-      warn "brew install failed — install from https://goose-docs.ai"
-    fi
-  else warn "Homebrew not found — install Goose manually from https://goose-docs.ai"
-  fi
-fi
-
-if [ "$INSTALL_OBSIDIAN" = "1" ]; then
-  if have obsidian-cli || have obsidian; then ok "Obsidian already installed"
-  elif have brew; then
-    say "Installing Obsidian via Homebrew..."
-    if brew install --cask obsidian; then
-      ok "Obsidian installed to /Applications"
-      open -a "Obsidian" 2>/dev/null && sleep 3 && ok "Obsidian launched — leave it running for morning-brief + vault-sync" || warn "Obsidian installed but auto-launch failed — open from Applications manually"
-    else
-      warn "brew install failed — install from https://obsidian.md"
-    fi
-  else warn "Homebrew not found — install Obsidian manually from https://obsidian.md"
-  fi
-fi
-
-# ripgrep is required by vault recipes for fast vault search
-if have rg; then ok "ripgrep already installed"
-elif have brew; then
-  say "Installing ripgrep..."
-  brew install ripgrep && ok "ripgrep installed" || warn "brew install ripgrep failed — install manually: brew install ripgrep"
-else warn "ripgrep not found — install with: brew install ripgrep"
-fi
-
-if [ "$INSTALL_FIRECRAWL" = "1" ]; then
-  if have firecrawl; then ok "firecrawl already installed"
-  elif have npm; then
-    NODE_MAJOR=$(node -e "process.stdout.write(String(process.versions.node.split('.')[0]))" 2>/dev/null || echo "0")
-    if [ "$NODE_MAJOR" -lt 22 ]; then
-      warn "firecrawl-cli requires Node 22+ (current: v$(node -v 2>/dev/null | tr -d v)). Skipping."
-      warn "Upgrade Node then run: npm install -g firecrawl-cli"
-    else
-      say "Installing firecrawl-cli via npm..."
-      NPM_PREFIX="$HOME/.npm-global"
-      mkdir -p "$NPM_PREFIX"
-      npm install -g --prefix "$NPM_PREFIX" firecrawl-cli && ok "firecrawl-cli installed" || warn "npm install failed — see docs.firecrawl.dev"
-      if ! grep -q 'npm-global' "$SHELL_RC" 2>/dev/null; then
-        printf '\nexport PATH="%s/bin:$PATH"\n' "$NPM_PREFIX" >> "$SHELL_RC"
-        ok "~/.npm-global/bin added to PATH in $SHELL_RC"
-      fi
-    fi
-  else warn "npm not found — install Node 22+ then run: npm install -g firecrawl-cli"
-  fi
-fi
-
-# ───── Fetch / update the Mycroft pack ─────
-
-say "Fetching Mycroft pack..."
-if ! have git; then
-  err "git is required. Install from https://git-scm.com or via: brew install git"
-  exit 1
-fi
-
-if [ -d "$MYCROFT_DIR/.git" ]; then
-  (cd "$MYCROFT_DIR" && git pull --ff-only) && ok "Mycroft updated at $MYCROFT_DIR"
-else
-  git clone "$MYCROFT_REPO" "$MYCROFT_DIR" && ok "Mycroft cloned to $MYCROFT_DIR"
-fi
-
-# ───── Copy provider configs ─────
-
-say "Installing provider configs..."
 mkdir -p "$PROVIDERS_DST"
 ${providerCopies.join('\n')}
 
-# ───── Install journalism instructions ─────
-
-say "Installing journalism instructions..."
-mkdir -p "$GOOSE_CONFIG"
-cp "$MYCROFT_DIR/instructions/journalism.md" "$HINTS_DST"
-ok "journalism.md -> $HINTS_DST"
-
-# ───── Plugins ─────
-
-say "Configuring plugins..."
 ${pluginBlock.length ? pluginBlock.join('\n') : '# (no plugins selected)'}
-
-# ───── Update shell rc (idempotent) ─────
-
-say "Updating $SHELL_RC..."
 
 MARKER_START='# === mycroft ==='
 MARKER_END='# === /mycroft ==='
-
-if grep -qF "$MARKER_START" "$SHELL_RC" 2>/dev/null; then
-  python3 - "$SHELL_RC" "$MARKER_START" "$MARKER_END" <<'PYEOF'
-import re, sys
-path, start, end = sys.argv[1], sys.argv[2], sys.argv[3]
-with open(path) as f: content = f.read()
-pattern = re.compile(re.escape(start) + r'.*?' + re.escape(end) + r'\\n?', re.DOTALL)
-with open(path, 'w') as f: f.write(pattern.sub('', content))
-PYEOF
-  ok "removed prior mycroft block"
-fi
-
 {
 ${rcBlockLines.join('\n')}
 } >> "$SHELL_RC"
-ok "shell rc block appended"
-
-# ───── Done ─────
 
 say "Mycroft setup complete"
-cat <<EOF
-
-Next steps:
-
-  1. Open a NEW terminal (or run:  source "$SHELL_RC")
-     ⚠️  Required — API keys (FIRECRAWL_API_KEY, etc.) are only active in new shells.
-  2. Verify Goose sees the providers:
-       goose configure
-
-  3. Try a recipe:
-       goose run --recipe vault-qa.yaml \\\\
-         --params question="What do I have on ..." \\\\
-         --params vault_path=$VAULT_PATH
-
-  4. Morning brief (requires Obsidian Desktop RUNNING):
-       goose run --recipe morning-brief.yaml \\\\
-         --params vault_path=$VAULT_PATH \\\\
-         --params vault_name=\\$(basename "$VAULT_PATH")
-
-  5. (Sovereign mode) Download the Mycroft Qwen abliterated fine-tune:
-       # 9B (default — 16 GB+ systems)
-       hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \\\\
-         --local-dir ~/.mycroft/models/qwen-journalist-9b \\\\
-         --include "*Q4_K_M.gguf"
-       # Then start the server:
-       llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080
-
-Mycroft is ready.
-EOF
 `;
 }
 
@@ -828,15 +3748,9 @@ function download() {
   if (d.fireworks && !d.fireworksKey) missing.push('FIREWORKS_API_KEY');
   if (d.together && !d.togetherKey) missing.push('TOGETHER_API_KEY');
   if (missing.length) {
-    const proceed = confirm(
-      'The following required API keys are missing:\n\n' +
-      missing.map(k => '  • ' + k).join('\n') +
-      '\n\nWithout them, some recipes will not work. Generate the script anyway?'
-    );
-    if (!proceed) return;
+    if (!confirm('Missing required keys:\n\n' + missing.map(k => '  • ' + k).join('\n') + '\n\nGenerate anyway?')) return;
   }
-  const script = buildScript(d);
-  const blob = new Blob([script], {type: 'application/x-sh'});
+  const blob = new Blob([buildScript(d)], {type: 'application/x-sh'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -851,15 +3765,12 @@ document.getElementById('downloadBtn').addEventListener('click', download);
 
 async function copyToClipboard() {
   const btn = document.getElementById('copyBtn');
-  const originalText = btn.textContent;
+  const orig = btn.textContent;
   try {
     await navigator.clipboard.writeText(buildScript(readForm()));
-    btn.textContent = '✓ Copied';
-    setTimeout(() => { btn.textContent = originalText; }, 2000);
-  } catch (err) {
-    btn.textContent = 'Copy failed';
-    setTimeout(() => { btn.textContent = originalText; }, 2000);
-  }
+    btn.textContent = 'Copied';
+  } catch (e) { btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = orig; }, 2000);
 }
 document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
 document.getElementById('form').addEventListener('input', refreshPreview);

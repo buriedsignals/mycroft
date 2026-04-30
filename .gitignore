@@ -23,3 +23,9 @@ logs/
 # Scratch
 .firecrawl/
 .claude/
+
+# Build artifacts / local-only
+node_modules/
+prototypes/
+bun.lock
+package.json

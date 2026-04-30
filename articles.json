@@ -1,0 +1,702 @@
+[
+  {
+    "rank": 1,
+    "author": "John Hersey",
+    "title": "Hiroshima",
+    "publication": "Book",
+    "year": "1946"
+  },
+  {
+    "rank": 2,
+    "author": "Rachel Carson",
+    "title": "Silent Spring",
+    "publication": "Book",
+    "year": "1962"
+  },
+  {
+    "rank": 3,
+    "author": "Bob Woodward and Carl Bernstein",
+    "title": "Watergate Investigations",
+    "publication": "Washington Post",
+    "year": "1972"
+  },
+  {
+    "rank": 4,
+    "author": "Edward R. Murrow",
+    "title": "This Is London",
+    "publication": "CBS Radio",
+    "year": "1940"
+  },
+  {
+    "rank": 5,
+    "author": "Ida Tarbell",
+    "title": "The History of the Standard Oil Company",
+    "publication": "McClure's",
+    "year": "1902"
+  },
+  {
+    "rank": 6,
+    "author": "Lincoln Steffens",
+    "title": "The Shame of the Cities",
+    "publication": "McClure's",
+    "year": "1902"
+  },
+  {
+    "rank": 7,
+    "author": "John Reed",
+    "title": "Ten Days That Shook the World",
+    "publication": "Book",
+    "year": "1919"
+  },
+  {
+    "rank": 8,
+    "author": "H.L. Mencken",
+    "title": "Scopes Monkey Trial Coverage",
+    "publication": "The Sun",
+    "year": "1925"
+  },
+  {
+    "rank": 9,
+    "author": "Ernie Pyle",
+    "title": "WWII Reports from Europe and the Pacific",
+    "publication": "Scripps-Howard",
+    "year": "1940"
+  },
+  {
+    "rank": 10,
+    "author": "Edward R. Murrow and Fred Friendly",
+    "title": "See It Now: A Report on Senator Joseph McCarthy",
+    "publication": "CBS",
+    "year": "1954"
+  },
+  {
+    "rank": 11,
+    "author": "Edward R. Murrow, David Lowe, Fred Friendly",
+    "title": "Harvest of Shame",
+    "publication": "CBS Reports",
+    "year": "1960"
+  },
+  {
+    "rank": 12,
+    "author": "Seymour Hersh",
+    "title": "My Lai Massacre Investigation",
+    "publication": "Dispatch News Service",
+    "year": "1969"
+  },
+  {
+    "rank": 13,
+    "author": "The New York Times",
+    "title": "The Pentagon Papers",
+    "publication": "New York Times",
+    "year": "1971"
+  },
+  {
+    "rank": 14,
+    "author": "James Agee and Walker Evans",
+    "title": "Let Us Now Praise Famous Men",
+    "publication": "Book",
+    "year": "1941"
+  },
+  {
+    "rank": 15,
+    "author": "W.E.B. Du Bois",
+    "title": "The Souls of Black Folk",
+    "publication": "Book",
+    "year": "1903"
+  },
+  {
+    "rank": 16,
+    "author": "I.F. Stone",
+    "title": "I.F. Stone's Weekly",
+    "publication": "Newsletter",
+    "year": "1953"
+  },
+  {
+    "rank": 17,
+    "author": "Henry Hampton",
+    "title": "Eyes on the Prize",
+    "publication": "PBS",
+    "year": "1987"
+  },
+  {
+    "rank": 18,
+    "author": "Tom Wolfe",
+    "title": "The Electric Kool-Aid Acid Test",
+    "publication": "Book",
+    "year": "1968"
+  },
+  {
+    "rank": 19,
+    "author": "Norman Mailer",
+    "title": "The Armies of the Night",
+    "publication": "Book",
+    "year": "1968"
+  },
+  {
+    "rank": 20,
+    "author": "Hannah Arendt",
+    "title": "Eichmann in Jerusalem",
+    "publication": "The New Yorker",
+    "year": "1963"
+  },
+  {
+    "rank": 21,
+    "author": "William Shirer",
+    "title": "Berlin Diary",
+    "publication": "Book",
+    "year": "1941"
+  },
+  {
+    "rank": 22,
+    "author": "Truman Capote",
+    "title": "In Cold Blood",
+    "publication": "The New Yorker",
+    "year": "1965"
+  },
+  {
+    "rank": 23,
+    "author": "Joan Didion",
+    "title": "Slouching Towards Bethlehem",
+    "publication": "Book",
+    "year": "1968"
+  },
+  {
+    "rank": 24,
+    "author": "Tom Wolfe",
+    "title": "The Kandy-Kolored Tangerine-Flake Streamline Baby",
+    "publication": "Book",
+    "year": "1965"
+  },
+  {
+    "rank": 25,
+    "author": "Michael Herr",
+    "title": "Dispatches",
+    "publication": "Book",
+    "year": "1977"
+  },
+  {
+    "rank": 26,
+    "author": "Theodore White",
+    "title": "The Making of the President: 1960",
+    "publication": "Book",
+    "year": "1961"
+  },
+  {
+    "rank": 27,
+    "author": "Robert Capa",
+    "title": "Ten Photographs from D-Day",
+    "publication": "Life Magazine",
+    "year": "1944"
+  },
+  {
+    "rank": 28,
+    "author": "J. Anthony Lukas",
+    "title": "Common Ground",
+    "publication": "Book",
+    "year": "1985"
+  },
+  {
+    "rank": 29,
+    "author": "Richard Harding Davis",
+    "title": "The German March into Belgium",
+    "publication": "New York Tribune",
+    "year": "1914"
+  },
+  {
+    "rank": 30,
+    "author": "Dorothy Thompson",
+    "title": "Reporting on the Rise of Hitler",
+    "publication": "Cosmopolitan",
+    "year": "1931"
+  },
+  {
+    "rank": 31,
+    "author": "John Steinbeck",
+    "title": "The Harvest Gypsies",
+    "publication": "San Francisco News",
+    "year": "1936"
+  },
+  {
+    "rank": 32,
+    "author": "A.J. Liebling",
+    "title": "The Road Back to Paris",
+    "publication": "Book",
+    "year": "1944"
+  },
+  {
+    "rank": 33,
+    "author": "Ernest Hemingway",
+    "title": "Spanish Civil War Reports",
+    "publication": "NANA",
+    "year": "1937"
+  },
+  {
+    "rank": 34,
+    "author": "Martha Gellhorn",
+    "title": "The Face of War",
+    "publication": "Book",
+    "year": "1959"
+  },
+  {
+    "rank": 35,
+    "author": "James Baldwin",
+    "title": "The Fire Next Time",
+    "publication": "The New Yorker",
+    "year": "1963"
+  },
+  {
+    "rank": 36,
+    "author": "Joseph Mitchell",
+    "title": "Up in the Old Hotel",
+    "publication": "The New Yorker",
+    "year": "1992"
+  },
+  {
+    "rank": 37,
+    "author": "Betty Friedan",
+    "title": "The Feminine Mystique",
+    "publication": "Book",
+    "year": "1963"
+  },
+  {
+    "rank": 38,
+    "author": "Ralph Nader",
+    "title": "Unsafe at Any Speed",
+    "publication": "Book",
+    "year": "1965"
+  },
+  {
+    "rank": 39,
+    "author": "Herblock",
+    "title": "Political Cartoons",
+    "publication": "Washington Post",
+    "year": "1950"
+  },
+  {
+    "rank": 40,
+    "author": "James Baldwin",
+    "title": "Letter from the South: Nobody Knows My Name",
+    "publication": "Partisan Review",
+    "year": "1959"
+  },
+  {
+    "rank": 41,
+    "author": "Huyn Cong Ut",
+    "title": "Burning Girl, Napalm Attack",
+    "publication": "Associated Press",
+    "year": "1972"
+  },
+  {
+    "rank": 42,
+    "author": "Pauline Kael",
+    "title": "Trash, Art, and the Movies",
+    "publication": "Harper's",
+    "year": "1969"
+  },
+  {
+    "rank": 43,
+    "author": "Gay Talese",
+    "title": "Fame and Obscurity",
+    "publication": "Book",
+    "year": "1970"
+  },
+  {
+    "rank": 44,
+    "author": "Randy Shilts",
+    "title": "AIDS Reporting",
+    "publication": "San Francisco Chronicle",
+    "year": "1981"
+  },
+  {
+    "rank": 45,
+    "author": "Janet Flanner",
+    "title": "Paris Journals",
+    "publication": "The New Yorker",
+    "year": "1944"
+  },
+  {
+    "rank": 46,
+    "author": "Neil Sheehan",
+    "title": "A Bright Shining Lie",
+    "publication": "Book",
+    "year": "1988"
+  },
+  {
+    "rank": 47,
+    "author": "A.J. Liebling",
+    "title": "The Wayward Pressman",
+    "publication": "Book",
+    "year": "1947"
+  },
+  {
+    "rank": 48,
+    "author": "Tom Wolfe",
+    "title": "The Right Stuff",
+    "publication": "Book",
+    "year": "1979"
+  },
+  {
+    "rank": 49,
+    "author": "Murray Kempton",
+    "title": "America Comes of Middle Age",
+    "publication": "New York Post",
+    "year": "1963"
+  },
+  {
+    "rank": 50,
+    "author": "Murray Kempton",
+    "title": "Part of Our Time",
+    "publication": "Book",
+    "year": "1955"
+  },
+  {
+    "rank": 51,
+    "author": "Donald L. Barlett and James B. Steele",
+    "title": "America: What Went Wrong",
+    "publication": "Philadelphia Inquirer",
+    "year": "1991"
+  },
+  {
+    "rank": 52,
+    "author": "Taylor Branch",
+    "title": "Parting the Waters: America in the King Years, 1954–63",
+    "publication": "Book",
+    "year": "1988"
+  },
+  {
+    "rank": 53,
+    "author": "Harrison Salisbury",
+    "title": "Soviet Union Reporting",
+    "publication": "New York Times",
+    "year": "1949"
+  },
+  {
+    "rank": 54,
+    "author": "John McPhee",
+    "title": "The John McPhee Reader",
+    "publication": "Book",
+    "year": "1976"
+  },
+  {
+    "rank": 55,
+    "author": "ABC News",
+    "title": "Live Army-McCarthy Hearings",
+    "publication": "ABC Television",
+    "year": "1954"
+  },
+  {
+    "rank": 56,
+    "author": "Frederick Wiseman",
+    "title": "Titicut Follies",
+    "publication": "Documentary",
+    "year": "1967"
+  },
+  {
+    "rank": 57,
+    "author": "David Remnick",
+    "title": "Lenin's Tomb",
+    "publication": "Book",
+    "year": "1993"
+  },
+  {
+    "rank": 58,
+    "author": "Richard Ben Cramer",
+    "title": "What It Takes: The Way to the White House",
+    "publication": "Book",
+    "year": "1992"
+  },
+  {
+    "rank": 59,
+    "author": "Jonathan Schell",
+    "title": "The Fate of the Earth",
+    "publication": "The New Yorker",
+    "year": "1982"
+  },
+  {
+    "rank": 60,
+    "author": "Russell Baker",
+    "title": "Franks and Beans",
+    "publication": "New York Times",
+    "year": "1975"
+  },
+  {
+    "rank": 61,
+    "author": "Homer Bigart",
+    "title": "WWII Japan Bomber Account",
+    "publication": "New York Herald-Tribune",
+    "year": "1945"
+  },
+  {
+    "rank": 62,
+    "author": "Ben Hecht",
+    "title": "1001 Afternoons in Chicago",
+    "publication": "Chicago Daily News",
+    "year": "1922"
+  },
+  {
+    "rank": 63,
+    "author": "Walter Cronkite",
+    "title": "Report from Vietnam",
+    "publication": "CBS",
+    "year": "1968"
+  },
+  {
+    "rank": 64,
+    "author": "Walter Lippmann",
+    "title": "Early Essays",
+    "publication": "New Republic",
+    "year": "1914"
+  },
+  {
+    "rank": 65,
+    "author": "Margaret Bourke-White",
+    "title": "Photographs of the Defeat of Germany",
+    "publication": "Life Magazine",
+    "year": "1945"
+  },
+  {
+    "rank": 66,
+    "author": "Lillian Ross",
+    "title": "Reporting",
+    "publication": "The New Yorker",
+    "year": "1964"
+  },
+  {
+    "rank": 67,
+    "author": "Nicholas Lemann",
+    "title": "The Promised Land",
+    "publication": "Book",
+    "year": "1991"
+  },
+  {
+    "rank": 68,
+    "author": "Joe Rosenthal",
+    "title": "Marines Raising the Flag on Iwo Jima",
+    "publication": "Associated Press",
+    "year": "1945"
+  },
+  {
+    "rank": 69,
+    "author": "Hodding Carter, Jr.",
+    "title": "Go for Broke",
+    "publication": "Delta Democrat-Times",
+    "year": "1945"
+  },
+  {
+    "rank": 70,
+    "author": "The New Yorker",
+    "title": "The New Yorker Book of War Pieces",
+    "publication": "The New Yorker",
+    "year": "1947"
+  },
+  {
+    "rank": 71,
+    "author": "Meyer Berger",
+    "title": "Howard Unruh Killings",
+    "publication": "New York Times",
+    "year": "1949"
+  },
+  {
+    "rank": 72,
+    "author": "Norman Mailer",
+    "title": "The Executioner's Song",
+    "publication": "Book",
+    "year": "1979"
+  },
+  {
+    "rank": 73,
+    "author": "Robert Capa",
+    "title": "Spanish Civil War Photographs",
+    "publication": "Life Magazine",
+    "year": "1936"
+  },
+  {
+    "rank": 74,
+    "author": "Susan Sontag",
+    "title": "Notes on Camp",
+    "publication": "Partisan Review",
+    "year": "1964"
+  },
+  {
+    "rank": 75,
+    "author": "Bob Woodward and Carl Bernstein",
+    "title": "All the President's Men",
+    "publication": "Book",
+    "year": "1974"
+  },
+  {
+    "rank": 76,
+    "author": "John Hersey",
+    "title": "Here to Stay",
+    "publication": "Book",
+    "year": "1963"
+  },
+  {
+    "rank": 77,
+    "author": "A.J. Liebling",
+    "title": "The Earl of Louisiana",
+    "publication": "Book",
+    "year": "1961"
+  },
+  {
+    "rank": 78,
+    "author": "Mike Davis",
+    "title": "City of Quartz",
+    "publication": "Book",
+    "year": "1990"
+  },
+  {
+    "rank": 79,
+    "author": "Melissa Fay Greene",
+    "title": "Praying for Sheetrock",
+    "publication": "Book",
+    "year": "1991"
+  },
+  {
+    "rank": 80,
+    "author": "J. Anthony Lukas",
+    "title": "The Two Worlds of Linda Fitzpatrick",
+    "publication": "New York Times",
+    "year": "1967"
+  },
+  {
+    "rank": 81,
+    "author": "Herbert Bayard Swope",
+    "title": "Klan Exposed",
+    "publication": "New York World",
+    "year": "1921"
+  },
+  {
+    "rank": 82,
+    "author": "William Allen White",
+    "title": "To an Anxious Friend",
+    "publication": "Emporia Gazette",
+    "year": "1922"
+  },
+  {
+    "rank": 83,
+    "author": "Edward R. Murrow",
+    "title": "Buchenwald Liberation Report",
+    "publication": "CBS Radio",
+    "year": "1945"
+  },
+  {
+    "rank": 84,
+    "author": "Joseph Mitchell",
+    "title": "McSorley's Wonderful Saloon",
+    "publication": "The New Yorker",
+    "year": "1943"
+  },
+  {
+    "rank": 85,
+    "author": "Lillian Ross",
+    "title": "Picture",
+    "publication": "The New Yorker",
+    "year": "1952"
+  },
+  {
+    "rank": 86,
+    "author": "Earl Brown",
+    "title": "Race Articles Series",
+    "publication": "Harper's",
+    "year": "1942"
+  },
+  {
+    "rank": 87,
+    "author": "Greil Marcus",
+    "title": "Mystery Train",
+    "publication": "Book",
+    "year": "1975"
+  },
+  {
+    "rank": 88,
+    "author": "Morley Safer",
+    "title": "Cam Ne Hamlet Atrocities",
+    "publication": "CBS",
+    "year": "1965"
+  },
+  {
+    "rank": 89,
+    "author": "Ted Poston",
+    "title": "Little Scottsboro Trial Coverage",
+    "publication": "New York Post",
+    "year": "1949"
+  },
+  {
+    "rank": 90,
+    "author": "Leon Dash",
+    "title": "Rosa Lee's Story",
+    "publication": "Washington Post",
+    "year": "1994"
+  },
+  {
+    "rank": 91,
+    "author": "Jane Kramer",
+    "title": "The Europeans",
+    "publication": "The New Yorker",
+    "year": "1988"
+  },
+  {
+    "rank": 92,
+    "author": "Eddie Adams",
+    "title": "Saigon Execution",
+    "publication": "Associated Press",
+    "year": "1968"
+  },
+  {
+    "rank": 93,
+    "author": "Grantland Rice",
+    "title": "Notre Dame's Four Horsemen",
+    "publication": "New York Herald-Tribune",
+    "year": "1924"
+  },
+  {
+    "rank": 94,
+    "author": "Jane Kramer",
+    "title": "The Politics of Memory",
+    "publication": "The New Yorker",
+    "year": "1996"
+  },
+  {
+    "rank": 95,
+    "author": "Frank McCourt",
+    "title": "Angela's Ashes",
+    "publication": "Book",
+    "year": "1996"
+  },
+  {
+    "rank": 96,
+    "author": "Vincent Sheean",
+    "title": "Personal History",
+    "publication": "Book",
+    "year": "1935"
+  },
+  {
+    "rank": 97,
+    "author": "W.E.B. Du Bois",
+    "title": "Race Columns",
+    "publication": "The Crisis",
+    "year": "1910"
+  },
+  {
+    "rank": 98,
+    "author": "Damon Runyon",
+    "title": "Crime Reporting",
+    "publication": "New York American",
+    "year": "1926"
+  },
+  {
+    "rank": 99,
+    "author": "Joe McGinniss",
+    "title": "The Selling of the President 1968",
+    "publication": "Book",
+    "year": "1969"
+  },
+  {
+    "rank": 100,
+    "author": "Hunter S. Thompson",
+    "title": "Fear and Loathing on the Campaign Trail '72",
+    "publication": "Rolling Stone",
+    "year": "1973"
+  }
+]
