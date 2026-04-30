@@ -1930,26 +1930,55 @@ main.shell > form .sec-head .lead {
 }
 
 .sec--setup-hero {
+  position: relative;
   min-height: calc(100svh - var(--head-h));
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(22px, 3vh, 40px);
-  align-content: center;
-  padding-top: clamp(28px, 5vh, 64px);
-  padding-bottom: clamp(28px, 5vh, 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: clamp(24px, 4vh, 56px);
+  padding-bottom: clamp(24px, 4vh, 56px);
   border-bottom: var(--hairline);
 }
-@media (min-width: 1100px) {
-  .sec--setup-hero {
-    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.8fr);
-    gap: clamp(36px, 4vw, 72px);
-    align-items: center;
-  }
+.sec--setup-hero .hero__tag {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  display: inline-block;
+  padding-top: var(--sp-5);
+  border-top: var(--hairline);
+  margin: 0 auto var(--sp-6);
 }
+.sec--setup-hero .hero__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(24px, 4vh, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-left: var(--gut);
+  padding-right: var(--gut);
+}
+.sec--setup-hero .hero__line {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 auto var(--sp-6);
+  max-width: 90%;
+}
+.sec--setup-hero .ctas--center { justify-content: center; }
 .sec--setup-hero .display--hero {
-  max-width: 12ch;
-  font-size: clamp(34px, min(5.2vw, 7.5vh), 68px);
-  margin: 0;
+  max-width: 14ch;
+  font-size: clamp(40px, min(6vw, 10vh), 88px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  margin: 0 auto var(--sp-5);
 }
 .hero-pitch { display: flex; flex-direction: column; gap: clamp(14px, 2vh, 20px); min-width: 0; }
 
@@ -2716,40 +2745,18 @@ body.mode-local .cloud-only { display: none; }
 
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero sec--setup-hero" id="hero">
-    <div class="hero-pitch">
-      <p class="eyebrow" data-reveal style="--delay: 0ms">Install · macOS/Linux · Client-side</p>
+    <p class="hero__tag" data-reveal style="--delay: 0ms">Install · macOS / Linux · Client-side</p>
+
+    <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
         Mycroft<br><em>setup.</em>
       </h1>
-      <p class="lead" data-reveal style="--delay: 220ms">
-        Choose how Goose should run journalism work, add only the keys you use, and export a local installer. Nothing is submitted to a server; secrets are written to your machine only.
-      </p>
-      <div class="setup-surfaces" data-reveal style="--delay: 280ms">
-        <div>
-          <span class="surface-k">Default path</span>
-          <span class="surface-v">Cloud<em>-first.</em></span>
-          <span class="surface-note">ZDR open-weight providers, Goose Desktop, Obsidian, Firecrawl scraping.</span>
-        </div>
-        <div>
-          <span class="surface-k">Sensitive work</span>
-          <span class="surface-v">Local<em>-only.</em></span>
-          <span class="surface-note">Runs against local llama-server when selected; includes a computer-fit check.</span>
-        </div>
+      <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
+      <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
+        <a class="btn btn--solid" href="#sovereignty">Begin setup <span class="btn__arr">↓</span></a>
+        <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
       </div>
     </div>
-
-    <aside class="toc" data-reveal style="--delay: 200ms" aria-label="Setup chapters">
-      <p class="toc__head">Seven steps</p>
-      <ol>
-        <li><a href="#sovereignty"><span class="toc__num">01</span><span class="toc__title">Sovereignty<em>.</em></span><span class="toc__meta">Choose</span></a></li>
-        <li><a href="#providers"><span class="toc__num">02</span><span class="toc__title">Providers<em>.</em></span><span class="toc__meta">Keys</span></a></li>
-        <li><a href="#prereqs"><span class="toc__num">03</span><span class="toc__title">Required<em>.</em></span><span class="toc__meta">3 tools</span></a></li>
-        <li><a href="#optional"><span class="toc__num">04</span><span class="toc__title">Optional<em>.</em></span><span class="toc__meta">Pick</span></a></li>
-        <li><a href="#plugins"><span class="toc__num">05</span><span class="toc__title">Plugins<em>.</em></span><span class="toc__meta">Toggle</span></a></li>
-        <li><a href="#vault"><span class="toc__num">06</span><span class="toc__title">Vault<em>.</em></span><span class="toc__meta">Path</span></a></li>
-        <li><a href="#install"><span class="toc__num">07</span><span class="toc__title">The script<em>.</em></span><span class="toc__meta">Download</span></a></li>
-      </ol>
-    </aside>
   </section>
 
   <!-- ────────── 02 · SOVEREIGNTY ────────── -->
@@ -8201,7 +8208,7 @@ function setupHeroBoot() {
   const FOV_RAD = (FOV * Math.PI) / 180;
 
   let heroW = hero.offsetWidth;
-  let heroH = hero.offsetHeight;
+  let heroH = hero.offsetTop + hero.offsetHeight;
 
   const camera = new THREE.PerspectiveCamera(FOV, heroW / heroH, 1, 4000);
   camera.position.set(0, 0, heroH / 2 / Math.tan(FOV_RAD / 2));
@@ -8245,7 +8252,7 @@ function setupHeroBoot() {
 
   function resize() {
     heroW = window.innerWidth;
-    heroH = hero.offsetHeight;
+    heroH = hero.offsetTop + hero.offsetHeight;
     camera.aspect = heroW / heroH;
     camera.position.z = heroH / 2 / Math.tan(FOV_RAD / 2);
     camera.updateProjectionMatrix();
