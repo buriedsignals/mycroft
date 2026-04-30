@@ -812,15 +812,57 @@ main,
 .surface.is-active { display: block; }
 .surface[hidden] { display: none !important; }
 
-/* ── Goose desktop app mockup ────────────────────────────────── */
+/* ── Goose desktop app mockup — matches .terminal frame ──────── */
 .goose-app {
   border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 10px;
+  border-radius: var(--rad-sm);
   overflow: hidden;
   background: #1a1a1a;
   color: #ddd;
   font-family: var(--sans);
+  max-width: 920px;
+  margin: 0 auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity var(--dur-4) var(--ease),
+    transform var(--dur-4) var(--ease);
 }
+.goose-app.is-on {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* surface containers share same width/centering as the terminal */
+.surface-stage { display: block; }
+.surface > .terminal,
+.surface > .goose-app { width: 100%; }
+/* fade-in animation matched to .terminal cascade */
+.goose-app .reveal {
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.goose-app.is-on .reveal {
+  opacity: 1;
+  transform: none;
+}
+.goose-app__msg {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.goose-app.is-on .goose-app__msg--user { transition-delay: 0.18s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__msg--bot  { transition-delay: 0.55s; opacity: 1; transform: none; }
+.goose-app__list li {
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.goose-app.is-on .goose-app__list li:nth-child(1) { transition-delay: 0.10s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(2) { transition-delay: 0.16s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(3) { transition-delay: 0.22s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(4) { transition-delay: 0.28s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(5) { transition-delay: 0.34s; opacity: 1; transform: none; }
 .goose-app__chrome {
   display: flex;
   align-items: center;
@@ -1934,9 +1976,11 @@ main,
   }
 }
 @media (min-width: 980px) {
+  /* 3 balanced columns: brand wider, two equal nav cols */
   .site-foot__cols {
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: clamp(24px, 4vw, 64px);
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: clamp(32px, 5vw, 72px);
+    align-items: start;
   }
 }
 
@@ -2160,9 +2204,9 @@ html.js .is-in .tw__in {
     <p class="eyebrow" data-reveal style="--delay: 0ms">Goose, configured for journalism</p>
 
     <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-      Your morning brief, <em>before coffee.</em><br>
-      Your fact-check, <em>in minutes.</em><br>
-      Your sources, <em>on your machine.</em>
+      Your morning brief,<br><em>before coffee.</em><br>
+      Your fact-check,<br><em>in minutes.</em><br>
+      Your sources,<br><em>on your machine.</em>
     </h1>
 
     <p class="lead" data-reveal style="--delay: 280ms">
@@ -2409,7 +2453,7 @@ html.js .is-in .tw__in {
       <button class="surface-toggle__btn" type="button" data-surface="app" role="tab" aria-selected="false">Desktop</button>
     </div>
 
-    <div class="surface-stage">
+    <div class="surface-stage" data-reveal style="--delay: 140ms">
     <div class="surface surface--cli is-active" data-surface-view="cli">
     <div class="terminal" data-arm>
       <div class="terminal__bar" aria-hidden="true">
@@ -2720,9 +2764,24 @@ document.documentElement.classList.add("js");
     update();
   }
 
-  // ── Surface toggle (CLI ↔ Desktop App) ──────────────────────
+  // ── Surface toggle (CLI ↔ Desktop App) — animates each surface
+  //    on activation so the goose-app fades in like the terminal does.
   const surfaceBtns = document.querySelectorAll(".surface-toggle__btn");
   if (surfaceBtns.length) {
+    const animateSurface = (target) => {
+      const view = document.querySelector(
+        `[data-surface-view="${target}"]`,
+      );
+      if (!view) return;
+      // reset is-on then re-add on next frame for re-trigger feel
+      const animTarget = view.querySelector(".terminal, .goose-app");
+      if (animTarget) {
+        animTarget.classList.remove("is-on");
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => animTarget.classList.add("is-on"));
+        });
+      }
+    };
     surfaceBtns.forEach((btn) => {
       btn.addEventListener("click", () => {
         const target = btn.dataset.surface;
@@ -2736,6 +2795,7 @@ document.documentElement.classList.add("js");
           v.classList.toggle("is-active", on);
           v.hidden = !on;
         });
+        animateSurface(target);
       });
     });
   }
@@ -7057,6 +7117,9 @@ function boot() {
     sceneFront.add(front);
     return { ...s, back, front };
   });
+  // ID-based lookup so adding/removing sections never breaks paper
+  // scenes that target a specific section (hero / closing).
+  const anchorById = (id) => anchors.find((a) => a.el.id === id);
 
   const tickers = [];
 
@@ -7102,21 +7165,21 @@ function boot() {
   // Tom's feedback — most visitors are mobile, the orb should greet them).
   scenes.push(
     new PaperSphereScene({
-      parent: anchors[0].front,
-      anchor: anchors[0],
+      parent: anchorById("hero").front,
+      anchor: anchorById("hero"),
       gui,
       label: "Hero · sphere",
       count: IS_MOBILE ? 90 : SPHERE_HERO_COUNT,
       mouse: mouseRef,
       defaults: IS_MOBILE
         ? {
-            visualR: 220,
+            visualR: 160,
             sphereR: 0.84,
             anchorCorner: "CTR",
             marginX: 0,
             marginY: 0,
-            offsetX: 0,
-            offsetY: -140, // upper part of the hero
+            offsetX: 100, // right of center
+            offsetY: 0,   // vertical center
             offsetZ: 60,
             swirlStrength: 0,
           }
@@ -7138,9 +7201,9 @@ function boot() {
   // across the HTML plane via the pool's mirrorParent feature.
   scenes.push(
     new PaperSphereScene({
-      parent: anchors[6].front,
-      anchor: anchors[6],
-      mirrorParent: anchors[6].back,
+      parent: anchorById("closing").front,
+      anchor: anchorById("closing"),
+      mirrorParent: anchorById("closing").back,
       gui,
       label: "Closing · sphere",
       count: SPHERE_CLOSING_COUNT,
@@ -7161,8 +7224,9 @@ function boot() {
   // floating papers — between hero bottom and closing top. Two layers:
   // FRONT (rendered after the CSS3D HTML layer → papers appear in front
   // of the text) and BACK (rendered before HTML → papers appear behind).
-  const heroSec = sections[0];
-  const closingSec = sections[6];
+  const heroSec = sections.find((s) => s.el.id === "hero") || sections[0];
+  const closingSec =
+    sections.find((s) => s.el.id === "closing") || sections[sections.length - 1];
   const bandTopY = -(heroSec.top + heroSec.height);
   const bandBottomY = -closingSec.top;
   scenes.push(
