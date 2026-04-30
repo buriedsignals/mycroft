@@ -2666,7 +2666,20 @@ body.mode-local .cloud-only { display: none; }
 .model-card.not-recommended {
   opacity: 0.56;
 }
+.sec--setup-hero { position: relative; }
+.sec--setup-hero > canvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.sec--setup-hero > *:not(canvas) { position: relative; z-index: 1; }
 </style>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://esm.sh/three@0.161.0",
+    "three/addons/": "https://esm.sh/three@0.161.0/examples/jsm/",
+    "lil-gui": "https://esm.sh/lil-gui@0.20.0"
+  }
+}
+</script>
 </head>
 <body class="mode-cloud">
 
@@ -4430,6 +4443,3837 @@ document.getElementById('fitCmdCopy')?.addEventListener('click', async () => {
 
 applySovereigntyMode();
 refreshPreview();
+</script>
+
+<script type="module">
+/* ════════════════════════════════════════════════════════════════════
+   Mycroft · proto-19-v3 — full WebGL/CSS3D stack
+   --------------------------------------------------------------------
+   Three layers, one shared camera, one shared world:
+     [1] WebGLRenderer  — section bg planes + back-of-page 3D props
+     [2] CSS3DRenderer  — the entire HTML page as a CSS3DObject
+     [3] WebGLRenderer  — front-of-page 3D props (pass before HTML)
+   --------------------------------------------------------------------
+   Architecture:
+     · Procedural newspaper texture (canvas 2D) — preserved from proto-15
+     · Paper          — single source of truth for paper shape (geometry +
+                        bend shader + lights + shared shape uniforms)
+     · PaperPool      — N papers instanced per texture variant; render-
+                        only API (setMatrix / setFlow / flush)
+     · PaperSphereScene  — a pool used as a Fibonacci-distributed orb,
+                           proto-15-faithful flow-field physics + wall
+                           constraint + flow-/wall-alignment torques +
+                           optional mouse repulsion. Owns its own GUI.
+     · FloatingPapersScene — a pool used as world-space loose papers
+                             drifting along a curl-noise flow field +
+                             gust-modulated wind baseline. Own GUI.
+   ════════════════════════════════════════════════════════════════════ */
+
+import * as THREE from "three";
+import {
+  CSS3DRenderer,
+  CSS3DObject,
+} from "three/addons/renderers/CSS3DRenderer.js";
+import GUI from "lil-gui";
+
+const FOV = 50;
+const FOV_RAD = (FOV * Math.PI) / 180;
+const cameraDistanceFor = (vh) => vh / 2 / Math.tan(FOV_RAD / 2);
+
+const PALETTE = {
+  vellum: new THREE.Color("#e8e0cf"),
+  vellumBright: new THREE.Color("#faf5e8"),
+  pigment: new THREE.Color("#131013"),
+  oxide: new THREE.Color("#4a7363"),
+  ink: new THREE.Color("#1a1a1f"),
+};
+
+// ── articles.json — top 100 works of 20th-century journalism (NYU list) ──
+// Loaded once at module evaluation via top-level await so makeNewspaperTexture
+// can pick a real {publication, title, author, year} instead of synthesizing
+// random bars. Falls back to fully procedural if the fetch fails (offline /
+// 404).
+let _articles = null;
+try {
+  const _res = await fetch(new URL("./articles.json", import.meta.url));
+  if (_res.ok) _articles = await _res.json();
+} catch {
+  _articles = null;
+}
+// Probability of using a real article when generating a texture.
+// 1.0 = always pick a real article; the procedural lorem templates
+// (_tplFront/_tplInner/_tplAd/_tplPhotoLed) only run as a fallback if
+// articles.json failed to load.
+const REAL_ARTICLE_PROB = 1.0;
+
+
+/* ════════════════════════════════════════════════════════════════════
+   Procedural newspaper textures (adapted from proto-15)
+   ════════════════════════════════════════════════════════════════════ */
+
+const PAPER_TOP = "#ebe9de";
+const PAPER_BOT = "#d8d4c5";
+const INK_BOLD = "rgba(15,12,8,0.92)";
+const INK = "rgba(28,22,14,0.82)";
+const INK_MUTE = "rgba(50,40,28,0.55)";
+
+function _r(min, max) {
+  return min + Math.random() * (max - min);
+}
+function _c(p) {
+  return Math.random() < p;
+}
+function _pick(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/* ── lorem ipsum corpus + plausible mastheads / kickers / bylines ── */
+
+const LOREM =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor " +
+  "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud " +
+  "exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute " +
+  "irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla " +
+  "pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia " +
+  "deserunt mollit anim id est laborum. Curabitur pretium tincidunt lacus. Nulla " +
+  "gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum " +
+  "elit, nec luctus magna felis sollicitudin mauris. Integer in mauris eu nibh euismod " +
+  "gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis risus a elit. " +
+  "Etiam tempor. Ut ullamcorper, ligula eu tempor congue, eros est euismod turpis, id " +
+  "tincidunt sapien risus a quam. Maecenas fermentum consequat mi. Donec fermentum. " +
+  "Pellentesque malesuada nulla a mi. Donec vitae est. Mauris tincidunt sem sed arcu. " +
+  "Cras pellentesque tortor in ante facilisis, sit amet hendrerit nibh tristique. Sed " +
+  "varius eros vel ligula posuere euismod. Praesent dictum quam et velit fringilla, " +
+  "vitae aliquam eros laoreet. Quisque rutrum. Aenean imperdiet erat a ante. Ut massa " +
+  "lectus, posuere quis tincidunt eget, lobortis ac dolor. Cras lacus quam, fermentum " +
+  "et augue eget, mollis lacinia urna. Vivamus elementum semper nisi.";
+
+const LOREM_WORDS = LOREM.split(/\s+/);
+
+function _loremPick(n) {
+  // Random contiguous slice of n words from the corpus, stripped of stray punctuation
+  const start = Math.floor(Math.random() * (LOREM_WORDS.length - n - 1));
+  return LOREM_WORDS.slice(start, start + n)
+    .join(" ")
+    .replace(/[,.;:]+$/, "");
+}
+function _loremPara(approxWords = 60) {
+  return _loremPick(
+    Math.max(20, Math.round(approxWords + (Math.random() - 0.5) * 20)),
+  );
+}
+
+const _MASTHEADS = [
+  "THE DAILY HERALD",
+  "MORNING TRIBUNE",
+  "EVENING GAZETTE",
+  "CITY POST",
+  "THE CHRONICLE",
+  "DAILY NEWS",
+  "THE STAR",
+  "THE OBSERVER",
+  "THE COURIER",
+  "THE LEDGER",
+  "THE INDEPENDENT",
+  "THE BEACON",
+  "THE EXAMINER",
+  "DAILY RECORD",
+  "THE SENTINEL",
+  "THE REGISTER",
+];
+
+const _KICKERS = [
+  "LATE EDITION",
+  "FINAL EDITION",
+  "MORNING EDITION",
+  "EVENING EDITION",
+  "CITY EDITION",
+  "FIRST EDITION",
+  "WEEKEND",
+  "METRO EDITION",
+];
+
+const _BYLINES = [
+  "By Henry Morgan",
+  "By Margaret O'Brien",
+  "By Walter Stein",
+  "By A.J. Pierce",
+  "By Eleanor Vance",
+  "By Charles Whitfield",
+  "By Maxwell Bray",
+  "By Adele Sutton",
+  "By Theodore Marsh",
+  "By Lillian Crane",
+  "By P. Donovan",
+  "By Frances Hale",
+];
+
+function _drawTextLine(ctx, x, y, maxW, lineH, color, density) {
+  ctx.fillStyle = color;
+  let cx = x;
+  const minW = Math.max(2, lineH * 0.4);
+  const maxLetterW = lineH * 1.3;
+  while (cx < x + maxW - minW) {
+    const w = minW + Math.random() * maxLetterW;
+    const gap = Math.max(1, lineH * 0.18) + Math.random() * (lineH * 0.25);
+    if (Math.random() < density && cx + w < x + maxW) {
+      ctx.fillRect(cx, y, w, lineH);
+    }
+    cx += w + gap;
+  }
+}
+function _rule(ctx, x, y, w, h, color) {
+  ctx.fillStyle = color || "rgba(20,15,8,0.55)";
+  ctx.fillRect(x, y, w, h);
+}
+/* ── masthead: real fake newspaper name + edition kicker ── */
+function _modMasthead(ctx, x, y, w) {
+  ctx.textBaseline = "top";
+  const sz = Math.floor(_r(13, 18));
+  ctx.fillStyle = INK_BOLD;
+  ctx.font = `bold ${sz}px "Times New Roman", Georgia, serif`;
+  const name = _pick(_MASTHEADS);
+  const tw = ctx.measureText(name).width;
+  ctx.fillText(name, x + (w - tw) / 2, y);
+  let used = sz + 4;
+  _rule(ctx, x, y + used, w, 1);
+  used += 3;
+  ctx.fillStyle = INK_MUTE;
+  ctx.font = `7px "Helvetica Neue", Arial, sans-serif`;
+  const kicker =
+    `· ${_pick(_KICKERS)} · VOL. ${Math.floor(_r(20, 99))} · ` +
+    `NO. ${Math.floor(_r(100, 999))} ·`;
+  const kw = ctx.measureText(kicker).width;
+  ctx.fillText(kicker, x + (w - kw) / 2, y + used);
+  used += 10;
+  return used;
+}
+
+/* ── headline: real lorem in serif bold, multi-line wrap ── */
+function _modHeadline(ctx, x, y, w, rows, size) {
+  ctx.textBaseline = "top";
+  const sz = Math.round(size || _r(12, 17));
+  ctx.fillStyle = INK_BOLD;
+  ctx.font = `bold ${sz}px "Times New Roman", Georgia, serif`;
+  const wordsN = Math.max(3, (rows || 1 + Math.floor(Math.random() * 2)) * 4);
+  const text = _loremPick(wordsN);
+  const cap = text.charAt(0).toUpperCase() + text.slice(1);
+  const used = _wrapText(ctx, cap, x, y, w, sz + 3);
+  return used + 2;
+}
+
+/* ── deck / sub-headline: italic lorem ── */
+function _modSubHeadline(ctx, x, y, w, rows) {
+  rows = rows ?? Math.floor(_r(0, 3));
+  if (rows === 0) return 2;
+  ctx.textBaseline = "top";
+  const sz = 7;
+  ctx.fillStyle = INK;
+  ctx.font = `italic ${sz}px "Times New Roman", Georgia, serif`;
+  const text = _loremPick(rows * 6);
+  const cap = text.charAt(0).toUpperCase() + text.slice(1);
+  const used = _wrapText(ctx, cap, x, y, w, sz + 1);
+  return used + 2;
+}
+
+/* ── byline ── */
+function _modByline(ctx, x, y, w) {
+  ctx.textBaseline = "top";
+  ctx.fillStyle = INK;
+  ctx.font = `italic 6.5px "Times New Roman", Georgia, serif`;
+  ctx.fillText(_pick(_BYLINES), x, y);
+  return 10;
+}
+
+/* ── photo with lorem caption (italic serif) ── */
+function _modPhoto(ctx, x, y, w, h) {
+  const top = _r(150, 200),
+    bot = _r(60, 110);
+  for (let py = 0; py < h; py++) {
+    const t = py / h;
+    const v = Math.round(top + (bot - top) * t);
+    const dot = py % 3 === 0 ? 12 : 0;
+    const r = Math.max(0, v - dot);
+    const g = Math.max(0, v - dot - 4);
+    const b = Math.max(0, v - dot - 10);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(x, y + py, w, 1);
+  }
+  ctx.strokeStyle = "rgba(40,30,20,0.6)";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+  ctx.textBaseline = "top";
+  ctx.fillStyle = INK_MUTE;
+  ctx.font = `italic 5px "Times New Roman", Georgia, serif`;
+  const cap = _loremPick(Math.floor(_r(4, 9)));
+  _wrapText(ctx, cap, x, y + h + 2, w, 6);
+  return h + 8;
+}
+
+/* ── columns rendered as random bars — used for real-article body so we
+       suggest text density without inventing fake content (no lorem). ── */
+function _modColumnsBars(ctx, x, y, w, h, colN, exclude) {
+  colN = colN || 2 + Math.floor(Math.random() * 2);
+  const colGap = Math.round(_r(5, 9));
+  const colW = (w - colGap * (colN - 1)) / colN;
+  for (let c = 0; c < colN; c++) {
+    const cx = x + c * (colW + colGap);
+    let cy = y;
+    while (cy < y + h - 2) {
+      const isSub = Math.random() < 0.05;
+      const lineH = isSub ? _r(2.5, 3.5) : _r(1.4, 2.3);
+      const ink = isSub ? INK_BOLD : INK;
+      const skip =
+        exclude &&
+        cy + lineH > exclude.y &&
+        cy < exclude.y + exclude.h &&
+        cx + colW > exclude.x &&
+        cx < exclude.x + exclude.w;
+      if (!skip) {
+        ctx.fillStyle = ink;
+        let lx = cx + 1 + Math.random() * 3;
+        while (lx < cx + colW - 4) {
+          const ww = isSub ? _r(12, 36) : _r(4, 16);
+          if (Math.random() > 0.08) ctx.fillRect(lx, cy, ww, lineH);
+          lx += ww + 2 + Math.random() * 3;
+        }
+      }
+      cy += lineH + _r(1.4, 2.4);
+    }
+  }
+  if (colN > 1) {
+    ctx.fillStyle = `rgba(40,30,22,${_r(0.1, 0.2)})`;
+    for (let c = 1; c < colN; c++) {
+      const sx = x + c * (colW + colGap) - colGap * 0.5;
+      ctx.fillRect(sx, y, 1, h);
+    }
+  }
+}
+
+/* ── columns of REAL lorem text (replaces the bar grid).
+       Optional drop cap on column 0; paragraph indents; column rules. ── */
+function _modColumns(ctx, x, y, w, h, colN, exclude, opts = {}) {
+  const useDropCap = opts.dropCap !== false;
+  colN = colN || 2 + Math.floor(Math.random() * 2);
+  const colGap = Math.round(_r(5, 9));
+  const colW = (w - colGap * (colN - 1)) / colN;
+  const fontSize = 4.6;
+  const lineH = fontSize + 1.4;
+
+  // Body word stream — refilled on demand so columns never run dry and
+  // never leave whitespace at the bottom of an article.
+  const flatWords = [];
+  function _refill() {
+    const ws = _loremPara(70).split(/\s+/);
+    if (flatWords.length > 0 && ws.length) ws[0] = "\t" + ws[0];
+    for (const w0 of ws) flatWords.push(w0);
+  }
+  for (let i = 0; i < 4; i++) _refill();
+
+  let wordIdx = 0;
+  for (let c = 0; c < colN; c++) {
+    const cx = x + c * (colW + colGap);
+    let yy = y;
+
+    // drop cap on column 0
+    let dropCapW = 0,
+      dropCapH = 0;
+    if (c === 0 && useDropCap && wordIdx < flatWords.length) {
+      const first = flatWords[wordIdx].replace(/^\t/, "");
+      const cap = (first[0] || "").toUpperCase();
+      ctx.fillStyle = INK_BOLD;
+      ctx.font = `bold ${Math.round(fontSize * 3.4)}px "Times New Roman", Georgia, serif`;
+      ctx.textBaseline = "top";
+      ctx.fillText(cap, cx, yy);
+      dropCapW = ctx.measureText(cap).width + 1.5;
+      dropCapH = lineH * 3;
+      // strip the consumed letter
+      flatWords[wordIdx] = flatWords[wordIdx].replace(/^(\t)?./, "$1");
+    }
+
+    ctx.fillStyle = INK;
+    ctx.font = `${fontSize}px "Times New Roman", Georgia, serif`;
+    ctx.textBaseline = "top";
+
+    let line = "";
+    while (yy + lineH <= y + h) {
+      if (wordIdx >= flatWords.length) _refill();
+      let w0 = flatWords[wordIdx];
+      const isParaStart = w0.startsWith("\t");
+
+      // exclude region (e.g. inset photo) — skip past affected lines
+      if (
+        exclude &&
+        yy + lineH > exclude.y &&
+        yy < exclude.y + exclude.h &&
+        cx + colW > exclude.x &&
+        cx < exclude.x + exclude.w
+      ) {
+        if (line) {
+          const xx = yy < y + dropCapH && c === 0 ? cx + dropCapW : cx;
+          ctx.fillText(line, xx, yy);
+          line = "";
+        }
+        yy += lineH;
+        continue;
+      }
+
+      if (isParaStart) {
+        if (line) {
+          const xx = yy < y + dropCapH && c === 0 ? cx + dropCapW : cx;
+          ctx.fillText(line, xx, yy);
+          line = "";
+          yy += lineH;
+        }
+        w0 = w0.slice(1);
+        line = "  " + w0; // small indent for new paragraph
+        wordIdx++;
+        continue;
+      }
+
+      const test = line ? line + " " + w0 : w0;
+      const inDropCapZone = yy < y + dropCapH && c === 0;
+      const availW = inDropCapZone ? colW - dropCapW : colW;
+      if (ctx.measureText(test).width > availW && line) {
+        const xx = inDropCapZone ? cx + dropCapW : cx;
+        ctx.fillText(line, xx, yy);
+        line = w0;
+        wordIdx++;
+        yy += lineH;
+      } else {
+        line = test;
+        wordIdx++;
+      }
+    }
+    if (line && yy + lineH <= y + h) {
+      const inDropCapZone = yy < y + dropCapH && c === 0;
+      const xx = inDropCapZone ? cx + dropCapW : cx;
+      ctx.fillText(line, xx, yy);
+    }
+  }
+
+  // column dividers
+  if (colN > 1) {
+    ctx.fillStyle = `rgba(40,30,22,${_r(0.1, 0.2)})`;
+    for (let c = 1; c < colN; c++) {
+      const sx = x + c * (colW + colGap) - colGap * 0.5;
+      ctx.fillRect(sx, y, 1, h);
+    }
+  }
+}
+
+/* ── ad box: bold lorem heading + body lorem ── */
+function _modAdBox(ctx, x, y, w, h) {
+  ctx.strokeStyle = INK_BOLD;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.lineWidth = 1;
+  ctx.strokeRect(x + 4, y + 4, w - 8, h - 8);
+  const ix = x + 8,
+    iy = y + 8,
+    iw = w - 16,
+    ih = h - 16;
+  let cy = iy + ih * 0.18;
+  const headSize = Math.min(ih * 0.18, _r(11, 14));
+  ctx.textBaseline = "top";
+  ctx.fillStyle = INK_BOLD;
+  ctx.font = `bold ${headSize}px "Times New Roman", Georgia, serif`;
+  const head = _loremPick(Math.floor(_r(2, 4))).toUpperCase();
+  const hw = ctx.measureText(head).width;
+  ctx.fillText(head, ix + (iw - hw) / 2, cy);
+  cy += headSize + 6;
+  ctx.fillStyle = INK;
+  ctx.font = `5.2px "Times New Roman", Georgia, serif`;
+  const sub = _loremPick(Math.floor(_r(10, 18)));
+  cy += _wrapText(ctx, sub, ix, cy, iw, 6);
+  // little price/cta line
+  if (cy < iy + ih - 10) {
+    ctx.fillStyle = INK_BOLD;
+    ctx.font = `bold 7px "Helvetica Neue", Arial, sans-serif`;
+    const cta = _loremPick(2).toUpperCase();
+    const cw = ctx.measureText(cta).width;
+    ctx.fillText(cta, ix + (iw - cw) / 2, iy + ih - 10);
+  }
+}
+
+/* ── templates ── */
+
+function _tplFront(ctx, W, H) {
+  const m = Math.round(_r(6, 12));
+  const colW = W - 2 * m;
+  let y = m;
+  y += _modMasthead(ctx, m, y, colW);
+  y += _modHeadline(
+    ctx,
+    m,
+    y,
+    colW,
+    1 + Math.floor(Math.random() * 2),
+    _r(13, 18),
+  );
+  y += _modSubHeadline(ctx, m, y, colW, 1 + Math.floor(Math.random() * 2));
+  y += _modByline(ctx, m, y, colW);
+  if (_c(0.7) && y < H * 0.55) {
+    const ph = Math.floor(_r(45, 80));
+    const pw = Math.floor(colW * _r(0.4, 0.65));
+    _modPhoto(ctx, m, y, pw, ph);
+    _modColumns(ctx, m + pw + 6, y, colW - pw - 6, ph, 1, null, {
+      dropCap: false,
+    });
+    y += ph + 10;
+  }
+  if (y < H - m - 10)
+    _modColumns(
+      ctx,
+      m,
+      y,
+      colW,
+      H - m - y,
+      2 + Math.floor(Math.random() * 2),
+      null,
+      { dropCap: true },
+    );
+}
+
+function _tplInner(ctx, W, H) {
+  const m = Math.round(_r(6, 12));
+  const colW = W - 2 * m;
+  let y = m;
+  // dateline strip + page number
+  ctx.textBaseline = "top";
+  ctx.fillStyle = INK;
+  ctx.font = `bold 5.5px "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillText(_pick(_MASTHEADS), m, y);
+  ctx.fillStyle = INK_MUTE;
+  ctx.font = `5.5px "Helvetica Neue", Arial, sans-serif`;
+  const pn = `A${Math.floor(_r(2, 24))}`;
+  const pnw = ctx.measureText(pn).width;
+  ctx.fillText(pn, m + colW - pnw, y);
+  y += 8;
+  _rule(ctx, m, y, colW, 1);
+  y += 4;
+  y += _modHeadline(
+    ctx,
+    m,
+    y,
+    colW,
+    1 + Math.floor(Math.random() * 2),
+    _r(11, 14),
+  );
+  y += _modSubHeadline(ctx, m, y, colW, 1);
+  y += _modByline(ctx, m, y, colW);
+  let exclude = null;
+  if (_c(0.55)) {
+    const ph = Math.floor(_r(40, 75));
+    const pw = Math.floor(colW * _r(0.32, 0.6));
+    const px = m + Math.floor(_r(0, colW - pw));
+    _modPhoto(ctx, px, y + 4, pw, ph);
+    exclude = { x: px - 2, y: y + 4, w: pw + 4, h: ph + 12 };
+  }
+  if (y < H - m - 10)
+    _modColumns(
+      ctx,
+      m,
+      y,
+      colW,
+      H - m - y,
+      2 + Math.floor(Math.random() * 2),
+      exclude,
+      { dropCap: true },
+    );
+}
+
+/* CLASSIFIEDS — dense grid of tiny ads. Replaces the old empty-box ad
+   layout. Each cell: bold lorem title (caps), 2-4 lines of body, dot
+   separator. Columns refill until they hit the bottom margin. */
+function _tplAd(ctx, W, H) {
+  const m = Math.round(_r(6, 10));
+  const colW = W - 2 * m;
+  let y = m;
+  ctx.textBaseline = "top";
+
+  // CLASSIFIEDS masthead
+  const titleSz = Math.floor(_r(13, 16));
+  ctx.fillStyle = INK_BOLD;
+  ctx.font = `bold ${titleSz}px "Times New Roman", Georgia, serif`;
+  const title = "CLASSIFIEDS";
+  const tw = ctx.measureText(title).width;
+  ctx.fillText(title, m + (colW - tw) / 2, y);
+  y += titleSz + 3;
+  _rule(ctx, m, y, colW, 1);
+  y += 3;
+  ctx.fillStyle = INK_MUTE;
+  ctx.font = `6px "Helvetica Neue", Arial, sans-serif`;
+  const sub = `· ${_pick(_KICKERS)} · SECTION ${_pick(["C", "D", "E"])} ·`;
+  const sw = ctx.measureText(sub).width;
+  ctx.fillText(sub, m + (colW - sw) / 2, y);
+  y += 9;
+  _rule(ctx, m, y, colW, 1);
+  y += 4;
+
+  // grid of small ads — 3 columns, refilled until vertical exhaustion
+  const colN = 3;
+  const colGap = Math.round(_r(5, 7));
+  const cw = (colW - colGap * (colN - 1)) / colN;
+  const fontB = `bold 5.5px "Helvetica Neue", Arial, sans-serif`;
+  const fontT = `5px "Times New Roman", Georgia, serif`;
+  const cellBottom = H - m;
+
+  for (let c = 0; c < colN; c++) {
+    const cx = m + c * (cw + colGap);
+    let cy = y;
+    while (cy < cellBottom - 6) {
+      // bold title
+      ctx.fillStyle = INK_BOLD;
+      ctx.font = fontB;
+      const titleText = _loremPick(Math.floor(_r(2, 4))).toUpperCase();
+      ctx.fillText(titleText, cx, cy);
+      cy += 7;
+      // body
+      ctx.fillStyle = INK;
+      ctx.font = fontT;
+      const lines = 2 + Math.floor(Math.random() * 3);
+      const bodyText = _loremPick(lines * 7);
+      const used = _wrapText(ctx, bodyText, cx, cy, cw, 6);
+      cy += used + 1;
+      // dot separator between ads
+      if (cy < cellBottom - 4) {
+        ctx.fillStyle = INK_MUTE;
+        ctx.fillRect(cx + cw / 2 - 1, cy + 1, 2, 1);
+        cy += 4;
+      }
+    }
+  }
+
+  // column dividers
+  ctx.fillStyle = `rgba(40,30,22,${_r(0.12, 0.18)})`;
+  for (let c = 1; c < colN; c++) {
+    const sx = m + c * (cw + colGap) - colGap * 0.5;
+    ctx.fillRect(sx, y, 1, cellBottom - y);
+  }
+}
+
+/* photo-led front: big photo top, bold headline below, then 3-column body */
+function _tplPhotoLed(ctx, W, H) {
+  const m = Math.round(_r(6, 10));
+  const colW = W - 2 * m;
+  let y = m;
+  y += _modMasthead(ctx, m, y, colW);
+  const ph = Math.floor(_r(85, 110));
+  _modPhoto(ctx, m, y, colW, ph);
+  y += ph + 12;
+  y += _modHeadline(ctx, m, y, colW, 1, _r(15, 19));
+  y += _modByline(ctx, m, y, colW);
+  if (y < H - m - 10)
+    _modColumns(ctx, m, y, colW, H - m - y, 3, null, { dropCap: true });
+}
+
+const _NEWS_TPLS = [_tplFront, _tplInner, _tplAd, _tplPhotoLed];
+
+/* ── word-wrap utility (canvas 2D textMeasurement-based) ── */
+function _wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = String(text).split(/\s+/);
+  let line = "";
+  let yy = y;
+  for (let i = 0; i < words.length; i++) {
+    const test = line ? line + " " + words[i] : words[i];
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, yy);
+      line = words[i];
+      yy += lineH;
+    } else {
+      line = test;
+    }
+  }
+  if (line) {
+    ctx.fillText(line, x, yy);
+    yy += lineH;
+  }
+  return yy - y;
+}
+
+/* ── real-article template (uses NYU top-100 metadata) ──
+   Renders publication name as masthead, real headline as the lede,
+   real author + year as the byline. Body columns stay procedural. */
+function _tplRealFront(ctx, W, H, article) {
+  const m = Math.round(_r(8, 12));
+  const colW = W - 2 * m;
+  let y = m;
+
+  // ── masthead: publication name in caps ──
+  ctx.textBaseline = "top";
+  const pubSize = Math.floor(_r(11, 14));
+  ctx.fillStyle = INK_BOLD;
+  ctx.font = `bold ${pubSize}px "Helvetica Neue", Arial, sans-serif`;
+  const pub = String(article.publication || "Press").toUpperCase();
+  const pubW = ctx.measureText(pub).width;
+  ctx.fillText(pub, m + (colW - pubW) / 2, y);
+  y += pubSize + 4;
+  _rule(ctx, m, y, colW, 1);
+  y += 4;
+
+  // ── kicker: small year/edition line ──
+  ctx.fillStyle = INK_MUTE;
+  ctx.font = `8px "Helvetica Neue", Arial, sans-serif`;
+  const dateLine = `· ${article.year || ""} ·`;
+  const dW = ctx.measureText(dateLine).width;
+  ctx.fillText(dateLine, m + (colW - dW) / 2, y);
+  y += 11;
+
+  // ── headline: real title in serif ──
+  ctx.fillStyle = INK_BOLD;
+  const hsize = Math.floor(_r(14, 19));
+  ctx.font = `bold ${hsize}px "Times New Roman", Georgia, serif`;
+  const lineH = hsize + 3;
+  const used = _wrapText(ctx, article.title, m, y, colW, lineH);
+  y += used + 3;
+
+  // ── byline ──
+  ctx.fillStyle = INK;
+  ctx.font = `italic 9px "Times New Roman", Georgia, serif`;
+  ctx.fillText(`By ${article.author}`, m, y);
+  y += 13;
+
+  // ── optional photo + side column (lorem body) ──
+  if (_c(0.55) && y < H * 0.55) {
+    const ph = Math.floor(_r(40, 75));
+    const pw = Math.floor(colW * _r(0.4, 0.65));
+    _modPhoto(ctx, m, y, pw, ph);
+    _modColumns(ctx, m + pw + 6, y, colW - pw - 6, ph, 1, null, {
+      dropCap: false,
+    });
+    y += ph + 8;
+  }
+
+  // ── body: lorem in 2-3 columns with drop cap ──
+  if (y < H - m - 6) {
+    _modColumns(
+      ctx,
+      m,
+      y,
+      colW,
+      H - m - y,
+      2 + Math.floor(Math.random() * 2),
+      null,
+      { dropCap: true },
+    );
+  }
+}
+
+/* ── colour helpers for the substrate ── */
+function _hexLerp(a, b, t) {
+  const ar = parseInt(a.slice(1, 3), 16);
+  const ag = parseInt(a.slice(3, 5), 16);
+  const ab = parseInt(a.slice(5, 7), 16);
+  const br = parseInt(b.slice(1, 3), 16);
+  const bg = parseInt(b.slice(3, 5), 16);
+  const bb = parseInt(b.slice(5, 7), 16);
+  const r = Math.round(ar + (br - ar) * t)
+    .toString(16)
+    .padStart(2, "0");
+  const g = Math.round(ag + (bg - ag) * t)
+    .toString(16)
+    .padStart(2, "0");
+  const c = Math.round(ab + (bb - ab) * t)
+    .toString(16)
+    .padStart(2, "0");
+  return `#${r}${g}${c}`;
+}
+
+function makeNewspaperTexture() {
+  const W = 320,
+    H = 228;
+  const cv = document.createElement("canvas");
+  cv.width = W;
+  cv.height = H;
+  const ctx = cv.getContext("2d");
+
+  // ── per-paper age tint ──
+  // ageT in [0, 1]: 0 = bright cream, 1 = mildly aged. All endpoints live
+  // in a lighter band so the flock reads as fresh paper.
+  const ageT = Math.random();
+  const baseTop = _hexLerp("#f7f3e8", "#f0ead7", ageT);
+  const baseBot = _hexLerp("#ece5d2", "#e2dac3", ageT);
+
+  // ── base gradient with a midpoint stop for richer tonality ──
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, baseTop);
+  bg.addColorStop(0.55, _hexLerp(baseTop, baseBot, 0.45));
+  bg.addColorStop(1, baseBot);
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── per-pixel grain (neutral RGB so the grain doesn't tint warm) ──
+  const nd = ctx.getImageData(0, 0, W, H);
+  for (let i = 0; i < nd.data.length; i += 4) {
+    const tone = (Math.random() - 0.5) * 14;
+    nd.data[i] = Math.max(0, Math.min(255, nd.data[i] + tone));
+    nd.data[i + 1] = Math.max(0, Math.min(255, nd.data[i + 1] + tone));
+    nd.data[i + 2] = Math.max(0, Math.min(255, nd.data[i + 2] + tone));
+  }
+  ctx.putImageData(nd, 0, 0);
+
+  // ── horizontal fiber streaks (very subtle, mostly desaturated) ──
+  for (let s = 0; s < 8; s++) {
+    const sy = Math.random() * H;
+    const sh = 1 + Math.random() * 3;
+    const v = 90 + Math.random() * 60;
+    ctx.fillStyle = `rgba(${v},${v - 5},${v - 12},${0.018 + Math.random() * 0.025})`;
+    ctx.fillRect(0, sy, W, sh);
+  }
+
+  // ── corner vignette — older papers darken more at the edges ──
+  const vignette = ctx.createRadialGradient(
+    W / 2,
+    H / 2,
+    Math.min(W, H) * 0.45,
+    W / 2,
+    H / 2,
+    Math.max(W, H) * 0.7,
+  );
+  vignette.addColorStop(0, "rgba(0,0,0,0)");
+  vignette.addColorStop(1, `rgba(40,32,22,${0.025 + ageT * 0.05})`);
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── very slight top-edge shading ──
+  const topShade = ctx.createLinearGradient(0, 0, 0, 12);
+  topShade.addColorStop(0, "rgba(30,25,20,0.05)");
+  topShade.addColorStop(1, "rgba(30,25,20,0)");
+  ctx.fillStyle = topShade;
+  ctx.fillRect(0, 0, W, 14);
+
+  // ── optional fold/crease line ──
+  if (Math.random() < 0.22) {
+    const fy = H * (0.32 + Math.random() * 0.36);
+    const cg = ctx.createLinearGradient(0, fy - 2, 0, fy + 2);
+    cg.addColorStop(0, "rgba(0,0,0,0)");
+    cg.addColorStop(0.5, `rgba(40,28,12,${0.14 + Math.random() * 0.1})`);
+    cg.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = cg;
+    ctx.fillRect(0, fy - 2, W, 4);
+  }
+
+  // ── render the article (mast / headline / body / photo) on top ──
+  if (_articles && _articles.length && Math.random() < REAL_ARTICLE_PROB) {
+    const a = _articles[Math.floor(Math.random() * _articles.length)];
+    _tplRealFront(ctx, W, H, a);
+  } else {
+    _NEWS_TPLS[Math.floor(Math.random() * _NEWS_TPLS.length)](ctx, W, H);
+  }
+
+  // ── foxing spots (small brown stains) — applied AFTER ink so they sit
+  //    on top like real paper aging. Alpha low so text remains legible. ──
+  if (Math.random() < 0.3 + ageT * 0.3) {
+    const spotCount = 1 + Math.floor(Math.random() * (2 + ageT * 3));
+    for (let i = 0; i < spotCount; i++) {
+      const sx = Math.random() * W;
+      const sy = Math.random() * H;
+      const r = 2 + Math.random() * 4;
+      const grad = ctx.createRadialGradient(sx, sy, 0, sx, sy, r);
+      grad.addColorStop(
+        0,
+        `rgba(80, 65, 50, ${0.04 + Math.random() * 0.08 * ageT})`,
+      );
+      grad.addColorStop(1, "rgba(80, 65, 50, 0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx - r, sy - r, r * 2, r * 2);
+    }
+  }
+
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  return tex;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Paper — core component
+   Single source of truth for the newspaper-paper visual: shared geometry,
+   bend shader (proto-15/v2 verbatim), shape uniforms, lighting rig.
+   Anything that renders a paper plane should go through this.
+   ════════════════════════════════════════════════════════════════════ */
+
+const Paper = {
+  // Model-space dimensions (kept verbatim from v2 so bend coefficients keep
+  // their meaning). Visual size = paper plane × parent group scale.
+  RECEIPT_W: 0.14,
+  RECEIPT_H: 0.1,
+  PARTICLE_R: 0.05,
+
+  // Single-source-of-truth bend uniforms. ALL paper materials patched by
+  // Paper.patch() share these objects, so editing one value retunes every
+  // pool that uses paper. Defaults verbatim from proto-19-v2.
+  uniforms: {
+    uTime: { value: 0 },
+    uBowl: { value: 0.35 },
+    uTilt: { value: 0.5 },
+    uRipple: { value: 0.006 },
+    uRippleFreq: { value: 24.0 },
+    uRippleSpeed: { value: 2.4 },
+    uWallBowl: { value: 1.6 },
+    uWallTilt: { value: 0.45 },
+    uAlignStart: { value: 0.7 }, // SPHERE_R - PARTICLE_R - 0.5 (with R=1.25)
+    uAlignBand: { value: 0.5 },
+    uFold: { value: 0.55 }, // crease intensity multiplier (Z displacement / unit |d|)
+    uFoldEps: { value: 6.0 }, // softens the crease apex (local units)
+  },
+
+  _geom: null,
+  geometry() {
+    if (!this._geom)
+      this._geom = new THREE.PlaneGeometry(
+        this.RECEIPT_W,
+        this.RECEIPT_H,
+        14,
+        6,
+      );
+    return this._geom;
+  },
+
+  // onBeforeCompile patch: injects the v2 bend shader into a
+  // MeshStandardMaterial. Geometry must carry an InstancedBufferAttribute
+  // named `aFlowLocal` (vec3) — the per-instance flow vector that drives
+  // _bowl/_tilt deformations.
+  patch(material, opts = {}) {
+    const u = this.uniforms;
+    const hasBack = !!opts.backMap;
+    if (hasBack) {
+      // Each material owns its own back-face texture uniform so the same
+      // shader program can serve every variant.
+      material.userData.uMapBack = { value: opts.backMap };
+    }
+    material.onBeforeCompile = (shader) => {
+      for (const k of Object.keys(u)) shader.uniforms[k] = u[k];
+      if (hasBack) shader.uniforms.uMapBack = material.userData.uMapBack;
+      shader.vertexShader = shader.vertexShader
+        .replace(
+          "#include <common>",
+          `
+          #include <common>
+          attribute vec3 aFlowLocal;
+          attribute float aFold;
+          uniform float uTime;
+          uniform float uBowl;
+          uniform float uTilt;
+          uniform float uRipple;
+          uniform float uRippleFreq;
+          uniform float uRippleSpeed;
+          uniform float uWallBowl;
+          uniform float uWallTilt;
+          uniform float uAlignStart;
+          uniform float uAlignBand;
+          uniform float uFold;
+          uniform float uFoldEps;
+        `,
+        )
+        .replace(
+          "#include <beginnormal_vertex>",
+          `
+          float _r2 = position.x * position.x + position.y * position.y;
+          float _bowl = aFlowLocal.z * _r2 * uBowl;
+          float _tiltX = -aFlowLocal.x * position.x * uTilt;
+          float _tiltY = -aFlowLocal.y * position.y * uTilt;
+          vec3 _instPos = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);
+          float _instDist = length(_instPos);
+          float _wallProx = clamp((_instDist - uAlignStart) / uAlignBand, 0.0, 1.0);
+          _wallProx = _wallProx * _wallProx * (3.0 - 2.0 * _wallProx);
+          vec3 _radialWorld = _instPos / max(_instDist, 1e-5);
+          mat3 _R = mat3(instanceMatrix);
+          vec3 _radialLocal = vec3(
+            _R[0][0] * _radialWorld.x + _R[0][1] * _radialWorld.y + _R[0][2] * _radialWorld.z,
+            _R[1][0] * _radialWorld.x + _R[1][1] * _radialWorld.y + _R[1][2] * _radialWorld.z,
+            _R[2][0] * _radialWorld.x + _R[2][1] * _radialWorld.y + _R[2][2] * _radialWorld.z
+          );
+          float _wallBowl = -_radialLocal.z * _r2 * uWallBowl * _wallProx;
+          float _wallTiltX = -_radialLocal.x * position.x * uWallTilt * _wallProx;
+          float _wallTiltY = -_radialLocal.y * position.y * uWallTilt * _wallProx;
+          float _dragMag = length(aFlowLocal);
+          float _ph = aFlowLocal.x * 7.3 + aFlowLocal.y * 4.1 + aFlowLocal.z * 5.7;
+          // Directional ripple — wave travels along the in-plane projection
+          // of the flow vector so each paper ondulates along ITS OWN
+          // direction of motion, not a fixed local X axis. A second ripple
+          // perpendicular to the first (different freq + phase) gives a
+          // 2D crumple instead of a pure 1D wave.
+          vec2 _flowXY = aFlowLocal.xy;
+          float _flowMag2 = length(_flowXY);
+          vec2 _flowDir = _flowMag2 > 0.001 ? _flowXY / _flowMag2 : vec2(1.0, 0.0);
+          vec2 _flowPerp = vec2(-_flowDir.y, _flowDir.x);
+          float _pAlong = position.x * _flowDir.x + position.y * _flowDir.y;
+          float _pPerp  = position.x * _flowPerp.x + position.y * _flowPerp.y;
+          float _argA = uTime * uRippleSpeed + _pAlong * uRippleFreq + _ph;
+          float _argB = uTime * uRippleSpeed * 1.21 + _pPerp * uRippleFreq * 0.7 + _ph * 1.7;
+          float _rippleA = sin(_argA) * uRipple * (0.4 + _dragMag);
+          float _rippleB = sin(_argB) * uRipple * 0.45 * (0.4 + _dragMag);
+          float _ripple  = _rippleA + _rippleB;
+          float _kA = cos(_argA) * uRippleFreq * uRipple * (0.4 + _dragMag);
+          float _kB = cos(_argB) * uRippleFreq * 0.7 * uRipple * 0.45 * (0.4 + _dragMag);
+          float _rippleDx = _kA * _flowDir.x + _kB * _flowPerp.x;
+          float _rippleDy = _kA * _flowDir.y + _kB * _flowPerp.y;
+          // Fold / crease — paper bends sharply along an in-plane line
+          // perpendicular to the flow direction. Smooth abs (sqrt(d²+ε²))
+          // rounds the apex so the crease has a continuous normal.
+          //   d      = signed distance from crease line (line passes
+          //            through the paper origin perpendicular to _flowDir)
+          //   absD   = sqrt(d² + ε²) — smooth |d|
+          //   foldZ  = uFold · aFold · (absD - ε)
+          float _foldD = position.x * _flowDir.x + position.y * _flowDir.y;
+          float _foldEps2 = uFoldEps * uFoldEps;
+          float _foldAbsD = sqrt(_foldD * _foldD + _foldEps2);
+          float _foldZ = uFold * aFold * (_foldAbsD - uFoldEps);
+          float _foldDdz = (uFold * aFold * _foldD) / max(_foldAbsD, 1e-4);
+          float _foldDx = _foldDdz * _flowDir.x;
+          float _foldDy = _foldDdz * _flowDir.y;
+
+          float _dz = _bowl + _tiltX + _tiltY + _wallBowl + _wallTiltX + _wallTiltY + _ripple + _foldZ;
+          float _dzdx = aFlowLocal.z * 2.0 * position.x * uBowl - aFlowLocal.x * uTilt
+                      + (-_radialLocal.z * 2.0 * position.x * uWallBowl * _wallProx)
+                      - _radialLocal.x * uWallTilt * _wallProx + _rippleDx + _foldDx;
+          float _dzdy = aFlowLocal.z * 2.0 * position.y * uBowl - aFlowLocal.y * uTilt
+                      + (-_radialLocal.z * 2.0 * position.y * uWallBowl * _wallProx)
+                      - _radialLocal.y * uWallTilt * _wallProx + _rippleDy + _foldDy;
+          vec3 objectNormal = normalize(vec3(-_dzdx, -_dzdy, 1.0));
+          #ifdef USE_TANGENT
+            vec3 objectTangent = vec3(tangent.xyz);
+          #endif
+        `,
+        )
+        .replace(
+          "#include <begin_vertex>",
+          `
+          vec3 transformed = vec3(position);
+          transformed.z += _dz;
+        `,
+        );
+
+      // ── back-face content ──
+      // With DoubleSide the same front texture would render mirrored on
+      // the verso. Instead we sample a SECOND texture (the back-page
+      // article) with the U coord flipped so its text reads naturally
+      // when looking at the paper from behind. If no backMap is provided,
+      // fall back to a blank cream tint.
+      if (hasBack) {
+        shader.fragmentShader = shader.fragmentShader
+          .replace(
+            "#include <common>",
+            "#include <common>\nuniform sampler2D uMapBack;",
+          )
+          .replace(
+            "#include <map_fragment>",
+            `
+            #include <map_fragment>
+            if (!gl_FrontFacing) {
+              vec2 _backUv = vec2(1.0 - vMapUv.x, vMapUv.y);
+              vec4 _backColor = texture2D(uMapBack, _backUv);
+              diffuseColor.rgb = _backColor.rgb;
+            }
+            `,
+          );
+      } else {
+        shader.fragmentShader = shader.fragmentShader.replace(
+          "#include <map_fragment>",
+          `
+          #include <map_fragment>
+          if (!gl_FrontFacing) {
+            diffuseColor.rgb = vec3(0.91, 0.88, 0.80);
+          }
+          `,
+        );
+      }
+    };
+    material.customProgramCacheKey = () =>
+      hasBack ? "mycroft-paper-back-v1" : "mycroft-paper-front-v1";
+  },
+
+  // Lighting rig tuned for paper without yellowing: near-neutral key, soft
+  // neutral fill, subtle oxide kicker for depth. Lets the paper substrate
+  // read as a clean cream rather than amber.
+  addLights(scene) {
+    scene.add(new THREE.AmbientLight(0xfffbf0, 0.62));
+    scene.add(new THREE.HemisphereLight(0xfffbef, 0xc6beae, 0.4));
+    const key = new THREE.DirectionalLight(0xfffaee, 1.0); // brighter near-neutral
+    key.position.set(2.5, 3.0, 2.0);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xf2f0e8, 0.28); // neutral fill
+    fill.position.set(-2.5, -1.5, -1.5);
+    scene.add(fill);
+    const rim = new THREE.DirectionalLight(0x4a7363, 0.1); // subtle oxide kicker
+    rim.position.set(0, 4, -2);
+    scene.add(rim);
+  },
+
+  // Attach a "Paper · shape" GUI folder. Drives the SHARED uniforms, so
+  // moving these affects every PaperPool in the page at once.
+  attachShapeGui(gui, label = "Paper · shape") {
+    const f = gui.addFolder(label);
+    const u = this.uniforms;
+    const local = {
+      bend: 1.0,
+      sag: 1.0,
+      ripple: 1.0,
+      flutter: u.uRippleSpeed.value,
+    };
+    const sync = () => {
+      u.uBowl.value = 0.35 * local.bend;
+      u.uWallBowl.value = 1.4 * local.bend;
+      u.uTilt.value = 0.5 * local.sag;
+      u.uRipple.value = 0.006 * local.ripple;
+      u.uRippleSpeed.value = local.flutter;
+    };
+    f.add(local, "bend", 0, 3, 0.05).name("bend ×").onChange(sync);
+    f.add(local, "sag", 0, 3, 0.05).name("sag ×").onChange(sync);
+    f.add(local, "ripple", 0, 3, 0.05).name("ripple ×").onChange(sync);
+    f.add(local, "flutter", 0, 8, 0.1).name("flutter speed").onChange(sync);
+    return f;
+  },
+};
+
+/* ── shared scratch vectors (avoid GC churn in the physics ticks) ── */
+const _S = {
+  flow: new THREE.Vector3(),
+  delta: new THREE.Vector3(),
+  normLocal: new THREE.Vector3(0, 0, 1),
+  normWorld: new THREE.Vector3(),
+  radial: new THREE.Vector3(),
+  qInv: new THREE.Quaternion(),
+  qDelta: new THREE.Quaternion(),
+  flowLocal: new THREE.Vector3(),
+  pModel: new THREE.Vector3(),
+  M: new THREE.Matrix4(),
+  Sone: new THREE.Vector3(1, 1, 1),
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   PaperPool — N papers as InstancedMesh per texture variant
+   Stateless wrt physics; the caller pushes a matrix + flow vector for
+   each paper each frame, then calls flush() to upload to the GPU.
+   ════════════════════════════════════════════════════════════════════ */
+
+class PaperPool {
+  constructor({
+    count,
+    scale = 1,
+    parent,
+    variants = 16,
+    mirrorParent = null,
+    splitPlaneZ = 0,
+  }) {
+    this.count = count;
+    this.variants = variants;
+    this.perVariant = Math.ceil(count / variants);
+
+    this.group = new THREE.Group();
+    this.group.scale.setScalar(scale);
+    parent.add(this.group);
+    // ── split-half mirror ──
+    // When `mirrorParent` is provided, the pool also creates a TWIN set
+    // of InstancedMeshes parented to that scene/group. The main pool's
+    // material clips paper geometry with z < splitPlaneZ (renders the
+    // "front half"), and the mirror's material clips z > splitPlaneZ
+    // (renders the "back half"). Each frame's flush() copies instance
+    // matrices + per-instance attributes into the mirror so both halves
+    // stay in sync. Use case: a sphere that straddles the HTML plane —
+    // front half rendered after CSS3D (in front of HTML), back half
+    // rendered before CSS3D (behind HTML).
+    this.mirrorParent = mirrorParent;
+    this.splitPlaneZ = splitPlaneZ;
+    if (mirrorParent) {
+      this.mirrorGroup = new THREE.Group();
+      this.mirrorGroup.scale.setScalar(scale);
+      mirrorParent.add(this.mirrorGroup);
+    }
+
+    this.textures = Array.from({ length: variants }, makeNewspaperTexture);
+    // Independent BACK texture per variant — gives each paper a different
+    // article on its verso (so the back isn't blank or mirror-text).
+    this.backTextures = Array.from({ length: variants }, makeNewspaperTexture);
+    this.meshes = [];
+    this.flowAttrs = [];
+    this.foldAttrs = [];
+    this.mirrorMeshes = [];
+
+    // Clipping planes for the split-half effect. Defined in WORLD space:
+    // — main material clips z < splitPlaneZ (renders front half)
+    // — mirror material clips z > splitPlaneZ (renders back half)
+    const planeFront = mirrorParent
+      ? new THREE.Plane(new THREE.Vector3(0, 0, 1), -splitPlaneZ)
+      : null;
+    const planeBack = mirrorParent
+      ? new THREE.Plane(new THREE.Vector3(0, 0, -1), splitPlaneZ)
+      : null;
+
+    for (let v = 0; v < variants; v++) {
+      // Paper-realistic shading:
+      // · roughness 0.95 — paper has no specular highlight
+      // · subtle warm emissive — fake subsurface scattering, paper "glows"
+      //   a touch when backlit
+      // · emissiveMap = same texture so the warmth carries the ink pattern
+      const mat = new THREE.MeshStandardMaterial({
+        map: this.textures[v],
+        side: THREE.DoubleSide,
+        roughness: 0.95,
+        metalness: 0.0,
+        // very mild near-neutral emissive — fakes a touch of subsurface
+        // scattering without warming the paper toward yellow
+        emissive: new THREE.Color(0x584c3c),
+        emissiveIntensity: 0.025,
+        emissiveMap: this.textures[v],
+      });
+      // Front material gets the front-half clipping plane (renders z>=0).
+      if (mirrorParent) {
+        mat.clippingPlanes = [planeFront];
+        mat.clipShadows = true;
+      }
+      // Pass the back-side texture so the verso shows a real article
+      // (mirrored U so the text reads naturally when viewed from behind).
+      Paper.patch(mat, { backMap: this.backTextures[v] });
+
+      const g = Paper.geometry().clone();
+      const flowArr = new Float32Array(this.perVariant * 3);
+      const flowAttr = new THREE.InstancedBufferAttribute(flowArr, 3);
+      flowAttr.setUsage(THREE.DynamicDrawUsage);
+      g.setAttribute("aFlowLocal", flowAttr);
+
+      const foldArr = new Float32Array(this.perVariant);
+      const foldAttr = new THREE.InstancedBufferAttribute(foldArr, 1);
+      foldAttr.setUsage(THREE.DynamicDrawUsage);
+      g.setAttribute("aFold", foldAttr);
+
+      const inst = new THREE.InstancedMesh(g, mat, this.perVariant);
+      inst.frustumCulled = false;
+      this.group.add(inst);
+
+      this.meshes.push(inst);
+      this.flowAttrs.push(flowAttr);
+      this.foldAttrs.push(foldAttr);
+
+      // Mirror mesh — clones geometry+material, opposite clipping plane.
+      // Shares attribute Float32Arrays with main mesh so we don't need
+      // to copy data each frame; just sync needsUpdate flags + matrices.
+      if (mirrorParent) {
+        const mirrorMat = new THREE.MeshStandardMaterial({
+          map: this.textures[v],
+          side: THREE.DoubleSide,
+          roughness: 0.95,
+          metalness: 0.0,
+          emissive: new THREE.Color(0x584c3c),
+          emissiveIntensity: 0.025,
+          emissiveMap: this.textures[v],
+        });
+        mirrorMat.clippingPlanes = [planeBack];
+        mirrorMat.clipShadows = true;
+        Paper.patch(mirrorMat, { backMap: this.backTextures[v] });
+        // Reuse the same geometry — it carries aFlowLocal & aFold which
+        // are updated once per frame and seen by both meshes.
+        const mirrorInst = new THREE.InstancedMesh(
+          g,
+          mirrorMat,
+          this.perVariant,
+        );
+        mirrorInst.frustumCulled = false;
+        // Share the instanceMatrix attribute too: when the main mesh
+        // updates it, the mirror sees the same data.
+        mirrorInst.instanceMatrix = inst.instanceMatrix;
+        this.mirrorGroup.add(mirrorInst);
+        this.mirrorMeshes.push(mirrorInst);
+      }
+    }
+
+    // distribute count evenly across variants
+    const counts = new Array(variants).fill(0);
+    for (let i = 0; i < count; i++) counts[i % variants]++;
+    for (let v = 0; v < variants; v++) {
+      this.meshes[v].count = counts[v];
+      if (this.mirrorMeshes[v]) this.mirrorMeshes[v].count = counts[v];
+    }
+  }
+
+  // Map a global instance index to (variant, slot). Round-robin so each
+  // texture appears across the pool — no clustering by design.
+  _vs(i) {
+    return [i % this.variants, Math.floor(i / this.variants)];
+  }
+
+  setMatrix(i, m) {
+    const [v, s] = this._vs(i);
+    this.meshes[v].setMatrixAt(s, m);
+  }
+
+  setFlow(i, x, y, z) {
+    const [v, s] = this._vs(i);
+    const off = s * 3;
+    this.flowAttrs[v].array[off + 0] = x;
+    this.flowAttrs[v].array[off + 1] = y;
+    this.flowAttrs[v].array[off + 2] = z;
+  }
+
+  setFold(i, f) {
+    const [v, s] = this._vs(i);
+    this.foldAttrs[v].array[s] = f;
+  }
+
+  flush() {
+    for (let v = 0; v < this.variants; v++) {
+      this.meshes[v].instanceMatrix.needsUpdate = true;
+      this.flowAttrs[v].needsUpdate = true;
+      this.foldAttrs[v].needsUpdate = true;
+    }
+  }
+
+  setVisible(v) {
+    this.group.visible = v;
+    if (this.mirrorGroup) this.mirrorGroup.visible = v;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PaperSphereScene
+   Fibonacci-spiral orb of papers + curl-noise flow field + drag/brownian
+   + wall constraint + flow-/wall-alignment torques + optional mouse
+   repulsion. Owns its own params + GUI folder.
+   Coords are model-space (sphere radius = 1.25). The PaperPool's parent
+   group rescales to params.visualR pixels at draw time.
+   ════════════════════════════════════════════════════════════════════ */
+
+class PaperSphereScene {
+  static defaultParams() {
+    // ── Clean rebuild ──
+    // Architecture: convergent flow + collision (spring + damper + friction
+    // + PBD) + soft wall + HARD shell projection + drape on impact + bend
+    // signal from drag (flow-vel) clamped & smoothed. The shell projection
+    // is what guarantees the orb's spherical shape — all motion ends up
+    // tangent to the sphere wall.
+    return {
+      visible: true,
+      // pose
+      visualR: 110,
+      // sphere radius in model space (controls how tight/loose the orb's
+      // wall constraint is). The pool group is rescaled so visualR pixels
+      // match sphereR in model units, so changing sphereR alone doesn't
+      // change visual size — it changes how much "room" the papers have
+      // inside the orb relative to their own size.
+      sphereR: 1.25,
+      anchorCorner: "BR",
+      marginX: 100,
+      marginY: 100,
+      offsetX: 0,
+      offsetY: 0,
+      offsetZ: 60,
+      rotYSpeed: 0,
+      rotXAmp: 0,
+      rotZAmp: 0,
+      // ── FLOW (gentle convergent field, the orb's "wind") ──
+      flowStrength: 0.65,
+      flowScale: 2.4,
+      flowTime: 1.1,
+      swirlStrength: 0.35,
+      flowCoupling: 2.5,
+      flowAlignK: 2.5,
+      // ── BROWNIAN (OU random walk, smoothed) ──
+      brownian: 1.4,
+      brownianTau: 0.5,
+      // ── DRAG / DAMPING ──
+      drag: 1.2,
+      angDrag: 3.0,
+      maxAngVel: 3.5,
+      // ── WALL ──
+      wallSoftK: 22,
+      wallCushion: 0.18,
+      wallSlideDamp: 2.5,
+      wallRestitution: 0.0,
+      wallAlignK: 22,
+      wallAlignBand: 0.35,
+      useShell: false, // OFF → papers form a thick shell (visible volume)
+      //                  rather than a perfect 2D surface (no thickness).
+      // ── outward bias ──
+      // Soft outward radial force. Papers far from the wall are pushed
+      // gently toward it; combined with the wall constraint and collision,
+      // this packs them into a THICK shell with visible volume — like the
+      // reference. Without this, the curl flow + brownian alone don't
+      // reliably drive papers to the wall.
+      outwardBiasEnabled: true,
+      outwardBiasK: 1.6, // 1/τ — exponential pull outward (s⁻¹)
+      outwardBiasStart: 0.55, // fraction of wallR — bias kicks below this
+      // ── COLLISION (floating-style spring + damper + friction + PBD) ──
+      collisionEnabled: true,
+      // Slightly larger than the paper's half-height (0.05) so collisions
+      // are detected before the visible edges actually overlap. Catches
+      // oblique contacts (paper-edge-vs-paper-face) that a 0.05 disk
+      // would miss and let through.
+      collisionR: 0.058,
+      collisionK: 35,
+      contactDampN: 8,
+      contactFriction: 2.5,
+      contactTumble: 0.3,
+      posCorrK: 0.65, // higher per-iter correction
+      posIters: 6, // more iterations → deeper chains resolve cleanly
+      stackAlignK: 30,
+      // ── INTER-PAPER (subtle, just for liveliness) ──
+      interEnabled: true,
+      agitTransferK: 0.4,
+      // ── DRAPE on wall impact ──
+      stickEnabled: true,
+      stickVThreshold: 0.18,
+      stickDuration: 0.55,
+      stickDurationPerImpact: 0.7,
+      stickMaxDuration: 1.4,
+      stickTangDamp: 9.0,
+      stickAlignBoost: 2.4,
+      stickFoldPeak: 0.9,
+      // ── BEND signal (mix of flow drag + own velocity, clamped) ──
+      // Pure drag (flow - vel) goes to zero once vel tracks flow → papers
+      // stay rigid. Mixing in `vel` directly keeps a visible bend whenever
+      // the paper is actually moving, even at steady state. The two terms
+      // capture different physics: drag = "wind I feel", vel = "where I'm
+      // going" (paper bends backward as it accelerates forward).
+      bendSmoothRate: 8,
+      bendClampMax: 2.0,
+      bendVelScale: 1.2,
+      bendDragScale: 1.0,
+      bendPressScale: 6.0, // contribution of contact pressure (sum of
+      //                      collision overlap vectors from neighbors).
+      //                      This is what makes a paper visibly buckle
+      //                      when stacked under others or pressed wall.
+      bendWallScale: 4.0, // contribution of -radial direction when near
+      //                     the wall — paper visibly molds to the surface
+      //                     even when not moving.
+      // ── DYNAMIC FOLD (turbulence + agitation → crease) ──
+      foldEnabled: true,
+      foldTurbScale: 0.5,
+      foldAgitWeight: 1.0,
+      foldRise: 5.0,
+      foldDecay: 0.6,
+      // ── MOUSE ──
+      mouseEnabled: true,
+      mouseStrength: 12,
+      mouseRadius: 0.4,
+    };
+  }
+
+  constructor({
+    parent,
+    anchor,
+    gui,
+    label = "Paper sphere",
+    count = 600,
+    defaults = {},
+    mouse = null,
+    mirrorParent = null, // for split-half rendering across the HTML plane
+  }) {
+    this.anchor = anchor;
+    this.mouse = mouse;
+
+    this.params = Object.assign(PaperSphereScene.defaultParams(), defaults);
+
+    this.pool = new PaperPool({
+      count,
+      scale: this.params.visualR / this.params.sphereR,
+      parent,
+      mirrorParent,
+    });
+
+    this._SWIRL = new THREE.Vector3(0.1, 1.0, 0.05).normalize();
+    this._initSheets(count);
+
+    // Spatial-hash grid for inter-particle collision broadphase. Rebuilt
+    // each frame; cell size = collisionR * 2.
+    this._grid = new Map();
+    this._KEY_OFF = 256;
+
+    if (gui) this._gui = this.attachGui(gui, label);
+  }
+
+  _gridKey(ix, iy, iz) {
+    const K = this._KEY_OFF;
+    return (ix + K) * 524288 + (iy + K) * 1024 + (iz + K);
+  }
+
+  _initSheets(count) {
+    const _totalN = this.pool.variants * this.pool.perVariant;
+    const _shuffledIdx = new Int32Array(_totalN);
+    for (let n = 0; n < _totalN; n++) _shuffledIdx[n] = n;
+    for (let n = _totalN - 1; n > 0; n--) {
+      const j = (Math.random() * (n + 1)) | 0;
+      const t = _shuffledIdx[n];
+      _shuffledIdx[n] = _shuffledIdx[j];
+      _shuffledIdx[j] = t;
+    }
+    const PHI_GOLD = Math.PI * (3 - Math.sqrt(5));
+    const fillR = this.params.sphereR - Paper.PARTICLE_R;
+
+    this.sheets = [];
+    for (let i = 0; i < count; i++) {
+      const globalIdx = _shuffledIdx[i];
+      const yN = 1 - (globalIdx / Math.max(1, _totalN - 1)) * 2;
+      const ringR = Math.sqrt(Math.max(0, 1 - yN * yN));
+      const ang = PHI_GOLD * globalIdx;
+      let x = Math.cos(ang) * ringR + (Math.random() - 0.5) * 0.012;
+      let y = yN + (Math.random() - 0.5) * 0.012;
+      let z = Math.sin(ang) * ringR + (Math.random() - 0.5) * 0.012;
+      const len = Math.sqrt(x * x + y * y + z * z) || 1;
+      x /= len;
+      y /= len;
+      z /= len;
+      const px = x * fillR;
+      const py = y * fillR;
+      const pz = z * fillR;
+      this.sheets.push({
+        idx: i,
+        pos: new THREE.Vector3(px, py, pz),
+        // anchor / rest position — Fibonacci-spiral spot on the shell.
+        // A soft spring pulls each sheet toward this position so the
+        // orb maintains its spherical distribution: the flow can
+        // perturb papers locally (visible motion, transient compression)
+        // but they don't all migrate to the current flow attractor and
+        // collapse the shell.
+        anchorPos: new THREE.Vector3(px, py, pz),
+        vel: new THREE.Vector3(),
+        quat: new THREE.Quaternion().setFromEuler(
+          new THREE.Euler(
+            Math.random() * Math.PI * 2,
+            Math.random() * Math.PI * 2,
+            Math.random() * Math.PI * 2,
+          ),
+        ),
+        angVel: new THREE.Vector3(
+          (Math.random() - 0.5) * 0.1,
+          (Math.random() - 0.5) * 0.1,
+          (Math.random() - 0.5) * 0.1,
+        ),
+        agitation: 0,
+        _flutPhase: Math.random() * Math.PI * 2,
+        _flutPhase2: Math.random() * Math.PI * 2,
+        _flutFreq: 0.7 + Math.random() * 0.6,
+        // wall-stick drape state — when paper hits the sphere wall hard,
+        // stickT counts down a window during which the sheet is pressed
+        // against the wall, slides slowly tangentially, and visibly drapes
+        // (aFold rises, peaks, fades).
+        stickT: 0,
+        stickPeak: 0,
+        // smoothed bend vector (low-pass) — same treatment as floating so
+        // a hard collision/agit spike doesn't snap the deformation.
+        bendLocal: new THREE.Vector3(),
+        // contact pressure accumulator — sum of (n × overlap) from every
+        // colliding neighbor this frame. Reset at start of each update,
+        // accumulated in PASS 3, used in PASS 7 to drive bend.
+        pressVec: new THREE.Vector3(),
+        // smoothed flow vector (per-paper) — used by alignment torques so
+        // a sudden flow-direction change near a vortex/curl boundary
+        // doesn't pulse angVel discontinuously.
+        flowSmooth: new THREE.Vector3(),
+        // dynamic crease intensity from local turbulence + agitation
+        // (independent from the drape fold; merged as max() at write-time).
+        foldVal: 0,
+      });
+    }
+  }
+
+  attachGui(gui, label) {
+    const f = gui.addFolder(label);
+    const p = this.params;
+    f.add(p, "visible").onChange((v) => this.pool.setVisible(v));
+
+    const fp = f.addFolder("position");
+    fp.add(p, "visualR", 20, 400, 1).name("visual R (px)");
+    fp.add(p, "sphereR", 0.4, 4, 0.01).name("sphere R (model)");
+    fp.add(p, "anchorCorner", ["BR", "BL", "TR", "TL", "CTR"]).name("anchor");
+    fp.add(p, "marginX", -400, 800, 1);
+    fp.add(p, "marginY", -400, 800, 1);
+    fp.add(p, "offsetX", -1000, 1000, 1);
+    fp.add(p, "offsetY", -1000, 1000, 1);
+    fp.add(p, "offsetZ", -800, 800, 1);
+    fp.add(p, "rotYSpeed", -1, 1, 0.005).name("rot Y speed");
+    fp.add(p, "rotXAmp", 0, 2, 0.01).name("rot X amp");
+    fp.add(p, "rotZAmp", 0, 2, 0.01).name("rot Z amp");
+
+    const ff = f.addFolder("flow");
+    ff.add(p, "flowStrength", 0, 5, 0.05);
+    ff.add(p, "flowScale", 0, 5, 0.05);
+    ff.add(p, "flowTime", 0, 3, 0.01);
+    ff.add(p, "swirlStrength", 0, 2, 0.05);
+    ff.add(p, "flowCoupling", 0, 6, 0.05);
+    ff.add(p, "flowAlignK", 0, 10, 0.05);
+
+    const fph = f.addFolder("physics");
+    fph.add(p, "brownian", 0, 5, 0.05);
+    fph.add(p, "brownianTau", 0.05, 2, 0.01).name("brownian τ");
+    fph.add(p, "drag", 0, 5, 0.05);
+    fph.add(p, "angDrag", 0, 12, 0.05);
+    fph.add(p, "maxAngVel", 0, 8, 0.05).name("max ang vel");
+
+    const fwall = f.addFolder("wall");
+    fwall.add(p, "useShell").name("shell projection (hard)");
+    fwall.add(p, "outwardBiasEnabled").name("outward bias");
+    fwall.add(p, "outwardBiasK", 0, 8, 0.05).name("bias K");
+    fwall.add(p, "outwardBiasStart", 0, 1, 0.01).name("bias start");
+    fwall.add(p, "wallAlignK", 0, 60, 0.5);
+    fwall.add(p, "wallAlignBand", 0, 1, 0.01);
+    fwall.add(p, "wallSoftK", 0, 60, 0.5);
+    fwall.add(p, "wallCushion", 0, 0.5, 0.005);
+    fwall.add(p, "wallSlideDamp", 0, 10, 0.05);
+    fwall.add(p, "wallRestitution", 0, 1, 0.01);
+
+    const fcol = f.addFolder("collision");
+    fcol.add(p, "collisionEnabled");
+    fcol.add(p, "collisionR", 0.01, 0.15, 0.001).name("radius");
+    fcol.add(p, "collisionK", 0, 200, 1).name("spring K");
+    fcol.add(p, "contactDampN", 0, 30, 0.1).name("damp normal");
+    fcol.add(p, "contactFriction", 0, 20, 0.1).name("friction tang");
+    fcol.add(p, "contactTumble", 0, 2, 0.01).name("friction torque");
+    fcol.add(p, "posCorrK", 0, 1, 0.01).name("PBD correction");
+    fcol.add(p, "posIters", 0, 8, 1).name("PBD iterations");
+    fcol.add(p, "stackAlignK", 0, 200, 1).name("stack align");
+    fcol.add(p, "interEnabled").name("inter-paper");
+    fcol.add(p, "agitTransferK", 0, 4, 0.01).name("agit share K");
+
+    const fst = f.addFolder("drape on impact");
+    fst.add(p, "stickEnabled");
+    fst.add(p, "stickVThreshold", 0, 2, 0.005).name("v threshold");
+    fst.add(p, "stickDuration", 0, 3, 0.01).name("duration base");
+    fst.add(p, "stickDurationPerImpact", 0, 3, 0.01).name("duration / impact");
+    fst.add(p, "stickMaxDuration", 0, 5, 0.05).name("duration max");
+    fst.add(p, "stickTangDamp", 0, 30, 0.1).name("tang damp 1/τ");
+    fst.add(p, "stickAlignBoost", 0, 8, 0.05).name("align boost ×");
+    fst.add(p, "stickFoldPeak", 0, 2, 0.01).name("fold peak");
+    fst.close();
+
+    const fbend = f.addFolder("bend / fold");
+    fbend.add(p, "bendClampMax", 0, 6, 0.01).name("bend clamp");
+    fbend.add(p, "bendSmoothRate", 0, 30, 0.1).name("bend smooth 1/τ");
+    fbend.add(p, "bendVelScale", 0, 4, 0.05).name("vel × bend");
+    fbend.add(p, "bendDragScale", 0, 4, 0.05).name("drag × bend");
+    fbend.add(p, "bendPressScale", 0, 30, 0.1).name("press × bend");
+    fbend.add(p, "bendWallScale", 0, 15, 0.05).name("wall × bend");
+    fbend.add(Paper.uniforms.uWallBowl, "value", 0, 4, 0.05).name("uWallBowl");
+    fbend.add(Paper.uniforms.uWallTilt, "value", 0, 2, 0.01).name("uWallTilt");
+    fbend.add(p, "foldEnabled").name("fold dynamic");
+    fbend.add(p, "foldTurbScale", 0.05, 4, 0.01).name("turb scale");
+    fbend.add(p, "foldAgitWeight", 0, 4, 0.05).name("agit weight");
+    fbend.add(p, "foldRise", 0, 20, 0.1).name("fold rise");
+    fbend.add(p, "foldDecay", 0, 5, 0.01).name("fold decay");
+    fbend.close();
+
+    const fm = f.addFolder("mouse");
+    fm.add(p, "mouseEnabled");
+    fm.add(p, "mouseStrength", 0, 80, 0.5);
+    fm.add(p, "mouseRadius", 0, 2, 0.01);
+
+    fp.close();
+    ff.close();
+    fph.close();
+    fwall.close();
+    fcol.close();
+    fm.close();
+    f.close();
+    return f;
+  }
+
+  _flowAt(p, t, out) {
+    const par = this.params;
+    const s = par.flowScale;
+    const tt = t * par.flowTime;
+    // Original convergent cos flow (proto-19 style). Has attractor zones,
+    // but per-paper target springs prevent the orb from collapsing.
+    out.set(
+      -Math.cos(p.z * s + tt * 0.7),
+      -Math.cos(p.x * s + tt * 1.3),
+      -Math.cos(p.y * s + tt),
+    );
+    const ax = this._SWIRL;
+    const sw = par.swirlStrength;
+    out.x += (ax.y * p.z - ax.z * p.y) * sw;
+    out.y += (ax.z * p.x - ax.x * p.z) * sw;
+    out.z += (ax.x * p.y - ax.y * p.x) * sw;
+    out.multiplyScalar(par.flowStrength);
+    return out;
+  }
+
+  update(t, dt) {
+    if (!this.params.visible) return;
+    const p = this.params;
+
+    // ── pose ──
+    this.pool.group.scale.setScalar(p.visualR / p.sphereR);
+    if (this.pool.mirrorGroup)
+      this.pool.mirrorGroup.scale.setScalar(p.visualR / p.sphereR);
+    const hw = window.innerWidth / 2;
+    const hh = (this.anchor?.height || window.innerHeight) / 2;
+    const r = p.visualR;
+    let ax, ay;
+    switch (p.anchorCorner) {
+      case "BL":
+        ax = -hw + r + p.marginX;
+        ay = -hh + r + p.marginY;
+        break;
+      case "TR":
+        ax = hw - r - p.marginX;
+        ay = hh - r - p.marginY;
+        break;
+      case "TL":
+        ax = -hw + r + p.marginX;
+        ay = hh - r - p.marginY;
+        break;
+      case "CTR":
+        ax = 0;
+        ay = 0;
+        break;
+      default: // BR
+        ax = hw - r - p.marginX;
+        ay = -hh + r + p.marginY;
+        break;
+    }
+    this.pool.group.position.set(ax + p.offsetX, ay + p.offsetY, p.offsetZ);
+    if (this.pool.mirrorGroup) {
+      this.pool.mirrorGroup.position.copy(this.pool.group.position);
+      this.pool.mirrorGroup.rotation.copy(this.pool.group.rotation);
+    }
+    this.pool.group.rotation.set(
+      Math.sin(t * 0.07) * p.rotXAmp,
+      t * p.rotYSpeed,
+      Math.cos(t * 0.05) * p.rotZAmp,
+    );
+
+    // ── mouse pickup (camera ray as a 3D line of repulsion) ──
+    // Each paper's perpendicular distance to the camera ray is checked.
+    // Any paper within `mouseRadius` of the line is pushed AWAY from the
+    // line, in the perpendicular direction. This works at every Z depth
+    // simultaneously (no longer pinned to one Z slice).
+    let mouseLineO = null; // ray origin in local frame
+    let mouseLineD = null; // ray direction (unit)
+    if (
+      p.mouseEnabled &&
+      p.mouseStrength > 0 &&
+      this.mouse &&
+      this.mouse.isActive()
+    ) {
+      this.mouse.raycaster.setFromCamera(this.mouse.ndc, this.mouse.camera);
+      const ray = this.mouse.raycaster.ray;
+      // Convert ray to the pool's LOCAL frame using the FULL world
+      // transform of the group (anchor offsets + group offsets + scale).
+      // Just subtracting `group.position` ignored the parent anchor
+      // group's translation and the camera Y scroll → ray was off-axis
+      // for any sphere not at world origin.
+      this.pool.group.updateWorldMatrix(true, false);
+      const _wPos = new THREE.Vector3();
+      const _wQuat = new THREE.Quaternion();
+      const _wScale = new THREE.Vector3();
+      this.pool.group.matrixWorld.decompose(_wPos, _wQuat, _wScale);
+      const wScale = _wScale.x; // uniform
+      mouseLineO = ray.origin
+        .clone()
+        .sub(_wPos)
+        .multiplyScalar(1 / wScale);
+      mouseLineD = ray.direction.clone();
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    //   CLEAN UPDATE — reference target: dense orb shell (proto-07/v2)
+    //   Architecture, 7 ordered passes:
+    //     1. broadphase (spatial-hash grid)
+    //     2. external forces (flow, brownian, mouse, flow-align torque)
+    //     3. pair collisions (spring + damper + friction + PBD + stack)
+    //     4. shared aerodynamics (drag, OU tumble, integration)
+    //     5. wall handling (align, cushion, clamp, drape trigger)
+    //     6. HARD shell projection (orb shape stabilizer)
+    //     7. write matrix + bend signal + fold to pool
+    // ════════════════════════════════════════════════════════════════
+    const wallR = p.sphereR - Paper.PARTICLE_R;
+    // Sync the shader's wall-deformation band with the dynamic sphereR.
+    // _wallProx in the shader = clamp((dist - uAlignStart) / uAlignBand)
+    // We want wallProx = 1 at the wall, ramping in over wallAlignBand.
+    Paper.uniforms.uAlignStart.value = wallR - Paper.uniforms.uAlignBand.value;
+    const collEnabled = p.collisionEnabled && p.collisionK > 0;
+    const collisionD = p.collisionR * 2;
+    const collisionD2 = collisionD * collisionD;
+    const AGIT_MAX = 0.5;
+    const N = this.sheets.length;
+
+    const sphereAeroEnv = {
+      gravity: 0,
+      airDensity: 1,
+      dragFace: 0,
+      dragEdge: 0,
+      alignK: 0,
+      tumbleK: 0,
+      flutterAmp: 0,
+      flutterFreq: 0,
+      linDamp: p.drag,
+      angDamp: p.angDrag,
+      maxAngVel: p.maxAngVel,
+      agitTumble: 4,
+      agitFlutter: 2,
+      agitDecay: 2.0,
+    };
+
+    const F = _S.flow;
+    const D = _S.delta;
+    const NL = _S.normLocal;
+    const NW = _S.normWorld;
+    const RD = _S.radial;
+    const QI = _S.qInv;
+    const FL = _S.flowLocal;
+    const M = _S.M;
+    const SO = _S.Sone;
+
+    // ── PASS 1: broadphase grid ──────────────────────────────────────
+    if (collEnabled) {
+      const grid = this._grid;
+      grid.clear();
+      for (let i = 0; i < N; i++) {
+        const pos = this.sheets[i].pos;
+        const k = this._gridKey(
+          Math.floor(pos.x / collisionD),
+          Math.floor(pos.y / collisionD),
+          Math.floor(pos.z / collisionD),
+        );
+        let bucket = grid.get(k);
+        if (!bucket) {
+          bucket = [];
+          grid.set(k, bucket);
+        }
+        bucket.push(i);
+      }
+    }
+
+    // ── PASS 2: external forces (flow, brownian, mouse, flow-align) ──
+    for (let i = 0; i < N; i++) {
+      const sh = this.sheets[i];
+      // reset pressure accumulator at frame start
+      sh.pressVec.set(0, 0, 0);
+      this._flowAt(sh.pos, t, F);
+
+      // velocity tracks flow (low-pass)
+      D.copy(F).sub(sh.vel).multiplyScalar(p.flowCoupling);
+      sh.vel.addScaledVector(D, dt);
+
+      // outward radial bias — papers deep inside are pushed gently toward
+      // the wall, so the orb forms a thick shell rather than collapse
+      if (p.outwardBiasEnabled) {
+        const rD2 = sh.pos.lengthSq();
+        const rD = Math.sqrt(rD2);
+        const rBiasStart = wallR * p.outwardBiasStart;
+        if (rD > 1e-5 && rD < rBiasStart) {
+          const t01 = 1 - rD / rBiasStart; // 0..1, 1 at center
+          const k = p.outwardBiasK * t01 * dt;
+          sh.vel.x += (sh.pos.x / rD) * k;
+          sh.vel.y += (sh.pos.y / rD) * k;
+          sh.vel.z += (sh.pos.z / rD) * k;
+        }
+      }
+
+      // brownian — Ornstein-Uhlenbeck (smoothed random walk)
+      const bk = p.brownian;
+      if (bk > 0) {
+        if (!sh._brownOU) sh._brownOU = new THREE.Vector3();
+        const decay = Math.exp(-dt / p.brownianTau);
+        const noise = bk * Math.sqrt(1 - decay * decay);
+        sh._brownOU.x = sh._brownOU.x * decay + (Math.random() - 0.5) * noise;
+        sh._brownOU.y = sh._brownOU.y * decay + (Math.random() - 0.5) * noise;
+        sh._brownOU.z = sh._brownOU.z * decay + (Math.random() - 0.5) * noise;
+        sh.vel.x += sh._brownOU.x * dt;
+        sh.vel.y += sh._brownOU.y * dt;
+        sh.vel.z += sh._brownOU.z * dt;
+      }
+
+      // mouse repulsion — perpendicular distance from paper to camera ray.
+      // Force is along (paper − closestPointOnRay), magnitude falls off
+      // with distance. Operates at all Z simultaneously since the ray is
+      // a 3D line, not a point.
+      if (mouseLineO) {
+        const opx = sh.pos.x - mouseLineO.x;
+        const opy = sh.pos.y - mouseLineO.y;
+        const opz = sh.pos.z - mouseLineO.z;
+        const tProj =
+          opx * mouseLineD.x + opy * mouseLineD.y + opz * mouseLineD.z;
+        const dx = opx - mouseLineD.x * tProj;
+        const dy = opy - mouseLineD.y * tProj;
+        const dz = opz - mouseLineD.z * tProj;
+        const dm2 = dx * dx + dy * dy + dz * dz;
+        const mr = p.mouseRadius;
+        if (dm2 < mr * mr && dm2 > 1e-6) {
+          const dm = Math.sqrt(dm2);
+          const fall = 1 - dm / mr;
+          const f = (p.mouseStrength * fall * fall * dt) / dm;
+          sh.vel.x += dx * f;
+          sh.vel.y += dy * f;
+          sh.vel.z += dz * f;
+        }
+      }
+
+      // flow-align torque (smoothed F + smooth-zero formulation)
+      if (!sh.flowSmooth) sh.flowSmooth = new THREE.Vector3();
+      const fAlphaSph = 1 - Math.exp(-3.5 * dt);
+      sh.flowSmooth.lerp(F, fAlphaSph);
+      const fLen2 = sh.flowSmooth.lengthSq();
+      if (fLen2 > 1e-6) {
+        const fLen = Math.sqrt(fLen2);
+        const fdx = sh.flowSmooth.x / fLen;
+        const fdy = sh.flowSmooth.y / fLen;
+        const fdz = sh.flowSmooth.z / fLen;
+        NW.copy(NL).applyQuaternion(sh.quat);
+        const dot = NW.x * fdx + NW.y * fdy + NW.z * fdz;
+        const tx = (NW.y * fdz - NW.z * fdy) * dot;
+        const ty = (NW.z * fdx - NW.x * fdz) * dot;
+        const tz = (NW.x * fdy - NW.y * fdx) * dot;
+        const ak = p.flowAlignK * fLen * dt;
+        sh.angVel.x += tx * ak;
+        sh.angVel.y += ty * ak;
+        sh.angVel.z += tz * ak;
+      }
+    }
+
+    // ── PASS 3: pair collisions ──────────────────────────────────────
+    if (collEnabled) {
+      const ck = p.collisionK;
+      for (let i = 0; i < N; i++) {
+        const sh = this.sheets[i];
+        const ix = Math.floor(sh.pos.x / collisionD);
+        const iy = Math.floor(sh.pos.y / collisionD);
+        const iz = Math.floor(sh.pos.z / collisionD);
+        for (let dx = -1; dx <= 1; dx++)
+          for (let dy = -1; dy <= 1; dy++)
+            for (let dz = -1; dz <= 1; dz++) {
+              const bucket = this._grid.get(
+                this._gridKey(ix + dx, iy + dy, iz + dz),
+              );
+              if (!bucket) continue;
+              for (let kk = 0; kk < bucket.length; kk++) {
+                const j = bucket[kk];
+                if (j <= i) continue;
+                const b = this.sheets[j];
+                const ddx = sh.pos.x - b.pos.x;
+                const ddy = sh.pos.y - b.pos.y;
+                const ddz = sh.pos.z - b.pos.z;
+                const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+                if (d2 >= collisionD2 || d2 < 1e-8) continue;
+                const d = Math.sqrt(d2);
+                const inv = 1 / d;
+                const nx = ddx * inv;
+                const ny = ddy * inv;
+                const nz = ddz * inv;
+                const overlap = collisionD - d;
+
+                // Linear spring (gentle pushback ∝ overlap)
+                const fSpr = ck * overlap * dt;
+                sh.vel.x += nx * fSpr;
+                sh.vel.y += ny * fSpr;
+                sh.vel.z += nz * fSpr;
+                b.vel.x -= nx * fSpr;
+                b.vel.y -= ny * fSpr;
+                b.vel.z -= nz * fSpr;
+                // Pressure accumulator: each contact contributes its
+                // push direction × overlap depth to both papers (opposite
+                // signs). Used by the bend signal in PASS 7.
+                sh.pressVec.x += nx * overlap;
+                sh.pressVec.y += ny * overlap;
+                sh.pressVec.z += nz * overlap;
+                b.pressVec.x -= nx * overlap;
+                b.pressVec.y -= ny * overlap;
+                b.pressVec.z -= nz * overlap;
+
+                // Relative velocity decomposition
+                const rvx = sh.vel.x - b.vel.x;
+                const rvy = sh.vel.y - b.vel.y;
+                const rvz = sh.vel.z - b.vel.z;
+                const vrn = rvx * nx + rvy * ny + rvz * nz;
+
+                // Normal damper (energy dissipation when approaching)
+                if (vrn < 0) {
+                  const dN = (1 - Math.exp(-p.contactDampN * dt)) * vrn * 0.5;
+                  sh.vel.x -= nx * dN;
+                  sh.vel.y -= ny * dN;
+                  sh.vel.z -= nz * dN;
+                  b.vel.x += nx * dN;
+                  b.vel.y += ny * dN;
+                  b.vel.z += nz * dN;
+                }
+
+                // Tangential friction
+                const tvx = rvx - nx * vrn;
+                const tvy = rvy - ny * vrn;
+                const tvz = rvz - nz * vrn;
+                const tFac = (1 - Math.exp(-p.contactFriction * dt)) * 0.5;
+                sh.vel.x -= tvx * tFac;
+                sh.vel.y -= tvy * tFac;
+                sh.vel.z -= tvz * tFac;
+                b.vel.x += tvx * tFac;
+                b.vel.y += tvy * tFac;
+                b.vel.z += tvz * tFac;
+
+                // Friction torque from tangential slide
+                const tkk = p.contactTumble * dt;
+                sh.angVel.x += (ny * tvz - nz * tvy) * tkk;
+                sh.angVel.y += (nz * tvx - nx * tvz) * tkk;
+                sh.angVel.z += (nx * tvy - ny * tvx) * tkk;
+                b.angVel.x -= (ny * tvz - nz * tvy) * tkk;
+                b.angVel.y -= (nz * tvx - nx * tvz) * tkk;
+                b.angVel.z -= (nx * tvy - ny * tvx) * tkk;
+
+                // (Position correction moved to separate iterated PBD
+                // pass after integration — see PASS 5b below.)
+
+                // Stack-align torque (face-to-face neighbors → parallel)
+                if (p.stackAlignK > 0) {
+                  NW.copy(NL).applyQuaternion(sh.quat);
+                  _AERO.nWorld.copy(NL).applyQuaternion(b.quat);
+                  const naDotNb =
+                    NW.x * _AERO.nWorld.x +
+                    NW.y * _AERO.nWorld.y +
+                    NW.z * _AERO.nWorld.z;
+                  const sgnAB = naDotNb >= 0 ? 1 : -1;
+                  const tgtAx = NW.x * sgnAB;
+                  const tgtAy = NW.y * sgnAB;
+                  const tgtAz = NW.z * sgnAB;
+                  const tgtBx = _AERO.nWorld.x * sgnAB;
+                  const tgtBy = _AERO.nWorld.y * sgnAB;
+                  const tgtBz = _AERO.nWorld.z * sgnAB;
+                  const taxAx = NW.y * tgtBz - NW.z * tgtBy;
+                  const taxAy = NW.z * tgtBx - NW.x * tgtBz;
+                  const taxAz = NW.x * tgtBy - NW.y * tgtBx;
+                  const taxBx = _AERO.nWorld.y * tgtAz - _AERO.nWorld.z * tgtAy;
+                  const taxBy = _AERO.nWorld.z * tgtAx - _AERO.nWorld.x * tgtAz;
+                  const taxBz = _AERO.nWorld.x * tgtAy - _AERO.nWorld.y * tgtAx;
+                  const sak = p.stackAlignK * (overlap / collisionD) * dt;
+                  sh.angVel.x += taxAx * sak;
+                  sh.angVel.y += taxAy * sak;
+                  sh.angVel.z += taxAz * sak;
+                  b.angVel.x += taxBx * sak;
+                  b.angVel.y += taxBy * sak;
+                  b.angVel.z += taxBz * sak;
+                }
+
+                // Inter-paper agitation share (subtle wave propagation)
+                if (p.interEnabled) {
+                  const prox = overlap / collisionD;
+                  const ai = sh.agitation || 0;
+                  const bj = b.agitation || 0;
+                  const mid = (ai + bj) * 0.5;
+                  const tShare = 1 - Math.exp(-p.agitTransferK * prox * dt);
+                  sh.agitation = ai + (mid - ai) * tShare;
+                  b.agitation = bj + (mid - bj) * tShare;
+                }
+              }
+            }
+      }
+    }
+
+    // ── PASS 4: shared aero (drag, agit decay, integration) ──────────
+    for (let i = 0; i < N; i++) {
+      applyPaperAerodynamics(this.sheets[i], sphereAeroEnv, t, dt);
+    }
+
+    // ── PASS 5: wall handling (align, cushion, clamp, drape) ─────────
+    const alignStart = wallR - p.wallAlignBand;
+    for (let i = 0; i < N; i++) {
+      const sh = this.sheets[i];
+      const dist2 = sh.pos.lengthSq();
+      const dist = Math.sqrt(dist2);
+      sh._drapeFold = 0;
+      if (dist < 1e-5) continue;
+      const radX = sh.pos.x / dist;
+      const radY = sh.pos.y / dist;
+      const radZ = sh.pos.z / dist;
+
+      // wall-align torque (smooth-zero ∝ dotR)
+      const stickActive = p.stickEnabled && sh.stickT > 0;
+      const stickAlignMul = stickActive ? p.stickAlignBoost : 1;
+      if (dist > alignStart) {
+        const proximity = Math.min(1, (dist - alignStart) / p.wallAlignBand);
+        NW.copy(NL).applyQuaternion(sh.quat);
+        const dotR = NW.x * radX + NW.y * radY + NW.z * radZ;
+        const tx = (NW.y * radZ - NW.z * radY) * dotR;
+        const ty = (NW.z * radX - NW.x * radZ) * dotR;
+        const tz = (NW.x * radY - NW.y * radX) * dotR;
+        const ak = p.wallAlignK * proximity * dt * stickAlignMul;
+        sh.angVel.x += tx * ak;
+        sh.angVel.y += ty * ak;
+        sh.angVel.z += tz * ak;
+      }
+
+      // soft cushion + slide damp
+      const cushStart = wallR - p.wallCushion;
+      if (dist > cushStart) {
+        const tCush = (dist - cushStart) / p.wallCushion;
+        const fSpring = p.wallSoftK * tCush * tCush * dt;
+        sh.vel.x -= radX * fSpring;
+        sh.vel.y -= radY * fSpring;
+        sh.vel.z -= radZ * fSpring;
+        const vRad = sh.vel.x * radX + sh.vel.y * radY + sh.vel.z * radZ;
+        if (vRad > 0) {
+          const damp = Math.min(1, p.wallSlideDamp * tCush * dt) * vRad;
+          sh.vel.x -= radX * damp;
+          sh.vel.y -= radY * damp;
+          sh.vel.z -= radZ * damp;
+          sh.agitation = Math.min(
+            AGIT_MAX,
+            (sh.agitation || 0) + Math.min(0.05, vRad * 0.04) * dt * 60,
+          );
+        }
+      }
+
+      // hard clamp + restitution + drape trigger
+      if (dist > wallR) {
+        const factor = wallR / dist;
+        sh.pos.x *= factor;
+        sh.pos.y *= factor;
+        sh.pos.z *= factor;
+        const vRad2 = sh.vel.x * radX + sh.vel.y * radY + sh.vel.z * radZ;
+        if (vRad2 > 0) {
+          const k = -(1 + p.wallRestitution) * vRad2;
+          sh.vel.x += radX * k;
+          sh.vel.y += radY * k;
+          sh.vel.z += radZ * k;
+          sh.agitation = Math.min(
+            AGIT_MAX,
+            (sh.agitation || 0) + Math.min(0.4, vRad2 * 0.15),
+          );
+          if (p.stickEnabled && vRad2 > p.stickVThreshold) {
+            const dur = Math.min(
+              p.stickMaxDuration,
+              p.stickDuration +
+                (vRad2 - p.stickVThreshold) * p.stickDurationPerImpact,
+            );
+            sh.stickT = Math.max(sh.stickT, dur);
+            sh.stickPeak = Math.min(
+              1.5,
+              Math.max(sh.stickPeak, Math.tanh(vRad2 * 2.0) * p.stickFoldPeak),
+            );
+          }
+        }
+      }
+
+      // drape window — strong tangential damping while stuck
+      if (p.stickEnabled && sh.stickT > 0) {
+        const phase = 1 - sh.stickT / Math.max(0.001, p.stickMaxDuration);
+        sh._drapeFold =
+          Math.sin(Math.max(0, Math.min(1, phase)) * Math.PI) * sh.stickPeak;
+        const vRadCur = sh.vel.x * radX + sh.vel.y * radY + sh.vel.z * radZ;
+        const tvx = sh.vel.x - radX * vRadCur;
+        const tvy = sh.vel.y - radY * vRadCur;
+        const tvz = sh.vel.z - radZ * vRadCur;
+        const damp = Math.exp(-p.stickTangDamp * dt);
+        sh.vel.x = radX * vRadCur + tvx * damp;
+        sh.vel.y = radY * vRadCur + tvy * damp;
+        sh.vel.z = radZ * vRadCur + tvz * damp;
+        sh.stickT -= dt;
+        if (sh.stickT <= 0) {
+          sh.stickT = 0;
+          sh.stickPeak = 0;
+        }
+      }
+    }
+
+    // ── PASS 5b: ITERATED PBD position correction ───────────────────
+    // Walks every neighbor pair posIters times. Each iter pushes
+    // overlapping disks apart by `overlap × 0.5 × posCorrK`. With 3
+    // iterations a chain of N stacked papers fully resolves (each
+    // iter propagates one link of the chain). Eliminates most visible
+    // traversals.
+    if (collEnabled && p.posIters > 0) {
+      for (let iter = 0; iter < p.posIters; iter++) {
+        // Rebuild grid for this iter — positions drift across cell
+        // boundaries during the previous iter, can't trust the broadphase
+        // built in PASS 1 anymore.
+        const grid = this._grid;
+        grid.clear();
+        for (let i = 0; i < N; i++) {
+          const pos = this.sheets[i].pos;
+          const k = this._gridKey(
+            Math.floor(pos.x / collisionD),
+            Math.floor(pos.y / collisionD),
+            Math.floor(pos.z / collisionD),
+          );
+          let bucket = grid.get(k);
+          if (!bucket) {
+            bucket = [];
+            grid.set(k, bucket);
+          }
+          bucket.push(i);
+        }
+
+        for (let i = 0; i < N; i++) {
+          const sh = this.sheets[i];
+          const ix = Math.floor(sh.pos.x / collisionD);
+          const iy = Math.floor(sh.pos.y / collisionD);
+          const iz = Math.floor(sh.pos.z / collisionD);
+          for (let dx = -1; dx <= 1; dx++)
+            for (let dy = -1; dy <= 1; dy++)
+              for (let dz = -1; dz <= 1; dz++) {
+                const bucket = grid.get(
+                  this._gridKey(ix + dx, iy + dy, iz + dz),
+                );
+                if (!bucket) continue;
+                for (let kk = 0; kk < bucket.length; kk++) {
+                  const j = bucket[kk];
+                  if (j <= i) continue;
+                  const b = this.sheets[j];
+                  const ddx = sh.pos.x - b.pos.x;
+                  const ddy = sh.pos.y - b.pos.y;
+                  const ddz = sh.pos.z - b.pos.z;
+                  const d2 = ddx * ddx + ddy * ddy + ddz * ddz;
+                  if (d2 >= collisionD2 || d2 < 1e-8) continue;
+                  const d = Math.sqrt(d2);
+                  const inv = 1 / d;
+                  const corr = (collisionD - d) * 0.5 * p.posCorrK;
+                  const nx = ddx * inv * corr;
+                  const ny = ddy * inv * corr;
+                  const nz = ddz * inv * corr;
+                  sh.pos.x += nx;
+                  sh.pos.y += ny;
+                  sh.pos.z += nz;
+                  b.pos.x -= nx;
+                  b.pos.y -= ny;
+                  b.pos.z -= nz;
+                }
+              }
+        }
+      }
+    }
+
+    // ── PASS 6: HARD shell projection — orb shape stabilizer ─────────
+    if (p.useShell) {
+      for (let i = 0; i < N; i++) {
+        const sh = this.sheets[i];
+        const d = Math.sqrt(sh.pos.lengthSq());
+        if (d > 1e-5) {
+          const sFactor = wallR / d;
+          sh.pos.x *= sFactor;
+          sh.pos.y *= sFactor;
+          sh.pos.z *= sFactor;
+          const sRadX = sh.pos.x / wallR;
+          const sRadY = sh.pos.y / wallR;
+          const sRadZ = sh.pos.z / wallR;
+          const sVRad = sh.vel.x * sRadX + sh.vel.y * sRadY + sh.vel.z * sRadZ;
+          sh.vel.x -= sRadX * sVRad;
+          sh.vel.y -= sRadY * sVRad;
+          sh.vel.z -= sRadZ * sVRad;
+        }
+      }
+    }
+
+    // ── PASS 7: write matrix + bend signal + fold ────────────────────
+    for (let i = 0; i < N; i++) {
+      const sh = this.sheets[i];
+      M.compose(sh.pos, sh.quat, SO);
+      this.pool.setMatrix(sh.idx, M);
+
+      // bend signal: combination of motion + drag + contact pressure +
+      // wall pressure. Each contributes a different physical "feel":
+      //   · vel  → paper trails behind its motion
+      //   · drag → paper bends to the wind it feels
+      //   · press → paper buckles when neighbors stack on it
+      //   · wall → paper molds to the sphere when stuck against it
+      this._flowAt(sh.pos, t, F);
+      QI.copy(sh.quat).invert();
+      // wall pressure: -radial direction × wallProx (only near surface)
+      const dShWall = Math.sqrt(sh.pos.lengthSq());
+      const wallStart = wallR - p.wallAlignBand;
+      let wPx = 0,
+        wPy = 0,
+        wPz = 0;
+      if (dShWall > wallStart && dShWall > 1e-5) {
+        const wProx = Math.min(1, (dShWall - wallStart) / p.wallAlignBand);
+        wPx = -(sh.pos.x / dShWall) * wProx * p.bendWallScale;
+        wPy = -(sh.pos.y / dShWall) * wProx * p.bendWallScale;
+        wPz = -(sh.pos.z / dShWall) * wProx * p.bendWallScale;
+      }
+      FL.set(
+        sh.vel.x * p.bendVelScale +
+          (F.x - sh.vel.x) * p.bendDragScale +
+          sh.pressVec.x * p.bendPressScale +
+          wPx,
+        sh.vel.y * p.bendVelScale +
+          (F.y - sh.vel.y) * p.bendDragScale +
+          sh.pressVec.y * p.bendPressScale +
+          wPy,
+        sh.vel.z * p.bendVelScale +
+          (F.z - sh.vel.z) * p.bendDragScale +
+          sh.pressVec.z * p.bendPressScale +
+          wPz,
+      );
+      FL.applyQuaternion(QI);
+      const bMax = p.bendClampMax;
+      const bLen = FL.length();
+      if (bLen > 1e-5) {
+        const sat = (bMax * Math.tanh(bLen / bMax)) / bLen;
+        FL.multiplyScalar(sat);
+      }
+      if (!sh.bendLocal) sh.bendLocal = new THREE.Vector3();
+      const bAlpha = 1 - Math.exp(-p.bendSmoothRate * dt);
+      sh.bendLocal.lerp(FL, bAlpha);
+      this.pool.setFlow(sh.idx, sh.bendLocal.x, sh.bendLocal.y, sh.bendLocal.z);
+
+      // dynamic fold (turbulence + agitation), merged with drape
+      let foldVal = 0;
+      if (p.foldEnabled) {
+        const fLenLive = Math.sqrt(F.lengthSq());
+        const foldRaw =
+          fLenLive / Math.max(0.001, p.foldTurbScale) +
+          (sh.agitation || 0) * p.foldAgitWeight;
+        const foldTarget = Math.tanh(foldRaw);
+        if (sh.foldVal == null) sh.foldVal = 0;
+        const fRate = foldTarget > sh.foldVal ? p.foldRise : p.foldDecay;
+        sh.foldVal += (foldTarget - sh.foldVal) * (1 - Math.exp(-fRate * dt));
+        foldVal = sh.foldVal;
+      }
+      this.pool.setFold(sh.idx, Math.max(sh._drapeFold || 0, foldVal));
+    }
+
+    this.pool.flush();
+  }
+
+  dispose() {
+    this.pool.group.removeFromParent();
+    if (this._gui) this._gui.destroy();
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   FloatingPapersScene
+   World-space loose papers spread across the page height. Curl-noise
+   flow + wind baseline + gust modulation + per-paper drag/brownian/
+   alignment. Coords are pixel-space; the pool group scales 1 model-unit
+   = SCALE px so the paper plane reads at VISUAL_W on screen.
+   ════════════════════════════════════════════════════════════════════ */
+
+class FloatingPapersScene {
+  static defaultParams() {
+    return {
+      visible: true,
+      // wind baseline (px/s) — kept LOW so the curl flow and vortices
+      //   actually decide each paper's path. windBreathAmp is high so the
+      //   direction sweeps widely over time (no more lockstep drift).
+      windBaseDeg: 32,
+      windBreathAmp: 1.4,
+      windBreathRate: 0.13,
+      windBaseline: 22,
+      // very slow base rotation (rad/s) — full circle in ~50s by default
+      windRotRate: 0.12,
+      // gust pulse (multiplicative)
+      gustEnabled: true,
+      gustMin: 0.6,
+      gustMax: 2.0,
+      gustRate1: 0.35,
+      gustRate2: 0.93,
+      gustRate3: 1.7,
+      // curl-noise flow (px-space) — DOMINANT vs wind
+      flowStrength: 220,
+      flowScale: 0.0018,
+      flowTime: 0.55,
+      swirlStrength: 1.1,
+      // vortices — moving 3D swirl centers; each paper feels a tangential
+      //   pull around them, which gives the visceral "carried by an air
+      //   current" feel.
+      vortexEnabled: true,
+      vortexCount: 3,
+      vortexStrength: 110,
+      vortexRadius: 560,
+      vortexDriftRate: 0.14,
+      // physics
+      speedMul: 1.0,
+      yDamp: 0.6,
+      flowCoupling: 0.9,
+      flowAlignK: 1.6,
+      brownian: 3,
+      drag: 1.0,
+      angDrag: 3.5,
+      maxSpeed: 240,
+      tumbleK: 0.04,
+      // depth & parallax — now expressed as velocity impulses, not display
+      // cheats. parallaxK pushes BG papers DOWN with scroll (so they appear
+      // to drift along with the page); scrollWindK gives FG papers a wind
+      // kick so they fly visibly when the user scrolls.
+      zMin: -300,
+      zMax: 500,
+      // ── scroll ──
+      // No position shift / velocity kick. Scroll only adds a transient
+      // boost to the flow strength → papers naturally accelerate along
+      // their CURRENT drift direction when the user scrolls (no per-paper
+      // turbulence; just "wind picks up"). The boost decays smoothly.
+      scrollBendK: 0,
+      scrollSmooth: 0.25,
+      scrollFlowBoost: 0.0035, // pump rate (px scroll → flow multiplier)
+      scrollFlowDecay: 1.8, // 1/τ — how fast the boost fades
+      // ── mouse repulsion (line-based, like the sphere) ──
+      mouseEnabled: true,
+      mouseStrength: 18000,
+      mouseRadius: 140,
+      // leaf-flutter — sideways oscillation, like a sheet of paper carried
+      // by wind. Always-on, amplitude scales with motion magnitude.
+      flutterAmp: 130, // peak px/s² lateral force at full motion
+      flutterFreq: 1.4, // base Hz of the sway
+      flutterMix: 0.55, // ratio of secondary axis oscillation
+      // ── crease/fold under turbulence ──
+      // turbScale: world units of |F| above which fold target → 1
+      // agitWeight: how much p.agitation contributes to the fold target
+      // foldRise / foldDecay: 1/τ (s⁻¹) — ramp up fast, decay slowly
+      turbScale: 380,
+      agitWeight: 1.4,
+      foldRise: 6.5,
+      foldDecay: 0.55,
+      // ── collective gust event ──
+      // When the global gust factor crosses gustFoldThreshold, ALL papers
+      // get a coordinated fold + agitation push — the room "exhales"
+      // together and you see every sheet crease at once. Scales with how
+      // much the gust exceeds the threshold.
+      gustFoldThreshold: 1.45,
+      gustFoldGain: 1.1,
+      gustAgitGain: 0.12,
+      // ── inter-paper relations ──
+      // Each pair within neighborR contributes:
+      //   · separation: short-range repulsion ∝ (1 - d/R)²
+      //   · wake:       slower paper is dragged toward the velocity of the
+      //                 faster paper (so a fast feuille pulls its neighbors
+      //                 along like real air entrainment)
+      //   · agit share: agitation slowly equalizes between close neighbors
+      //                 → wave of crease/flutter propagates through the pool
+      interEnabled: true,
+      neighborR: 380,
+      separationK: 220,
+      wakeK: 0.18,
+      agitTransferK: 0.5,
+    };
+  }
+
+  constructor({
+    parent,
+    getViewport,
+    gui,
+    label = "Floating papers",
+    visualW = 165,
+    countOverride = null,
+    bandTopY = null,
+    bandBottomY = null,
+    defaults = {},
+    mouse = null,
+  }) {
+    this.getViewport = getViewport;
+    this.mouse = mouse;
+
+    this.VISUAL_W = visualW;
+    this.SCALE = visualW / Paper.RECEIPT_W;
+    this.SCALE_INV = 1 / this.SCALE;
+    this.VISUAL_H = visualW * (Paper.RECEIPT_H / Paper.RECEIPT_W);
+
+    // World-Y band the papers live within (between hero bottom and closing top
+    // by default). When null, falls back to the full page height.
+    this.bandTopY = bandTopY;
+    this.bandBottomY = bandBottomY;
+
+    const initVp = getViewport();
+    const bandH =
+      this.bandTopY != null && this.bandBottomY != null
+        ? Math.abs(this.bandTopY - this.bandBottomY)
+        : initVp.pageH;
+    const COUNT = countOverride ?? Math.max(12, Math.round(bandH / 600));
+
+    this.params = Object.assign(FloatingPapersScene.defaultParams(), defaults);
+    this.windDir = new THREE.Vector2(1, 0.25).normalize();
+
+    // scroll-velocity tracking (smoothed)
+    this.lastScrollY = window.scrollY;
+    this.scrollVel = 0;
+
+    this.pool = new PaperPool({ count: COUNT, scale: this.SCALE, parent });
+
+    this.papers = [];
+    for (let i = 0; i < COUNT; i++) {
+      const p = {
+        idx: i,
+        pos: new THREE.Vector3(),
+        baseY: 0, // rest-Y in world space (used for parallax computation)
+        depthN: 0.5, // depth normalized in [0,1]: 0 = far (zMin), 1 = near (zMax)
+        vel: new THREE.Vector3(),
+        quat: new THREE.Quaternion(),
+        angVel: new THREE.Vector3(),
+      };
+      this.spawn(p, true);
+      this.papers.push(p);
+    }
+
+    if (gui) this._gui = this.attachGui(gui, label);
+  }
+
+  _yBand(vp) {
+    // Resolve the band in world Y. Returns [yTop, yBottom] with yTop > yBottom
+    // (yTop is closer to 0 = higher in world; yBottom is more negative = lower).
+    const yTop = this.bandTopY != null ? this.bandTopY : -this.VISUAL_H / 2;
+    const yBottom =
+      this.bandBottomY != null
+        ? this.bandBottomY
+        : -vp.pageH + this.VISUAL_H / 2;
+    return [yTop, yBottom];
+  }
+
+  spawn(p, initial) {
+    const vp = this.getViewport();
+    const par = this.params;
+    const xMargin = this.VISUAL_W * 1.4;
+
+    const [yTop, yBottom] = this._yBand(vp);
+
+    if (initial) {
+      p.pos.x = (Math.random() - 0.5) * (vp.w + this.VISUAL_W);
+    } else {
+      p.pos.x = this.windDir.x > 0 ? -vp.w / 2 - xMargin : vp.w / 2 + xMargin;
+    }
+
+    // random Y inside the band — yTop > yBottom, so lerp via random fraction
+    p.baseY = yTop + Math.random() * (yBottom - yTop);
+    p.pos.y = p.baseY;
+
+    // depth: spread across [zMin, zMax] for clear parallax layering
+    p.pos.z = par.zMin + Math.random() * (par.zMax - par.zMin);
+    p.depthN = (p.pos.z - par.zMin) / Math.max(1, par.zMax - par.zMin);
+
+    p.vel.set(0, 0, 0);
+    p.quat.setFromEuler(
+      new THREE.Euler(
+        (Math.random() - 0.5) * 0.8,
+        (Math.random() - 0.5) * 0.8,
+        (Math.random() - 0.5) * Math.PI * 2,
+      ),
+    );
+    p.angVel.set(
+      (Math.random() - 0.5) * 0.8,
+      (Math.random() - 0.5) * 0.8,
+      (Math.random() - 0.5) * 1.0,
+    );
+
+    // ── leaf-flutter — per-paper random phase + frequency multiplier so
+    //     the flock doesn't oscillate in lockstep ──
+    p.flutterPhase = Math.random() * Math.PI * 2;
+    p.flutterFreqMul = 0.6 + Math.random() * 0.8;
+    p._flutPhase = p.flutterPhase;
+    p._flutPhase2 = Math.random() * Math.PI * 2;
+    p._flutFreq = p.flutterFreqMul;
+    p.agitation = 0;
+    p.bendLocal = new THREE.Vector3();
+    // crease intensity ∈ [0,1]. Ramps fast on impact, decays slowly so the
+    // paper visibly "remembers" its fold for a beat.
+    p.foldVal = 0;
+  }
+
+  attachGui(gui, label) {
+    const f = gui.addFolder(label);
+    const p = this.params;
+    f.add(p, "visible").onChange((v) => this.pool.setVisible(v));
+
+    const fw = f.addFolder("wind");
+    fw.add(p, "windBaseDeg", -180, 180, 1).name("base °");
+    fw.add(p, "windBreathAmp", 0, 2, 0.01).name("breath amp");
+    fw.add(p, "windBreathRate", 0, 0.5, 0.005).name("breath rate");
+    fw.add(p, "windRotRate", 0, 0.5, 0.005).name("rotation rate");
+    fw.add(p, "windBaseline", 0, 300, 1).name("baseline px/s");
+
+    const fg = f.addFolder("gust");
+    fg.add(p, "gustEnabled");
+    fg.add(p, "gustMin", 0, 2, 0.05);
+    fg.add(p, "gustMax", 0, 5, 0.05);
+    fg.add(p, "gustRate1", 0, 3, 0.01);
+    fg.add(p, "gustRate2", 0, 3, 0.01);
+    fg.add(p, "gustRate3", 0, 3, 0.01);
+
+    const ff = f.addFolder("flow field");
+    ff.add(p, "flowStrength", 0, 600, 1);
+    ff.add(p, "flowScale", 0, 0.01, 0.0001);
+    ff.add(p, "flowTime", 0, 3, 0.01);
+    ff.add(p, "swirlStrength", 0, 5, 0.05);
+
+    const fv = f.addFolder("vortices");
+    fv.add(p, "vortexEnabled").name("enabled");
+    fv.add(p, "vortexCount", 0, 8, 1).name("count");
+    fv.add(p, "vortexStrength", 0, 1200, 5).name("strength");
+    fv.add(p, "vortexRadius", 50, 1500, 5).name("radius");
+    fv.add(p, "vortexDriftRate", 0, 1, 0.005).name("drift rate");
+
+    const fph = f.addFolder("physics");
+    fph.add(p, "speedMul", 0, 4, 0.05).name("speed ×");
+    fph.add(p, "yDamp", 0, 1, 0.01).name("vertical damp");
+    fph.add(p, "flowCoupling", 0, 5, 0.05);
+    fph.add(p, "flowAlignK", 0, 10, 0.05);
+    fph.add(p, "brownian", 0, 100, 1);
+    fph.add(p, "drag", 0, 5, 0.05);
+    fph.add(p, "angDrag", 0, 8, 0.05);
+    fph.add(p, "maxSpeed", 0, 800, 5).name("max speed");
+    fph.add(p, "tumbleK", 0, 1, 0.005).name("tumble noise");
+
+    const fpx = f.addFolder("depth & scroll");
+    fpx.add(p, "zMin", -1000, 0, 5).name("z min");
+    fpx.add(p, "zMax", 0, 1000, 5).name("z max");
+    fpx.add(p, "scrollBendK", 0, 5, 0.05).name("scroll bend ×");
+    fpx.add(p, "scrollFlowBoost", 0, 0.02, 0.0001).name("scroll flow boost");
+    fpx.add(p, "scrollFlowDecay", 0, 8, 0.05).name("scroll boost decay");
+
+    const fm = f.addFolder("mouse");
+    fm.add(p, "mouseEnabled");
+    fm.add(p, "mouseStrength", 0, 200000, 1000).name("strength");
+    fm.add(p, "mouseRadius", 0, 600, 5).name("radius");
+    fm.close();
+
+    const fft = f.addFolder("leaf flutter");
+    fft.add(p, "flutterAmp", 0, 800, 1).name("amplitude");
+    fft.add(p, "flutterFreq", 0, 8, 0.05).name("base freq Hz");
+    fft.add(p, "flutterMix", 0, 1.5, 0.01).name("3D mix (Z/X)");
+
+    const ffold = f.addFolder("crease / fold");
+    ffold.add(p, "turbScale", 50, 1500, 10).name("turb. threshold");
+    ffold.add(p, "agitWeight", 0, 4, 0.05).name("agitation weight");
+    ffold.add(p, "foldRise", 0, 20, 0.1).name("rise rate");
+    ffold.add(p, "foldDecay", 0, 5, 0.01).name("decay rate");
+    ffold.add(p, "gustFoldThreshold", 0, 3, 0.01).name("gust→fold thresh");
+    ffold.add(p, "gustFoldGain", 0, 3, 0.01).name("gust→fold gain");
+    ffold.add(p, "gustAgitGain", 0, 1, 0.01).name("gust→agit gain");
+
+    const finter = f.addFolder("inter-paper");
+    finter.add(p, "interEnabled").name("enabled");
+    finter.add(p, "neighborR", 50, 1500, 5).name("neighbor R");
+    finter.add(p, "separationK", 0, 1000, 5).name("separation K");
+    finter.add(p, "wakeK", 0, 1, 0.005).name("wake K");
+    finter.add(p, "agitTransferK", 0, 4, 0.01).name("agit share K");
+
+    finter.close();
+    ffold.add(Paper.uniforms.uFold, "value", 0, 2, 0.01).name("uFold");
+    ffold.add(Paper.uniforms.uFoldEps, "value", 0.5, 30, 0.5).name("uFoldEps");
+    ffold.close();
+
+    fw.close();
+    fg.close();
+    ff.close();
+    fv.close();
+    fph.close();
+    fpx.close();
+    fft.close();
+    f.close();
+    return f;
+  }
+
+  _flowAt(pos, t, gust, out) {
+    const p = this.params;
+    const s = p.flowScale;
+    const tt = t * p.flowTime;
+    // Two-octave curl-style noise — large currents + finer detail
+    out.set(
+      -Math.cos(pos.z * s + tt * 0.7) -
+        0.45 * Math.cos(pos.y * s * 2.3 + tt * 1.1),
+      -Math.cos(pos.x * s + tt * 1.3) -
+        0.45 * Math.cos(pos.z * s * 2.1 + tt * 0.9),
+      -Math.cos(pos.y * s + tt) - 0.45 * Math.cos(pos.x * s * 2.7 + tt * 1.5),
+    );
+    if (p.swirlStrength > 0) {
+      const ax = 0.1,
+        ay = 1.0,
+        az = 0.05;
+      const sw = p.swirlStrength * s;
+      out.x += (ay * pos.z - az * pos.y) * sw;
+      out.y += (az * pos.x - ax * pos.z) * sw;
+      out.z += (ax * pos.y - ay * pos.x) * sw;
+    }
+    out.multiplyScalar(p.flowStrength);
+
+    // Vortex tangential pull — each vortex contributes a velocity tangent
+    // to the radial direction, weighted by 1/(r²+ε). Centers drift on slow
+    // Lissajous orbits, giving the page a few "active currents" that
+    // papers visibly orbit and slingshot through.
+    if (p.vortexEnabled && p.vortexStrength > 0) {
+      const N = Math.max(1, Math.min(8, p.vortexCount | 0));
+      const R = p.vortexRadius;
+      const tt2 = t * p.vortexDriftRate;
+      const yTopGuess = this.bandTopY != null ? this.bandTopY : 0;
+      const yBotGuess = this.bandBottomY != null ? this.bandBottomY : -1500;
+      const yMid = (yTopGuess + yBotGuess) * 0.5;
+      const yHalf = Math.abs(yTopGuess - yBotGuess) * 0.5;
+      const R2 = R * R;
+      for (let k = 0; k < N; k++) {
+        const ph = k * 2.39996 + 0.7;
+        const cx = Math.sin(tt2 * (0.7 + k * 0.13) + ph) * 700;
+        const cy =
+          yMid + Math.sin(tt2 * (0.5 + k * 0.21) + ph * 1.7) * yHalf * 0.6;
+        const cz = Math.sin(tt2 * (0.4 + k * 0.17) + ph * 2.3) * 350;
+        // Vortex spin axis is fully 3D and time-varying — was pinned to Y
+        // before, which forced tangential pull into the horizontal plane
+        // and made every paper drift left/right. Now each vortex tumbles
+        // through arbitrary axes.
+        const axx = Math.sin(tt2 * 0.31 + ph) * 0.9;
+        const axy = 0.3 + 0.7 * Math.sin(tt2 * 0.23 + ph * 0.8);
+        const axz = Math.cos(tt2 * 0.29 + ph * 1.3) * 0.9;
+        const rx = pos.x - cx;
+        const ry = pos.y - cy;
+        const rz = pos.z - cz;
+        const r2 = rx * rx + ry * ry + rz * rz;
+        // Bounded ring profile: amp ∈ [0,1], peaks at r≈R, smooth at r=0,
+        // decays as 1/r² far. Kills the divergent kicks near the center.
+        const denom = r2 + R2;
+        const amp = (4 * R2 * r2) / (denom * denom);
+        const tx = axy * rz - axz * ry;
+        const ty = axz * rx - axx * rz;
+        const tz = axx * ry - axy * rx;
+        // normalize tangential to unit direction; magnitude is in `amp`.
+        const tLen = Math.sqrt(tx * tx + ty * ty + tz * tz) + 1e-3;
+        const k2 = (p.vortexStrength * amp) / tLen;
+        out.x += tx * k2;
+        out.y += ty * k2;
+        out.z += tz * k2;
+      }
+    }
+
+    const baseSpeed = p.windBaseline * gust;
+    out.x += this.windDir.x * baseSpeed;
+    out.y += this.windDir.y * baseSpeed * p.yDamp;
+    return out;
+  }
+
+  update(t, dt) {
+    if (!this.params.visible) return;
+    const p = this.params;
+    const vp = this.getViewport();
+
+    // wind direction — base rotates slowly through a full circle so the
+    // dominant drift isn't pinned to "left → right". Three octaves of
+    // breathing on top give organic micro-variation.
+    const baseAngle = (p.windBaseDeg * Math.PI) / 180 + t * p.windRotRate;
+    const angle =
+      baseAngle +
+      Math.sin(t * p.windBreathRate) * p.windBreathAmp +
+      Math.sin(t * p.windBreathRate * 0.33) * p.windBreathAmp * 0.5 +
+      Math.sin(t * p.windBreathRate * 1.7) * p.windBreathAmp * 0.3;
+    this.windDir.set(Math.cos(angle), Math.sin(angle));
+
+    // gust factor
+    let gust = 1.0;
+    if (p.gustEnabled) {
+      const raw =
+        Math.sin(t * p.gustRate1) * 0.6 +
+        Math.sin(t * p.gustRate2) * 0.3 +
+        Math.sin(t * p.gustRate3 + 1.3) * 0.2;
+      const norm = (raw + 1.1) / 2.2;
+      gust = p.gustMin + (p.gustMax - p.gustMin) * norm;
+    }
+
+    // ── scroll delta → transient flow boost ──
+    const scrollY = window.scrollY;
+    const scrollDelta = scrollY - this.lastScrollY;
+    this.lastScrollY = scrollY;
+    const sdt = Math.max(dt, 1e-4);
+    this.scrollVel = this.scrollVel * 0.85 + (scrollDelta / sdt) * 0.15;
+    if (this._scrollFlowBoost == null) this._scrollFlowBoost = 0;
+    // pump on |scroll| (direction-agnostic — wind just picks up); decay
+    this._scrollFlowBoost += Math.abs(scrollDelta) * p.scrollFlowBoost;
+    this._scrollFlowBoost *= Math.exp(-p.scrollFlowDecay * dt);
+
+    // ── mouse line (camera ray in WORLD space — papers are also in
+    //     world space, so direct distance check, no transform) ──
+    let mouseLineO = null;
+    let mouseLineD = null;
+    if (
+      p.mouseEnabled &&
+      p.mouseStrength > 0 &&
+      this.mouse &&
+      this.mouse.isActive()
+    ) {
+      this.mouse.raycaster.setFromCamera(this.mouse.ndc, this.mouse.camera);
+      const ray = this.mouse.raycaster.ray;
+      mouseLineO = ray.origin.clone();
+      mouseLineD = ray.direction.clone();
+    }
+
+    const xMargin = this.VISUAL_W * 1.6;
+
+    // env reused for every paper this frame — aero handles drag, flutter,
+    // tumble, agitation decay and quaternion integration. The scene only
+    // injects external forces (flow coupling, brownian, scroll, flow-align
+    // torque) BEFORE the aero call.
+    const floatingAeroEnv = {
+      gravity: 0,
+      airDensity: 1,
+      dragFace: 0,
+      dragEdge: 0,
+      alignK: 0,
+      tumbleK: p.tumbleK,
+      tumbleTau: 0.7,
+      flutterAmp: p.flutterAmp,
+      flutterFreq: p.flutterFreq,
+      flutterMix: p.flutterMix,
+      linDamp: p.drag,
+      angDamp: p.angDrag,
+      maxAngVel: 4,
+      agitTumble: 2,
+      agitFlutter: 2,
+      agitDecay: 2.4,
+    };
+    const AGIT_MAX = 0.3;
+
+    // Collective gust event — when the global gust crosses the threshold,
+    // the entire pool feels it at once. Computed once per frame, applied
+    // to every paper in the loop so the scene has theatrical "exhale"
+    // moments tied to the shared world signal.
+    const gustExcess = Math.max(0, gust - p.gustFoldThreshold);
+    const gustNorm =
+      gustExcess / Math.max(0.05, p.gustMax - p.gustFoldThreshold);
+    const gustFoldShare = Math.tanh(gustNorm) * p.gustFoldGain;
+    const gustAgitShare = Math.tanh(gustNorm) * p.gustAgitGain;
+
+    const [yTop, yBottom] = this._yBand(vp);
+    const yMargin = this.VISUAL_H * 1.4;
+
+    // ── inter-paper relations (separation + wake + agitation share) ──
+    // O(n²) — fine for floating (≤ 60). Pair pass BEFORE the per-paper
+    // loop so forces accumulate cleanly into vel; aero integrates them.
+    if (p.interEnabled) {
+      const Rn = p.neighborR;
+      const Rn2 = Rn * Rn;
+      const sepK = p.separationK;
+      const wK = p.wakeK;
+      const aK = p.agitTransferK;
+      const N = this.papers.length;
+      for (let i = 0; i < N; i++) {
+        const a = this.papers[i];
+        for (let j = i + 1; j < N; j++) {
+          const b = this.papers[j];
+          const dx = a.pos.x - b.pos.x;
+          const dy = a.pos.y - b.pos.y;
+          const dz = a.pos.z - b.pos.z;
+          const d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 >= Rn2 || d2 < 1e-4) continue;
+          const d = Math.sqrt(d2);
+          const inv = 1 / d;
+          const nx = dx * inv;
+          const ny = dy * inv;
+          const nz = dz * inv;
+          const prox = 1 - d / Rn; // ∈ (0,1]
+          // 1. separation — soft repulsion, peaks at zero distance
+          const fSep = sepK * prox * prox * dt;
+          a.vel.x += nx * fSep;
+          a.vel.y += ny * fSep;
+          a.vel.z += nz * fSep;
+          b.vel.x -= nx * fSep;
+          b.vel.y -= ny * fSep;
+          b.vel.z -= nz * fSep;
+          // 2. wake / entrainment — slower paper pulled toward faster
+          //    paper's velocity (air dragged by its passage). Asymmetric
+          //    so the energy donor only loses a fraction of what the
+          //    receiver gains (real wakes don't slow the source much).
+          const va2 = a.vel.lengthSq();
+          const vb2 = b.vel.lengthSq();
+          const fast = va2 > vb2 ? a : b;
+          const slow = va2 > vb2 ? b : a;
+          const wkAmt = wK * prox * dt;
+          const dvx = fast.vel.x - slow.vel.x;
+          const dvy = fast.vel.y - slow.vel.y;
+          const dvz = fast.vel.z - slow.vel.z;
+          slow.vel.x += dvx * wkAmt;
+          slow.vel.y += dvy * wkAmt;
+          slow.vel.z += dvz * wkAmt;
+          fast.vel.x -= dvx * wkAmt * 0.3;
+          fast.vel.y -= dvy * wkAmt * 0.3;
+          fast.vel.z -= dvz * wkAmt * 0.3;
+          // 3. agitation equalization — close neighbors share shake
+          //    so a creased paper transmits a beat of motion onward
+          const ai = a.agitation || 0;
+          const bj = b.agitation || 0;
+          const mid = (ai + bj) * 0.5;
+          const tShare = 1 - Math.exp(-aK * prox * dt);
+          a.agitation = ai + (mid - ai) * tShare;
+          b.agitation = bj + (mid - bj) * tShare;
+        }
+      }
+    }
+
+    const F = _S.flow;
+    const D = _S.delta;
+    const NL = _S.normLocal;
+    const NW = _S.normWorld;
+    const QI = _S.qInv;
+    const QD = _S.qDelta;
+    const FL = _S.flowLocal;
+    const PM = _S.pModel;
+    const M = _S.M;
+    const SO = _S.Sone;
+
+    for (const pp of this.papers) {
+      // 1. organic flow field tracked by velocity coupling
+      this._flowAt(pp.pos, t, gust, F);
+      // scroll boost: amplifies the local flow they're already in,
+      // so papers accelerate along their current drift when scrolling.
+      F.multiplyScalar(p.speedMul * (1 + this._scrollFlowBoost));
+      D.copy(F).sub(pp.vel).multiplyScalar(p.flowCoupling);
+      pp.vel.addScaledVector(D, dt);
+
+      // 2. brownian noise
+      const bk = p.brownian;
+      pp.vel.x += (Math.random() - 0.5) * bk * dt;
+      pp.vel.y += (Math.random() - 0.5) * bk * dt * 0.5;
+      pp.vel.z += (Math.random() - 0.5) * bk * dt * 0.3;
+
+      // 3. mouse repulsion — perpendicular distance to camera ray.
+      //    Direct world-space (papers and ray both in world coords).
+      if (mouseLineO) {
+        const opx = pp.pos.x - mouseLineO.x;
+        const opy = pp.pos.y - mouseLineO.y;
+        const opz = pp.pos.z - mouseLineO.z;
+        const tProj =
+          opx * mouseLineD.x + opy * mouseLineD.y + opz * mouseLineD.z;
+        const dx = opx - mouseLineD.x * tProj;
+        const dy = opy - mouseLineD.y * tProj;
+        const dz = opz - mouseLineD.z * tProj;
+        const dm2 = dx * dx + dy * dy + dz * dz;
+        const mr = p.mouseRadius;
+        if (dm2 < mr * mr && dm2 > 1e-3) {
+          const dm = Math.sqrt(dm2);
+          const fall = 1 - dm / mr;
+          const f = (p.mouseStrength * fall * fall * dt) / dm;
+          pp.vel.x += dx * f;
+          pp.vel.y += dy * f;
+          pp.vel.z += dz * f;
+        }
+      }
+
+      // 4. flow-alignment torque — smoothed F + smooth-zero formulation.
+      //    Old version multiplied (NW × fdir) by sign(dot) which FLIPS
+      //    discontinuously when the paper crosses perpendicular to flow,
+      //    causing a visible angular snap. New: torque ∝ (NW × fdir) · dot.
+      //    This is sin(angle)·cos(angle) = ½ sin(2·angle) — smooth, zero
+      //    at both edge-on AND face-on, with stable equilibrium at edge-on.
+      if (!pp.flowSmooth) pp.flowSmooth = new THREE.Vector3();
+      const fAlpha = 1 - Math.exp(-dt * 3.5);
+      pp.flowSmooth.lerp(F, fAlpha);
+      const fLen2 = pp.flowSmooth.lengthSq();
+      if (fLen2 > 1e-2) {
+        const fLen = Math.sqrt(fLen2);
+        const fdx = pp.flowSmooth.x / fLen,
+          fdy = pp.flowSmooth.y / fLen,
+          fdz = pp.flowSmooth.z / fLen;
+        NW.copy(NL).applyQuaternion(pp.quat);
+        const dot = NW.x * fdx + NW.y * fdy + NW.z * fdz;
+        const tx = NW.y * fdz - NW.z * fdy;
+        const ty = NW.z * fdx - NW.x * fdz;
+        const tz = NW.x * fdy - NW.y * fdx;
+        const ak = p.flowAlignK * fLen * dt * 0.001 * dot;
+        pp.angVel.x += tx * ak;
+        pp.angVel.y += ty * ak;
+        pp.angVel.z += tz * ak;
+      }
+
+      // 5. Y-band constraint — STRICT: papers physically cannot leave
+      //    the band (no overshoot into hero or closing zones). Soft
+      //    cushion still pulls them back near the edge for smooth feel,
+      //    plus hard clamp + velocity zero-out at the boundary.
+      if (pp.pos.y > yTop) {
+        const over = pp.pos.y - yTop;
+        pp.vel.y -= over * 4.0 * dt;
+        if (over > this.VISUAL_H * 0.4) {
+          pp.agitation = Math.min(
+            AGIT_MAX,
+            (pp.agitation || 0) + over * 0.0008,
+          );
+        }
+        // hard clamp at top
+        pp.pos.y = yTop;
+        if (pp.vel.y > 0) pp.vel.y = 0;
+      } else if (pp.pos.y < yBottom) {
+        const over = yBottom - pp.pos.y;
+        pp.vel.y += over * 4.0 * dt;
+        if (over > this.VISUAL_H * 0.4) {
+          pp.agitation = Math.min(
+            AGIT_MAX,
+            (pp.agitation || 0) + over * 0.0008,
+          );
+        }
+        // hard clamp at bottom
+        pp.pos.y = yBottom;
+        if (pp.vel.y < 0) pp.vel.y = 0;
+      }
+
+      // 6. (scroll agitation removed — scroll now drives a coherent
+      //     gust force on vel.y instead of injecting per-paper agitation)
+
+      // 6b. collective gust agitation — every paper in the pool feels the
+      //     same exhale at the same moment.
+      if (gustAgitShare > 0.001) {
+        pp.agitation = Math.min(
+          AGIT_MAX,
+          (pp.agitation || 0) + gustAgitShare * dt * 3,
+        );
+      }
+
+      // 7. shared aero pass — drag, flutter, tumble noise, agitation decay,
+      //    linear & angular integration, quat normalization.
+      applyPaperAerodynamics(pp, floatingAeroEnv, t, dt);
+
+      // 7b. continuous soft speed cap — power saturation s(v) = v /
+      //     (1 + (v/vMax)⁴)^(1/4). Identity for v ≪ vMax, asymptotes to
+      //     vMax for v ≫ vMax, smooth everywhere (no derivative kink).
+      if (p.maxSpeed > 0) {
+        const v = Math.sqrt(pp.vel.lengthSq());
+        if (v > 1e-3) {
+          const r = v / p.maxSpeed;
+          const s = 1 / Math.pow(1 + r * r * r * r, 0.25);
+          pp.vel.x *= s;
+          pp.vel.y *= s;
+          pp.vel.z *= s;
+        }
+      }
+
+      // 8b. Z clamp — keep each paper in its assigned depth range so a
+      //     paper in the FRONT layer never drifts to z<0 (and vice versa
+      //     for BACK). Without this, brownian / flow z components push
+      //     papers across the HTML plane → render order says "front" but
+      //     perspective size says "back" (or the inverse) — visual
+      //     conflict where a tiny paper is in front of a large one.
+      if (pp.pos.z > p.zMax) {
+        pp.pos.z = p.zMax;
+        if (pp.vel.z > 0) pp.vel.z = 0;
+      } else if (pp.pos.z < p.zMin) {
+        pp.pos.z = p.zMin;
+        if (pp.vel.z < 0) pp.vel.z = 0;
+      }
+
+      // 9. write matrix from REAL position (perspective handles size via Z)
+      PM.copy(pp.pos).multiplyScalar(this.SCALE_INV);
+      M.compose(PM, pp.quat, SO);
+      this.pool.setMatrix(pp.idx, M);
+
+      // 10. write aFlowLocal — bend shader signal. Uses tanh saturations
+      //     instead of Math.min hard-caps so the signal has a continuous
+      //     derivative everywhere (no kink when crossing thresholds —
+      //     which reads as a sudden "saccade in softness").
+      const sv = this.scrollVel;
+      const motion = Math.sqrt(pp.vel.lengthSq() + sv * sv * 0.3);
+      const motionBendRaw = motion * p.scrollBendK * 1e-3;
+      const motionBend = 1.2 * Math.tanh(motionBendRaw / 1.2);
+      const agitBendRaw = (pp.agitation || 0) * 1.2;
+      const agitBend = 0.8 * Math.tanh(agitBendRaw / 0.8);
+      const bendBoost = 1 + motionBend + agitBend; // smooth, ≤ 3
+      QI.copy(pp.quat).invert();
+      FL.copy(F).applyQuaternion(QI);
+      // smooth magnitude saturation (tanh) — same direction, magnitude
+      // approaches FL_MAX_WORLD asymptotically with no kink.
+      const FL_MAX_WORLD = 350;
+      const flLen = FL.length();
+      if (flLen > 1e-3) {
+        const sat = (FL_MAX_WORLD * Math.tanh(flLen / FL_MAX_WORLD)) / flLen;
+        FL.multiplyScalar(sat);
+      }
+      // exponential low-pass — alpha derived from time constant, frame-rate
+      // independent and continuous.
+      const bendAlpha = 1 - Math.exp(-dt * 6);
+      pp.bendLocal.lerp(FL, bendAlpha);
+      const bendScale = this.SCALE_INV * 4.0 * bendBoost;
+      this.pool.setFlow(
+        pp.idx,
+        pp.bendLocal.x * bendScale,
+        pp.bendLocal.y * bendScale,
+        pp.bendLocal.z * bendScale,
+      );
+
+      // crease/fold update — target rises with local turbulence (|F|) and
+      // current agitation, capped at 1. Asymmetric rate: fast rise, slow
+      // decay so a paper retains its fold for a beat after the gust.
+      const fLenLive = Math.sqrt(F.lengthSq());
+      const foldTargetRaw =
+        fLenLive / Math.max(1, p.turbScale) +
+        (pp.agitation || 0) * p.agitWeight +
+        gustFoldShare; // shared exhale: every paper sees the same boost
+      const foldTarget = Math.tanh(foldTargetRaw); // smooth ∈ [0,1]
+      const rate = foldTarget > pp.foldVal ? p.foldRise : p.foldDecay;
+      const k = 1 - Math.exp(-rate * dt);
+      pp.foldVal += (foldTarget - pp.foldVal) * k;
+      this.pool.setFold(pp.idx, pp.foldVal);
+
+      // 11. respawn rules — based on actual position
+      const exitedX =
+        (this.windDir.x > 0 && pp.pos.x > vp.w / 2 + xMargin) ||
+        (this.windDir.x < 0 && pp.pos.x < -vp.w / 2 - xMargin);
+      const exitedY = pp.pos.y > yTop + yMargin || pp.pos.y < yBottom - yMargin;
+      if (exitedX || exitedY) this.spawn(pp, false);
+    }
+
+    this.pool.flush();
+  }
+
+  dispose() {
+    this.pool.group.removeFromParent();
+    if (this._gui) this._gui.destroy();
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PaperPreview
+   Single-paper sandbox. One InstancedMesh with count=1, variants=1.
+   Manual rotation + flow-vector controls so you can isolate the paper
+   component and feel how each parameter affects the visual.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════════
+   applyPaperAerodynamics — single-paper flight model
+
+   Designed once, reused everywhere. Per-paper aero forces:
+     · gravity                    — world down
+     · anisotropic drag           — face drag ≫ edge drag
+     · self-alignment torque      — paper wants its EDGE leading the
+                                    velocity (face perpendicular to vel)
+     · tumble noise               — small instability when face-on, so the
+                                    paper never sits in the perfect "flat"
+                                    pose forever
+     · flutter                    — sideways oscillation perpendicular to
+                                    the velocity (leaf-flutter motion)
+     · linear / angular damping   — air friction
+   Returns nothing; mutates p.pos / p.vel / p.quat / p.angVel.
+
+   Designed to be called either INSIDE a scene (sphere, floating) where
+   external forces (flow, wall, mouse) are ALSO applied, or in isolation
+   (lab preview) where the paper just feels gravity + self-effects.
+   ════════════════════════════════════════════════════════════════════ */
+
+const _AERO = {
+  N_LOCAL: new THREE.Vector3(0, 0, 1), // paper normal in its local frame
+  nWorld: new THREE.Vector3(),
+  vDir: new THREE.Vector3(),
+  vNormal: new THREE.Vector3(),
+  vTangent: new THREE.Vector3(),
+  torque: new THREE.Vector3(),
+  perp: new THREE.Vector3(),
+  perp2: new THREE.Vector3(),
+  qd: new THREE.Quaternion(),
+};
+
+function applyPaperAerodynamics(p, env, t, dt) {
+  // 1. gravity
+  p.vel.y += env.gravity * dt;
+
+  // 2. paper normal in world space
+  const nw = _AERO.nWorld.copy(_AERO.N_LOCAL).applyQuaternion(p.quat);
+
+  // 3. velocity decomposition (along normal vs in plane)
+  const vDotN = p.vel.dot(nw);
+  _AERO.vNormal.copy(nw).multiplyScalar(vDotN);
+  _AERO.vTangent.copy(p.vel).sub(_AERO.vNormal);
+  const vMag = p.vel.length();
+  const tangMag = _AERO.vTangent.length();
+
+  // 4. anisotropic drag — ∝ v² along each axis
+  // face: F = -airDensity · dragFace · vDotN · |vDotN| · n
+  if (Math.abs(vDotN) > 1e-4) {
+    const fFace = -env.airDensity * env.dragFace * vDotN * Math.abs(vDotN);
+    p.vel.x += nw.x * fFace * dt;
+    p.vel.y += nw.y * fFace * dt;
+    p.vel.z += nw.z * fFace * dt;
+  }
+  if (tangMag > 1e-4) {
+    const tdir = _AERO.vTangent.divideScalar(tangMag); // mutates _AERO.vTangent — careful
+    const fEdge = -env.airDensity * env.dragEdge * tangMag * tangMag;
+    p.vel.x += tdir.x * fEdge * dt;
+    p.vel.y += tdir.y * fEdge * dt;
+    p.vel.z += tdir.z * fEdge * dt;
+  }
+
+  // 5. self-alignment torque — paper wants edge leading the velocity
+  //    Target: normal perpendicular to vel. Apply torque proportional to
+  //    velocity magnitude × |n · v̂| (deviation from edge-on).
+  if (vMag > 0.05) {
+    const vDir = _AERO.vDir.copy(p.vel).divideScalar(vMag);
+    const nDotV = nw.x * vDir.x + nw.y * vDir.y + nw.z * vDir.z;
+    // torque axis = nw × vDir, sign such that the rotation aligns nw away from vDir
+    _AERO.torque
+      .copy(nw)
+      .cross(vDir)
+      .multiplyScalar(env.alignK * vMag * Math.abs(nDotV) * dt);
+    p.angVel.x += _AERO.torque.x;
+    p.angVel.y += _AERO.torque.y;
+    p.angVel.z += _AERO.torque.z;
+  }
+
+  // ── agitation modulation ──
+  // p.agitation ∈ [0..1] is bumped by external events (wall hit, ground
+  // bounce, gust, mouse impact) by the caller. While > 0, it amplifies
+  // the chaos: tumble noise grows, flutter amplitude grows, the body
+  // shakes off energy. Decays exponentially back to 0 → the paper
+  // returns to calm when nothing's happening.
+  const agit = p.agitation || 0;
+  const agitTumbleK = env.agitTumble != null ? env.agitTumble : 8;
+  const agitFlutterK = env.agitFlutter != null ? env.agitFlutter : 4;
+
+  // 6. tumble instability — OU process (correlated random walk). The OU
+  //    state evolves EVERY frame with a smooth gating factor on |vDotN|
+  //    so it doesn't pop on/off at a hard threshold.
+  const tumbleScale = env.tumbleK * (1 + agit * agitTumbleK);
+  if (tumbleScale > 0) {
+    if (!p._tumOU) p._tumOU = new THREE.Vector3();
+    const tau = env.tumbleTau != null ? env.tumbleTau : 0.6;
+    const decay = Math.exp(-dt / tau);
+    // smooth gate: tanh(|vDotN|/0.3) ramps from 0 at face-zero to 1 at
+    // |vDotN|≈0.6+; replaces the old `if (|vDotN| > 0.05)` step.
+    const gate = Math.tanh(Math.abs(vDotN) / 0.3);
+    const sigma = tumbleScale * gate * Math.abs(vDotN);
+    const noise = sigma * Math.sqrt(1 - decay * decay);
+    p._tumOU.x = p._tumOU.x * decay + (Math.random() - 0.5) * noise;
+    p._tumOU.y = p._tumOU.y * decay + (Math.random() - 0.5) * noise;
+    p._tumOU.z = p._tumOU.z * decay + (Math.random() - 0.5) * noise;
+    p.angVel.x += p._tumOU.x * dt;
+    p.angVel.y += p._tumOU.y * dt;
+    p.angVel.z += p._tumOU.z * dt;
+  }
+  // Agitation injects a SMOOTH bump (sinusoidal ride-off) tied to the
+  // existing flutter phase — no per-frame randomness. Calm paper has 0;
+  // recently-bumped paper rides a brief wobble that decays with agitation.
+  if (agit > 0.01) {
+    const ka = agit * 1.2 * dt;
+    const ph = p._flutPhase || 0;
+    p.angVel.x += Math.sin(t * 4.1 + ph * 1.1) * ka;
+    p.angVel.y += Math.sin(t * 3.7 + ph * 1.7) * ka * 0.7;
+    p.angVel.z += Math.sin(t * 5.3 + ph * 0.9) * ka * 0.8;
+  }
+
+  // 7. leaf flutter — amplified by agitation. Flutter is BI-AXIS: a
+  //    figure-8 in the plane perpendicular to velocity, so papers don't
+  //    all wobble along the same axis (key fix for the "fake" feel where
+  //    everyone undulates in lockstep). Each paper has its own phase pair.
+  const flutterScale = env.flutterAmp * (1 + agit * agitFlutterK);
+  if (flutterScale > 0) {
+    const w = (p._flutFreq || 1) * env.flutterFreq;
+    const phase = p._flutPhase || 0;
+    const phase2 = (p._flutPhase2 != null ? p._flutPhase2 : phase * 1.7) + 1.3;
+    const sway1 = Math.sin(t * w + phase);
+    const sway2 = Math.cos(t * w * 1.27 + phase2);
+    // smooth velocity-direction blend: when vMag is tiny, fall back to a
+    // fixed axis weighted by (1 - presence). Avoids the hard "if vMag>0.5"
+    // step that caused the snap when motion crossed the threshold.
+    const presence = Math.tanh(vMag / 8); // ~0 at rest, →1 quickly
+    if (vMag > 1e-4) _AERO.vDir.copy(p.vel).divideScalar(vMag);
+    else _AERO.vDir.set(1, 0, 0);
+    _AERO.perp.set(0, 1, 0).cross(_AERO.vDir);
+    if (_AERO.perp.lengthSq() < 1e-4) _AERO.perp.set(1, 0, 0);
+    else _AERO.perp.normalize();
+    _AERO.perp2.copy(_AERO.vDir).cross(_AERO.perp).normalize();
+    // motion-driven amplitude smoothly fades from agit-only at rest to
+    // motion+agit at speed (no on/off step).
+    const motionFade = 0.5 + 0.5 * Math.tanh(vMag / 80);
+    const baseFade = Math.max(presence, Math.tanh(agit / 0.1));
+    const fAmp = flutterScale * motionFade * baseFade;
+    const mix = env.flutterMix != null ? env.flutterMix : 0.65;
+    p.vel.x += (_AERO.perp.x * sway1 + _AERO.perp2.x * sway2 * mix) * fAmp * dt;
+    p.vel.y += (_AERO.perp.y * sway1 + _AERO.perp2.y * sway2 * mix) * fAmp * dt;
+    p.vel.z += (_AERO.perp.z * sway1 + _AERO.perp2.z * sway2 * mix) * fAmp * dt;
+  }
+
+  // ── decay agitation toward 0 ──
+  if (agit > 0) {
+    const decay = env.agitDecay != null ? env.agitDecay : 1.8;
+    p.agitation = agit * Math.exp(-decay * dt);
+    if (p.agitation < 1e-4) p.agitation = 0;
+  }
+
+  // 8. linear & angular damping
+  const lin = Math.exp(-env.linDamp * dt);
+  const ang = Math.exp(-env.angDamp * dt);
+  p.vel.multiplyScalar(lin);
+  p.angVel.multiplyScalar(ang);
+
+  // 8b. continuous angular speed saturation — same power-curve as the
+  //     linear cap so there's no kink anywhere on the |ω| axis.
+  if (env.maxAngVel != null && env.maxAngVel > 0) {
+    const w = Math.sqrt(
+      p.angVel.x * p.angVel.x +
+        p.angVel.y * p.angVel.y +
+        p.angVel.z * p.angVel.z,
+    );
+    if (w > 1e-4) {
+      const r = w / env.maxAngVel;
+      const sFac = 1 / Math.pow(1 + r * r * r * r, 0.25);
+      p.angVel.x *= sFac;
+      p.angVel.y *= sFac;
+      p.angVel.z *= sFac;
+    }
+  }
+
+  // 9. integrate
+  p.pos.addScaledVector(p.vel, dt);
+  _AERO.qd.set(
+    p.angVel.x * 0.5 * dt,
+    p.angVel.y * 0.5 * dt,
+    p.angVel.z * 0.5 * dt,
+    0,
+  );
+  _AERO.qd.multiply(p.quat);
+  p.quat.x += _AERO.qd.x;
+  p.quat.y += _AERO.qd.y;
+  p.quat.z += _AERO.qd.z;
+  p.quat.w += _AERO.qd.w;
+  p.quat.normalize();
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PaperPreview — flight-simulator sandbox
+   Modes:
+     · static  — manual rotation + manual flow vector (debug/inspection)
+     · launch  — full aerodynamics; click-and-drag to throw the paper
+   Floor / ceiling / walls auto-respawn when toggled.
+   ════════════════════════════════════════════════════════════════════ */
+
+class PaperPreview {
+  constructor({
+    parent,
+    gui,
+    label = "Paper preview",
+    visualW = 400,
+    domElement = null,
+    camera = null,
+  }) {
+    this.SCALE = visualW / Paper.RECEIPT_W;
+    this.SCALE_INV = 1 / this.SCALE;
+    this.parent = parent;
+    this.camera = camera;
+    this.dom =
+      domElement || (typeof document !== "undefined" ? document : null);
+
+    this.pool = new PaperPool({
+      count: 1,
+      variants: 1,
+      scale: this.SCALE,
+      parent,
+    });
+
+    this.params = {
+      visible: true,
+      mode: "launch", // "static" | "launch"
+      // ── static mode (manual pose + manual flow vector) ──
+      rotX: 0,
+      rotY: 0,
+      rotZ: 0,
+      autoTumble: false,
+      tumbleSpeed: 0.4,
+      flowX: 0.0,
+      flowY: 0.0,
+      flowZ: 0.6,
+      flutterModAmp: 0.5,
+      flutterModFreq: 1.5,
+      // ── launch mode (full aerodynamics) ──
+      // Defaults tuned for SOFT paper feel: low align (so it doesn't snap
+      // edge-on rigidly), high flutter, high tumble noise. The body
+      // softness comes from the bend signal (below) — NOT from rigid pose.
+      // CALM defaults — paper glides with minimal turbulence. Tumble and
+      // flutter are kept low; visible softness comes from the bend signal
+      // driven by heavily smoothed velocity / acceleration.
+      gravity: -90,
+      airDensity: 1.0,
+      dragFace: 0.1, // higher → settles into edge-first fall sooner
+      dragEdge: 0.002,
+      alignK: 1.4,
+      tumbleK: 0.05, // basically off — was the main jitter source
+      flutterAmp: 35, // mild lateral sway
+      flutterFreq: 1.2,
+      linDamp: 0.3, // calmer linear motion
+      angDamp: 3.5, // strong angular damping → no twitching
+      bendVelGain: 14,
+      bendAccelGain: 3,
+      bendFlutterAmp: 0.45,
+      bendFlutterFreq: 1.6,
+      bendVelSmooth: 0.1, // heavy low-pass
+      bendAccelSmooth: 0.04, // very heavy — accel almost frozen
+      // ── arena (bounds: bounce + agitation injection) ──
+      arenaEnabled: true,
+      floorY: -260,
+      ceilY: 380,
+      wallX: 420,
+      wallZ: 420,
+      restitution: 0.45, // velocity retained after bounce
+      // ── agitation: each impact bumps it; it decays exponentially.
+      //    While > 0 it amplifies tumble + flutter + bend so the paper
+      //    "shakes off" energy after a hit before settling back to calm.
+      agitOnHit: 0.8, // bump per impact unit
+      agitOnHitVelK: 200, // |impact vel| / this = impact units
+      agitDecay: 1.8, // 1/s exponential decay
+      agitTumble: 12, // tumble multiplier while agitated
+      agitFlutter: 6, // flutter multiplier while agitated
+      agitBend: 3.5, // bend-flutter multiplier while agitated
+      // ── shared with floating/sphere: bend saturation + dynamic fold ──
+      bendClampMax: 600, // px units (preview is in scene-px space)
+      foldAgitWeight: 1.6,
+      foldAccelWeight: 1.4e-3, // |accel| → fold target contribution
+      foldRise: 6,
+      foldDecay: 0.55,
+      // ── interaction ──
+      throwGain: 6.0,
+      throwSpinGain: 0.025,
+      autoRespawn: true,
+      respawnRadius: 700,
+      // ── presets / actions (buttons) ──
+      launchUpward: () => this._launchPreset("upward"),
+      dropFromTop: () => this._launchPreset("drop"),
+      throwSideways: () => this._launchPreset("sideways"),
+      gustNow: () => this._gust(),
+      reset: () => this._reset(),
+    };
+
+    // Per-paper state for aerodynamics. velSmooth / accelSmooth are the
+    // low-passed copies that feed the bend signal — they remove the
+    // per-frame jitter from tumble noise + alignment torque.
+    this.paper = {
+      pos: new THREE.Vector3(0, 100, 0),
+      vel: new THREE.Vector3(),
+      prevVel: new THREE.Vector3(),
+      accel: new THREE.Vector3(),
+      velSmooth: new THREE.Vector3(),
+      accelSmooth: new THREE.Vector3(),
+      quat: new THREE.Quaternion(),
+      angVel: new THREE.Vector3(),
+      // 0..1 — bumped by impacts/gusts; decays in applyPaperAerodynamics.
+      agitation: 0,
+      _flutPhase: Math.random() * Math.PI * 2,
+      _flutFreq: 0.7 + Math.random() * 0.6,
+    };
+
+    this._wireMouse();
+
+    if (gui) this._gui = this.attachGui(gui, label);
+  }
+
+  _wireMouse() {
+    if (!this.dom || !this.camera) return;
+    let dragging = false;
+    let dragStart = null;
+    let dragLast = null;
+    const onDown = (e) => {
+      if (this.params.mode !== "launch") return;
+      // Require Shift+drag so OrbitControls (left-drag = orbit) keeps
+      // working unmodified for inspecting the paper.
+      if (!e.shiftKey) return;
+      dragging = true;
+      dragStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+      dragLast = { ...dragStart };
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      dragLast = { x: e.clientX, y: e.clientY, t: performance.now() };
+    };
+    const onUp = () => {
+      if (!dragging || !dragStart || !dragLast) {
+        dragging = false;
+        return;
+      }
+      const dx = dragLast.x - dragStart.x;
+      const dy = dragLast.y - dragStart.y;
+      const dtMs = Math.max(16, dragLast.t - dragStart.t);
+      // velocity from drag distance × throwGain, divided by drag time so a
+      // quick flick = strong throw, a slow drag = soft toss
+      const speedScale = (this.params.throwGain * 1000) / dtMs;
+      this.paper.vel.set(dx * speedScale * 0.01, -dy * speedScale * 0.01, 0);
+      const sg = this.params.throwSpinGain;
+      this.paper.angVel.set(
+        (Math.random() - 0.5) * Math.abs(dy) * sg,
+        (Math.random() - 0.5) * Math.abs(dx) * sg,
+        (Math.random() - 0.5) * (Math.abs(dx) + Math.abs(dy)) * sg * 0.5,
+      );
+      dragging = false;
+      dragStart = null;
+      dragLast = null;
+    };
+    this.dom.addEventListener("pointerdown", onDown);
+    this.dom.addEventListener("pointermove", onMove);
+    this.dom.addEventListener("pointerup", onUp);
+    this._mouseHandlers = { onDown, onMove, onUp };
+  }
+
+  _reset() {
+    this.paper.pos.set(0, 100, 0);
+    this.paper.vel.set(0, 0, 0);
+    this.paper.quat.identity();
+    this.paper.angVel.set(0, 0, 0);
+    this.paper.agitation = 0;
+    this.paper.velSmooth.set(0, 0, 0);
+    this.paper.accelSmooth.set(0, 0, 0);
+  }
+
+  _bumpAgit(amount) {
+    this.paper.agitation = Math.min(1, (this.paper.agitation || 0) + amount);
+  }
+
+  _gust() {
+    // a sudden random air kick + agitation spike, no positional change
+    const ang = Math.random() * Math.PI * 2;
+    const speed = 220 + Math.random() * 180;
+    this.paper.vel.x += Math.cos(ang) * speed;
+    this.paper.vel.y += 60 + Math.random() * 200;
+    this.paper.vel.z += Math.sin(ang) * speed * 0.5;
+    this.paper.angVel.x += (Math.random() - 0.5) * 5;
+    this.paper.angVel.y += (Math.random() - 0.5) * 5;
+    this.paper.angVel.z += (Math.random() - 0.5) * 5;
+    this._bumpAgit(0.85);
+  }
+
+  /* axis-aligned arena bounce. axis = "x"|"y"|"z", limit = signed wall.
+     Returns true if a hit occurred. */
+  _bounceAxis(axis, limit, restitution, hitVelK, hitGain) {
+    const p = this.paper;
+    const sgn = limit >= 0 ? 1 : -1;
+    if (
+      (sgn === 1 && p.pos[axis] <= limit) ||
+      (sgn === -1 && p.pos[axis] >= limit)
+    )
+      return false;
+    p.pos[axis] = limit;
+    const vAlong = p.vel[axis];
+    if (vAlong * sgn > 0) {
+      // moving INTO the wall — reflect with restitution
+      p.vel[axis] = -vAlong * restitution;
+      // slight angular kick on the perp axes
+      p.angVel.x += (Math.random() - 0.5) * Math.abs(vAlong) * 0.005;
+      p.angVel.y += (Math.random() - 0.5) * Math.abs(vAlong) * 0.005;
+      p.angVel.z += (Math.random() - 0.5) * Math.abs(vAlong) * 0.005;
+      // bump agitation proportional to impact speed
+      const impactUnits = Math.min(2, Math.abs(vAlong) / hitVelK);
+      this._bumpAgit(impactUnits * hitGain);
+    }
+    return true;
+  }
+
+  _launchPreset(kind) {
+    this._reset();
+    if (kind === "upward") {
+      this.paper.pos.set(0, -200, 0);
+      this.paper.vel.set(20, 380, 0);
+      this.paper.angVel.set(0, 1.2, 0.4);
+    } else if (kind === "drop") {
+      this.paper.pos.set(0, 320, 0);
+      this.paper.vel.set(8, 0, 0);
+      this.paper.angVel.set(0, 0.3, 0);
+    } else if (kind === "sideways") {
+      this.paper.pos.set(-300, 80, 0);
+      this.paper.vel.set(380, 60, 0);
+      this.paper.angVel.set(0.2, 0.2, 1.0);
+    }
+  }
+
+  attachGui(gui, label) {
+    const f = gui.addFolder(label);
+    const p = this.params;
+    f.add(p, "visible").onChange((v) => this.pool.setVisible(v));
+    f.add(p, "mode", ["static", "launch"]).name("mode");
+
+    // static mode
+    const fr = f.addFolder("static · pose");
+    fr.add(p, "rotX", -Math.PI, Math.PI, 0.01);
+    fr.add(p, "rotY", -Math.PI, Math.PI, 0.01);
+    fr.add(p, "rotZ", -Math.PI, Math.PI, 0.01);
+    fr.add(p, "autoTumble").name("auto tumble");
+    fr.add(p, "tumbleSpeed", 0, 3, 0.01).name("tumble speed");
+    const ff = f.addFolder("static · flow vector");
+    ff.add(p, "flowX", -2, 2, 0.01);
+    ff.add(p, "flowY", -2, 2, 0.01);
+    ff.add(p, "flowZ", -2, 2, 0.01);
+    ff.add(p, "flutterModAmp", 0, 3, 0.05).name("flutter ×");
+    ff.add(p, "flutterModFreq", 0, 8, 0.05).name("flutter Hz");
+
+    // launch mode — aerodynamics
+    const fa = f.addFolder("launch · aerodynamics");
+    fa.add(p, "gravity", -800, 800, 5);
+    fa.add(p, "airDensity", 0, 4, 0.05);
+    fa.add(p, "dragFace", 0, 0.2, 0.001);
+    fa.add(p, "dragEdge", 0, 0.05, 0.0005);
+    fa.add(p, "alignK", 0, 30, 0.1);
+    fa.add(p, "tumbleK", 0, 4, 0.05);
+    fa.add(p, "flutterAmp", 0, 300, 1);
+    fa.add(p, "flutterFreq", 0, 8, 0.05);
+    fa.add(p, "linDamp", 0, 3, 0.01);
+    fa.add(p, "angDamp", 0, 6, 0.01);
+
+    // ── softness · drives the bend shader from velocity + acceleration ──
+    const fb = f.addFolder("launch · softness (bend)");
+    fb.add(p, "bendVelGain", 0, 80, 0.5).name("bend · vel gain");
+    fb.add(p, "bendAccelGain", 0, 60, 0.5).name("bend · accel gain");
+    fb.add(p, "bendFlutterAmp", 0, 4, 0.05).name("bend · flutter amp");
+    fb.add(p, "bendFlutterFreq", 0, 10, 0.05).name("bend · flutter Hz");
+    // smoothing — lower = more soft, higher = more reactive (also more
+    // jittery, since unfiltered noise gets through)
+    fb.add(p, "bendVelSmooth", 0.02, 1, 0.005).name("bend · vel smooth");
+    fb.add(p, "bendAccelSmooth", 0.02, 1, 0.005).name("bend · accel smooth");
+
+    const ft = f.addFolder("launch · interaction");
+    ft.add(p, "throwGain", 0, 20, 0.05);
+    ft.add(p, "throwSpinGain", 0, 0.1, 0.001);
+    ft.add(p, "autoRespawn");
+    ft.add(p, "respawnRadius", 100, 3000, 10);
+    ft.add(p, "launchUpward").name("preset · upward");
+    ft.add(p, "dropFromTop").name("preset · drop");
+    ft.add(p, "throwSideways").name("preset · sideways");
+    ft.add(p, "reset").name("RESET");
+
+    fr.close();
+    ff.close();
+    fa.open();
+    ft.open();
+    return f;
+  }
+
+  update(t, dt) {
+    if (!this.params.visible) return;
+    const p = this.params;
+    const M = _S.M;
+    const SO = _S.Sone;
+    const PM = _S.pModel;
+
+    if (p.mode === "static") {
+      // legacy manual mode — rotation sliders + flow vector
+      let rx = p.rotX,
+        ry = p.rotY,
+        rz = p.rotZ;
+      if (p.autoTumble) {
+        rx = Math.sin(t * p.tumbleSpeed * 0.7) * 0.6;
+        ry = t * p.tumbleSpeed;
+        rz = Math.cos(t * p.tumbleSpeed * 0.4) * 0.4;
+      }
+      const Q = _S.qDelta;
+      Q.setFromEuler(new THREE.Euler(rx, ry, rz));
+      PM.set(0, 0, 0);
+      M.compose(PM, Q, SO);
+      this.pool.setMatrix(0, M);
+      const fb = Math.sin(t * p.flutterModFreq) * p.flutterModAmp;
+      this.pool.setFlow(0, p.flowX + fb * 0.4, p.flowY, p.flowZ + fb);
+      this.pool.flush();
+      return;
+    }
+
+    // ── launch mode — full aerodynamic integration ──
+    // Capture previous velocity BEFORE physics so we can compute the
+    // acceleration that occurred this step. The acceleration is what
+    // makes a soft paper "lag" and bend in flight.
+    this.paper.prevVel.copy(this.paper.vel);
+    applyPaperAerodynamics(this.paper, p, t, dt);
+    this.paper.accel
+      .copy(this.paper.vel)
+      .sub(this.paper.prevVel)
+      .multiplyScalar(1 / Math.max(dt, 1e-4));
+
+    // ── arena bounces (floor / ceiling / X / Z walls) ──
+    // Each bounce reflects velocity with restitution AND injects agitation
+    // proportional to impact speed → flutter and tumble spike, then decay.
+    if (p.arenaEnabled) {
+      this._bounceAxis(
+        "y",
+        p.floorY,
+        p.restitution,
+        p.agitOnHitVelK,
+        p.agitOnHit,
+      );
+      this._bounceAxis(
+        "y",
+        p.ceilY,
+        p.restitution,
+        p.agitOnHitVelK,
+        p.agitOnHit,
+      );
+      // X walls: limit is +/- p.wallX. Use signed limit with ad-hoc check.
+      if (this.paper.pos.x > p.wallX) {
+        this._bounceAxis(
+          "x",
+          p.wallX,
+          p.restitution,
+          p.agitOnHitVelK,
+          p.agitOnHit,
+        );
+      } else if (this.paper.pos.x < -p.wallX) {
+        this._bounceAxis(
+          "x",
+          -p.wallX,
+          p.restitution,
+          p.agitOnHitVelK,
+          p.agitOnHit,
+        );
+      }
+      if (this.paper.pos.z > p.wallZ) {
+        this._bounceAxis(
+          "z",
+          p.wallZ,
+          p.restitution,
+          p.agitOnHitVelK,
+          p.agitOnHit,
+        );
+      } else if (this.paper.pos.z < -p.wallZ) {
+        this._bounceAxis(
+          "z",
+          -p.wallZ,
+          p.restitution,
+          p.agitOnHitVelK,
+          p.agitOnHit,
+        );
+      }
+    }
+
+    // auto-respawn when paper drifts out of the test arena (safety net)
+    if (p.autoRespawn) {
+      const r2 = this.paper.pos.lengthSq();
+      if (r2 > p.respawnRadius * p.respawnRadius) this._launchPreset("drop");
+    }
+
+    // write matrix in MODEL space (pool group has SCALE applied)
+    PM.copy(this.paper.pos).multiplyScalar(this.SCALE_INV);
+    M.compose(PM, this.paper.quat, SO);
+    this.pool.setMatrix(0, M);
+
+    // ── soft-paper bend signal (per-paper aFlowLocal) ──
+    // The bend shader uses aFlowLocal × uBowl/uTilt/uRipple to deform the
+    // mesh. We feed it the LOW-PASSED velocity + acceleration so the
+    // deformation reads as a fluid, lagged swoop instead of a per-frame
+    // tremor (raw accel spikes hard whenever tumble noise + alignment
+    // torque interact).
+    //
+    //   velSmooth   = lerp(velSmooth, vel, bendVelSmooth)
+    //   accelSmooth = lerp(accelSmooth, accel, bendAccelSmooth)
+    //   bend = velSmooth · velGain + accelSmooth · accelGain + flutter
+    //
+    // Then projected into the paper's local frame so the deformation
+    // tracks the direction of motion as the paper rotates.
+    const sV = p.bendVelSmooth;
+    const sA = p.bendAccelSmooth;
+    this.paper.velSmooth.lerp(this.paper.vel, sV);
+    this.paper.accelSmooth.lerp(this.paper.accel, sA);
+
+    const FL = _S.flowLocal;
+    const QI = _S.qInv;
+    QI.copy(this.paper.quat).invert();
+
+    const motion = this.paper.velSmooth.length();
+    const flutterMod =
+      Math.sin(t * p.bendFlutterFreq + (this.paper._flutPhase || 0)) *
+      p.bendFlutterAmp *
+      (0.35 + 0.65 * Math.tanh(motion / 100));
+
+    const vS = this.paper.velSmooth;
+    const aS = this.paper.accelSmooth;
+    const bendWorld = FL.set(
+      vS.x * p.bendVelGain * 1e-3 + aS.x * p.bendAccelGain * 1e-4,
+      vS.y * p.bendVelGain * 1e-3 + aS.y * p.bendAccelGain * 1e-4,
+      vS.z * p.bendVelGain * 1e-3 + aS.z * p.bendAccelGain * 1e-4 + flutterMod,
+    );
+    bendWorld.applyQuaternion(QI);
+    // tanh saturation on bend magnitude — same treatment as floating/sphere
+    const bMax = p.bendClampMax;
+    const bLen = bendWorld.length();
+    if (bLen > 1e-3) {
+      const sat = (bMax * Math.tanh(bLen / bMax)) / bLen;
+      bendWorld.multiplyScalar(sat);
+    }
+    this.pool.setFlow(0, bendWorld.x, bendWorld.y, bendWorld.z);
+
+    // dynamic fold — driven by current agitation and acceleration
+    // magnitude (no flow field here, so we use accel as turbulence proxy).
+    if (this.paper.foldVal == null) this.paper.foldVal = 0;
+    const accelMag = this.paper.accel.length();
+    const foldRaw =
+      (this.paper.agitation || 0) * p.foldAgitWeight +
+      accelMag * p.foldAccelWeight;
+    const foldTarget = Math.tanh(foldRaw);
+    const fRate = foldTarget > this.paper.foldVal ? p.foldRise : p.foldDecay;
+    this.paper.foldVal +=
+      (foldTarget - this.paper.foldVal) * (1 - Math.exp(-fRate * dt));
+    this.pool.setFold(0, this.paper.foldVal);
+
+    this.pool.flush();
+  }
+
+  dispose() {
+    this.pool.group.removeFromParent();
+    if (this._gui) this._gui.destroy();
+    if (this.dom && this._mouseHandlers) {
+      this.dom.removeEventListener("pointerdown", this._mouseHandlers.onDown);
+      this.dom.removeEventListener("pointermove", this._mouseHandlers.onMove);
+      this.dom.removeEventListener("pointerup", this._mouseHandlers.onUp);
+    }
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   Setup-page boot — single FloatingPapersScene scoped to the hero.
+   ════════════════════════════════════════════════════════════════════ */
+function setupHeroBoot() {
+  const hero = document.getElementById("hero");
+  if (!hero) return;
+
+  const IS_MOBILE =
+    window.innerWidth < 768 ||
+    matchMedia("(pointer: coarse)").matches ||
+    (navigator.hardwareConcurrency || 8) < 4;
+
+  const scene = new THREE.Scene();
+  Paper.addLights(scene);
+
+  const FOV = 50;
+  const FOV_RAD = (FOV * Math.PI) / 180;
+
+  let heroW = hero.offsetWidth;
+  let heroH = hero.offsetHeight;
+
+  const camera = new THREE.PerspectiveCamera(FOV, heroW / heroH, 1, 4000);
+  camera.position.set(0, 0, heroH / 2 / Math.tan(FOV_RAD / 2));
+
+  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, IS_MOBILE ? 1.25 : 2),
+  );
+  renderer.setSize(heroW, heroH);
+  renderer.setClearColor(0x000000, 0);
+  const canvas = renderer.domElement;
+  Object.assign(canvas.style, {
+    position: "absolute",
+    inset: "0",
+    width: "100%",
+    height: "100%",
+    pointerEvents: "none",
+    zIndex: "0",
+  });
+  hero.style.position = hero.style.position || "relative";
+  hero.insertBefore(canvas, hero.firstChild);
+
+  // Make sure the hero text content stacks above the canvas.
+  hero.querySelectorAll(":scope > *:not(canvas)").forEach((el) => {
+    const cs = getComputedStyle(el);
+    if (cs.position === "static") el.style.position = "relative";
+    el.style.zIndex = el.style.zIndex || "1";
+  });
+
+  const floating = new FloatingPapersScene({
+    parent: scene,
+    getViewport: () => ({ w: heroW, h: heroH, pageH: heroH }),
+    label: "Setup hero · floating",
+    visualW: IS_MOBILE ? 130 : 165,
+    countOverride: IS_MOBILE ? 14 : 22,
+    bandTopY: heroH / 2,
+    bandBottomY: -heroH / 2,
+    defaults: { zMin: 20, zMax: 200 },
+  });
+
+  function resize() {
+    heroW = hero.offsetWidth;
+    heroH = hero.offsetHeight;
+    camera.aspect = heroW / heroH;
+    camera.position.z = heroH / 2 / Math.tan(FOV_RAD / 2);
+    camera.updateProjectionMatrix();
+    renderer.setSize(heroW, heroH);
+  }
+  window.addEventListener("resize", resize);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(resize);
+  }
+
+  const clock = new THREE.Clock();
+  let lastT = 0;
+  function tick() {
+    const t = clock.getElapsedTime();
+    const dt = Math.min(0.05, t - lastT);
+    lastT = t;
+    Paper.uniforms.uTime.value = t;
+    floating.update(t, dt);
+    renderer.render(scene, camera);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupHeroBoot, { once: true });
+} else {
+  queueMicrotask(setupHeroBoot);
+}
 </script>
 
 </body>
