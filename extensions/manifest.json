@@ -76,14 +76,14 @@
     {
       "name": "datahound",
       "repo": "https://github.com/buriedsignals/datahound",
-      "status": "May 2026",
+      "status": "August-September 2026",
       "selectable_default": false,
       "web_only": true
     },
     {
       "name": "atelier",
       "repo": "https://github.com/buriedsignals/atelier",
-      "status": "May 2026",
+      "status": "August-September 2026",
       "selectable_default": false
     }
   ]

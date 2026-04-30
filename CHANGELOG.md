@@ -13,7 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - Journalism Instructions (`instructions/journalism.md`) — SIFT, attribution rules, source protection, tone.
 - Provider configs: Fireworks (Qwen 3.6 Plus), Together AI, OpenRouter (optional failover), local MLX, local llama-server.
 - IM Fell English wordmark + M-alone favicon.
-- Plugin scaffolding: Spotlight + coJournalist (launching with Mycroft), DataHound + Atelier (May 2026).
+- Plugin scaffolding: Spotlight + coJournalist (launching with Mycroft), DataHound + Atelier (August-September 2026).
 - Memory templates (`memory/USER.md`, `memory/MEMORY.md`).
 
 ### Security

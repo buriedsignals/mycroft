@@ -15,12 +15,12 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-50%20-50%20100%20100%22%3E%3Cg%20stroke%3D%22%23131013%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%22-20.5%22%20x2%3D%2212.7%22%20y2%3D%22-12.7%22%2F%3E%3Cline%20x1%3D%2232%22%20y1%3D%220%22%20x2%3D%2218%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2212.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%220%22%20y1%3D%2232%22%20x2%3D%220%22%20y2%3D%2218%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%2220.5%22%20x2%3D%22-12.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%22-32%22%20y1%3D%220%22%20x2%3D%22-18%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%22-20.5%22%20x2%3D%22-12.7%22%20y2%3D%22-12.7%22%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%220%22%20y1%3D%22-34%22%20x2%3D%220%22%20y2%3D%22-16%22%20stroke%3D%22%234A7363%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mycroft — your morning brief, before coffee.">
-<meta property="og:description" content="An opinionated extension pack for Goose. Three jobs done right, on your laptop, with your keys.">
+<meta property="og:description" content="An opinionated extension pack for Goose: an example reporting day, wired into Obsidian, on your laptop with your keys.">
 <meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png">
 <meta property="og:url" content="https://mycroft.buriedsignals.com/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mycroft — your morning brief, before coffee.">
-<meta name="twitter:description" content="Three jobs done right, on your laptop, with your keys.">
+<meta name="twitter:description" content="An example reporting day, wired into Obsidian, on your laptop with your keys.">
 <meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png">
 
 <!-- Set the .js flag synchronously BEFORE the stylesheet so reveal/header
@@ -175,7 +175,6 @@ body {
 body::before {
   content: none;
 }
-
 /* ── v3 · 3D stack ─────────────────────────────────────────────
    Three layers stacked above body, all position:fixed, viewport-sized.
      #layer-back  — WebGLRenderer for bg shader + back 3D props (z 1)
@@ -223,7 +222,7 @@ body::before {
 
 /* footer area has no section bg plane in WebGL — it relies on body's
    vellum bg showing through the transparent canvas pixels. */
-#page-3d .site-foot {
+#page-3d .colophon {
   background: transparent;
 }
 
@@ -734,7 +733,7 @@ body,
   padding-top: var(--head-h);
 }
 main,
-.site-foot {
+.colophon {
   position: relative;
   z-index: 1;
 }
@@ -1713,106 +1712,144 @@ main,
   margin: 0;
 }
 
-/* ── 19 · Site footer (colophon) ─────────────────────────────── */
-.site-foot {
-  border-top: var(--hairline);
-  background: transparent;
-  margin-top: var(--sp-10);
-}
-.site-foot a:hover {
-  color: var(--oxide);
-}
-
-.site-foot__cols {
+/* ── 19 · Colophon (footer) ────────────────────────────────────── */
+.colophon {
+  margin-top: clamp(24px, 5vh, 56px);
+  padding: 0 var(--gut) clamp(28px, 4vh, 44px);
   max-width: var(--shell-max);
-  margin: 0 auto;
-  padding: clamp(40px, 6vh, 72px) var(--gut) clamp(28px, 4vh, 48px);
+  margin-inline: auto;
+  text-align: left;
+  color: var(--ink);
+}
+.colophon a:hover { color: var(--oxide); }
+
+.colophon__inner {
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+  padding: clamp(28px, 4vh, 44px) 0;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-7);
-}
-@media (min-width: 600px) {
-  .site-foot__cols {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-8);
-  }
-}
-@media (min-width: 980px) {
-  .site-foot__cols {
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
-    gap: clamp(24px, 4vw, 64px);
-  }
+  grid-template-columns: minmax(280px, 1.15fr) repeat(2, minmax(160px, 0.55fr));
+  gap: clamp(28px, 5vw, 72px);
+  align-items: start;
 }
 
-.site-foot__brand {
-  grid-column: 1 / -1;
+.colophon__brand {
+  max-width: 360px;
 }
-@media (min-width: 980px) {
-  .site-foot__brand {
-    grid-column: auto;
-  }
+.colophon__crest {
+  color: var(--ink);
+  display: inline-block;
+  width: 28px;
+  margin: 0 0 var(--sp-4);
 }
 
-.brand-mark {
+.colophon__mark {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 800;
-  font-size: clamp(40px, 4vw, 64px);
+  font-size: clamp(32px, 3.2vw, 52px);
   line-height: 0.9;
   letter-spacing: -0.025em;
   color: var(--ink);
   margin: 0 0 var(--sp-4);
 }
-.brand-mark .brand__dot {
+.colophon__mark .brand__dot {
   color: var(--oxide);
   font-weight: 200;
 }
 
-.site-foot__line {
+.colophon__motto {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 200;
-  font-size: clamp(15px, 1.05vw, 17px);
+  font-size: clamp(17px, 1.25vw, 22px);
+  line-height: 1.25;
   color: var(--ink-soft);
-  max-width: 32ch;
-  line-height: 1.4;
+  margin: 0 0 var(--sp-4);
+  letter-spacing: -0.005em;
+}
+.colophon__imprint {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(14px, 0.95vw, 16px);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 34ch;
   margin: 0;
 }
+.colophon__imprint em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ink);
+}
 
-.site-foot__heading {
+.colophon__cols {
+  display: contents;
+}
+.colophon__col h3 {
   font-family: var(--mono);
   font-size: var(--cap-xs);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-dim);
   font-weight: 400;
-  margin: 0 0 var(--sp-4);
-  padding-bottom: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  padding-bottom: var(--sp-2);
   border-bottom: var(--hairline-dashed);
 }
-.site-foot__col ul {
+.colophon__col ul {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 14px;
+  gap: 9px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(17px, 1.1vw, 21px);
+  line-height: 1.12;
   color: var(--ink);
 }
-.site-foot__col a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+.colophon__col a {
   transition: color var(--dur-1) var(--ease);
 }
 
-.site-foot__strip {
-  border-top: var(--hairline);
-  padding: var(--sp-4) var(--gut);
+.colophon__sig {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: var(--sp-4) 0 0;
   font-family: var(--mono);
   font-size: var(--cap-xs);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-dim);
-  text-align: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.colophon__sig-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--ink-dim);
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.colophon__sig-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .colophon__inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .colophon__sig {
+    justify-content: flex-start;
+    gap: var(--sp-3);
+  }
 }
 
 /* ── 20 · Reveal (intersection observer) ─────────────────────── */
@@ -1911,7 +1948,7 @@ html.js .is-in .tw__in {
 /* ════════════════════════════════════════════════════════════════════
    Setup — full editorial rhythm.
    Reuses .shell, .sec, .sec-head, .display, .lead, .eyebrow, .num,
-   .meta, .btn, .site-foot from styles.css. Setup-only patterns below.
+   .meta, .btn, .colophon from styles.css. Setup-only patterns below.
    ════════════════════════════════════════════════════════════════════ */
 
 /* tighter section rhythm than the landing — setup is a form, not a story.
@@ -2085,7 +2122,7 @@ main.shell > form .sec-head .lead {
   grid-template-columns: 1fr 1fr;
   gap: 0;
   border: var(--hairline);
-  background: var(--vellum-bright);
+  background: transparent;
 }
 @media (max-width: 900px) { .sovereignty-split { grid-template-columns: 1fr; } }
 .sovereignty-split label {
@@ -2094,16 +2131,18 @@ main.shell > form .sec-head .lead {
   cursor: pointer;
   padding: clamp(40px, 6vw, 72px) clamp(28px, 4vw, 56px);
   border-right: var(--hairline);
-  transition: background var(--dur-2) var(--ease);
+  transition: background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease);
 }
 .sovereignty-split label:last-of-type { border-right: 0; border-top: 0; }
 @media (max-width: 900px) {
   .sovereignty-split label { border-right: 0; border-bottom: var(--hairline); }
   .sovereignty-split label:last-of-type { border-bottom: 0; }
 }
-.sovereignty-split label:hover { background: #fff; }
+.sovereignty-split label:hover {
+  background: color-mix(in oklab, var(--vellum-bright) 54%, transparent);
+}
 .sovereignty-split label:has(input:checked) {
-  background: #fff;
+  background: var(--vellum-bright);
   box-shadow: inset 0 6px 0 0 var(--oxide);
 }
 .sovereignty-split input[type=radio] {
@@ -2376,7 +2415,7 @@ input.fld:focus { border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--o
    ────────────────────────────────────────────────────────── */
 .plugin-hero {
   border: var(--hairline);
-  background: var(--vellum-bright);
+  background: transparent;
   padding: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2384,7 +2423,7 @@ input.fld:focus { border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--o
 }
 @media (max-width: 1100px) { .plugin-hero { grid-template-columns: 1fr; } }
 .plugin-hero__intro { padding: clamp(28px, 3.5vw, 48px); border-right: var(--hairline); }
-.plugin-hero__config { padding: clamp(28px, 3.5vw, 48px); background: #fff; }
+.plugin-hero__config { padding: clamp(28px, 3.5vw, 48px); background: var(--vellum-bright); }
 @media (max-width: 1100px) { .plugin-hero__intro { border-right: 0; border-bottom: var(--hairline); } }
 .plugin-hero__title {
   font-family: var(--serif); font-style: italic; font-weight: 800;
@@ -2473,7 +2512,7 @@ input.fld:focus { border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--o
 }
 /* the footer's default margin-top creates a vellum gap right after the
    dark section — collapse it so the dark closes cleanly into the foot. */
-body:has(.sec--closing-dark) .site-foot { margin-top: 0; }
+body:has(.sec--closing-dark) .colophon { margin-top: 0; }
 .sec--closing-dark .display { color: var(--vellum-bright); }
 .sec--closing-dark .display em { color: color-mix(in oklab, var(--oxide) 75%, var(--vellum)); }
 .sec--closing-dark .lead { color: color-mix(in oklab, var(--vellum) 80%, transparent); }
@@ -2721,13 +2760,6 @@ body.mode-local .cloud-only { display: none; }
     <a class="brand" href="index.html" aria-label="Mycroft, home">
       Mycroft<em class="brand__dot">.</em>
     </a>
-    <nav class="site-nav" aria-label="Primary">
-      <a class="site-nav__link" href="#sovereignty">Sovereignty</a>
-      <a class="site-nav__link" href="#providers">Providers</a>
-      <a class="site-nav__link" href="#prereqs">Required</a>
-      <a class="site-nav__link" href="#plugins">Plugins</a>
-      <a class="site-nav__link" href="#install">The script</a>
-    </nav>
     <div class="site-head__actions">
       <a class="btn btn--ghost btn--mono" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">
         <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
@@ -2748,13 +2780,9 @@ body.mode-local .cloud-only { display: none; }
   <section class="sec sec--hero sec--setup-hero" id="hero">
     <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-        Mycroft<br><em>setup.</em>
+        Bring in the<br><em>nosy Goose.</em>
       </h1>
       <p class="hero__line" data-reveal style="--delay: 220ms">Open source · Local-first · No lock-in · No surveillance</p>
-      <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
-        <a class="btn btn--solid" href="#sovereignty">Begin setup <span class="btn__arr">↓</span></a>
-        <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
-      </div>
     </div>
   </section>
 
@@ -2766,7 +2794,7 @@ body.mode-local .cloud-only { display: none; }
         <h2 class="display display--section">Where the work <em>happens.</em></h2>
       </div>
       <p class="lead">
-        <strong>Pick one below.</strong> Cloud is fast and cheap — ZDR open-weight providers in the US/EU. Local is yours, fully — a fine-tuned Qwen on your machine. Whichever you choose is the default; the other side stays available as fallback.
+        <strong>Pick one below.</strong> Cloud is fast and affordable — ZDR open-weight providers in the US/EU. Local is yours, fully — a fine-tuned Qwen on your machine. Whichever you choose is the default; the other side stays available as fallback.
       </p>
     </div>
 
@@ -2774,7 +2802,7 @@ body.mode-local .cloud-only { display: none; }
       <label>
         <input type="radio" name="sovereignty" value="cloud" checked>
         <p class="sov-num"><em>01</em> Cloud-first</p>
-        <span class="sov-title">Fast.<br><em>Cheap.</em></span>
+        <span class="sov-title">Fast.<br><em>Affordable.</em></span>
         <p class="sov-desc">Recipes route to your cloud provider by default. Local model is the sovereign-mode fallback for sensitive work.</p>
         <p class="sov-meta"><strong>~$6 / mo</strong> · ZDR · open-weight</p>
       </label>
@@ -3056,7 +3084,6 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       <div class="plugin-hero__intro">
         <div class="plugin-hero__head">
           <input type="checkbox" name="spotlight_enabled" id="spotlight_enabled" checked>
-          <span class="badge launch">launching with Mycroft</span>
         </div>
         <h3 class="plugin-hero__title"><em>Spotlight.</em></h3>
         <p class="plugin-hero__lede">
@@ -3074,6 +3101,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <p class="hint" style="margin-top:8px;">Keep this separate from the Mycroft vault below. Spotlight can still send scout requests to coJournalist.</p>
 
         <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span class="opt">— optional</span></label>
+        <p class="hint" style="margin-bottom:8px;">Live database of 10,000+ OSINT tools with AI-powered lookup — essential for country-specific registries and niche techniques. <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Get API key →</a></p>
         <input class="fld" type="password" id="osint_navigator_key" name="osint_navigator_key" placeholder="ont_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
 
         <p class="note-mono" style="margin-top:var(--sp-6);">Data feeds — all optional</p>
@@ -3086,19 +3114,6 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
             <input type="checkbox" name="spot_browseruse">
             Enable
           </label>
-        </div>
-
-        <div class="feed-row">
-          <span class="feed-row__name">ACLED</span>
-          <span class="feed-row__desc">Conflict event data · battles, civilian violence, protests</span>
-          <span></span>
-          <a class="mini-btn" href="https://developer.acleddata.com/" target="_blank" rel="noreferrer">Register →</a>
-          <div class="feed-row__keys">
-            <label class="field-label" for="acled_key">ACLED_API_KEY</label>
-            <input class="fld" type="password" id="acled_key" name="acled_key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-            <label class="field-label" for="acled_email">ACLED_EMAIL</label>
-            <input class="fld" type="text" id="acled_email" name="acled_email" placeholder="you@newsroom.org" autocomplete="off" spellcheck="false">
-          </div>
         </div>
 
         <div class="feed-row">
@@ -3119,11 +3134,10 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       <div class="plugin-hero__intro">
         <div class="plugin-hero__head">
           <input type="checkbox" name="cojournalist_enabled" id="cojournalist_enabled" checked>
-          <span class="badge launch">launching with Mycroft</span>
         </div>
         <h3 class="plugin-hero__title">co<em>Journalist.</em></h3>
         <p class="plugin-hero__lede">
-          Hosted beat-monitoring engine — scheduled scouts watch your sources, detect change, score relevance, and return information units. Spotlight investigations can request new scouts here.
+          Schedule scouts to watch your beat — pages, social profiles, council agendas — and get alerted when something changes. Spotlight can also recommend scouts mid-investigation.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
           <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>
@@ -3131,7 +3145,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       </div>
       <div class="plugin-hero__config">
         <p class="note-mono">Hosted API</p>
-        <p class="plugin-hero__lede">No desktop service setup here. Mycroft stores the hosted API key and exposes it to Spotlight for investigation-triggered scout requests.</p>
+        <p class="plugin-hero__lede">Nothing to install. Add your API key and you can schedule scouts from Mycroft, or let Spotlight suggest them while you investigate.</p>
         <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
         <input class="fld" type="password" id="cojournalist_api_key" name="cojournalist_api_key" placeholder="coj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
@@ -3144,7 +3158,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <p class="item__num"><em>—</em> Open data</p>
         <div class="item__head">
           <span class="item__title">Data<em>Hound.</em></span>
-          <span class="badge soon">May 2026</span>
+          <span class="badge soon">Aug-Sep 2026</span>
         </div>
         <p class="item__lede">
           Government + public-data API discovery and monitoring — turns obscure open-data endpoints into queryable beats. Web-only.
@@ -3155,7 +3169,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <p class="item__num"><em>—</em> Visuals</p>
         <div class="item__head">
           <span class="item__title">Atelier<em>.</em></span>
-          <span class="badge soon">May 2026</span>
+          <span class="badge soon">Aug-Sep 2026</span>
         </div>
         <p class="item__lede">
           Full visual production — Datawrapper, D3, Maptiler, video, infographics, network graphs, social cards.
@@ -3229,45 +3243,60 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
 </form>
 </main>
 
-<!-- ────────── FOOTER ────────── -->
-<footer class="site-foot" role="contentinfo">
-  <div class="site-foot__cols">
-    <div class="site-foot__brand" data-reveal>
-      <p class="brand-mark">Mycroft<em class="brand__dot">.</em></p>
-      <p class="site-foot__line">An opinionated extension pack for Goose. Built by journalists, for journalists.</p>
-    </div>
-    <nav class="site-foot__col" aria-label="Sections" data-reveal style="--delay: 100ms">
-      <h4 class="site-foot__heading">Sections</h4>
-      <ul>
-        <li><a href="index.html#what">What it does</a></li>
-        <li><a href="index.html#runtime">Runtime</a></li>
-        <li><a href="index.html#privacy">Privacy</a></li>
-        <li><a href="setup.html">Install</a></li>
-        <li><a href="index.html#team">Team</a></li>
-      </ul>
+<!-- ────────── FOOTER · colophon ────────── -->
+<footer class="colophon" role="contentinfo">
+  <div class="colophon__inner">
+    <section class="colophon__brand" data-reveal>
+      <svg class="colophon__crest" viewBox="-50 -50 100 100" width="48" height="48" role="img" aria-hidden="true">
+        <g stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none">
+          <line x1="20.5" y1="-20.5" x2="12.7" y2="-12.7"/>
+          <line x1="32" y1="0" x2="18" y2="0"/>
+          <line x1="20.5" y1="20.5" x2="12.7" y2="12.7"/>
+          <line x1="0" y1="32" x2="0" y2="18"/>
+          <line x1="-20.5" y1="20.5" x2="-12.7" y2="12.7"/>
+          <line x1="-32" y1="0" x2="-18" y2="0"/>
+          <line x1="-20.5" y1="-20.5" x2="-12.7" y2="-12.7"/>
+        </g>
+        <line x1="0" y1="-34" x2="0" y2="-16" stroke="var(--oxide)" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <h2 class="colophon__mark">Mycroft<em class="brand__dot">.</em></h2>
+      <p class="colophon__motto">Every journalist, a newsroom.</p>
+      <p class="colophon__imprint">
+        Built by <a href="https://buriedsignals.com/" target="_blank" rel="noreferrer"><em>Buried Signals</em></a>.
+        Open-source tools for investigative reporting.
+      </p>
+    </section>
+
+    <nav class="colophon__cols" aria-label="Footer" data-reveal style="--delay: 140ms">
+      <section class="colophon__col">
+        <h3>Resources</h3>
+        <ul role="list">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">GitHub</a></li>
+          <li><a href="https://huggingface.co/tomvaillant" target="_blank" rel="noreferrer">Hugging Face</a></li>
+          <li><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs</a></li>
+        </ul>
+      </section>
+
+      <section class="colophon__col">
+        <h3>Other tools</h3>
+        <ul role="list">
+          <li><a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">coJournalist</a></li>
+          <li><a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a></li>
+          <li><a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a></li>
+        </ul>
+      </section>
     </nav>
-    <div class="site-foot__col" data-reveal style="--delay: 160ms">
-      <h4 class="site-foot__heading">Setup</h4>
-      <ul>
-        <li><a href="#sovereignty">Sovereignty</a></li>
-        <li><a href="#providers">Providers</a></li>
-        <li><a href="#prereqs">Required</a></li>
-        <li><a href="#plugins">Plugins</a></li>
-        <li><a href="#install">The script</a></li>
-      </ul>
-    </div>
-    <div class="site-foot__col" data-reveal style="--delay: 220ms">
-      <h4 class="site-foot__heading">Source</h4>
-      <ul>
-        <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">buriedsignals/mycroft</a></li>
-        <li><a href="https://github.com/buriedsignals/mycroft/blob/main/SECURITY.md" target="_blank" rel="noreferrer">Security</a></li>
-        <li><a href="https://github.com/buriedsignals/mycroft/blob/main/LICENSE" target="_blank" rel="noreferrer">License</a></li>
-      </ul>
-    </div>
   </div>
-  <div class="site-foot__strip">
-    Open source · Self-hostable · No lock-in · No surveillance
-  </div>
+
+  <p class="colophon__sig" data-reveal style="--delay: 220ms">
+    <span class="colophon__sig-group">
+      <span>Colophon</span>
+      <span class="colophon__sig-dot" aria-hidden="true"></span>
+      <span>№ 0001</span>
+    </span>
+    <span>© 2026 Buried Signals</span>
+  </p>
 </footer>
 
 <script>
@@ -3735,8 +3764,6 @@ function readForm() {
     spotlightVaultPath: val('spotlight_vault_path') || '~/Documents/Spotlight',
     osintNavigatorKey: val('osint_navigator_key'),
     spotBrowseruse: chk('spot_browseruse'),
-    acledKey: val('acled_key'),
-    acledEmail: val('acled_email'),
     junkipediaKey: val('junkipedia_key'),
   };
 }
@@ -3781,8 +3808,6 @@ function buildScript(d) {
     if (d.cojournalist) envLines.push('SPOTLIGHT_MONITORING_BACKEND=cojournalist');
     if (d.cojournalist) envLines.push('SPOTLIGHT_SCOUT_REQUESTS=cojournalist');
     if (d.osintNavigatorKey) envLines.push(envLine('OSINT_NAVIGATOR_API_KEY', d.osintNavigatorKey));
-    if (d.acledKey) envLines.push(envLine('ACLED_API_KEY', d.acledKey));
-    if (d.acledEmail) envLines.push(envLine('ACLED_EMAIL', d.acledEmail));
     if (d.junkipediaKey) envLines.push(envLine('JUNKIPEDIA_API_KEY', d.junkipediaKey));
     if (d.spotBrowseruse) envLines.push('SPOTLIGHT_BROWSERUSE=1');
   }
@@ -3799,7 +3824,7 @@ function buildScript(d) {
     pluginBlock.push('mkdir -p "$PLUGINS_DIR"');
     pluginBlock.push('if [ -d "$SPOTLIGHT_DIR/.git" ]; then update_repo "$SPOTLIGHT_DIR" "Spotlight"; else git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR" && ok "Spotlight cloned"; fi');
     pluginBlock.push('mkdir -p "$SPOTLIGHT_VAULT_PATH" && ok "Spotlight vault $SPOTLIGHT_VAULT_PATH"');
-    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "acled": ' + (!!(d.acledKey || d.acledEmail) ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
+    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
     pluginBlock.push('[ -f "$SPOTLIGHT_DIR/integrations/preflight.py" ] && (set -a; . "$MYCROFT_ENV"; set +a; python3 "$SPOTLIGHT_DIR/integrations/preflight.py" --text || true)');
   }
   if (d.cojournalist) pluginBlock.push('ok "coJournalist hosted API enabled"');
@@ -4221,7 +4246,6 @@ function buildAgentManifest(d) {
         ...(d.apifyEnabled ? ['APIFY_API_TOKEN'] : []),
         ...(d.agentmailEnabled ? ['AGENTMAIL_API_KEY'] : []),
         ...(d.spotBrowseruse ? ['SPOTLIGHT_BROWSERUSE'] : []),
-        ...(d.acledKey || d.acledEmail ? ['ACLED_API_KEY', 'ACLED_EMAIL'] : []),
         ...(d.junkipediaKey ? ['JUNKIPEDIA_API_KEY'] : []),
       ],
     },

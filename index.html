@@ -33,7 +33,7 @@ addEventListener("load", () => window.scrollTo(0, 0));
 <style>
 /* ════════════════════════════════════════════════════════════════════
    Mycroft · proto-19-v2 stylesheet
-   Faithful to DESIGN-SYSTEM.md — single source of truth.
+   Faithful to DESIGN.md — single source of truth.
    Mobile-first. Breakpoints: 600 / 980 / 1100.
    ════════════════════════════════════════════════════════════════════ */
 
@@ -227,7 +227,7 @@ body > .site-head .site-head__bar {
 
 /* footer area has no section bg plane in WebGL — it relies on body's
    vellum bg showing through the transparent canvas pixels. */
-#page-3d .site-foot {
+#page-3d .colophon {
   background: transparent;
 }
 
@@ -506,6 +506,24 @@ body,
   --btn-bd: var(--oxide-active);
   --btn-fg: var(--vellum);
 }
+.btn--setup {
+  position: relative;
+  isolation: isolate;
+  font: 500 var(--cap-sm)/1 var(--mono);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding-inline: 22px;
+}
+.btn--setup::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  z-index: -1;
+  border: 1px solid color-mix(in oklab, var(--vellum) 34%, transparent);
+  border-radius: inherit;
+  opacity: 0.5;
+  pointer-events: none;
+}
 
 .btn--ghost {
   --btn-bg: transparent;
@@ -729,7 +747,7 @@ body,
   padding-top: var(--head-h);
 }
 main,
-.site-foot {
+.colophon {
   position: relative;
   z-index: 1;
 }
@@ -778,6 +796,16 @@ main,
   border-top: var(--hairline);
   margin: 0 auto var(--sp-6);
 }
+.hero__tag a {
+  color: var(--ink-soft);
+  border-bottom: 1px solid var(--ink-dim);
+  padding-bottom: 2px;
+  transition: color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.hero__tag a:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
 .hero__line {
   font-family: var(--mono);
   font-size: var(--cap-sm);
@@ -793,27 +821,33 @@ main,
 
 /* ── Surface toggle (CLI ↔ Desktop) ──────────────────────────── */
 .surface-toggle {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
+  display: flex;
+  width: max-content;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
   border: 1px solid var(--rule);
   border-radius: 999px;
   background: color-mix(in oklab, var(--vellum) 85%, transparent);
-  margin: 14px 0 18px;
+  margin: 18px auto 28px;
 }
 .surface-toggle__btn {
   appearance: none;
   border: 0;
   background: transparent;
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: var(--ink-mute);
-  padding: 8px 18px;
+  min-width: 118px;
+  min-height: 42px;
+  font: 500 var(--cap-sm)/1 var(--mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0 24px;
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition:
+    background var(--dur-1) var(--ease),
+    color var(--dur-1) var(--ease);
 }
 .surface-toggle__btn.is-active {
   background: var(--ink);
@@ -834,14 +868,15 @@ main,
 
 /* ── Goose desktop app mockup — matches .terminal frame ──────── */
 .goose-app {
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: var(--rad-sm);
+  border: 1px solid #d9d2c4;
+  border-radius: 10px;
   overflow: hidden;
-  background: #1a1a1a;
-  color: #ddd;
+  background: #f7f2e8;
+  color: #161413;
   font-family: var(--sans);
   max-width: 920px;
   margin: 0 auto;
+  box-shadow: 0 28px 70px -48px rgba(0, 0, 0, 0.55);
   opacity: 0;
   transform: translateY(20px);
   transition:
@@ -853,7 +888,12 @@ main,
   transform: translateY(0);
 }
 /* surface containers share same width/centering as the terminal */
-.surface-stage { display: block; }
+.surface-stage {
+  display: block;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+}
 .surface > .terminal,
 .surface > .goose-app { width: 100%; }
 /* fade-in animation matched to .terminal cascade */
@@ -883,13 +923,15 @@ main,
 .goose-app.is-on .goose-app__list li:nth-child(3) { transition-delay: 0.22s; opacity: 1; transform: none; }
 .goose-app.is-on .goose-app__list li:nth-child(4) { transition-delay: 0.28s; opacity: 1; transform: none; }
 .goose-app.is-on .goose-app__list li:nth-child(5) { transition-delay: 0.34s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(6) { transition-delay: 0.40s; opacity: 1; transform: none; }
+.goose-app.is-on .goose-app__list li:nth-child(7) { transition-delay: 0.46s; opacity: 1; transform: none; }
 .goose-app__chrome {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  background: #232323;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 11px 14px;
+  background: #eee7da;
+  border-bottom: 1px solid #ded6c8;
   font-size: 12px;
 }
 .goose-app__dot {
@@ -900,84 +942,216 @@ main,
 .goose-app__dot--g { background: #28c840; }
 .goose-app__title {
   margin-left: 12px;
-  color: rgba(255,255,255,0.55);
+  color: #6f675a;
   font-family: var(--sans);
   font-size: 12px;
   letter-spacing: 0.04em;
 }
 .goose-app__body {
   display: grid;
-  grid-template-columns: 220px 1fr;
-  min-height: 320px;
+  grid-template-columns: 210px minmax(0, 1fr);
+  min-height: 420px;
 }
 @media (max-width: 700px) {
-  .goose-app__body { grid-template-columns: 1fr; }
+  .goose-app {
+    border-radius: 8px;
+  }
+  .goose-app__body {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
   .goose-app__side { display: none; }
+  .goose-app__chat-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 16px;
+  }
+  .goose-app__thread {
+    padding: 16px;
+  }
+  .goose-app__msg {
+    max-width: 100%;
+  }
+  .goose-app__composer {
+    margin: 0 14px 14px;
+  }
+  .goose-app__foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 .goose-app__side {
-  background: #1f1f1f;
-  border-right: 1px solid rgba(255,255,255,0.06);
-  padding: 22px 18px;
+  background: #eee7da;
+  border-right: 1px solid #ded6c8;
+  padding: 18px 14px;
 }
 .goose-app__side-h {
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.45);
+  color: #8a8172;
   margin-bottom: 14px;
 }
 .goose-app__list {
   list-style: none; padding: 0; margin: 0;
-  display: flex; flex-direction: column; gap: 10px;
-  font-size: 14px;
-  color: rgba(255,255,255,0.85);
+  display: flex; flex-direction: column; gap: 6px;
+  font-size: 13px;
+  color: #4a4439;
+}
+.goose-app__list li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 34px;
+  padding: 0 10px;
+  border-radius: 7px;
+}
+.goose-app__list li.is-active {
+  background: #faf5e8;
+  color: #131013;
+  font-weight: 600;
 }
 .goose-app__bullet {
-  display: inline-block;
-  margin-right: 10px;
-  color: var(--press-green, #4A7363);
-  font-size: 9px;
-  vertical-align: middle;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #d2c8b7;
+  border-radius: 6px;
+  color: var(--oxide);
+  font-size: 10px;
+  line-height: 1;
+  flex: 0 0 auto;
 }
-.goose-app__list li:nth-child(n+4) .goose-app__bullet { color: rgba(255,255,255,0.3); }
+.goose-app__list li.is-active .goose-app__bullet {
+  background: var(--oxide);
+  border-color: var(--oxide);
+  color: var(--vellum);
+}
 .goose-app__chat {
-  padding: 26px 30px;
-  display: flex; flex-direction: column; gap: 14px;
-  font-size: 15px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  background: #fbf7ee;
+  font-size: 14px;
   line-height: 1.55;
+}
+.goose-app__chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #e4dccf;
+}
+.goose-app__session {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.goose-app__session strong {
+  font-size: 15px;
+  color: #161413;
+}
+.goose-app__session span,
+.goose-app__status {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a8172;
+}
+.goose-app__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.goose-app__status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--oxide);
+}
+.goose-app__thread {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
 }
 .goose-app__msg {
   padding: 14px 18px;
-  border-radius: 12px;
-  max-width: 80%;
+  border-radius: 8px;
+  max-width: min(76%, 520px);
 }
 .goose-app__msg--user {
-  background: rgba(255,255,255,0.08);
+  background: #ebe4d7;
   align-self: flex-end;
-  border-bottom-right-radius: 2px;
+  border-bottom-right-radius: 3px;
 }
 .goose-app__msg--bot {
-  background: rgba(74,115,99,0.18);
-  border: 1px solid rgba(74,115,99,0.4);
+  background: #fffdf7;
+  border: 1px solid #e4dccf;
   align-self: flex-start;
-  border-bottom-left-radius: 2px;
+  border-bottom-left-radius: 3px;
 }
 .goose-app__cite {
   font-size: 12px;
-  color: rgba(255,255,255,0.45);
+  color: #8a8172;
   letter-spacing: 0.04em;
+}
+.goose-app__tool {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e4dccf;
+  border-radius: 7px;
+  background: #f5efe3;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6f675a;
+}
+.goose-app__composer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 20px 20px;
+  padding: 10px 12px 10px 16px;
+  border: 1px solid #d9d2c4;
+  border-radius: 10px;
+  background: #fffdf7;
+  color: #6f675a;
+}
+.goose-app__composer span {
+  flex: 1 1 auto;
+}
+.goose-app__send {
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--oxide);
+  color: var(--vellum);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex: 0 0 auto;
 }
 .goose-app__foot {
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; flex-wrap: wrap;
   padding: 16px 22px;
-  background: #1f1f1f;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  background: #eee7da;
+  border-top: 1px solid #ded6c8;
 }
 .goose-app__meta {
   font-size: 12px;
   letter-spacing: 0.06em;
-  color: rgba(255,255,255,0.5);
+  color: #8a8172;
 }
 
 /* ── Integration cards (cojournalist · spotlight · coming) ────── */
@@ -991,11 +1165,21 @@ main,
   .cards-3 { grid-template-columns: repeat(3, 1fr); }
 }
 .card-int {
+  display: block;
   background: color-mix(in oklab, var(--vellum) 96%, var(--ink) 4%);
   border: 1px solid var(--rule);
   padding: 28px 26px 30px;
   border-radius: 6px;
   position: relative;
+  transition:
+    background var(--dur-1) var(--ease),
+    border-color var(--dur-1) var(--ease),
+    transform var(--dur-2) var(--ease);
+}
+a.card-int:hover {
+  background: var(--vellum-bright);
+  border-color: var(--ink-dim);
+  transform: translateY(-3px);
 }
 .card-int__kind {
   font-family: var(--sans);
@@ -1032,6 +1216,36 @@ main,
 }
 .card-int--coming .card-int__kind {
   color: var(--press-green, #4A7363);
+}
+.sec--integrations .sec-head {
+  align-items: start;
+}
+.sec--integrations {
+  position: relative;
+  isolation: isolate;
+}
+.sec--integrations::before {
+  content: "";
+  position: absolute;
+  inset: 0 calc(var(--gut) * -1);
+  z-index: 0;
+  background: color-mix(in oklab, var(--vellum) 98%, var(--vellum-bright) 2%);
+}
+.sec--integrations > * {
+  position: relative;
+  z-index: 1;
+}
+.sec--integrations .display--section {
+  font-size: clamp(48px, 7vw, 116px);
+  max-width: 11ch;
+}
+.sec--integrations .card-int--coming {
+  background: color-mix(in oklab, var(--vellum) 96%, var(--ink) 4%);
+}
+@media (min-width: 1100px) {
+  .sec--integrations .sec-head {
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.82fr);
+  }
 }
 
 .sec-head {
@@ -1390,6 +1604,13 @@ main,
   margin: 0;
   white-space: nowrap;
 }
+.term__name a {
+  color: inherit;
+  text-decoration: none;
+}
+.term__name a:hover {
+  color: var(--oxide-active);
+}
 .term__dot {
   color: var(--oxide);
   font-weight: 200;
@@ -1423,7 +1644,6 @@ main,
   color: var(--ink-dim);
   margin: 4px 0 0;
 }
-
 /* ── 12 · Equation (Studio · 2 cols, subgrid) ────────────────── */
 .equation--studio {
   display: grid;
@@ -1600,6 +1820,21 @@ main,
 .signup__submit {
   flex: 0 0 auto;
 }
+.signup__error,
+.signup__success {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0 0 var(--sp-3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.signup__error { color: #b3382c; }
+.signup__success { color: var(--oxide); }
+.signup__error.hidden,
+.signup__success.hidden { display: none; }
 
 /* ── 15 · Links row ──────────────────────────────────────────── */
 .links-row {
@@ -1983,108 +2218,144 @@ main,
   margin: 0;
 }
 
-/* ── 19 · Site footer (colophon) ─────────────────────────────── */
-.site-foot {
-  border-top: var(--hairline);
-  background: transparent;
-  margin-top: var(--sp-10);
-}
-.site-foot a:hover {
-  color: var(--oxide);
-}
-
-.site-foot__cols {
+/* ── 19 · Colophon (footer) ────────────────────────────────────── */
+.colophon {
+  margin-top: clamp(24px, 5vh, 56px);
+  padding: 0 var(--gut) clamp(28px, 4vh, 44px);
   max-width: var(--shell-max);
-  margin: 0 auto;
-  padding: clamp(40px, 6vh, 72px) var(--gut) clamp(28px, 4vh, 48px);
+  margin-inline: auto;
+  text-align: left;
+  color: var(--ink);
+}
+.colophon a:hover { color: var(--oxide); }
+
+.colophon__inner {
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+  padding: clamp(28px, 4vh, 44px) 0;
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-7);
-}
-@media (min-width: 600px) {
-  .site-foot__cols {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--sp-8);
-  }
-}
-@media (min-width: 980px) {
-  /* 3 balanced columns: brand wider, two equal nav cols */
-  .site-foot__cols {
-    grid-template-columns: 1.6fr 1fr 1fr;
-    gap: clamp(32px, 5vw, 72px);
-    align-items: start;
-  }
+  grid-template-columns: minmax(280px, 1.15fr) repeat(2, minmax(160px, 0.55fr));
+  gap: clamp(28px, 5vw, 72px);
+  align-items: start;
 }
 
-.site-foot__brand {
-  grid-column: 1 / -1;
+.colophon__brand {
+  max-width: 360px;
 }
-@media (min-width: 980px) {
-  .site-foot__brand {
-    grid-column: auto;
-  }
+.colophon__crest {
+  color: var(--ink);
+  display: inline-block;
+  width: 28px;
+  margin: 0 0 var(--sp-4);
 }
 
-.brand-mark {
+.colophon__mark {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 800;
-  font-size: clamp(40px, 4vw, 64px);
+  font-size: clamp(32px, 3.2vw, 52px);
   line-height: 0.9;
   letter-spacing: -0.025em;
   color: var(--ink);
   margin: 0 0 var(--sp-4);
 }
-.brand-mark .brand__dot {
+.colophon__mark .brand__dot {
   color: var(--oxide);
   font-weight: 200;
 }
 
-.site-foot__line {
+.colophon__motto {
   font-family: var(--serif);
   font-style: italic;
   font-weight: 200;
-  font-size: clamp(15px, 1.05vw, 17px);
+  font-size: clamp(17px, 1.25vw, 22px);
+  line-height: 1.25;
   color: var(--ink-soft);
-  max-width: 32ch;
-  line-height: 1.4;
+  margin: 0 0 var(--sp-4);
+  letter-spacing: -0.005em;
+}
+.colophon__imprint {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(14px, 0.95vw, 16px);
+  line-height: 1.5;
+  color: var(--ink-soft);
+  max-width: 34ch;
   margin: 0;
 }
+.colophon__imprint em {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ink);
+}
 
-.site-foot__heading {
+.colophon__cols {
+  display: contents;
+}
+.colophon__col h3 {
   font-family: var(--mono);
   font-size: var(--cap-xs);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-dim);
   font-weight: 400;
-  margin: 0 0 var(--sp-4);
-  padding-bottom: var(--sp-3);
+  margin: 0 0 var(--sp-3);
+  padding-bottom: var(--sp-2);
   border-bottom: var(--hairline-dashed);
 }
-.site-foot__col ul {
+.colophon__col ul {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  font-size: 14px;
+  gap: 9px;
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(17px, 1.1vw, 21px);
+  line-height: 1.12;
   color: var(--ink);
 }
-.site-foot__col a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
+.colophon__col a {
   transition: color var(--dur-1) var(--ease);
 }
 
-.site-foot__strip {
-  border-top: var(--hairline);
-  padding: var(--sp-4) var(--gut);
+.colophon__sig {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0;
+  padding: var(--sp-4) 0 0;
   font-family: var(--mono);
   font-size: var(--cap-xs);
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-dim);
-  text-align: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.colophon__sig-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--ink-dim);
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+.colophon__sig-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 760px) {
+  .colophon__inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .colophon__sig {
+    justify-content: flex-start;
+    gap: var(--sp-3);
+  }
 }
 
 /* ── 20 · Reveal (intersection observer) ─────────────────────── */
@@ -2205,25 +2476,14 @@ html.js .is-in .tw__in {
       Mycroft<em class="brand__dot">.</em>
     </a>
 
-    <nav class="site-nav" aria-label="Primary">
-      <a class="site-nav__link" href="#what">What it does</a>
-      <a class="site-nav__link" href="#runtime">Runtime</a>
-      <a class="site-nav__link" href="#privacy">Privacy</a>
-      <a class="site-nav__link" href="#install">Install</a>
-      <a class="site-nav__link" href="#team">Team</a>
-    </nav>
-
-    <div class="site-head__actions">
+<div class="site-head__actions">
       <a class="btn btn--ghost btn--mono" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">
         <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
         Source
       </a>
-      <a class="btn btn--solid btn--mono" href="#install">Set up <span class="btn__arr">→</span></a>
+      <a class="btn btn--solid btn--setup" href="setup.html">Set up</a>
     </div>
 
-    <button class="site-head__menu" type="button" aria-label="Open menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
   </div>
 </header>
 
@@ -2233,18 +2493,17 @@ html.js .is-in .tw__in {
 
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero" id="hero" data-section="0">
-    <p class="hero__tag" data-reveal style="--delay: 0ms">Goose · configured for journalism</p>
+    <p class="hero__tag" data-reveal style="--delay: 0ms"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a> · configured for journalism</p>
 
     <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-        Your newsroom,<br><em>on your laptop.</em>
+        Old-school reporting.<br><em>New-school machinery.</em>
       </h1>
 
       <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
 
       <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
-        <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
-        <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
+        <a class="btn btn--solid btn--setup" href="setup.html">Set up</a>
       </div>
     </div>
   </section>
@@ -2255,8 +2514,8 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">02</span> What it does</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Three jobs.<br><em>Done right.</em></h2>
-      <p class="lead">Not a chatbot bolted on. Three editorial recipes wired into your vault, your beat, your writing flow.</p>
+      <h2 class="display display--section">An example day.<br><em>Not a feature list.</em></h2>
+      <p class="lead">A morning brief, a fast verification pass, then deeper source work. Mycroft is a workflow layer for the rhythm of a reporting day, not three boxed-off tricks.</p>
     </div>
 
     <div class="day-timeline">
@@ -2301,10 +2560,6 @@ html.js .is-in .tw__in {
       </article>
     </div>
 
-    <p class="band" data-reveal>
-      <span class="dot"></span>
-      <strong>Coming May 2026</strong> · DataHound (public-data discovery) · Atelier (visual production)
-    </p>
   </section>
 
 
@@ -2313,14 +2568,14 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Three pieces.<br>One <em>workstation.</em></h2>
-      <p class="lead">Mycroft isn't an app. It's an extension pack for Goose, shipped with a Qwen 3.5 fine-tuned on investigative methodology — abliterated, open-weight, yours to audit.</p>
+      <h2 class="display display--section">Goose, Qwen,<br><em>Obsidian.</em></h2>
+      <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with a Qwen 3.5 fine-tuned on investigative methodology — abliterated, open-weight, yours to audit. It also sets up Obsidian as the place where briefs, sources, claims, and findings land as local markdown.</p>
     </div>
 
     <div class="equation" data-cascade>
       <div class="term" style="--delay: 0ms">
         <span class="term__pre">↳ runtime</span>
-        <h3 class="term__name">Goose<em class="term__dot">.</em></h3>
+        <h3 class="term__name"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose<em class="term__dot">.</em></a></h3>
         <span class="term__rule"></span>
         <p class="term__role">the agent loop</p>
         <p class="term__spec">Block · MIT · open-source</p>
@@ -2348,8 +2603,7 @@ html.js .is-in .tw__in {
     </div>
 
     <nav class="links-row" aria-label="Runtime resources" data-reveal style="--delay: 200ms">
-      <a href="https://huggingface.co/buriedsignals" target="_blank" rel="noreferrer">Download the 9B →</a>
-      <a href="https://huggingface.co/buriedsignals" target="_blank" rel="noreferrer">Read the model card →</a>
+      <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">Download the 9B →</a>
       <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs →</a>
     </nav>
   </section>
@@ -2416,32 +2670,31 @@ html.js .is-in .tw__in {
 
 
   <!-- ────────── 04bis · INTEGRATIONS · cojournalist + spotlight ──── -->
-  <section class="sec" id="integrations" data-section="3.5">
-    <header class="num" data-reveal><span class="num__n">04½</span> What it integrates</header>
+  <section class="sec sec--integrations" id="integrations" data-section="3.5">
+    <header class="num" data-reveal><span class="num__n">04½</span> Integrations</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
       <h2 class="display display--section">
-        Editorial work has <em>multiple shapes.</em><br>
-        Mycroft <em>brings the tools</em> in.
+        Beat work,<br><em>wired in.</em>
       </h2>
       <p class="lead">
-        Goose hosts the runtime; Mycroft wires in the editorial extensions.
-        Day-to-day monitoring, deep-dive investigation, source archives —
-        each handled by a purpose-built piece, all in one local workflow.
+        Goose hosts the runtime; Mycroft brings in the reporting tools.
+        coJournalist monitors the beat, Spotlight investigates leads, and the
+        next release adds public-data discovery and visual production.
       </p>
     </div>
 
     <div class="cards-3" data-reveal style="--delay: 160ms">
-      <article class="card-int">
+      <a class="card-int" href="https://cojournalist.ai/" target="_blank" rel="noreferrer">
         <div class="card-int__kind">MONITORING</div>
         <h3 class="card-int__title"><em>coJournalist.</em></h3>
         <p class="card-int__body">
           Continuous awareness of your beat. Pulls feeds, flags signal,
           drafts the morning brief — so you walk in with leads, not noise.
         </p>
-      </article>
+      </a>
 
-      <article class="card-int">
+      <a class="card-int" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
         <div class="card-int__kind">INVESTIGATION</div>
         <h3 class="card-int__title"><em>Spotlight.</em></h3>
         <p class="card-int__body">
@@ -2449,10 +2702,10 @@ html.js .is-in .tw__in {
           structured discovery across your sources and the open web —
           with citations, no hallucinated quotes.
         </p>
-      </article>
+      </a>
 
       <article class="card-int card-int--coming">
-        <div class="card-int__kind">COMING · MAY 2026</div>
+        <div class="card-int__kind">COMING · AUGUST-SEPTEMBER 2026</div>
         <h3 class="card-int__title"><em>DataHound</em> + <em>Atelier.</em></h3>
         <p class="card-int__body">
           DataHound — public-data discovery (registries, archives, leaks).
@@ -2518,7 +2771,7 @@ html.js .is-in .tw__in {
       </div>
 
       <div class="terminal__foot">
-        <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
+        <a class="btn btn--solid btn--setup" href="setup.html">Set up</a>
         <span class="terminal__meta">no terminal wrangling · one file · one run</span>
       </div>
     </div>
@@ -2535,29 +2788,45 @@ html.js .is-in .tw__in {
         </div>
         <div class="goose-app__body">
           <aside class="goose-app__side">
-            <div class="goose-app__side-h">Recipes</div>
+            <div class="goose-app__side-h">Goose</div>
             <ul class="goose-app__list">
-              <li><span class="goose-app__bullet">●</span> Morning brief</li>
-              <li><span class="goose-app__bullet">●</span> Fact-check</li>
-              <li><span class="goose-app__bullet">●</span> Source vault</li>
-              <li><span class="goose-app__bullet">○</span> Spotlight</li>
-              <li><span class="goose-app__bullet">○</span> coJournalist</li>
+              <li><span class="goose-app__bullet">⌂</span> Home</li>
+              <li class="is-active"><span class="goose-app__bullet">◐</span> Chat</li>
+              <li><span class="goose-app__bullet">▦</span> Recipes</li>
+              <li><span class="goose-app__bullet">◇</span> Apps</li>
+              <li><span class="goose-app__bullet">◷</span> Scheduler</li>
+              <li><span class="goose-app__bullet">✱</span> Extensions</li>
+              <li><span class="goose-app__bullet">⚙</span> Settings</li>
             </ul>
           </aside>
           <div class="goose-app__chat">
-            <div class="goose-app__msg goose-app__msg--user">
-              Brief me on the housing-policy beat for this morning.
+            <div class="goose-app__chat-head">
+              <div class="goose-app__session">
+                <strong>Mycroft morning brief</strong>
+                <span>qwen-journalist · local vault</span>
+              </div>
+              <span class="goose-app__status">Running</span>
             </div>
-            <div class="goose-app__msg goose-app__msg--bot">
-              <strong>Three signals overnight.</strong><br>
-              · <em>Le Monde</em> reports a draft amendment on rent caps · <em>Mediapart</em> publishes a leaked memo from the prefecture of Île-de-France · ANCT data shows a 9% drop in social-housing starts (Q1 2026).
-              <br><br>
-              <span class="goose-app__cite">3 sources · cached locally · 2 follow-ups suggested</span>
+            <div class="goose-app__thread">
+              <div class="goose-app__msg goose-app__msg--user">
+                Brief me on the housing-policy beat for this morning.
+              </div>
+              <div class="goose-app__tool">running recipe · morning brief</div>
+              <div class="goose-app__msg goose-app__msg--bot">
+                <strong>Three signals overnight.</strong><br>
+                · <em>Le Monde</em> reports a draft amendment on rent caps · <em>Mediapart</em> publishes a leaked memo from the prefecture of Île-de-France · ANCT data shows a 9% drop in social-housing starts (Q1 2026).
+                <br><br>
+                <span class="goose-app__cite">3 sources · cached locally · 2 follow-ups suggested</span>
+              </div>
+            </div>
+            <div class="goose-app__composer">
+              <span>Ask goose to inspect a source, run a recipe, or open a follow-up...</span>
+              <span class="goose-app__send" aria-hidden="true">↑</span>
             </div>
           </div>
         </div>
         <div class="goose-app__foot">
-          <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
+          <a class="btn btn--solid btn--setup" href="setup.html">Set up</a>
           <span class="goose-app__meta">desktop or CLI · same recipes · same keys</span>
         </div>
       </div>
@@ -2580,33 +2849,38 @@ html.js .is-in .tw__in {
         <span class="term__pre">↳ may 2026</span>
         <h3 class="term__name">Membership<em class="term__dot">.</em></h3>
         <span class="term__rule"></span>
-        <p class="term__role">investigations with AI</p>
-        <p class="term__spec">$25/mo · 400+ already reading</p>
 
         <div class="term__body">
-          <p class="term__sub"><em>The tools to run your own.</em></p>
+          <p class="term__sub"><em>Investigations with AI. The tools to run your own.</em></p>
 
           <ul class="srv-list" role="list">
             <li class="srv">
-              <h4 class="srv__title">Collaborative investigations</h4>
-              <p class="srv__desc">Shared leads, data, methodology.</p>
-              <p class="srv__meta">With 400+ journalists</p>
+              <h4 class="srv__title">Remote workshops</h4>
+              <p class="srv__desc">Live, hands-on training sessions.</p>
+              <p class="srv__meta">Online · practical</p>
             </li>
             <li class="srv">
-              <h4 class="srv__title">Live bootcamps</h4>
-              <p class="srv__desc">Workshops &amp; editorial events.</p>
-              <p class="srv__meta">Quarterly · in person</p>
+              <h4 class="srv__title">Cloud extensions</h4>
+              <p class="srv__desc">Expanded tool access and priority features.</p>
+              <p class="srv__meta">Navigator · coJournalist · DataHound</p>
             </li>
             <li class="srv">
-              <h4 class="srv__title">Hosted Pro tier</h4>
-              <p class="srv__desc">All agent extensions on cloud.</p>
-              <p class="srv__meta">Spotlight · coJournalist · DataHound</p>
+              <h4 class="srv__title">Methods library</h4>
+              <p class="srv__desc">Investigation methods and AI techniques, in depth.</p>
+              <p class="srv__meta">OSINT · verification · production</p>
             </li>
           </ul>
 
-          <form class="signup" onsubmit="return false">
-            <input class="signup__input" type="email" placeholder="you@example.com" aria-label="Email" required>
-            <button class="btn btn--solid signup__submit" type="submit">Subscribe <span class="btn__arr">→</span></button>
+          <p class="signup__error hidden" id="mycroft-newsletter-error" role="alert"></p>
+          <p class="signup__success hidden" id="mycroft-newsletter-success">
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+            </svg>
+            <span>You're in. I'll ping you at launch.</span>
+          </p>
+          <form class="signup" id="mycroft-newsletter-form">
+            <input class="signup__input" type="email" id="mycroft-newsletter-email" placeholder="you@example.com" autocomplete="email" aria-label="Email" required>
+            <button class="btn btn--solid btn--setup signup__submit" type="submit" id="mycroft-newsletter-submit">Subscribe</button>
           </form>
         </div>
       </div>
@@ -2615,11 +2889,9 @@ html.js .is-in .tw__in {
         <span class="term__pre">↳ on request</span>
         <h3 class="term__name">Consulting<em class="term__dot">.</em></h3>
         <span class="term__rule"></span>
-        <p class="term__role">newsrooms, trained</p>
-        <p class="term__spec">workshops · tooling · field collabs</p>
 
         <div class="term__body">
-          <p class="term__sub"><em>Buried Signals trains newsrooms to investigate with AI.</em></p>
+          <p class="term__sub"><em>I train newsrooms to investigate with AI, then help wire the tooling into real editorial workflows.</em></p>
 
           <ul class="srv-list" role="list">
             <li class="srv">
@@ -2640,8 +2912,8 @@ html.js .is-in .tw__in {
           </ul>
 
           <div class="term__actions">
-            <a class="btn btn--solid" href="mailto:hello@buriedsignals.com">Get in touch <span class="btn__arr">→</span></a>
-            <a class="btn btn--ghost" href="https://buriedsignals.com/" target="_blank" rel="noreferrer">Case studies →</a>
+            <a class="btn btn--solid btn--setup" href="mailto:mycroft@getsherlocked.co.uk">Get in touch</a>
+            <a class="btn btn--ghost" href="https://buriedsignals.com/consulting" target="_blank" rel="noreferrer">Case studies →</a>
           </div>
         </div>
       </div>
@@ -2652,7 +2924,7 @@ html.js .is-in .tw__in {
   <!-- ────────── 07 · CLOSING ────────── -->
   <section class="sec sec--closing" id="closing" data-section="6">
     <p class="closing__tag" data-reveal>Manifesto</p>
-    <h2 class="display display--section" data-reveal style="--delay: 100ms">Built by journalists,<br>for <em>journalists.</em></h2>
+    <h2 class="display display--section" data-reveal style="--delay: 100ms">Bring the notebook.<br><em>Send the Goose.</em></h2>
     <p class="closing__line" data-reveal style="--delay: 220ms">— Open source · Self-hostable · No lock-in · No surveillance —</p>
   </section>
 
@@ -2660,35 +2932,59 @@ html.js .is-in .tw__in {
 
 
 <!-- ────────── FOOTER · colophon ────────── -->
-<footer class="site-foot" role="contentinfo">
-  <div class="site-foot__cols">
-    <div class="site-foot__brand" data-reveal>
-      <h3 class="brand-mark">Mycroft<em class="brand__dot">.</em></h3>
-      <p class="site-foot__line">Goose, configured for journalism. Open-source, your laptop, your keys.</p>
-    </div>
+<footer class="colophon" role="contentinfo">
+  <div class="colophon__inner">
+    <section class="colophon__brand" data-reveal>
+      <svg class="colophon__crest" viewBox="-50 -50 100 100" width="48" height="48" role="img" aria-hidden="true">
+        <g stroke="currentColor" stroke-width="6" stroke-linecap="round" fill="none">
+          <line x1="20.5" y1="-20.5" x2="12.7" y2="-12.7"/>
+          <line x1="32" y1="0" x2="18" y2="0"/>
+          <line x1="20.5" y1="20.5" x2="12.7" y2="12.7"/>
+          <line x1="0" y1="32" x2="0" y2="18"/>
+          <line x1="-20.5" y1="20.5" x2="-12.7" y2="12.7"/>
+          <line x1="-32" y1="0" x2="-18" y2="0"/>
+          <line x1="-20.5" y1="-20.5" x2="-12.7" y2="-12.7"/>
+        </g>
+        <line x1="0" y1="-34" x2="0" y2="-16" stroke="var(--oxide)" stroke-width="7" stroke-linecap="round"/>
+      </svg>
+      <h2 class="colophon__mark">Mycroft<em class="brand__dot">.</em></h2>
+      <p class="colophon__motto">Every journalist, a newsroom.</p>
+      <p class="colophon__imprint">
+        Built by <a href="https://buriedsignals.com/" target="_blank" rel="noreferrer"><em>Buried Signals</em></a>.
+        Open-source tools for investigative reporting.
+      </p>
+    </section>
 
-    <nav class="site-foot__col" aria-label="Resources" data-reveal style="--delay: 180ms">
-      <h4 class="site-foot__heading">Resources</h4>
-      <ul role="list">
-        <li><a href="setup.html">Set up</a></li>
-        <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub</a></li>
-        <li><a href="https://huggingface.co/buriedsignals" target="_blank" rel="noreferrer">Hugging Face</a></li>
-        <li><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs</a></li>
-      </ul>
-    </nav>
+    <nav class="colophon__cols" aria-label="Footer" data-reveal style="--delay: 140ms">
+      <section class="colophon__col">
+        <h3>Resources</h3>
+        <ul role="list">
+          <li><a href="setup.html">Set up</a></li>
+          <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">GitHub</a></li>
+          <li><a href="https://huggingface.co/tomvaillant" target="_blank" rel="noreferrer">Hugging Face</a></li>
+          <li><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs</a></li>
+        </ul>
+      </section>
 
-    <nav class="site-foot__col" aria-label="Buried Signals" data-reveal style="--delay: 260ms">
-      <h4 class="site-foot__heading">Buried Signals</h4>
-      <ul role="list">
-        <li><a href="https://buriedsignals.com/" target="_blank" rel="noreferrer">buriedsignals.com</a></li>
-        <li><a href="mailto:hello@buriedsignals.com">hello@buriedsignals.com</a></li>
-      </ul>
+      <section class="colophon__col">
+        <h3>Other tools</h3>
+        <ul role="list">
+          <li><a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">coJournalist</a></li>
+          <li><a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a></li>
+          <li><a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a></li>
+        </ul>
+      </section>
     </nav>
   </div>
 
-  <div class="site-foot__strip" data-reveal style="--delay: 340ms">
-    <span>© 2026 Buried Signals · Built by journalists, for journalists.</span>
-  </div>
+  <p class="colophon__sig" data-reveal style="--delay: 220ms">
+    <span class="colophon__sig-group">
+      <span>Colophon</span>
+      <span class="colophon__sig-dot" aria-hidden="true"></span>
+      <span>№ 0001</span>
+    </span>
+    <span>© 2026 Buried Signals</span>
+  </p>
 </footer>
 
 </div><!-- /#page-3d -->
@@ -2826,24 +3122,7 @@ document.documentElement.classList.add("js");
     });
   }
 
-  // ── Mobile menu ─────────────────────────────────────────────
-  const menuBtn = document.querySelector(".site-head__menu");
-  if (menuBtn && head) {
-    menuBtn.addEventListener("click", () => {
-      const open = head.classList.toggle("is-menu-open");
-      menuBtn.setAttribute("aria-expanded", String(open));
-    });
-    head
-      .querySelectorAll(".site-nav__link, .site-head__actions a")
-      .forEach((a) => {
-        a.addEventListener("click", () => {
-          head.classList.remove("is-menu-open");
-          menuBtn.setAttribute("aria-expanded", "false");
-        });
-      });
-  }
-
-  // ── Generic reveal · any [data-reveal] element ──────────────
+// ── Generic reveal · any [data-reveal] element ──────────────
   // Hero items reveal immediately on load (above the fold).
   // Everything else reveals when it crosses ~85% of the viewport.
   const revealItems = document.querySelectorAll("[data-reveal]");
@@ -2963,32 +3242,7 @@ document.documentElement.classList.add("js");
     }
   });
 
-  // ── Site nav active state ───────────────────────────────────
-  const links = document.querySelectorAll('.site-nav__link[href^="#"]');
-  const sectionMap = new Map();
-  links.forEach((a) => {
-    const id = a.getAttribute("href").slice(1);
-    const sec = document.getElementById(id);
-    if (sec) sectionMap.set(sec, a);
-  });
-  if (sectionMap.size && "IntersectionObserver" in window) {
-    const navIO = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          const link = sectionMap.get(e.target);
-          if (!link) return;
-          if (e.isIntersecting) {
-            links.forEach((l) => l.classList.remove("is-active"));
-            link.classList.add("is-active");
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -50% 0px", threshold: 0 },
-    );
-    sectionMap.forEach((_, sec) => navIO.observe(sec));
-  }
-
-  // ── Terminal · real typewriter sequence ─────────────────────
+// ── Terminal · real typewriter sequence ─────────────────────
   // Whole terminal frame appears as one object, then:
   //  - comments (.t-line--cmt) fade in as chunks
   //  - command lines (.t-line--cmd) type character-by-character
@@ -3162,6 +3416,7 @@ try {
 // (_tplFront/_tplInner/_tplAd/_tplPhotoLed) only run as a fallback if
 // articles.json failed to load.
 const REAL_ARTICLE_PROB = 1.0;
+
 
 // Defer boot until module evaluation completes — Paper / PaperPool etc.
 // are declared later and would still be in their TDZ otherwise.
@@ -7017,6 +7272,7 @@ function boot() {
   }));
   const pageHeight = pageEl.offsetHeight;
   const pageWidth = pageEl.offsetWidth;
+  const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /* ── 2. scenes + camera ──────────────────────────────────────── */
   const sceneBack = new THREE.Scene();
@@ -7115,15 +7371,63 @@ function boot() {
   const VELLUM = new THREE.Color("#e8e0cf");
   const PIGMENT = new THREE.Color("#131013");
   const BG_WIDTH = 4096;
+  const bgGrainTime = { value: 0 };
+  const bgGrainShader = {
+    vertex: /* glsl */ `
+      varying vec2 vWorld;
+
+      void main() {
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vWorld = world.xy;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragment: /* glsl */ `
+      uniform vec3 uBaseColor;
+      uniform float uTime;
+      uniform float uStrength;
+      varying vec2 vWorld;
+
+      float hash(vec2 p) {
+        vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return fract((p3.x + p3.y) * p3.z);
+      }
+
+      void main() {
+        float frame = floor(uTime * 14.0);
+        vec2 fine = floor(vWorld * 0.82);
+        vec2 soft = floor(vWorld * 0.23);
+        float n1 = hash(fine + vec2(frame * 17.17, frame * 3.31));
+        float n2 = hash(soft + vec2(frame * 2.73, frame * 11.19));
+        float grain = ((n1 - 0.5) + (n2 - 0.5) * 0.28) * uStrength;
+        vec3 color = clamp(uBaseColor + vec3(grain), 0.0, 1.0);
+
+        gl_FragColor = vec4(color, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }
+    `,
+  };
+  function makeBgMaterial(color, strength) {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uBaseColor: { value: color.clone() },
+        uTime: bgGrainTime,
+        uStrength: { value: strength },
+      },
+      vertexShader: bgGrainShader.vertex,
+      fragmentShader: bgGrainShader.fragment,
+      depthTest: false,
+      depthWrite: false,
+    });
+  }
   const bgMeshes = sections.map((s) => {
-    const color = s.el.classList.contains("sec--dark") ? PIGMENT : VELLUM;
+    const isDark = s.el.classList.contains("sec--dark");
+    const color = isDark ? PIGMENT : VELLUM;
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({
-        color,
-        depthTest: false,
-        depthWrite: false,
-      }),
+      makeBgMaterial(color, isDark ? 0.016 : 0.04),
     );
     mesh.renderOrder = -1000;
     sceneBack.add(mesh);
@@ -7208,7 +7512,7 @@ function boot() {
       mouse: mouseRef,
       defaults: {
         anchorCorner: "CTR",
-        visualR: IS_MOBILE ? 240 : 340,
+        visualR: IS_MOBILE ? 390 : 560,
         sphereR: 0.96,
         marginX: 0,
         marginY: 0,
@@ -7232,7 +7536,7 @@ function boot() {
       mouse: mouseRef,
       defaults: {
         anchorCorner: "CTR",
-        visualR: 315,
+        visualR: IS_MOBILE ? 360 : 520,
         sphereR: 0.98,
         marginX: 0,
         marginY: 0,
@@ -7243,9 +7547,8 @@ function boot() {
     }),
   );
 
-  // floating papers — between hero bottom and closing top. Two layers:
-  // FRONT (rendered after the CSS3D HTML layer → papers appear in front
-  // of the text) and BACK (rendered before HTML → papers appear behind).
+  // floating papers — between hero bottom and closing top. Both layers stay
+  // behind the CSS3D HTML layer so editorial copy and cards remain readable.
   const heroSec = sections.find((s) => s.el.id === "hero") || sections[0];
   const closingSec =
     sections.find((s) => s.el.id === "closing") || sections[sections.length - 1];
@@ -7256,7 +7559,7 @@ function boot() {
   const bandBottomY = -closingSec.top;
   scenes.push(
     new FloatingPapersScene({
-      parent: sceneFront,
+      parent: sceneBack,
       getViewport: () => ({
         w: viewportW,
         h: viewportH,
@@ -7264,6 +7567,7 @@ function boot() {
       }),
       gui,
       label: "Floating · front",
+      visualW: IS_MOBILE ? 190 : 220,
       bandTopY,
       bandBottomY,
       mouse: mouseRef,
@@ -7283,6 +7587,7 @@ function boot() {
       }),
       gui,
       label: "Floating · back",
+      visualW: IS_MOBILE ? 175 : 205,
       bandTopY,
       bandBottomY,
       mouse: mouseRef,
@@ -7358,6 +7663,7 @@ function boot() {
     lastT = t;
 
     Paper.uniforms.uTime.value = t;
+    bgGrainTime.value = REDUCED_MOTION ? 0 : t;
     for (const fn of tickers) fn(t);
     for (const s of scenes) s.update(t, dt);
 
@@ -7416,6 +7722,55 @@ export {
     };
     requestAnimationFrame(tick);
     history.replaceState(null, "", "#" + id);
+  });
+})();
+</script>
+<script>
+/* Newsletter signup — posts to the shared Supabase Edge Function used by
+   Spotlight + coJournalist. The function delivers via Resend on the
+   Buried Signals account; no API key is exposed client-side. */
+(function () {
+  const form = document.getElementById('mycroft-newsletter-form');
+  const emailInput = document.getElementById('mycroft-newsletter-email');
+  const submitBtn = document.getElementById('mycroft-newsletter-submit');
+  const errorEl = document.getElementById('mycroft-newsletter-error');
+  const successEl = document.getElementById('mycroft-newsletter-success');
+  if (!form || !emailInput || !submitBtn || !errorEl || !successEl) return;
+
+  const supabaseUrl = 'https://gfmdziplticfoakhrfpt.supabase.co';
+  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4';
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const value = emailInput.value.trim();
+    if (!value) return;
+
+    submitBtn.disabled = true;
+    emailInput.disabled = true;
+    errorEl.textContent = '';
+    errorEl.classList.add('hidden');
+
+    try {
+      const res = await fetch(`${supabaseUrl}/functions/v1/newsletter-subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: supabaseAnonKey
+        },
+        body: JSON.stringify({ email: value, newsletters: ['buried_signals'] })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || data.detail || 'Something went wrong. Please try again.');
+      }
+      form.classList.add('hidden');
+      successEl.classList.remove('hidden');
+    } catch (error) {
+      errorEl.textContent = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      errorEl.classList.remove('hidden');
+      submitBtn.disabled = false;
+      emailInput.disabled = false;
+    }
   });
 })();
 </script>
