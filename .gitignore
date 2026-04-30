@@ -29,3 +29,4 @@ node_modules/
 prototypes/
 bun.lock
 package.json
+docs/
