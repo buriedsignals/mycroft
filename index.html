@@ -745,15 +745,27 @@ main,
 /* hero · always fits the viewport · vertically centred so big screens
    don't push content past the fold */
 .sec--hero {
+  position: relative;
   min-height: calc(100svh - var(--head-h));
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
   text-align: center;
   padding-top: clamp(24px, 4vh, 56px);
   padding-bottom: clamp(24px, 4vh, 56px);
   border-bottom: 0;
+}
+.hero__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(24px, 4vh, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding-left: var(--gut);
+  padding-right: var(--gut);
 }
 .hero__tag {
   font-family: var(--mono);
@@ -1051,11 +1063,11 @@ main,
 }
 
 .display--hero {
-  font-size: clamp(48px, min(9vw, 14vh), 132px);
+  font-size: clamp(40px, min(6vw, 10vh), 88px);
   line-height: 0.98;
   letter-spacing: -0.025em;
   max-width: 18ch;
-  margin: var(--sp-6) auto var(--sp-7);
+  margin: 0 auto var(--sp-5);
 }
 .display--section {
   font-size: clamp(40px, 6.6vw, 108px);
@@ -2223,15 +2235,17 @@ html.js .is-in .tw__in {
   <section class="sec sec--hero" id="hero" data-section="0">
     <p class="hero__tag" data-reveal style="--delay: 0ms">Goose · configured for journalism</p>
 
-    <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-      Your newsroom,<br><em>on your laptop.</em>
-    </h1>
+    <div class="hero__bottom">
+      <h1 class="display display--hero" data-reveal style="--delay: 120ms">
+        Your newsroom,<br><em>on your laptop.</em>
+      </h1>
 
-    <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
+      <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
 
-    <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
-      <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
-      <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
+      <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
+        <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
+        <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
+      </div>
     </div>
   </section>
 
@@ -7194,12 +7208,12 @@ function boot() {
       mouse: mouseRef,
       defaults: {
         anchorCorner: "CTR",
-        visualR: IS_MOBILE ? 220 : 360,
+        visualR: IS_MOBILE ? 200 : 280,
         sphereR: 0.96,
         marginX: 0,
         marginY: 0,
         offsetX: 0,
-        offsetY: 0,
+        offsetY: IS_MOBILE ? 80 : 100,
         offsetZ: 0,
       },
     }),
