@@ -8220,11 +8220,9 @@ function setupHeroBoot() {
   document.body.appendChild(canvas);
 
   function placeCanvas() {
-    const r = hero.getBoundingClientRect();
-    const top = r.top + window.scrollY;
     Object.assign(canvas.style, {
       position: "absolute",
-      top: top + "px",
+      top: "0",
       left: "0",
       width: "100vw",
       height: heroH + "px",
@@ -8255,7 +8253,6 @@ function setupHeroBoot() {
     placeCanvas();
   }
   window.addEventListener("resize", resize);
-  window.addEventListener("scroll", placeCanvas, { passive: true });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(resize);
   }
