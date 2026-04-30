@@ -749,33 +749,34 @@ main,
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+  text-align: center;
   padding-top: clamp(24px, 4vh, 56px);
   padding-bottom: clamp(24px, 4vh, 56px);
   border-bottom: 0;
 }
-.sec--hero .lead {
-  margin-bottom: clamp(16px, 2.5vh, 28px);
-  max-width: 60ch;
-}
-.sec--hero .ctas {
-  margin-bottom: clamp(20px, 3vh, 36px);
-}
-/* hairline sits ABOVE the meta strip · only as wide as the text + a
-   small extension, like a printer's rule under a credit line */
-.sec--hero .meta {
+.hero__tag {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
   display: inline-block;
-  width: fit-content;
-  max-width: 100%;
-  padding-top: clamp(16px, 2.5vh, 24px);
-  padding-right: clamp(24px, 5vw, 80px);
+  padding-top: var(--sp-5);
   border-top: var(--hairline);
+  margin: 0 auto var(--sp-6);
 }
-
-/* Hero headline: black/green parts split on separate lines on mobile
-   only. Desktop keeps the original "phrase + italic emphasis" inline. */
-.hero-br--mobile { display: none; }
-@media (max-width: 700px) {
-  .hero-br--mobile { display: inline; }
+.hero__line {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 auto var(--sp-6);
+  max-width: 90%;
+}
+.ctas--center {
+  justify-content: center;
 }
 
 /* ── Surface toggle (CLI ↔ Desktop) ──────────────────────────── */
@@ -1050,10 +1051,11 @@ main,
 }
 
 .display--hero {
-  /* min(7vw, 11vh) caps font on shorter viewports so 3 lines always fit */
-  font-size: clamp(34px, min(7vw, 11vh), 100px);
-  line-height: 1.05;
-  margin-bottom: clamp(16px, 2.5vh, 32px);
+  font-size: clamp(48px, min(9vw, 14vh), 132px);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  max-width: 18ch;
+  margin: var(--sp-6) auto var(--sp-7);
 }
 .display--section {
   font-size: clamp(40px, 6.6vw, 108px);
@@ -2219,26 +2221,18 @@ html.js .is-in .tw__in {
 
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero" id="hero" data-section="0">
-    <p class="eyebrow" data-reveal style="--delay: 0ms">Goose, configured for journalism</p>
+    <p class="hero__tag" data-reveal style="--delay: 0ms">Goose · configured for journalism</p>
 
     <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-      Your morning brief,<br class="hero-br--mobile"> <em>before coffee.</em><br>
-      Your fact-check,<br class="hero-br--mobile"> <em>in minutes.</em><br>
-      Your sources,<br class="hero-br--mobile"> <em>on your machine.</em>
+      Your newsroom,<br><em>on your laptop.</em>
     </h1>
 
-    <p class="lead" data-reveal style="--delay: 280ms">
-      An opinionated extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a> — the open-source agent runtime. Recipes, providers, and a Qwen fine-tune. <strong>coJournalist + Spotlight, built in.</strong>
-    </p>
+    <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
 
-    <div class="ctas" data-reveal style="--delay: 380ms">
+    <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
       <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
-      <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">View on GitHub →</a>
+      <a class="btn btn--ghost" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">Source on GitHub →</a>
     </div>
-
-    <p class="meta" data-reveal style="--delay: 480ms">
-      Desktop or CLI · Local or cloud · Your keys, your machine, your vault
-    </p>
   </section>
 
 
@@ -7183,43 +7177,31 @@ function boot() {
   // visualR/sphereR × RECEIPT_W (0.14) = paper px on screen.
   const SPHERE_VISUAL_R = 280;
   const SPHERE_R_MODEL = 1.0;
-  const SPHERE_HERO_COUNT = IS_MOBILE ? 80 : 160;
+  const SPHERE_HERO_COUNT = IS_MOBILE ? 110 : 200;
   const SPHERE_CLOSING_COUNT = IS_MOBILE ? 100 : 200;
 
-  // hero sphere — desktop: BR corner big. Mobile: centered, smaller, in
-  // the upper part of the hero so it appears at the top of the page (per
-  // Tom's feedback — most visitors are mobile, the orb should greet them).
+  // hero sphere — same paper-globe language as manifesto: centered on the
+  // headline, mirrorParent splits half front / half back of the HTML plane
+  // so papers swirl AROUND the letters. Greets every visitor at the top.
   scenes.push(
     new PaperSphereScene({
       parent: anchorById("hero").front,
       anchor: anchorById("hero"),
+      mirrorParent: anchorById("hero").back,
       gui,
       label: "Hero · sphere",
-      count: IS_MOBILE ? 90 : SPHERE_HERO_COUNT,
+      count: SPHERE_HERO_COUNT,
       mouse: mouseRef,
-      defaults: IS_MOBILE
-        ? {
-            visualR: 150,
-            sphereR: 0.84,
-            anchorCorner: "CTR",
-            marginX: 0,
-            marginY: 0,
-            offsetX: 110, // center-right
-            offsetY: 80,
-            offsetZ: 60,
-            swirlStrength: 0,
-          }
-        : {
-            visualR: 400,
-            sphereR: 0.84,
-            anchorCorner: "BR",
-            marginX: -111,
-            marginY: -189,
-            offsetX: 0,
-            offsetY: 0,
-            offsetZ: 60,
-            swirlStrength: 0,
-          },
+      defaults: {
+        anchorCorner: "CTR",
+        visualR: IS_MOBILE ? 220 : 360,
+        sphereR: 0.96,
+        marginX: 0,
+        marginY: 0,
+        offsetX: 0,
+        offsetY: 0,
+        offsetZ: 0,
+      },
     }),
   );
 
