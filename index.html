@@ -1291,6 +1291,7 @@ main,
 /* ── 11 · Equation (Runtime) ─────────────────────────────────── */
 .equation {
   display: flex;
+  flex-direction: column;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
@@ -1298,6 +1299,12 @@ main,
   padding: clamp(48px, 8vh, 120px) 0 clamp(32px, 6vh, 64px);
   border-top: var(--hairline);
   border-bottom: var(--hairline);
+}
+@media (min-width: 700px) {
+  .equation {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
 }
 @media (min-width: 980px) {
   .equation {
@@ -1551,6 +1558,7 @@ main,
 /* ── 14 · Signup ─────────────────────────────────────────────── */
 .signup {
   display: flex;
+  align-items: stretch;
   gap: var(--sp-2);
   width: var(--col-1);
   max-width: 100%;
@@ -1559,14 +1567,17 @@ main,
 .signup__input {
   flex: 1 1 200px;
   min-width: 0;
-  padding: 12px 16px;
+  height: 39px;
+  padding: 0 16px;
   border: 1px solid var(--ink);
   border-radius: var(--rad-pill);
   background: transparent;
   color: var(--ink);
   font: inherit;
   font-size: 14px;
+  line-height: 1;
   outline: none;
+  box-sizing: border-box;
   transition: border-color var(--dur-1) var(--ease);
 }
 .signup__input:focus {
@@ -7096,22 +7107,29 @@ function boot() {
   const VELLUM = new THREE.Color("#e8e0cf");
   const PIGMENT = new THREE.Color("#131013");
   const BG_WIDTH = 4096;
-  sections.forEach((s) => {
-    // Class-based mapping so adding/removing sections doesn't shift the
-    // dark slab to the wrong index.
+  const bgMeshes = sections.map((s) => {
     const color = s.el.classList.contains("sec--dark") ? PIGMENT : VELLUM;
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(BG_WIDTH, s.height + 2),
+      new THREE.PlaneGeometry(1, 1),
       new THREE.MeshBasicMaterial({
         color,
         depthTest: false,
         depthWrite: false,
       }),
     );
-    mesh.position.set(0, -s.centerY, -50);
     mesh.renderOrder = -1000;
     sceneBack.add(mesh);
+    return { mesh, el: s.el };
   });
+  function syncBgMeshes() {
+    for (const { mesh, el } of bgMeshes) {
+      const h = el.offsetHeight;
+      const cy = el.offsetTop + h / 2;
+      mesh.scale.set(BG_WIDTH, h, 1);
+      mesh.position.set(0, -cy, -50);
+    }
+  }
+  syncBgMeshes();
 
   sceneBack.add(camera);
 
@@ -7187,7 +7205,7 @@ function boot() {
             marginX: 0,
             marginY: 0,
             offsetX: 110, // center-right
-            offsetY: 220, // up at title level (hero centerY → titles area)
+            offsetY: 80,
             offsetZ: 60,
             swirlStrength: 0,
           }
@@ -7313,12 +7331,23 @@ function boot() {
     const newH = pageEl.offsetHeight || pageHeight;
     sentinel.style.height = newH + "px";
     pageObject.position.y = -newH / 2;
+    syncBgMeshes();
+    for (const a of anchors) {
+      const cy = a.el.offsetTop + a.el.offsetHeight / 2;
+      a.back.position.y = -cy;
+      a.front.position.y = -cy;
+      a.height = a.el.offsetHeight;
+      a.centerY = cy;
+    }
     onScroll();
   }
   window.addEventListener("resize", onResize);
   rendererBack.setSize(viewportW, viewportH);
   rendererHTML.setSize(viewportW, viewportH);
   rendererFront.setSize(viewportW, viewportH);
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => onResize());
+  }
 
   /* ── 14. animation loop ─────────────────────────────────────── */
   const clock = new THREE.Clock();
