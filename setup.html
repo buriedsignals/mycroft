@@ -1812,6 +1812,18 @@ main,
 .colophon__col a {
   transition: color var(--dur-1) var(--ease);
 }
+.colophon__source {
+  grid-column: 3 / 4;
+  justify-self: end;
+  align-self: end;
+  margin: var(--sp-4) 0 0;
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  text-align: right;
+}
 
 .colophon__sig {
   display: flex;
@@ -1840,20 +1852,15 @@ main,
   gap: 14px;
   flex-wrap: wrap;
 }
-.colophon__credit {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: clamp(13px, 0.9vw, 15px);
-  line-height: 1.45;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ink-soft);
-}
-
 @media (max-width: 760px) {
   .colophon__inner {
     grid-template-columns: 1fr;
     gap: var(--sp-6);
+  }
+  .colophon__source {
+    grid-column: 1;
+    justify-self: start;
+    text-align: left;
   }
   .colophon__sig {
     justify-content: flex-start;
@@ -2821,7 +2828,7 @@ body.mode-local .cloud-only { display: none; }
         <p class="sov-num"><em>01</em> Cloud-first</p>
         <span class="sov-title">Fast.<br><em>Affordable.</em></span>
         <p class="sov-desc">Recipes route to your cloud provider by default. Local model is the sovereign-mode fallback for sensitive work.</p>
-        <p class="sov-meta"><strong>~$6 / mo</strong> · ZDR · open-weight</p>
+        <p class="sov-meta"><strong>$6-40 est/mo</strong> · ZDR · open-weight</p>
       </label>
       <label>
         <input type="radio" name="sovereignty" value="local">
@@ -2857,7 +2864,7 @@ body.mode-local .cloud-only { display: none; }
         </div>
         <p class="item__lede">Open-weight Qwen by Alibaba, hosted in Fireworks US data centers. 1M-token context. ZDR by default — no opt-in needed.</p>
         <div class="price">
-          <span class="price__amt">$6<em>/mo</em></span>
+          <span class="price__amt">$6-40<em> est/mo</em></span>
           <span class="price__detail"><strong>$0.50</strong> in · <strong>$3.00</strong> out · per 1M tokens</span>
         </div>
         <div class="item__body">
@@ -2885,7 +2892,7 @@ body.mode-local .cloud-only { display: none; }
         </div>
         <p class="item__lede">Open-weight, Together US data centers, SOC 2 Type 2. ZDR is opt-in — set <em>both</em> dashboard toggles to "No" before first use.</p>
         <div class="price">
-          <span class="price__amt">$9<em>/mo</em></span>
+          <span class="price__amt">$9-50<em> est/mo</em></span>
           <span class="price__detail"><strong>$1.20</strong> in · <strong>$1.20</strong> out · per 1M tokens</span>
         </div>
         <div class="item__body">
@@ -3319,6 +3326,9 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         </ul>
       </section>
     </nav>
+    <p class="colophon__source" data-reveal style="--delay: 180ms">
+      Newspaper text references come from the <a href="https://journalism.nyu.edu/about-us/news/the-top-100-works-of-journalism-of-the-century/" target="_blank" rel="noreferrer">NYU archives</a>
+    </p>
   </div>
 
   <p class="colophon__sig" data-reveal style="--delay: 220ms">
@@ -3327,7 +3337,6 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       <span class="colophon__sig-dot" aria-hidden="true"></span>
       <span>№ 0001</span>
     </span>
-    <span class="colophon__credit">Newspaper text references come from NYU Journalism's <a href="https://journalism.nyu.edu/about-us/news/the-top-100-works-of-journalism-of-the-century/" target="_blank" rel="noreferrer">Top 100 Works of Journalism of the Century</a>.</span>
     <span>© 2026 Buried Signals</span>
   </p>
 </footer>
