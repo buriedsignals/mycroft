@@ -36,6 +36,8 @@ jobs:
               V().feed(open(f).read())
               print(f + ': OK')
           "
+      - name: Validate setup generator
+        run: node tests/setup-generator-check.js
       - name: Validate JSON parses
         run: |
           python3 -c "

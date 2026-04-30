@@ -2581,8 +2581,6 @@ html.js .site-head.is-in {
 /* MODE TOGGLES — preserve existing JS class API */
 body.mode-cloud .local-only { display: none; }
 body.mode-local .cloud-only { display: none; }
-.coj-web-only { display: none; }
-.coj-mode-web .coj-web-only { display: block; }
 
 /* small typographic helpers re-used inside cards */
 .note-mono {
@@ -2591,9 +2589,71 @@ body.mode-local .cloud-only { display: none; }
   color: var(--ink-dim);
   margin: var(--sp-3) 0 0;
 }
+.fit-row {
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+  margin: var(--sp-5) 0 var(--sp-3);
+}
+.fit-panel {
+  border: var(--hairline);
+  background: var(--vellum-bright);
+  padding: var(--sp-5);
+  margin: 0 0 var(--sp-5);
+}
+.fit-panel.hidden { display: none; }
+.fit-panel.green { border-left: 4px solid #27824f; }
+.fit-panel.amber { border-left: 4px solid var(--oxide); }
+.fit-panel.red { border-left: 4px solid #9f2f28; }
+.fit-verdict {
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-family: var(--serif); font-size: 24px; line-height: 1.2;
+  color: var(--ink);
+}
+.fit-icon {
+  display: inline-grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 999px;
+  background: var(--ink); color: var(--vellum-bright);
+  font-family: var(--mono); font-size: 13px;
+}
+.fit-stats {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-2); margin: var(--sp-4) 0;
+}
+@media (max-width: 760px) { .fit-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fit-stat {
+  border: var(--hairline); background: var(--vellum);
+  padding: var(--sp-3); min-width: 0;
+}
+.fit-stat .k {
+  display: block; font-family: var(--mono); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft);
+}
+.fit-stat .v {
+  display: block; margin-top: 4px; font-size: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.fit-cmd {
+  display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap;
+  margin-top: var(--sp-3);
+}
+.fit-cmd code {
+  flex: 1 1 320px; min-width: 0;
+  display: block; overflow-x: auto;
+}
+.model-card { position: relative; cursor: pointer; }
+.model-card > input[type=radio] {
+  position: absolute; top: var(--sp-4); right: var(--sp-4);
+  accent-color: var(--oxide);
+}
+.model-card.recommended {
+  border-left: 4px solid var(--oxide);
+  background: var(--vellum-bright);
+}
+.model-card.not-recommended {
+  opacity: 0.56;
+}
 </style>
 </head>
-<body class="mode-cloud coj-mode-web">
+<body class="mode-cloud">
 
 <a class="skip" href="#form">Skip to setup form</a>
 
@@ -2774,8 +2834,24 @@ body.mode-local .cloud-only { display: none; }
       </p>
     </div>
 
-    <div class="grid-2" data-reveal style="--delay: 120ms">
-      <div class="item">
+    <div class="fit-row local-only" data-reveal style="--delay: 120ms">
+      <button type="button" class="mini-btn" id="fitCheckBtn">Check my computer</button>
+      <span class="hint">Browser-only hardware probe. No data leaves this page.</span>
+    </div>
+
+    <div id="fitPanel" class="fit-panel hidden" data-reveal style="--delay: 160ms">
+      <div class="fit-verdict" id="fitVerdict"><span class="fit-icon">-</span><strong id="fitTitle">Hardware recommendation</strong></div>
+      <div class="fit-stats" id="fitStats"></div>
+      <p id="fitBody"></p>
+      <div class="fit-cmd" id="fitCmdBox" hidden>
+        <code id="fitCmd">system_profiler SPHardwareDataType | grep -E 'Memory|Chip|Cores'</code>
+        <button type="button" class="mini-btn" id="fitCmdCopy">Copy</button>
+      </div>
+    </div>
+
+    <div class="grid-2 model-grid" data-reveal style="--delay: 200ms">
+      <label class="item model-card" id="modelCard9b">
+        <input type="radio" name="local_model" value="qwen9b" checked>
         <p class="item__num"><em>9B</em> Default</p>
         <div class="item__head">
           <span class="item__title">9B<br><em>Daily driver.</em></span>
@@ -2786,9 +2862,10 @@ body.mode-local .cloud-only { display: none; }
           <span class="price__amt">$0<em>/mo</em></span>
           <span class="price__detail">hardware + electricity only</span>
         </div>
-      </div>
+      </label>
 
-      <div class="item">
+      <label class="item model-card" id="modelCard35b">
+        <input type="radio" name="local_model" value="qwen35b">
         <p class="item__num"><em>35B</em> Power</p>
         <div class="item__head">
           <span class="item__title">35B<br><em>Heavy lifting.</em></span>
@@ -2799,7 +2876,7 @@ body.mode-local .cloud-only { display: none; }
           <span class="price__amt">$0<em>/mo</em></span>
           <span class="price__detail">hardware + electricity only</span>
         </div>
-      </div>
+      </label>
     </div>
 
     <div class="callout" data-reveal style="--delay: 200ms">
@@ -2946,7 +3023,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         </div>
         <h3 class="plugin-hero__title"><em>Spotlight.</em></h3>
         <p class="plugin-hero__lede">
-          OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. Runtime-agnostic (reads <code>AGENTS.md</code>).
+          OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. It inherits your Mycroft cloud/local preference.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
           <a href="https://github.com/buriedsignals/spotlight" target="_blank" rel="noreferrer">buriedsignals/spotlight</a>
@@ -2955,8 +3032,9 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       <div class="plugin-hero__config">
         <p class="note-mono">Configuration</p>
 
-        <label class="field-label" for="spotlight_vault_path">Investigations vault</label>
-        <input class="fld" type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/intelligence" value="~/Documents/intelligence" autocomplete="off" spellcheck="false">
+        <label class="field-label" for="spotlight_vault_path">Spotlight investigations vault</label>
+        <input class="fld" type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/Spotlight" value="~/Documents/Spotlight" autocomplete="off" spellcheck="false">
+        <p class="hint" style="margin-top:8px;">Keep this separate from the Mycroft vault below. Spotlight can still send scout requests to coJournalist.</p>
 
         <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span class="opt">— optional</span></label>
         <input class="fld" type="password" id="osint_navigator_key" name="osint_navigator_key" placeholder="ont_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
@@ -3008,30 +3086,17 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         </div>
         <h3 class="plugin-hero__title">co<em>Journalist.</em></h3>
         <p class="plugin-hero__lede">
-          Beat-monitoring engine — scheduled scouts watch your sources, detect change, score relevance. Web-hosted (24/7) or self-host.
+          Hosted beat-monitoring engine — scheduled scouts watch your sources, detect change, score relevance, and return information units. Spotlight investigations can request new scouts here.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
           <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>
         </p>
       </div>
       <div class="plugin-hero__config">
-        <p class="note-mono">Mode</p>
-        <div class="seg">
-          <label>
-            <input type="radio" name="cojournalist_mode" value="web" checked>
-            Web (hosted)
-            <small>24/7. Scouts run even when your laptop is closed. Requires API key.</small>
-          </label>
-          <label>
-            <input type="radio" name="cojournalist_mode" value="local">
-            Local (self-host)
-            <small>Docker + Supabase. Active only when your machine is on.</small>
-          </label>
-        </div>
-        <div class="coj-web-only">
-          <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
-          <input class="fld" type="password" id="cojournalist_api_key" name="cojournalist_api_key" placeholder="coj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-        </div>
+        <p class="note-mono">Hosted API</p>
+        <p class="plugin-hero__lede">No desktop service setup here. Mycroft stores the hosted API key and exposes it to Spotlight for investigation-triggered scout requests.</p>
+        <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
+        <input class="fld" type="password" id="cojournalist_api_key" name="cojournalist_api_key" placeholder="coj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
     </div>
 
@@ -3077,7 +3142,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <p class="num"><span class="num__n">06</span> Your vault</p>
         <h2 class="display display--section">Where notes <em>live.</em></h2>
       </div>
-      <p class="lead">Default Obsidian vault path — used by <code>vault-qa</code> and <code>morning-brief</code>.</p>
+      <p class="lead">Default Mycroft Obsidian vault path — used by <code>vault-qa</code> and <code>morning-brief</code>. Spotlight uses its own vault path above.</p>
     </div>
 
     <div data-reveal style="--delay: 120ms" style="border:var(--hairline);padding:clamp(28px,3vw,40px);background:var(--vellum-bright);max-width:680px;">
@@ -3094,7 +3159,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <h2 class="display display--section">Review.<br>Then <em>run.</em></h2>
       </div>
       <p class="lead">
-        The exact bash that will land in your downloads folder. Your keys are baked in plaintext — review before running. Touches only <code>~/.mycroft/</code>, <code>~/.config/goose/</code>, your shell rc.
+        The exact bash that will land in your downloads folder. Your keys are baked in plaintext — review before running. It writes secrets to <code>~/.mycroft/.env</code>, Goose config to <code>~/.config/goose/</code>, and an updater job for repo updates.
       </p>
     </div>
 
@@ -3109,17 +3174,18 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <span>Client-side only — your API keys are embedded in the file, nothing is sent over the network.</span>
       </div>
       <div class="install-bar__actions">
+        <button type="button" id="agentSetupBtn" class="btn--secondary">Download agent setup ZIP</button>
         <button type="button" id="copyBtn" class="btn--secondary">Copy script</button>
-        <button type="button" id="downloadBtn">Download <span aria-hidden="true">→</span></button>
+        <button type="button" id="downloadBtn">Download installer ZIP <span aria-hidden="true">→</span></button>
       </div>
     </div>
 
     <div class="success" id="success">
       <strong>Downloaded.</strong>
-      To run it:
-      <pre><code>chmod +x ~/Downloads/mycroft-setup.command
-~/Downloads/mycroft-setup.command</code></pre>
-      Or drag the file onto a Terminal window, or right-click → Open (macOS will ask once; unsigned scripts need explicit consent). After it finishes, open a new terminal so the shell rc updates take effect.
+      Extract the ZIP, move <code>mycroft-setup.command</code> to the folder where you keep installers, then run it:
+      <pre><code>chmod +x /path/to/mycroft-setup.command
+/path/to/mycroft-setup.command</code></pre>
+      On macOS, right-click <code>mycroft-setup.command</code> → Open → Confirm the first time. After that, plain double-click works. The agent setup ZIP is separate and contains no secrets.
     </div>
   </section>
 
@@ -3592,18 +3658,14 @@ function applySovereigntyMode() {
 }
 document.querySelectorAll('input[name="sovereignty"]').forEach(el => el.addEventListener('change', applySovereigntyMode));
 
-function applyCoJournalistMode() {
-  const enabled = document.getElementById('cojournalist_enabled').checked;
-  const modeEl = document.querySelector('input[name="cojournalist_mode"]:checked');
-  const mode = modeEl ? modeEl.value : 'web';
-  document.body.classList.toggle('coj-mode-web', enabled && mode === 'web');
-  refreshPreview();
-}
-document.getElementById('cojournalist_enabled').addEventListener('change', applyCoJournalistMode);
-document.querySelectorAll('input[name="cojournalist_mode"]').forEach(el => el.addEventListener('change', applyCoJournalistMode));
-
 function shq(s) { return "'" + String(s == null ? '' : s).replace(/'/g, "'\\''") + "'"; }
 function bool(v) { return v ? '1' : '0'; }
+function envLine(k, v) { return k + '=' + shq(v); }
+function expandHomeForScript(path) {
+  const p = String(path || '').trim();
+  if (p === '~') return '$HOME';
+  return p.replace(/^~\//, '$HOME/');
+}
 
 function readForm() {
   const f = document.getElementById('form');
@@ -3612,7 +3674,6 @@ function readForm() {
   const chk = n => (g(n) ? !!g(n).checked : false);
 
   const sovereignty = document.querySelector('input[name="sovereignty"]:checked').value;
-  const cojMode = (document.querySelector('input[name="cojournalist_mode"]:checked') || {}).value || 'web';
 
   return {
     sovereignty,
@@ -3626,16 +3687,16 @@ function readForm() {
     apifyEnabled: chk('apify_enabled'),
     fireworks: chk('fireworks_enabled') && sovereignty === 'cloud',
     together: chk('together_enabled') && sovereignty === 'cloud',
+    localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'qwen9b',
     spotlight: chk('spotlight_enabled'),
     cojournalist: chk('cojournalist_enabled'),
-    cojMode,
     fireworksKey: val('fireworks_key'),
     togetherKey: val('together_key'),
     firecrawlKey: val('firecrawl_key'),
     apifyToken: val('apify_token'),
     agentmailKey: val('agentmail_key'),
     cojournalistKey: val('cojournalist_api_key'),
-    spotlightVaultPath: val('spotlight_vault_path') || '~/Documents/intelligence',
+    spotlightVaultPath: val('spotlight_vault_path') || '~/Documents/Spotlight',
     osintNavigatorKey: val('osint_navigator_key'),
     spotBrowseruse: chk('spot_browseruse'),
     acledKey: val('acled_key'),
@@ -3645,22 +3706,49 @@ function readForm() {
 }
 
 function buildScript(d) {
-  const exportLines = [];
-  if (d.fireworksKey)  exportLines.push(`export FIREWORKS_API_KEY=${shq(d.fireworksKey)}`);
-  if (d.togetherKey)   exportLines.push(`export TOGETHER_API_KEY=${shq(d.togetherKey)}`);
-  if (d.firecrawlKey)  exportLines.push(`export FIRECRAWL_API_KEY=${shq(d.firecrawlKey)}`);
-  if (d.apifyToken)    exportLines.push(`export APIFY_API_TOKEN=${shq(d.apifyToken)}`);
-  if (d.agentmailKey)  exportLines.push(`export AGENTMAIL_API_KEY=${shq(d.agentmailKey)}`);
-  if (d.cojournalist && d.cojMode === 'web' && d.cojournalistKey) {
-    exportLines.push(`export COJOURNALIST_API_KEY=${shq(d.cojournalistKey)}`);
+  const mycroftVault = expandHomeForScript(d.vault);
+  const spotlightVault = expandHomeForScript(d.spotlightVaultPath);
+  const envLines = [
+    '# Mycroft environment — generated by setup.html',
+    `MYCROFT_DEFAULT_SOVEREIGNTY=${shq(d.sovereignty)}`,
+    `MYCROFT_VAULT_PATH="${mycroftVault}"`,
+    'MYCROFT_PLUGINS_DIR="$MYCROFT_DIR/plugins"',
+    `MYCROFT_LOCAL_ONLY=${shq(d.localOnly ? '1' : '0')}`,
+  ];
+  if (d.localOnly) {
+    const localModelName = d.localModel === 'qwen35b' ? 'qwen3.5-35b-abliterated-journalist' : 'qwen3.5-9b-abliterated-journalist';
+    const localModelRepo = d.localModel === 'qwen35b' ? 'tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF' : 'tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF';
+    envLines.push('GOOSE_PROVIDER=local-llama-server');
+    envLines.push('GOOSE_MODEL=' + localModelName);
+    envLines.push('MYCROFT_LOCAL_MODEL=' + localModelName);
+    envLines.push('MYCROFT_LOCAL_MODEL_REPO=' + localModelRepo);
+  } else if (d.fireworks) {
+    envLines.push('GOOSE_PROVIDER=fireworks-qwen36plus');
+    envLines.push('GOOSE_MODEL=accounts/fireworks/models/qwen3p6-plus');
+  } else if (d.together) {
+    envLines.push('GOOSE_PROVIDER=together-qwen');
+    envLines.push('GOOSE_MODEL=Qwen/Qwen2.5-72B-Instruct-Turbo');
+  }
+  if (d.fireworksKey) envLines.push(envLine('FIREWORKS_API_KEY', d.fireworksKey));
+  if (d.togetherKey) envLines.push(envLine('TOGETHER_API_KEY', d.togetherKey));
+  if (d.firecrawlKey) envLines.push(envLine('FIRECRAWL_API_KEY', d.firecrawlKey));
+  if (d.apifyToken) envLines.push(envLine('APIFY_API_TOKEN', d.apifyToken));
+  if (d.agentmailKey) envLines.push(envLine('AGENTMAIL_API_KEY', d.agentmailKey));
+  if (d.cojournalist && d.cojournalistKey) {
+    envLines.push(envLine('COJOURNALIST_API_KEY', d.cojournalistKey));
+    envLines.push('COJOURNALIST_API_BASE=https://www.cojournalist.ai/api/v1');
   }
   if (d.spotlight) {
-    if (d.osintNavigatorKey) exportLines.push(`export OSINT_NAVIGATOR_API_KEY=${shq(d.osintNavigatorKey)}`);
-    if (d.acledKey) exportLines.push(`export ACLED_API_KEY=${shq(d.acledKey)}`);
-    if (d.acledEmail) exportLines.push(`export ACLED_EMAIL=${shq(d.acledEmail)}`);
-    if (d.junkipediaKey) exportLines.push(`export JUNKIPEDIA_API_KEY=${shq(d.junkipediaKey)}`);
-    if (d.spotBrowseruse) exportLines.push(`export SPOTLIGHT_BROWSERUSE=1`);
-    exportLines.push(`export SPOTLIGHT_VAULT_PATH=${shq(d.spotlightVaultPath)}`);
+    envLines.push('SPOTLIGHT_DIR="$MYCROFT_DIR/plugins/spotlight"');
+    envLines.push(`SPOTLIGHT_VAULT_PATH="${spotlightVault}"`);
+    envLines.push('SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT=1');
+    if (d.cojournalist) envLines.push('SPOTLIGHT_MONITORING_BACKEND=cojournalist');
+    if (d.cojournalist) envLines.push('SPOTLIGHT_SCOUT_REQUESTS=cojournalist');
+    if (d.osintNavigatorKey) envLines.push(envLine('OSINT_NAVIGATOR_API_KEY', d.osintNavigatorKey));
+    if (d.acledKey) envLines.push(envLine('ACLED_API_KEY', d.acledKey));
+    if (d.acledEmail) envLines.push(envLine('ACLED_EMAIL', d.acledEmail));
+    if (d.junkipediaKey) envLines.push(envLine('JUNKIPEDIA_API_KEY', d.junkipediaKey));
+    if (d.spotBrowseruse) envLines.push('SPOTLIGHT_BROWSERUSE=1');
   }
 
   const providerCopies = [
@@ -3671,33 +3759,61 @@ function buildScript(d) {
   if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/" && ok "Together"');
 
   const pluginBlock = [];
-  if (d.spotlight) pluginBlock.push(`mkdir -p "${d.spotlightVaultPath.replace(/^~\//, '$HOME/')}" && ok "Spotlight vault"`);
-  if (d.cojournalist) pluginBlock.push(d.cojMode === 'web' ? `ok "coJournalist: web"` : `say "coJournalist: self-host"`);
+  if (d.spotlight) {
+    pluginBlock.push('mkdir -p "$PLUGINS_DIR"');
+    pluginBlock.push('if [ -d "$SPOTLIGHT_DIR/.git" ]; then update_repo "$SPOTLIGHT_DIR" "Spotlight"; else git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR" && ok "Spotlight cloned"; fi');
+    pluginBlock.push('mkdir -p "$SPOTLIGHT_VAULT_PATH" && ok "Spotlight vault $SPOTLIGHT_VAULT_PATH"');
+    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "acled": ' + (!!(d.acledKey || d.acledEmail) ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
+    pluginBlock.push('[ -f "$SPOTLIGHT_DIR/integrations/preflight.py" ] && (set -a; . "$MYCROFT_ENV"; set +a; python3 "$SPOTLIGHT_DIR/integrations/preflight.py" --text || true)');
+  }
+  if (d.cojournalist) pluginBlock.push('ok "coJournalist hosted API enabled"');
 
   const rcBlockLines = [
     '  printf \'\\n%s\\n\' "$MARKER_START"',
-    '  printf \'export GOOSE_RECIPE_PATH="%s"\\n\' "$MYCROFT_DIR/recipes"',
-    '  printf \'export MYCROFT_DEFAULT_SOVEREIGNTY="%s"\\n\' "$SOVEREIGNTY"',
-    '  [ "$LOCAL_ONLY" = "1" ] && printf \'export MYCROFT_LOCAL_ONLY="1"\\n\'',
+    '  printf \'export MYCROFT_DIR="%s"\\n\' "$MYCROFT_DIR"',
+    '  printf \'export MYCROFT_CONFIG="%s"\\n\' "$MYCROFT_CONFIG"',
+    '  printf \'export GOOSE_RECIPE_PATH="%s"\\n\' "$GOOSE_RECIPE_PATH_VALUE"',
+    '  printf \'[ -f "%s" ] && set -a && . "%s" && set +a\\n\' "$MYCROFT_ENV" "$MYCROFT_ENV"',
+    '  printf \'mycroft() {\\n\'',
+    '  printf \'  case "${1:-}" in\\n\'',
+    '  printf \'    update) "$HOME/.local/bin/mycroft-update" ;;\\n\'',
+    '  printf \'    doctor) (cd "$MYCROFT_DIR" && python3 monitoring/preflight.py --text) ;;\\n\'',
+    '  printf \'    *) goose recipe list ;;\\n\'',
+    '  printf \'  esac\\n\'',
+    '  printf \'}\\n\'',
   ];
-  for (const line of exportLines) rcBlockLines.push(`  printf '%s\\n' ${shq(line)}`);
   rcBlockLines.push('  printf \'%s\\n\' "$MARKER_END"');
 
   return `#!/usr/bin/env bash
 # Mycroft setup — generated by buriedsignals/mycroft
+# Move this .command/.sh file to the folder where you keep installers.
+# macOS first run: right-click the file, choose Open, then Confirm.
+# Subsequent runs can be launched by double-clicking.
 set -euo pipefail
 
 SOVEREIGNTY=${shq(d.sovereignty)}
 LOCAL_ONLY=${shq(bool(d.localOnly))}
-VAULT_PATH="${d.vault.replace(/^~\//, '$HOME/')}"
+VAULT_PATH="${mycroftVault}"
+SPOTLIGHT_VAULT_INPUT="${spotlightVault}"
 
 INSTALL_GOOSE=${shq(bool(d.installGoose))}
 INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
 INSTALL_FIRECRAWL=${shq(bool(d.installFirecrawl))}
 
 MYCROFT_DIR="$HOME/.mycroft"
-GOOSE_CONFIG="$HOME/.config/goose"
+PLUGINS_DIR="$MYCROFT_DIR/plugins"
+MYCROFT_ENV="$MYCROFT_DIR/.env"
+MYCROFT_CONFIG="$MYCROFT_DIR/mycroft-config.json"
+XDG_CONFIG_HOME="\${XDG_CONFIG_HOME:-$HOME/.config}"
+XDG_DATA_HOME="\${XDG_DATA_HOME:-$HOME/.local/share}"
+GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
 PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
+SPOTLIGHT_DIR="$PLUGINS_DIR/spotlight"
+SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
+if [ "$SPOTLIGHT_VAULT_PATH" = "$VAULT_PATH" ]; then
+  SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"
+fi
+GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes"
 
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
@@ -3709,29 +3825,512 @@ say()  { printf "\\n\\033[1;34m>\\033[0m %s\\n" "$*"; }
 ok()   { printf "  \\033[1;32m+\\033[0m %s\\n" "$*"; }
 warn() { printf "  \\033[1;33m!\\033[0m %s\\n" "$*"; }
 
-mkdir -p "$VAULT_PATH" && ok "vault $VAULT_PATH"
+ensure_brew() {
+  if have brew; then return 0; fi
+  if [ "$(uname -s)" != "Darwin" ]; then return 1; fi
+  say "Homebrew is needed for macOS app installs. Install it now? [Y/n]"
+  read -r ans || ans="Y"
+  if [[ "$ans" =~ ^[Nn] ]]; then return 1; fi
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
+  [ -x /usr/local/bin/brew ] && eval "$(/usr/local/bin/brew shellenv)"
+}
 
-[ "$INSTALL_GOOSE" = "1" ]     && have brew && brew install --cask block-goose && ok "Goose"
-[ "$INSTALL_OBSIDIAN" = "1" ]  && have brew && brew install --cask obsidian    && ok "Obsidian"
-[ "$INSTALL_FIRECRAWL" = "1" ] && have npm  && npm install -g firecrawl-cli   && ok "firecrawl"
+ensure_git() {
+  if have git; then return 0; fi
+  if [ "$(uname -s)" = "Darwin" ]; then
+    xcode-select --install || true
+    warn "Install Xcode Command Line Tools, then re-run this installer."
+    exit 1
+  fi
+  warn "git is required. Install git with your package manager, then re-run."
+  exit 1
+}
 
-if [ -d "$MYCROFT_DIR/.git" ]; then (cd "$MYCROFT_DIR" && git pull --ff-only) && ok "updated"
-else git clone git@github.com:buriedsignals/mycroft.git "$MYCROFT_DIR" && ok "cloned"
+ensure_goose() {
+  [ "$INSTALL_GOOSE" = "1" ] || return 0
+  if [ "$(uname -s)" = "Darwin" ]; then
+    if [ ! -d "/Applications/Goose.app" ] && [ ! -d "/Applications/block-goose.app" ] && [ ! -d "$HOME/Applications/Goose.app" ] && [ ! -d "$HOME/Applications/block-goose.app" ]; then
+      ensure_brew && brew install --cask block-goose && ok "Goose Desktop"
+    else ok "Goose Desktop present"; fi
+  fi
+  if ! have goose; then
+    curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash
+    ok "Goose CLI"
+  else ok "Goose CLI present"; fi
+}
+
+install_obsidian() {
+  [ "$INSTALL_OBSIDIAN" = "1" ] || return 0
+  if [ "$(uname -s)" = "Darwin" ]; then
+    if [ -d "/Applications/Obsidian.app" ] || [ -d "$HOME/Applications/Obsidian.app" ]; then ok "Obsidian present"
+    else ensure_brew && brew install --cask obsidian && ok "Obsidian"; fi
+    if ! have obsidian; then
+      warn "Open Obsidian, then enable Settings -> General -> Advanced -> Command Line Interface."
+      open -a Obsidian 2>/dev/null || true
+    fi
+  else
+    warn "Install Obsidian manually on Linux and enable its CLI if your package includes it."
+  fi
+}
+
+install_firecrawl() {
+  [ "$INSTALL_FIRECRAWL" = "1" ] || return 0
+  if have firecrawl; then ok "firecrawl present"; return 0; fi
+  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
+  if have npm; then npm install -g firecrawl-cli && ok "firecrawl"; else warn "npm missing; install firecrawl-cli manually."; fi
+}
+
+update_repo() {
+  local dir="$1" name="$2"
+  if [ ! -d "$dir/.git" ]; then return 1; fi
+  (cd "$dir" && git pull --no-rebase --autostash origin main) && ok "$name updated" || warn "$name update needs manual conflict resolution at $dir"
+}
+
+mkdir -p "$VAULT_PATH" "$GOOSE_CONFIG" "$PROVIDERS_DST" && ok "Mycroft vault $VAULT_PATH"
+ensure_git
+ensure_goose
+install_obsidian
+install_firecrawl
+
+if [ -d "$MYCROFT_DIR/.git" ]; then update_repo "$MYCROFT_DIR" "Mycroft"
+else git clone https://github.com/buriedsignals/mycroft.git "$MYCROFT_DIR" && ok "Mycroft cloned"
 fi
+mkdir -p "$PLUGINS_DIR"
 
 mkdir -p "$PROVIDERS_DST"
 ${providerCopies.join('\n')}
+cp "$MYCROFT_DIR/instructions/journalism.md" "$GOOSE_CONFIG/.goosehints" && ok "Goose global .goosehints"
+
+cat > "$GOOSE_CONFIG/config.yaml" <<GOOSE_CONFIG_EOF
+# Mycroft leaves provider/model selectable in Goose, but these env vars
+# are loaded from ~/.mycroft/.env for shell sessions.
+GOOSE_CONFIG_EOF
+
+cat > "$MYCROFT_ENV" <<'ENV_EOF'
+${envLines.join('\n')}
+ENV_EOF
+chmod 600 "$MYCROFT_ENV"
 
 ${pluginBlock.length ? pluginBlock.join('\n') : '# (no plugins selected)'}
 
+cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
+{
+  "version": 1,
+  "installed_by": "mycroft-setup",
+  "goose": {
+    "config_dir": "$GOOSE_CONFIG",
+    "custom_providers_dir": "$PROVIDERS_DST",
+    "hints_file": "$GOOSE_CONFIG/.goosehints",
+    "recipe_path": "$GOOSE_RECIPE_PATH_VALUE"
+  },
+  "vaults": {
+    "mycroft": "$VAULT_PATH",
+    "spotlight": "$SPOTLIGHT_VAULT_PATH"
+  },
+  "sovereignty": {
+    "default": "$SOVEREIGNTY",
+    "local_only": "$LOCAL_ONLY",
+    "local_model": "${d.localModel || 'qwen9b'}"
+  },
+  "plugins": {
+    "spotlight": {"enabled": ${d.spotlight ? 'true' : 'false'}, "path": "$SPOTLIGHT_DIR", "inherits_mycroft_sovereignty": true},
+    "cojournalist": {"enabled": ${d.cojournalist ? 'true' : 'false'}, "mode": "hosted", "api_base": "https://www.cojournalist.ai/api/v1"}
+  }
+}
+CONFIG_EOF
+ok "Mycroft config $MYCROFT_CONFIG"
+
+if [ -f "$MYCROFT_DIR/monitoring/preflight.py" ]; then
+  (set -a; . "$MYCROFT_ENV"; set +a; python3 "$MYCROFT_DIR/monitoring/preflight.py" --text || true)
+fi
+
+mkdir -p "$HOME/.local/bin" "$XDG_DATA_HOME/mycroft"
+cat > "$HOME/.local/bin/mycroft-update" <<'UPDATE_EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+log_dir="\${XDG_DATA_HOME:-$HOME/.local/share}/mycroft"
+mkdir -p "$log_dir"
+log="$log_dir/update.log"
+exec >>"$log" 2>&1
+echo ""
+date
+update_repo() {
+  local dir="$1" name="$2"
+  [ -d "$dir/.git" ] || return 0
+  echo "== $name =="
+  (cd "$dir" && git pull --no-rebase --autostash origin main)
+}
+update_repo "$HOME/.mycroft" "Mycroft" || true
+update_repo "$HOME/.mycroft/plugins/spotlight" "Spotlight" || true
+UPDATE_EOF
+chmod +x "$HOME/.local/bin/mycroft-update"
+
+if [ "$(uname -s)" = "Darwin" ]; then
+  mkdir -p "$HOME/Library/LaunchAgents"
+  cat > "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" <<PLIST_EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.buriedsignals.mycroft.update</string>
+  <key>ProgramArguments</key>
+  <array><string>$HOME/.local/bin/mycroft-update</string></array>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>15</integer></dict>
+  <key>StandardOutPath</key><string>$XDG_DATA_HOME/mycroft/update.log</string>
+  <key>StandardErrorPath</key><string>$XDG_DATA_HOME/mycroft/update.log</string>
+</dict>
+</plist>
+PLIST_EOF
+  launchctl unload "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" >/dev/null 2>&1 || true
+  launchctl load "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" >/dev/null 2>&1 || warn "LaunchAgent written; load it after reboot if launchctl refused."
+  ok "daily updater LaunchAgent"
+elif have systemctl; then
+  mkdir -p "$XDG_CONFIG_HOME/systemd/user"
+  cat > "$XDG_CONFIG_HOME/systemd/user/mycroft-update.service" <<SERVICE_EOF
+[Unit]
+Description=Update Mycroft and bundled plugins
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/mycroft-update
+SERVICE_EOF
+  cat > "$XDG_CONFIG_HOME/systemd/user/mycroft-update.timer" <<TIMER_EOF
+[Unit]
+Description=Daily Mycroft update
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+TIMER_EOF
+  systemctl --user daemon-reload >/dev/null 2>&1 || true
+  systemctl --user enable --now mycroft-update.timer >/dev/null 2>&1 || warn "systemd timer written; enable it with systemctl --user enable --now mycroft-update.timer"
+  ok "daily updater systemd timer"
+else
+  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * * %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "daily updater cron"
+fi
+
 MARKER_START='# === mycroft ==='
 MARKER_END='# === /mycroft ==='
+tmp_rc="$(mktemp)"
+if [ -f "$SHELL_RC" ]; then
+  awk -v start="$MARKER_START" -v end="$MARKER_END" '
+    $0 == start {skip=1; next}
+    $0 == end {skip=0; next}
+    !skip {print}
+  ' "$SHELL_RC" > "$tmp_rc"
+else
+  : > "$tmp_rc"
+fi
 {
 ${rcBlockLines.join('\n')}
-} >> "$SHELL_RC"
+} >> "$tmp_rc"
+mv "$tmp_rc" "$SHELL_RC"
 
 say "Mycroft setup complete"
+echo "Open a new terminal, then run: mycroft doctor"
+echo "Manual update anytime: mycroft update"
 `;
+}
+
+function crc32(str) {
+  let table = crc32.table;
+  if (!table) {
+    table = crc32.table = new Uint32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let k = 0; k < 8; k++) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+      table[i] = c;
+    }
+  }
+  const bytes = new TextEncoder().encode(str);
+  let crc = 0xffffffff;
+  for (let i = 0; i < bytes.length; i++) crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 0xff];
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function buildZipEntries(entries) {
+  const encoder = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let localOffset = 0;
+
+  for (const entry of entries) {
+    const fnBytes = encoder.encode(entry.filename);
+    const dataBytes = encoder.encode(entry.contents);
+    const crc = crc32(entry.contents);
+    const sz = dataBytes.length;
+    const mode = entry.executable ? 0o100755 : 0o100644;
+
+    const lfh = new Uint8Array(30 + fnBytes.length);
+    const dv1 = new DataView(lfh.buffer);
+    dv1.setUint32(0, 0x04034b50, true);
+    dv1.setUint16(4, 20, true);
+    dv1.setUint16(6, 0, true);
+    dv1.setUint16(8, 0, true);
+    dv1.setUint16(10, 0, true);
+    dv1.setUint16(12, 0x21, true);
+    dv1.setUint32(14, crc, true);
+    dv1.setUint32(18, sz, true);
+    dv1.setUint32(22, sz, true);
+    dv1.setUint16(26, fnBytes.length, true);
+    dv1.setUint16(28, 0, true);
+    lfh.set(fnBytes, 30);
+
+    const cdh = new Uint8Array(46 + fnBytes.length);
+    const dv2 = new DataView(cdh.buffer);
+    dv2.setUint32(0, 0x02014b50, true);
+    dv2.setUint16(4, (3 << 8) | 20, true);
+    dv2.setUint16(6, 20, true);
+    dv2.setUint16(8, 0, true);
+    dv2.setUint16(10, 0, true);
+    dv2.setUint16(12, 0, true);
+    dv2.setUint16(14, 0x21, true);
+    dv2.setUint32(16, crc, true);
+    dv2.setUint32(20, sz, true);
+    dv2.setUint32(24, sz, true);
+    dv2.setUint16(28, fnBytes.length, true);
+    dv2.setUint16(30, 0, true);
+    dv2.setUint16(32, 0, true);
+    dv2.setUint16(34, 0, true);
+    dv2.setUint16(36, 0, true);
+    dv2.setUint32(38, (mode << 16) >>> 0, true);
+    dv2.setUint32(42, localOffset, true);
+    cdh.set(fnBytes, 46);
+
+    localParts.push(lfh, dataBytes);
+    centralParts.push(cdh);
+    localOffset += lfh.length + sz;
+  }
+
+  const centralSize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const eocd = new Uint8Array(22);
+  const dv3 = new DataView(eocd.buffer);
+  dv3.setUint32(0, 0x06054b50, true);
+  dv3.setUint16(4, 0, true);
+  dv3.setUint16(6, 0, true);
+  dv3.setUint16(8, entries.length, true);
+  dv3.setUint16(10, entries.length, true);
+  dv3.setUint32(12, centralSize, true);
+  dv3.setUint32(16, localOffset, true);
+  dv3.setUint16(20, 0, true);
+
+  const total = new Uint8Array(localOffset + centralSize + eocd.length);
+  let off = 0;
+  for (const part of localParts) { total.set(part, off); off += part.length; }
+  for (const part of centralParts) { total.set(part, off); off += part.length; }
+  total.set(eocd, off);
+  return total;
+}
+
+function buildInstallerReadme() {
+  return `# Mycroft Setup
+
+1. Extract this ZIP.
+2. Move \`mycroft-setup.command\` to the folder where you keep installers, such as Downloads or Desktop.
+3. On macOS the first run must be explicit: right-click \`mycroft-setup.command\`, choose Open, then Confirm.
+4. After the first approved run, you can double-click the file.
+5. When setup finishes, open a new terminal and run \`mycroft doctor\`.
+
+The script writes secrets to \`~/.mycroft/.env\`; the separate agent setup ZIP never contains secret values.
+`;
+}
+
+function buildAgentManifest(d) {
+  const required = [];
+  if (d.firecrawlKey) required.push('FIRECRAWL_API_KEY');
+  if (d.fireworks) required.push('FIREWORKS_API_KEY');
+  if (d.together) required.push('TOGETHER_API_KEY');
+  if (d.cojournalist) required.push('COJOURNALIST_API_KEY');
+  if (d.spotlight && d.osintNavigatorKey) required.push('OSINT_NAVIGATOR_API_KEY');
+  return {
+    schema_version: 'mycroft-agent-setup/v1',
+    generated_at: new Date().toISOString(),
+    install_path: '~/.mycroft',
+    startup_command: 'mycroft doctor',
+    goose: {
+      config_dir: '~/.config/goose',
+      custom_providers_dir: '~/.config/goose/custom_providers',
+      hints_file: '~/.config/goose/.goosehints',
+      recipe_path: '~/.mycroft/recipes',
+    },
+    sovereignty: {
+      default: d.sovereignty,
+      local_only: d.localOnly,
+      local_model: d.localModel || 'qwen9b',
+    },
+    vaults: {
+      mycroft: d.vault,
+      spotlight: d.spotlightVaultPath,
+    },
+    plugins: {
+      spotlight: {
+        enabled: d.spotlight,
+        path: '~/.mycroft/plugins/spotlight',
+        inherits_mycroft_sovereignty: true,
+        scout_requests: d.cojournalist ? 'cojournalist' : null,
+      },
+      cojournalist: {
+        enabled: d.cojournalist,
+        mode: 'hosted_api',
+        api_base: 'https://www.cojournalist.ai/api/v1',
+      },
+    },
+    env: {
+      required,
+      optional: [
+        ...(d.apifyEnabled ? ['APIFY_API_TOKEN'] : []),
+        ...(d.agentmailEnabled ? ['AGENTMAIL_API_KEY'] : []),
+        ...(d.spotBrowseruse ? ['SPOTLIGHT_BROWSERUSE'] : []),
+        ...(d.acledKey || d.acledEmail ? ['ACLED_API_KEY', 'ACLED_EMAIL'] : []),
+        ...(d.junkipediaKey ? ['JUNKIPEDIA_API_KEY'] : []),
+      ],
+    },
+    notes: [
+      'This manifest intentionally contains no secret values.',
+      'Secrets are written to ~/.mycroft/.env by the installer.',
+      'Spotlight and Mycroft vault paths should stay separate.',
+    ],
+  };
+}
+
+function buildAgentPrompt(manifest) {
+  return `# Mycroft Agent Setup
+
+Use \`mycroft-agent-manifest.json\` as the source of truth. Do not ask the user to paste secrets into chat and do not print secret values.
+
+## Verify
+
+1. Confirm Mycroft exists at \`${manifest.install_path}\`.
+2. Confirm Goose config paths exist:
+   - \`${manifest.goose.config_dir}\`
+   - \`${manifest.goose.custom_providers_dir}\`
+   - \`${manifest.goose.hints_file}\`
+3. Confirm \`~/.mycroft/.env\` contains the required variable names only: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}.
+4. Confirm \`GOOSE_RECIPE_PATH\` includes \`${manifest.goose.recipe_path}\`.
+5. Run \`mycroft doctor\`.
+
+## Runtime
+
+- Sovereignty: ${manifest.sovereignty.default}
+- Local model: ${manifest.sovereignty.local_model}
+- Mycroft vault: \`${manifest.vaults.mycroft}\`
+- Spotlight vault: \`${manifest.vaults.spotlight}\`
+- Spotlight enabled: ${manifest.plugins.spotlight.enabled ? 'yes' : 'no'}
+- coJournalist hosted API enabled: ${manifest.plugins.cojournalist.enabled ? 'yes' : 'no'}
+
+If Spotlight is enabled, verify \`${manifest.plugins.spotlight.path}\` exists and that \`.spotlight-config.json\` points back to Mycroft config. If coJournalist is enabled, Spotlight can create scout requests through the hosted coJournalist API.
+`;
+}
+
+function recommendLocalModel(model) {
+  const card9 = document.getElementById('modelCard9b');
+  const card35 = document.getElementById('modelCard35b');
+  if (!card9 || !card35) return;
+  card9.classList.toggle('recommended', model === 'qwen9b');
+  card9.classList.toggle('not-recommended', model === 'qwen35b');
+  card35.classList.toggle('recommended', model === 'qwen35b');
+  card35.classList.toggle('not-recommended', model === 'qwen9b');
+  const radio = document.querySelector(`input[name="local_model"][value="${model}"]`);
+  if (radio) radio.checked = true;
+  refreshPreview();
+}
+
+async function runFitCheck() {
+  const panel = document.getElementById('fitPanel');
+  const verdict = document.getElementById('fitVerdict');
+  const icon = verdict ? verdict.querySelector('.fit-icon') : null;
+  const title = document.getElementById('fitTitle');
+  const stats = document.getElementById('fitStats');
+  const body = document.getElementById('fitBody');
+  const cmdBox = document.getElementById('fitCmdBox');
+  const cmd = document.getElementById('fitCmd');
+  if (!panel || !title || !stats || !body || !cmdBox || !cmd) return;
+
+  panel.classList.remove('hidden', 'green', 'amber', 'red');
+  if (icon) icon.textContent = '...';
+  title.textContent = 'Checking hardware';
+  stats.innerHTML = '';
+  body.textContent = 'Reading what your browser exposes about CPU, RAM, and GPU.';
+  cmdBox.hidden = true;
+  await new Promise(resolve => setTimeout(resolve, 350));
+
+  const ua = navigator.userAgent || '';
+  const isMac = /Macintosh/.test(ua);
+  const isLinux = /Linux/.test(ua) && !/Android/.test(ua);
+  const cores = navigator.hardwareConcurrency || 'unknown';
+  const deviceMemGB = navigator.deviceMemory || null;
+  let arch = null;
+  try {
+    if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+      const high = await navigator.userAgentData.getHighEntropyValues(['architecture']);
+      arch = high.architecture;
+    }
+  } catch {}
+  let gpuName = 'n/a';
+  try {
+    if (navigator.gpu) {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) {
+        const info = await adapter.requestAdapterInfo?.() || {};
+        gpuName = info.architecture || info.vendor || info.description || 'WebGPU available';
+      }
+    }
+  } catch {}
+
+  const isAppleSilicon = isMac && (arch === 'arm' || (typeof cores === 'number' && cores >= 8 && !!navigator.gpu));
+  let state = 'amber';
+  let heading = 'Confirm RAM before choosing local';
+  let message = 'Your browser did not expose enough memory detail. Use the command below to confirm RAM before local setup.';
+  let recommended = null;
+
+  if (deviceMemGB && deviceMemGB >= 64) {
+    state = 'green';
+    heading = '35B should fit';
+    message = `Browser reports roughly ${deviceMemGB} GB+ RAM. The 35B model is the best local choice here; 9B also fits.`;
+    recommended = 'qwen35b';
+  } else if (deviceMemGB && deviceMemGB >= 16) {
+    state = 'amber';
+    heading = '9B fits; 35B does not';
+    message = `Browser reports roughly ${deviceMemGB} GB RAM. Use the 9B daily-driver model. The 35B model needs 64 GB+ unified memory/RAM.`;
+    recommended = 'qwen9b';
+  } else if (deviceMemGB) {
+    state = 'red';
+    heading = 'Use cloud-first';
+    message = `Browser reports roughly ${deviceMemGB} GB RAM, below the 16 GB minimum for Mycroft local inference.`;
+  } else if (isAppleSilicon) {
+    state = 'amber';
+    heading = 'Apple Silicon detected; confirm memory';
+    message = 'Apple Silicon is a good local target, but Safari/Chrome may hide RAM. If your Mac has 16-63 GB, use 9B. If it has 64 GB+, 35B should fit.';
+  } else if (isLinux) {
+    state = 'amber';
+    heading = 'Linux detected; check RAM/VRAM';
+    message = 'Use 9B with 16 GB+ system RAM. Use 35B only with 64 GB+ RAM or enough GPU VRAM/offload headroom.';
+  } else {
+    state = 'red';
+    heading = 'Hardware check inconclusive';
+    message = 'Use cloud-first unless you can confirm at least 16 GB RAM for 9B local inference.';
+  }
+
+  if (recommended) recommendLocalModel(recommended);
+  panel.classList.remove('green', 'amber', 'red');
+  panel.classList.add(state);
+  if (icon) icon.textContent = state === 'green' ? 'OK' : state === 'amber' ? '!' : 'NO';
+  title.textContent = heading;
+  body.textContent = message;
+  stats.innerHTML = `
+    <div class="fit-stat"><span class="k">Platform</span><span class="v">${isAppleSilicon ? 'Apple Silicon' : isMac ? 'Intel Mac' : isLinux ? 'Linux' : 'Other'}</span></div>
+    <div class="fit-stat"><span class="k">CPU cores</span><span class="v">${cores}</span></div>
+    <div class="fit-stat"><span class="k">RAM</span><span class="v">${deviceMemGB ? '~' + deviceMemGB + ' GB+' : 'n/a'}</span></div>
+    <div class="fit-stat"><span class="k">GPU</span><span class="v">${String(gpuName).slice(0, 36)}</span></div>
+  `;
+  cmd.textContent = isMac
+    ? "system_profiler SPHardwareDataType | grep -E 'Memory|Chip|Cores'"
+    : "free -h && lscpu | grep -E 'Model name|CPU\\\\(s\\\\)' && lspci | grep -i vga";
+  cmdBox.hidden = false;
 }
 
 function refreshPreview() {
@@ -3750,11 +4349,15 @@ function download() {
   if (missing.length) {
     if (!confirm('Missing required keys:\n\n' + missing.map(k => '  • ' + k).join('\n') + '\n\nGenerate anyway?')) return;
   }
-  const blob = new Blob([buildScript(d)], {type: 'application/x-sh'});
+  const zip = buildZipEntries([
+    { filename: 'mycroft-setup.command', contents: buildScript(d), executable: true },
+    { filename: 'README-FIRST.txt', contents: buildInstallerReadme(), executable: false },
+  ]);
+  const blob = new Blob([zip], {type: 'application/zip'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'mycroft-setup.command';
+  a.download = 'mycroft-setup.zip';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
@@ -3762,6 +4365,32 @@ function download() {
 }
 
 document.getElementById('downloadBtn').addEventListener('click', download);
+
+function downloadAgentSetup() {
+  const d = readForm();
+  const manifest = buildAgentManifest(d);
+  const zip = buildZipEntries([
+    {
+      filename: 'mycroft-agent-manifest.json',
+      contents: JSON.stringify(manifest, null, 2) + '\n',
+      executable: false,
+    },
+    {
+      filename: 'mycroft-agent-prompt.md',
+      contents: buildAgentPrompt(manifest),
+      executable: false,
+    },
+  ]);
+  const blob = new Blob([zip], {type: 'application/zip'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'mycroft-agent-setup.zip';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+}
+document.getElementById('agentSetupBtn').addEventListener('click', downloadAgentSetup);
 
 async function copyToClipboard() {
   const btn = document.getElementById('copyBtn');
@@ -3776,9 +4405,13 @@ document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
 document.getElementById('form').addEventListener('input', refreshPreview);
 document.getElementById('form').addEventListener('change', refreshPreview);
 document.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => { if (d.open) refreshPreview(); }));
+document.getElementById('fitCheckBtn')?.addEventListener('click', runFitCheck);
+document.getElementById('fitCmdCopy')?.addEventListener('click', async () => {
+  const cmd = document.getElementById('fitCmd')?.textContent || '';
+  try { await navigator.clipboard.writeText(cmd); } catch {}
+});
 
 applySovereigntyMode();
-applyCoJournalistMode();
 refreshPreview();
 </script>
 

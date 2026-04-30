@@ -18,15 +18,25 @@ A Goose Extension Pack for investigative journalists. Privacy-preserving, ZDR-fi
 Visit the setup page (deployed from `index.html` in this repo — URL TBD, e.g. `mycroft.buriedsignals.com`):
 
 1. Fill the form: sovereignty preference, API keys, cloud providers, vault path
-2. Click **Download mycroft-setup.command** — your browser saves a bash script with your selections baked in
-3. Run it:
+2. Click **Download installer ZIP** — your browser saves `mycroft-setup.zip` with a double-clickable `mycroft-setup.command` and `README-FIRST.txt`
+3. Extract the ZIP, move `mycroft-setup.command` to the folder where you keep installers, then run it:
    ```sh
-   chmod +x ~/Downloads/mycroft-setup.command
-   ~/Downloads/mycroft-setup.command
+   chmod +x /path/to/mycroft-setup.command
+   /path/to/mycroft-setup.command
    ```
-4. Open a new terminal — shell rc updates take effect
+   On macOS, right-click → **Open** the first time because the script is unsigned; later runs can be double-clicked.
+4. Optional: click **Download agent setup ZIP** to export a non-secret JSON manifest plus a prompt another agent can use to verify the install.
+5. Open a new terminal — shell rc updates take effect
 
-The setup page runs **entirely in your browser** — no form submissions, no server round-trips, no API keys crossing the network. The downloaded `.command` script clones this repo to `~/.mycroft/`, copies provider configs to `~/.config/goose/custom_providers/`, copies the journalism Instructions to `~/.config/goose/.goosehints`, and appends a `# === mycroft ===` block to your shell rc.
+The setup page runs **entirely in your browser** — no form submissions, no server round-trips, no API keys crossing the network. The downloaded `.command` script clones this repo to `~/.mycroft/`, copies provider configs to `~/.config/goose/custom_providers/`, copies the journalism Instructions to `~/.config/goose/.goosehints`, writes secrets to `~/.mycroft/.env`, and installs a replaceable `# === mycroft ===` block in your shell rc.
+
+The guided installer also installs a daily updater:
+
+- macOS: `~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist`
+- Linux with systemd: `~/.config/systemd/user/mycroft-update.timer`
+- Other Linux shells: a crontab entry
+
+The updater runs `git pull --no-rebase --autostash origin main` for Mycroft and bundled plugin repos. Local committed changes are merged with upstream; uncommitted changes are autostashed. If Git hits a conflict, the update log is left at `~/.local/share/mycroft/update.log` for manual resolution.
 
 ### Local install (no hosted page)
 
@@ -50,7 +60,7 @@ git clone https://github.com/buriedsignals/mycroft.git ~/.mycroft
 # 2. Point Goose at the recipes
 export GOOSE_RECIPE_PATH=~/.mycroft/recipes  # add to ~/.zshrc or ~/.bashrc
 
-# 3. Copy whichever provider configs you want to use (all ZDR, US-hosted unless noted)
+# 3. Copy whichever provider configs you want to use (macOS/Linux Goose config path)
 mkdir -p ~/.config/goose/custom_providers
 cp ~/.mycroft/providers/fireworks-qwen36plus.json   ~/.config/goose/custom_providers/  # primary — Qwen 3.6 Plus (US, ZDR)
 cp ~/.mycroft/providers/together-qwen.json          ~/.config/goose/custom_providers/  # alternative — Qwen 2.5-72B Turbo (US, ZDR opt-in)
@@ -65,9 +75,11 @@ export FIREWORKS_API_KEY=...
 export TOGETHER_API_KEY=...
 export OPENROUTER_API_KEY=...
 
-# 5. Install journalism Instructions
+# 5. Install global journalism Instructions
 cp ~/.mycroft/instructions/journalism.md ~/.config/goose/.goosehints
 ```
+
+Goose path notes checked against the Goose docs: macOS/Linux use `~/.config/goose/config.yaml`, `~/.config/goose/custom_providers/`, and global `~/.config/goose/.goosehints`. Recipe discovery uses the colon-separated `GOOSE_RECIPE_PATH`.
 
 ## Run the Phase 1 demos
 
@@ -124,9 +136,10 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 - **Interview prep / story pitch** — out of scope. Not in this pack.
 - **AgentMail MCP** — current morning-brief uses the AgentMail REST API via curl. A proper MCP extension is on the later roadmap.
 
-## Roadmap
+## Plugins
 
-- Spotlight + coJournalist MCP integrations (when their harness-agnostic versions ship, separate tracks)
+- **Spotlight** installs under `~/.mycroft/plugins/spotlight`, inherits Mycroft's cloud/local provider preference, and keeps its investigation vault separate from the Mycroft vault by default.
+- **coJournalist** is hosted API only in the Mycroft setup flow. Mycroft stores `COJOURNALIST_API_KEY` and exposes it to Spotlight so investigations can request durable scouts and later read information units.
 - MCP Apps for investigation dashboard + fact-check scorecard (visual UI in Goose Desktop)
 - Pilot with 3-5 grant-target journalists
 
