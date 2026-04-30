@@ -7249,7 +7249,10 @@ function boot() {
   const heroSec = sections.find((s) => s.el.id === "hero") || sections[0];
   const closingSec =
     sections.find((s) => s.el.id === "closing") || sections[sections.length - 1];
-  const bandTopY = -(heroSec.top + heroSec.height);
+  // Push band start well below hero so floating papers never peek into the
+  // hero viewport (paper visualH + safety margin).
+  const FLOAT_BAND_PAD = 240;
+  const bandTopY = -(heroSec.top + heroSec.height) - FLOAT_BAND_PAD;
   const bandBottomY = -closingSec.top;
   scenes.push(
     new FloatingPapersScene({
