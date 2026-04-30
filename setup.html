@@ -2667,8 +2667,8 @@ body.mode-local .cloud-only { display: none; }
   opacity: 0.56;
 }
 .sec--setup-hero { position: relative; }
-.sec--setup-hero > canvas { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.sec--setup-hero > *:not(canvas) { position: relative; z-index: 1; }
+.sec--setup-hero > * { position: relative; z-index: 1; }
+#setup-hero-canvas { z-index: 0; }
 </style>
 
 <script type="importmap">
@@ -8213,23 +8213,26 @@ function setupHeroBoot() {
   renderer.setSize(heroW, heroH);
   renderer.setClearColor(0x000000, 0);
   const canvas = renderer.domElement;
-  Object.assign(canvas.style, {
-    position: "absolute",
-    inset: "0",
-    width: "100%",
-    height: "100%",
-    pointerEvents: "none",
-    zIndex: "0",
-  });
-  hero.style.position = hero.style.position || "relative";
-  hero.insertBefore(canvas, hero.firstChild);
+  canvas.id = "setup-hero-canvas";
+  // Mount on body (outside .shell padding) so papers can fill the full
+  // viewport width edge-to-edge. Positioned absolute so it scrolls with
+  // the page and stays visually pinned to the hero region.
+  document.body.appendChild(canvas);
 
-  // Make sure the hero text content stacks above the canvas.
-  hero.querySelectorAll(":scope > *:not(canvas)").forEach((el) => {
-    const cs = getComputedStyle(el);
-    if (cs.position === "static") el.style.position = "relative";
-    el.style.zIndex = el.style.zIndex || "1";
-  });
+  function placeCanvas() {
+    const r = hero.getBoundingClientRect();
+    const top = r.top + window.scrollY;
+    Object.assign(canvas.style, {
+      position: "absolute",
+      top: top + "px",
+      left: "0",
+      width: "100vw",
+      height: heroH + "px",
+      pointerEvents: "none",
+      zIndex: "0",
+    });
+  }
+  placeCanvas();
 
   const floating = new FloatingPapersScene({
     parent: scene,
@@ -8243,17 +8246,22 @@ function setupHeroBoot() {
   });
 
   function resize() {
-    heroW = hero.offsetWidth;
+    heroW = window.innerWidth;
     heroH = hero.offsetHeight;
     camera.aspect = heroW / heroH;
     camera.position.z = heroH / 2 / Math.tan(FOV_RAD / 2);
     camera.updateProjectionMatrix();
     renderer.setSize(heroW, heroH);
+    placeCanvas();
   }
   window.addEventListener("resize", resize);
+  window.addEventListener("scroll", placeCanvas, { passive: true });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(resize);
   }
+  // initial measurement uses full viewport width (canvas spans 100vw)
+  heroW = window.innerWidth;
+  resize();
 
   const clock = new THREE.Clock();
   let lastT = 0;
