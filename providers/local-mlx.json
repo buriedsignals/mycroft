@@ -2,7 +2,7 @@
   "name": "local-mlx",
   "engine": "openai",
   "display_name": "Local MLX (Apple Silicon, sovereign — optional)",
-  "description": "Optional Apple Silicon-native inference via mlx_lm.server. Requires an MLX-format model (safetensors). Primary local path is llama-server (GGUF) — use this only if you've converted or downloaded an MLX build of the Mycroft Qwen fine-tune. Start with: `mlx_lm.server --model <path> --port 8081`.",
+  "description": "Optional Apple Silicon-native inference via mlx_lm.server. Requires an MLX-format model (safetensors). Primary local path is llama-server (GGUF) — use this only if you've converted or downloaded an MLX build of the selected Mycroft/Spotlight model. Start with: `mlx_lm.server --model <path> --port 8081`.",
   "api_key_env": "MLX_API_KEY",
   "base_url": "http://127.0.0.1:8081/v1/chat/completions",
   "models": [
@@ -11,7 +11,11 @@
       "context_limit": 32768
     },
     {
-      "name": "qwen3.5-35b-abliterated-journalist-mlx",
+      "name": "gemma4-e4b-journalist-mlx",
+      "context_limit": 32768
+    },
+    {
+      "name": "qwen3.6-27b-uncensored-hauhaucs-mlx",
       "context_limit": 32768
     }
   ],

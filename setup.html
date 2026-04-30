@@ -2900,10 +2900,10 @@ body.mode-local .cloud-only { display: none; }
     <div class="sec-head" data-reveal>
       <div>
         <p class="num"><span class="num__n">02</span> Local model</p>
-        <h2 class="display display--section">Mycroft <em>Qwen.</em></h2>
+        <h2 class="display display--section">Local <em>models.</em></h2>
       </div>
       <p class="lead">
-        Fine-tuned Qwen 3.5 on investigative methodology — SIFT, OSINT tool selection, evidence grounding, ethics. <em>Abliterated</em>: won't soft-refuse legitimate journalism queries.
+        Pick the model that matches the work. Qwen 9B is the Mycroft daily driver. Spotlight needs a larger local model for full investigations.
       </p>
     </div>
 
@@ -2922,32 +2922,46 @@ body.mode-local .cloud-only { display: none; }
       </div>
     </div>
 
-    <div class="grid-2 model-grid" data-reveal style="--delay: 200ms">
+    <div class="grid-3 model-grid" data-reveal style="--delay: 200ms">
       <label class="item model-card" id="modelCard9b">
         <input type="radio" name="local_model" value="qwen9b" checked>
-        <p class="item__num"><em>9B</em> Default</p>
+        <p class="item__num"><em>9B</em> Mycroft</p>
         <div class="item__head">
           <span class="item__title">9B<br><em>Daily driver.</em></span>
           <span class="badge info">local</span>
         </div>
-        <p class="item__lede">Runs on 16 GB+ unified memory / RAM. Apple Silicon: native llama.cpp speeds. <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.5-9b-abliterated-journalist-GGUF</a></p>
+        <p class="item__lede">Runs on 16 GB+ unified memory / RAM. Good for Mycroft recipes, briefs, vault QA, and Obsidian workflows. <strong>Not enough for local Spotlight investigations.</strong> <a href="https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.5-9b-abliterated-journalist-GGUF</a></p>
         <div class="price">
           <span class="price__amt">$0<em>/mo</em></span>
           <span class="price__detail">hardware + electricity only</span>
         </div>
       </label>
 
-      <label class="item model-card" id="modelCard35b">
-        <input type="radio" name="local_model" value="qwen35b">
-        <p class="item__num"><em>35B</em> Power</p>
+      <label class="item model-card" id="modelCardGemma">
+        <input type="radio" name="local_model" value="gemma4">
+        <p class="item__num"><em>26B</em> Minimum Spotlight</p>
         <div class="item__head">
-          <span class="item__title">35B<br><em>Heavy lifting.</em></span>
-          <span class="badge soon">training</span>
+          <span class="item__title">Gemma 4<br><em>Vision lane.</em></span>
+          <span class="badge info">spotlight</span>
         </div>
-        <p class="item__lede">Needs 64 GB+ unified memory. <em>Training in progress</em> — same flow once released. <a href="https://huggingface.co/tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.5-35b-abliterated-journalist-GGUF</a></p>
+        <p class="item__lede">Minimum local option for Spotlight-style investigations. Better with 24 GB+ unified memory; includes vision assets for document and image-heavy work. <a href="https://huggingface.co/tomvaillant/gemma4-e4b-journalist" target="_blank" rel="noreferrer">gemma4-e4b-journalist</a></p>
         <div class="price">
           <span class="price__amt">$0<em>/mo</em></span>
-          <span class="price__detail">hardware + electricity only</span>
+          <span class="price__detail">larger download · more headroom needed</span>
+        </div>
+      </label>
+
+      <label class="item model-card" id="modelCardQwen27">
+        <input type="radio" name="local_model" value="qwen27b">
+        <p class="item__num"><em>27B</em> Best local Spotlight</p>
+        <div class="item__head">
+          <span class="item__title">Qwen3.6<br><em>Heavy lifting.</em></span>
+          <span class="badge req">recommended</span>
+        </div>
+        <p class="item__lede">Best local choice when Mycroft also needs to run Spotlight. Dense 27B, thinking mode, vision, zero refusals. Needs 24 GB+ unified memory / RAM. <a href="https://huggingface.co/HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive" target="_blank" rel="noreferrer">Qwen3.6-27B-Uncensored-HauhauCS-Aggressive</a></p>
+        <div class="price">
+          <span class="price__amt">$0<em>/mo</em></span>
+          <span class="price__detail">~10 GB Q4 · hardware + electricity only</span>
         </div>
       </label>
     </div>
@@ -2957,13 +2971,14 @@ body.mode-local .cloud-only { display: none; }
       <pre class="preview" style="margin-top:var(--sp-3);max-height:none;"><code># 1. Install the HF CLI
 pip install -U "huggingface_hub[cli]"
 
-# 2. Pull the 9B (Q4_K_M is a good balance)
+# 2. Pull the selected model (example: Mycroft 9B)
 hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \
   --local-dir ~/.mycroft/models/qwen-journalist-9b \
   --include "*Q4_K_M.gguf"
 
 # 3. Start llama-server
 llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080</code></pre>
+      <p class="hint" style="margin-top:var(--sp-3);">If Spotlight is enabled, use Gemma 4 or Qwen3.6 27B. The 9B is intentionally Mycroft-only.</p>
     </div>
   </section>
 
@@ -3098,7 +3113,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
           OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. It inherits your Mycroft cloud/local preference.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
-          <a href="https://github.com/buriedsignals/spotlight" target="_blank" rel="noreferrer">buriedsignals/spotlight</a>
+          <a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">spotlight.buriedsignals.com</a>
         </p>
       </div>
       <div class="plugin-hero__config">
@@ -3148,7 +3163,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
           Schedule scouts to watch your beat — pages, social profiles, council agendas — and get alerted when something changes. Spotlight can also recommend scouts mid-investigation.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
-          <a href="https://github.com/buriedsignals/cojournalist" target="_blank" rel="noreferrer">buriedsignals/cojournalist</a>
+          <a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">cojournalist.ai</a>
         </p>
       </div>
       <div class="plugin-hero__config">
@@ -3776,6 +3791,24 @@ function readForm() {
   };
 }
 
+function localModelMeta(id) {
+  const models = {
+    qwen9b: {
+      name: 'qwen3.5-9b-abliterated-journalist',
+      repo: 'tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF',
+    },
+    gemma4: {
+      name: 'gemma4-e4b-journalist',
+      repo: 'tomvaillant/gemma4-e4b-journalist',
+    },
+    qwen27b: {
+      name: 'qwen3.6-27b-uncensored-hauhaucs',
+      repo: 'HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive',
+    },
+  };
+  return models[id] || models.qwen9b;
+}
+
 function buildScript(d) {
   const mycroftVault = expandHomeForScript(d.vault);
   const spotlightVault = expandHomeForScript(d.spotlightVaultPath);
@@ -3787,12 +3820,11 @@ function buildScript(d) {
     `MYCROFT_LOCAL_ONLY=${shq(d.localOnly ? '1' : '0')}`,
   ];
   if (d.localOnly) {
-    const localModelName = d.localModel === 'qwen35b' ? 'qwen3.5-35b-abliterated-journalist' : 'qwen3.5-9b-abliterated-journalist';
-    const localModelRepo = d.localModel === 'qwen35b' ? 'tomvaillant/qwen3.5-35b-abliterated-journalist-GGUF' : 'tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF';
+    const localModel = localModelMeta(d.localModel);
     envLines.push('GOOSE_PROVIDER=local-llama-server');
-    envLines.push('GOOSE_MODEL=' + localModelName);
-    envLines.push('MYCROFT_LOCAL_MODEL=' + localModelName);
-    envLines.push('MYCROFT_LOCAL_MODEL_REPO=' + localModelRepo);
+    envLines.push('GOOSE_MODEL=' + localModel.name);
+    envLines.push('MYCROFT_LOCAL_MODEL=' + localModel.name);
+    envLines.push('MYCROFT_LOCAL_MODEL_REPO=' + localModel.repo);
   } else if (d.fireworks) {
     envLines.push('GOOSE_PROVIDER=fireworks-qwen36plus');
     envLines.push('GOOSE_MODEL=accounts/fireworks/models/qwen3p6-plus');
@@ -4295,13 +4327,16 @@ If Spotlight is enabled, verify \`${manifest.plugins.spotlight.path}\` exists an
 }
 
 function recommendLocalModel(model) {
-  const card9 = document.getElementById('modelCard9b');
-  const card35 = document.getElementById('modelCard35b');
-  if (!card9 || !card35) return;
-  card9.classList.toggle('recommended', model === 'qwen9b');
-  card9.classList.toggle('not-recommended', model === 'qwen35b');
-  card35.classList.toggle('recommended', model === 'qwen35b');
-  card35.classList.toggle('not-recommended', model === 'qwen9b');
+  const cards = {
+    qwen9b: document.getElementById('modelCard9b'),
+    gemma4: document.getElementById('modelCardGemma'),
+    qwen27b: document.getElementById('modelCardQwen27'),
+  };
+  if (!cards.qwen9b || !cards.gemma4 || !cards.qwen27b) return;
+  Object.entries(cards).forEach(([id, card]) => {
+    card.classList.toggle('recommended', id === model);
+    card.classList.toggle('not-recommended', id !== model);
+  });
   const radio = document.querySelector(`input[name="local_model"][value="${model}"]`);
   if (radio) radio.checked = true;
   refreshPreview();
@@ -4331,6 +4366,7 @@ async function runFitCheck() {
   const isLinux = /Linux/.test(ua) && !/Android/.test(ua);
   const cores = navigator.hardwareConcurrency || 'unknown';
   const deviceMemGB = navigator.deviceMemory || null;
+  const spotlightEnabled = !!document.querySelector('input[name="spotlight_enabled"]')?.checked;
   let arch = null;
   try {
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
@@ -4355,16 +4391,22 @@ async function runFitCheck() {
   let message = 'Your browser did not expose enough memory detail. Use the command below to confirm RAM before local setup.';
   let recommended = null;
 
-  if (deviceMemGB && deviceMemGB >= 64) {
+  if (deviceMemGB && deviceMemGB >= 24 && spotlightEnabled) {
     state = 'green';
-    heading = '35B should fit';
-    message = `Browser reports roughly ${deviceMemGB} GB+ RAM. The 35B model is the best local choice here; 9B also fits.`;
-    recommended = 'qwen35b';
+    heading = 'Qwen3.6 27B is best here';
+    message = `Browser reports roughly ${deviceMemGB} GB+ RAM. Use Qwen3.6 27B for Mycroft plus local Spotlight; 9B remains Mycroft-only.`;
+    recommended = 'qwen27b';
   } else if (deviceMemGB && deviceMemGB >= 16) {
     state = 'amber';
-    heading = '9B fits; 35B does not';
-    message = `Browser reports roughly ${deviceMemGB} GB RAM. Use the 9B daily-driver model. The 35B model needs 64 GB+ unified memory/RAM.`;
-    recommended = 'qwen9b';
+    if (spotlightEnabled) {
+      heading = 'Gemma is the minimum Spotlight lane';
+      message = `Browser reports roughly ${deviceMemGB} GB RAM. Use Gemma 4 for the lightest local Spotlight path; Qwen3.6 27B is better with 24 GB+ headroom.`;
+      recommended = 'gemma4';
+    } else {
+      heading = '9B fits for Mycroft';
+      message = `Browser reports roughly ${deviceMemGB} GB RAM. Use the 9B daily-driver model. Enable Spotlight only with Gemma 4 or Qwen3.6 27B.`;
+      recommended = 'qwen9b';
+    }
   } else if (deviceMemGB) {
     state = 'red';
     heading = 'Use cloud-first';
@@ -4372,15 +4414,19 @@ async function runFitCheck() {
   } else if (isAppleSilicon) {
     state = 'amber';
     heading = 'Apple Silicon detected; confirm memory';
-    message = 'Apple Silicon is a good local target, but Safari/Chrome may hide RAM. If your Mac has 16-63 GB, use 9B. If it has 64 GB+, 35B should fit.';
+    message = spotlightEnabled
+      ? 'Apple Silicon is a good local target, but Safari/Chrome may hide RAM. Use Gemma 4 at 16 GB+, and Qwen3.6 27B at 24 GB+ for local Spotlight.'
+      : 'Apple Silicon is a good local target, but Safari/Chrome may hide RAM. Use 9B at 16 GB+ for Mycroft; choose a larger model only if Spotlight is enabled.';
   } else if (isLinux) {
     state = 'amber';
     heading = 'Linux detected; check RAM/VRAM';
-    message = 'Use 9B with 16 GB+ system RAM. Use 35B only with 64 GB+ RAM or enough GPU VRAM/offload headroom.';
+    message = spotlightEnabled
+      ? 'Use Gemma 4 with 16 GB+ system RAM as the minimum local Spotlight path. Use Qwen3.6 27B with 24 GB+ RAM or enough GPU VRAM/offload headroom.'
+      : 'Use 9B with 16 GB+ system RAM for Mycroft. Spotlight needs Gemma 4 or Qwen3.6 27B.';
   } else {
     state = 'red';
     heading = 'Hardware check inconclusive';
-    message = 'Use cloud-first unless you can confirm at least 16 GB RAM for 9B local inference.';
+    message = 'Use cloud-first unless you can confirm at least 16 GB RAM for Mycroft 9B, or more headroom for local Spotlight.';
   }
 
   if (recommended) recommendLocalModel(recommended);

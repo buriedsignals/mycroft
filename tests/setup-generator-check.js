@@ -84,7 +84,7 @@ const localScript = context.buildScript({
   ...base,
   sovereignty: "local",
   localOnly: true,
-  localModel: "qwen35b",
+  localModel: "qwen27b",
   fireworks: false,
   cojournalist: false,
   cojournalistKey: "",
@@ -96,7 +96,8 @@ if (syntax.status !== 0) {
   process.exit(syntax.status || 1);
 }
 assertIncludes(localScript, "GOOSE_PROVIDER=local-llama-server");
-assertIncludes(localScript, "GOOSE_MODEL=qwen3.5-35b-abliterated-journalist");
+assertIncludes(localScript, "GOOSE_MODEL=qwen3.6-27b-uncensored-hauhaucs");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive");
 assertIncludes(localScript, 'SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"');
 assertExcludes(localScript, "COJOURNALIST_API_KEY=");
 assertExcludes(localScript, "SPOTLIGHT_MONITORING_BACKEND=cojournalist");
