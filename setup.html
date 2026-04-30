@@ -1931,7 +1931,7 @@ main.shell > form .sec-head .lead {
 
 .sec--setup-hero {
   position: relative;
-  min-height: 80svh;
+  min-height: 60svh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2697,7 +2697,8 @@ body.mode-local .cloud-only { display: none; }
 }
 .sec--setup-hero { position: relative; }
 .sec--setup-hero > * { position: relative; z-index: 1; }
-#setup-hero-canvas { z-index: 0; }
+#setup-hero-canvas-back { z-index: 0; }
+#setup-hero-canvas-front { z-index: 2; }
 </style>
 
 <script type="importmap">
@@ -8201,8 +8202,12 @@ function setupHeroBoot() {
     matchMedia("(pointer: coarse)").matches ||
     (navigator.hardwareConcurrency || 8) < 4;
 
-  const scene = new THREE.Scene();
-  Paper.addLights(scene);
+  // Two stacked scenes/renderers so papers render BEHIND text (back) and
+  // IN FRONT of text (front). HTML hero text sits between via z-index.
+  const sceneBack = new THREE.Scene();
+  const sceneFront = new THREE.Scene();
+  Paper.addLights(sceneBack);
+  Paper.addLights(sceneFront);
 
   const FOV = 50;
   const FOV_RAD = (FOV * Math.PI) / 180;
@@ -8213,41 +8218,55 @@ function setupHeroBoot() {
   const camera = new THREE.PerspectiveCamera(FOV, heroW / heroH, 1, 4000);
   camera.position.set(0, 0, heroH / 2 / Math.tan(FOV_RAD / 2));
 
-  const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-  renderer.setPixelRatio(
-    Math.min(window.devicePixelRatio, IS_MOBILE ? 1.25 : 2),
-  );
-  renderer.setSize(heroW, heroH);
-  renderer.setClearColor(0x000000, 0);
-  const canvas = renderer.domElement;
-  canvas.id = "setup-hero-canvas";
-  // Mount on body (outside .shell padding) so papers can fill the full
-  // viewport width edge-to-edge. Positioned absolute so it scrolls with
-  // the page and stays visually pinned to the hero region.
-  document.body.appendChild(canvas);
+  function makeRenderer(id, zIndex) {
+    const r = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    r.setPixelRatio(Math.min(window.devicePixelRatio, IS_MOBILE ? 1.25 : 2));
+    r.setSize(heroW, heroH);
+    r.setClearColor(0x000000, 0);
+    const c = r.domElement;
+    c.id = id;
+    c.dataset.zIndex = zIndex;
+    document.body.appendChild(c);
+    return r;
+  }
+  const rendererBack = makeRenderer("setup-hero-canvas-back", "0");
+  const rendererFront = makeRenderer("setup-hero-canvas-front", "2");
 
   function placeCanvas() {
-    Object.assign(canvas.style, {
-      position: "absolute",
-      top: "0",
-      left: "0",
-      width: "100vw",
-      height: heroH + "px",
-      pointerEvents: "none",
-      zIndex: "0",
+    [rendererBack.domElement, rendererFront.domElement].forEach((c) => {
+      Object.assign(c.style, {
+        position: "absolute",
+        top: "0",
+        left: "0",
+        width: "100vw",
+        height: heroH + "px",
+        pointerEvents: "none",
+        zIndex: c.dataset.zIndex,
+      });
     });
   }
   placeCanvas();
 
-  const floating = new FloatingPapersScene({
-    parent: scene,
+  const totalCount = IS_MOBILE ? 14 : 22;
+  const floatingBack = new FloatingPapersScene({
+    parent: sceneBack,
     getViewport: () => ({ w: heroW, h: heroH, pageH: heroH }),
-    label: "Setup hero · floating",
+    label: "Setup hero · back",
     visualW: IS_MOBILE ? 130 : 165,
-    countOverride: IS_MOBILE ? 14 : 22,
+    countOverride: Math.round(totalCount * 0.7),
     bandTopY: heroH / 2,
     bandBottomY: -heroH / 2,
     defaults: { zMin: 20, zMax: 200 },
+  });
+  const floatingFront = new FloatingPapersScene({
+    parent: sceneFront,
+    getViewport: () => ({ w: heroW, h: heroH, pageH: heroH }),
+    label: "Setup hero · front",
+    visualW: IS_MOBILE ? 130 : 165,
+    countOverride: Math.round(totalCount * 0.3),
+    bandTopY: heroH / 2,
+    bandBottomY: -heroH / 2,
+    defaults: { zMin: 220, zMax: 420 },
   });
 
   function resize() {
@@ -8256,14 +8275,14 @@ function setupHeroBoot() {
     camera.aspect = heroW / heroH;
     camera.position.z = heroH / 2 / Math.tan(FOV_RAD / 2);
     camera.updateProjectionMatrix();
-    renderer.setSize(heroW, heroH);
+    rendererBack.setSize(heroW, heroH);
+    rendererFront.setSize(heroW, heroH);
     placeCanvas();
   }
   window.addEventListener("resize", resize);
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(resize);
   }
-  // initial measurement uses full viewport width (canvas spans 100vw)
   heroW = window.innerWidth;
   resize();
 
@@ -8274,8 +8293,10 @@ function setupHeroBoot() {
     const dt = Math.min(0.05, t - lastT);
     lastT = t;
     Paper.uniforms.uTime.value = t;
-    floating.update(t, dt);
-    renderer.render(scene, camera);
+    floatingBack.update(t, dt);
+    floatingFront.update(t, dt);
+    rendererBack.render(sceneBack, camera);
+    rendererFront.render(sceneFront, camera);
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
