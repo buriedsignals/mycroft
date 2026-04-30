@@ -7191,7 +7191,7 @@ function boot() {
   // visualR/sphereR × RECEIPT_W (0.14) = paper px on screen.
   const SPHERE_VISUAL_R = 280;
   const SPHERE_R_MODEL = 1.0;
-  const SPHERE_HERO_COUNT = IS_MOBILE ? 110 : 200;
+  const SPHERE_HERO_COUNT = IS_MOBILE ? 140 : 240;
   const SPHERE_CLOSING_COUNT = IS_MOBILE ? 100 : 200;
 
   // hero sphere — same paper-globe language as manifesto: centered on the
@@ -7208,12 +7208,12 @@ function boot() {
       mouse: mouseRef,
       defaults: {
         anchorCorner: "CTR",
-        visualR: IS_MOBILE ? 200 : 280,
+        visualR: IS_MOBILE ? 240 : 340,
         sphereR: 0.96,
         marginX: 0,
         marginY: 0,
         offsetX: 0,
-        offsetY: IS_MOBILE ? 80 : 100,
+        offsetY: IS_MOBILE ? 20 : 30,
         offsetZ: 0,
       },
     }),
