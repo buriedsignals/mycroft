@@ -1920,76 +1920,91 @@ main.shell > form > .sec:not(.sec--setup-hero):not(.sec--closing-dark) {
   padding: clamp(48px, 7vh, 88px) 0 clamp(40px, 6vh, 72px);
 }
 .sec .sec-head { margin-bottom: var(--sp-7); }
+main.shell > form .display--section {
+  font-size: clamp(34px, 4.8vw, 72px);
+  line-height: 0.98;
+}
+main.shell > form .sec-head .lead {
+  max-width: 48ch;
+  font-size: clamp(15px, 1.2vw, 18px);
+}
 
-/* hero — strictly fits within one viewport (header included) */
 .sec--setup-hero {
-  height: calc(100svh - var(--head-h));
-  min-height: 560px;
-  max-height: calc(100svh - var(--head-h));
+  min-height: min(720px, calc(100svh - var(--head-h)));
   display: grid;
   grid-template-columns: 1fr;
-  gap: clamp(24px, 3vh, 48px);
+  gap: clamp(22px, 3vh, 40px);
   align-content: center;
-  padding-top: clamp(24px, 4vh, 56px);
-  padding-bottom: clamp(24px, 4vh, 56px);
+  padding-top: clamp(28px, 5vh, 64px);
+  padding-bottom: clamp(28px, 5vh, 64px);
   border-bottom: var(--hairline);
-  overflow: hidden;
 }
 @media (min-width: 1100px) {
   .sec--setup-hero {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-    gap: clamp(48px, 5vw, 96px);
+    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.8fr);
+    gap: clamp(36px, 4vw, 72px);
     align-items: center;
   }
 }
 .sec--setup-hero .display--hero {
-  max-width: 14ch;
-  font-size: clamp(32px, min(6vw, 9vh), 80px);
+  max-width: 12ch;
+  font-size: clamp(34px, min(5.2vw, 7.5vh), 68px);
   margin: 0;
 }
-.hero-pitch { display: flex; flex-direction: column; gap: clamp(14px, 2vh, 22px); min-width: 0; }
+.hero-pitch { display: flex; flex-direction: column; gap: clamp(14px, 2vh, 20px); min-width: 0; }
 
-/* "vital signs" — three mono-caps stats under the lead */
-.vitals {
+.setup-surfaces {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--sp-4);
-  padding-top: var(--sp-4);
-  border-top: var(--hairline);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  border: var(--hairline);
   margin: 0;
+  background: var(--vellum-bright);
 }
-@media (max-width: 760px) { .vitals { grid-template-columns: repeat(3, 1fr); gap: var(--sp-3); } }
-.vitals dt {
+.setup-surfaces > div {
+  padding: var(--sp-4);
+  border-right: var(--hairline);
+}
+.setup-surfaces > div:last-child { border-right: 0; }
+@media (max-width: 640px) {
+  .setup-surfaces { grid-template-columns: 1fr; }
+  .setup-surfaces > div { border-right: 0; border-bottom: var(--hairline); }
+  .setup-surfaces > div:last-child { border-bottom: 0; }
+}
+.surface-k {
+  display: block;
   font-family: var(--mono);
   font-size: var(--cap-xs);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink-dim);
-  margin: 0 0 6px;
+  margin: 0 0 8px;
 }
-.vitals dd {
+.surface-v {
+  display: block;
   font-family: var(--serif);
   font-style: italic;
   font-weight: 800;
-  font-size: clamp(16px, 1.4vw, 22px);
+  font-size: clamp(20px, 2.1vw, 30px);
   line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--ink);
-  margin: 0;
 }
-.vitals dd em { font-weight: 200; color: var(--oxide); }
-
-/* CTA pair under the vitals */
-.hero-cta {
-  display: flex; flex-wrap: wrap; gap: var(--sp-3);
-  margin-top: var(--sp-3);
+.surface-v em { font-weight: 200; color: var(--oxide); }
+.surface-note {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
 }
 
 /* TOC card — the right side of the hero, the 8 chapters of the form */
 .toc {
   border: var(--hairline);
   background: var(--vellum-bright);
-  padding: clamp(16px, 2vw, 28px);
+  padding: clamp(14px, 1.8vw, 24px);
   max-height: 100%;
   overflow: auto;
 }
@@ -2007,7 +2022,7 @@ main.shell > form > .sec:not(.sec--setup-hero):not(.sec--closing-dark) {
   grid-template-columns: auto 1fr auto;
   align-items: baseline;
   gap: var(--sp-3);
-  padding: 10px 0;
+  padding: 8px 0;
   border-bottom: var(--hairline-dashed);
 }
 .toc li:last-child { border-bottom: 0; }
@@ -2018,7 +2033,7 @@ main.shell > form > .sec:not(.sec--setup-hero):not(.sec--closing-dark) {
 }
 .toc__title {
   font-family: var(--serif); font-style: italic; font-weight: 800;
-  font-size: 15px; letter-spacing: -0.01em;
+  font-size: 14px; letter-spacing: -0.01em;
   color: var(--ink);
 }
 .toc__title em { font-weight: 200; color: var(--oxide); }
@@ -2689,21 +2704,24 @@ body.mode-local .cloud-only { display: none; }
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero sec--setup-hero" id="hero">
     <div class="hero-pitch">
-      <p class="eyebrow" data-reveal style="--delay: 0ms">Install · macOS · Client-side</p>
+      <p class="eyebrow" data-reveal style="--delay: 0ms">Install · macOS/Linux · Client-side</p>
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-        Configure.<br>Download.<br><em>Run.</em>
+        Mycroft<br><em>setup.</em>
       </h1>
       <p class="lead" data-reveal style="--delay: 220ms">
-        Fill the form below. Your selections — including API keys — get baked into a bash script you download. Nothing reaches a server. Seven short steps, ~30 seconds to fill, ~30 seconds to run.
+        Choose how Goose should run journalism work, add only the keys you use, and export a local installer. Nothing is submitted to a server; secrets are written to your machine only.
       </p>
-      <dl class="vitals" data-reveal style="--delay: 280ms">
-        <div><dt>Time</dt><dd>~30 <em>sec.</em></dd></div>
-        <div><dt>Surface</dt><dd>Local <em>only.</em></dd></div>
-        <div><dt>Touches</dt><dd>3 <em>paths.</em></dd></div>
-      </dl>
-      <div class="hero-cta" data-reveal style="--delay: 360ms">
-        <a class="btn btn--solid btn--mono" href="#sovereignty">Start setup <span class="btn__arr">→</span></a>
-        <a class="btn btn--ghost btn--mono" href="#install">Jump to download</a>
+      <div class="setup-surfaces" data-reveal style="--delay: 280ms">
+        <div>
+          <span class="surface-k">Default path</span>
+          <span class="surface-v">Cloud<em>-first.</em></span>
+          <span class="surface-note">ZDR open-weight providers, Goose Desktop, Obsidian, Firecrawl scraping.</span>
+        </div>
+        <div>
+          <span class="surface-k">Sensitive work</span>
+          <span class="surface-v">Local<em>-only.</em></span>
+          <span class="surface-note">Runs against local llama-server when selected; includes a computer-fit check.</span>
+        </div>
       </div>
     </div>
 
@@ -2980,7 +2998,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
           <input type="checkbox" name="agentmail_enabled">
           <span class="item__title">AgentMail<em>.</em></span>
         </label>
-        <p class="item__lede">Dedicated inbox for newsletter subs. Feeds <code>morning-brief</code> + <code>newsletter-summarize</code>.</p>
+        <p class="item__lede">Inbox for agents: give Mycroft a dedicated address for newsletters, tips, and source mail. Feeds <code>morning-brief</code> + <code>newsletter-summarize</code>.</p>
         <div class="item__body">
           <a class="mini-btn" href="https://agentmail.to" target="_blank" rel="noreferrer">Sign up →</a>
           <label class="field-label" for="agentmail_key">AGENTMAIL_API_KEY</label>
@@ -2994,7 +3012,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
           <input type="checkbox" name="apify_enabled">
           <span class="item__title">Apify<em>.</em></span>
         </label>
-        <p class="item__lede">Powers <code>apify-social/*</code> recipes — IG, X, FB, TikTok, LinkedIn. Pay-per-run.</p>
+        <p class="item__lede">Scraping infrastructure for social recipes — Instagram, X, Facebook, TikTok, LinkedIn. Pay-per-run actors behind <code>apify-social/*</code>.</p>
         <div class="item__body">
           <a class="mini-btn" href="https://apify.com" target="_blank" rel="noreferrer">Sign up →</a>
           <label class="field-label" for="apify_token">APIFY_API_TOKEN</label>
@@ -3256,7 +3274,6 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
     '.feed-row',
     '.toc li',
     '.vitals > div',
-    '.hero-cta > .btn',
     '.callout',
     '.preview-wrap',
     '.install-bar',
