@@ -672,28 +672,19 @@ body,
 
 /* mobile drawer */
 @media (max-width: 979px) {
-  .site-head.is-menu-open {
-    background: color-mix(in oklab, var(--vellum) 96%, transparent);
-    border-bottom-color: var(--rule);
+  /* Mobile: drop the burger nav entirely. Show only the brand + a single
+     prominent SETUP CTA. Per Tom's feedback — the dropdown menu adds
+     friction on small screens; surfacing the primary action is enough. */
+  .site-head__menu { display: none !important; }
+  .site-nav { display: none !important; }
+  .site-head__actions {
+    display: flex !important;
+    grid-column: auto;
+    padding: 0;
   }
-  .site-head.is-menu-open .site-nav {
-    display: flex;
-    flex-direction: column;
-    grid-column: 1 / -1;
-    align-items: flex-start;
-    gap: 18px;
-    padding: 18px var(--gut) 24px;
-    border-top: 1px dashed var(--rule);
-    margin-top: 14px;
-  }
-  .site-head.is-menu-open .site-nav__link {
-    margin: 0;
-  }
-  .site-head.is-menu-open .site-head__actions {
-    display: flex;
-    grid-column: 1 / -1;
-    padding: 0 var(--gut) 22px;
-    flex-wrap: wrap;
+  .site-head__actions .btn--ghost { display: none; }
+  .site-head__actions .btn--solid {
+    padding: 10px 18px;
   }
 }
 
@@ -778,6 +769,207 @@ main,
   padding-top: clamp(16px, 2.5vh, 24px);
   padding-right: clamp(24px, 5vw, 80px);
   border-top: var(--hairline);
+}
+
+/* ── Surface toggle (CLI ↔ Desktop) ──────────────────────────── */
+.surface-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--vellum) 85%, transparent);
+  margin: 14px 0 18px;
+}
+.surface-toggle__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--ink-mute);
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.surface-toggle__btn.is-active {
+  background: var(--ink);
+  color: var(--vellum);
+}
+.sec--dark .surface-toggle {
+  border-color: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.04);
+}
+.sec--dark .surface-toggle__btn { color: rgba(255,255,255,0.6); }
+.sec--dark .surface-toggle__btn.is-active {
+  background: var(--vellum);
+  color: var(--ink);
+}
+.surface { display: none; }
+.surface.is-active { display: block; }
+.surface[hidden] { display: none !important; }
+
+/* ── Goose desktop app mockup ────────────────────────────────── */
+.goose-app {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #1a1a1a;
+  color: #ddd;
+  font-family: var(--sans);
+}
+.goose-app__chrome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #232323;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 12px;
+}
+.goose-app__dot {
+  width: 11px; height: 11px; border-radius: 50%; display: inline-block;
+}
+.goose-app__dot--r { background: #ff5f57; }
+.goose-app__dot--y { background: #febc2e; }
+.goose-app__dot--g { background: #28c840; }
+.goose-app__title {
+  margin-left: 12px;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.goose-app__body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 320px;
+}
+@media (max-width: 700px) {
+  .goose-app__body { grid-template-columns: 1fr; }
+  .goose-app__side { display: none; }
+}
+.goose-app__side {
+  background: #1f1f1f;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 22px 18px;
+}
+.goose-app__side-h {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 14px;
+}
+.goose-app__list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+}
+.goose-app__bullet {
+  display: inline-block;
+  margin-right: 10px;
+  color: var(--press-green, #4A7363);
+  font-size: 9px;
+  vertical-align: middle;
+}
+.goose-app__list li:nth-child(n+4) .goose-app__bullet { color: rgba(255,255,255,0.3); }
+.goose-app__chat {
+  padding: 26px 30px;
+  display: flex; flex-direction: column; gap: 14px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.goose-app__msg {
+  padding: 14px 18px;
+  border-radius: 12px;
+  max-width: 80%;
+}
+.goose-app__msg--user {
+  background: rgba(255,255,255,0.08);
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+.goose-app__msg--bot {
+  background: rgba(74,115,99,0.18);
+  border: 1px solid rgba(74,115,99,0.4);
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+}
+.goose-app__cite {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.04em;
+}
+.goose-app__foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 16px 22px;
+  background: #1f1f1f;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.goose-app__meta {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(255,255,255,0.5);
+}
+
+/* ── Integration cards (cojournalist · spotlight · coming) ────── */
+.cards-3 {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: 1fr;
+  margin-top: 36px;
+}
+@media (min-width: 980px) {
+  .cards-3 { grid-template-columns: repeat(3, 1fr); }
+}
+.card-int {
+  background: color-mix(in oklab, var(--vellum) 96%, var(--ink) 4%);
+  border: 1px solid var(--rule);
+  padding: 28px 26px 30px;
+  border-radius: 6px;
+  position: relative;
+}
+.card-int__kind {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 12px;
+}
+.card-int__title {
+  font-family: var(--serif);
+  font-size: 36px;
+  font-weight: 800;
+  font-style: italic;
+  color: var(--ink);
+  line-height: 1.0;
+  margin: 0 0 12px;
+}
+.card-int__title em {
+  font-style: italic;
+  color: var(--press-green, #4A7363);
+}
+.card-int__body {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-mute);
+  margin: 0;
+}
+.card-int--coming {
+  border-style: dashed;
+  background: transparent;
+}
+.card-int--coming .card-int__kind {
+  color: var(--press-green, #4A7363);
 }
 
 .sec-head {
@@ -1965,16 +2157,16 @@ html.js .is-in .tw__in {
 
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero" id="hero" data-section="0">
-    <p class="eyebrow" data-reveal style="--delay: 0ms">AI for journalists · Open-source</p>
+    <p class="eyebrow" data-reveal style="--delay: 0ms">Goose, configured for journalism</p>
 
     <h1 class="display display--hero" data-reveal style="--delay: 120ms">
       Your morning brief, <em>before coffee.</em><br>
       Your fact-check, <em>in minutes.</em><br>
-      Your sources, <em>kept private.</em>
+      Your sources, <em>on your machine.</em>
     </h1>
 
     <p class="lead" data-reveal style="--delay: 280ms">
-      An opinionated extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, the open-source agent runtime. Three jobs done right — on your laptop, with your keys.
+      An opinionated extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a> — the open-source agent runtime. Recipes, providers, and a Qwen fine-tune. <strong>coJournalist + Spotlight, built in.</strong>
     </p>
 
     <div class="ctas" data-reveal style="--delay: 380ms">
@@ -1983,7 +2175,7 @@ html.js .is-in .tw__in {
     </div>
 
     <p class="meta" data-reveal style="--delay: 480ms">
-      <strong>~$6/mo</strong> cloud · <strong>$0</strong> local · Zero data retention · Open-weight only · Source available
+      Desktop or CLI · Local or cloud · Your keys, your machine, your vault
     </p>
   </section>
 
@@ -2153,6 +2345,55 @@ html.js .is-in .tw__in {
   </section>
 
 
+  <!-- ────────── 04bis · INTEGRATIONS · cojournalist + spotlight ──── -->
+  <section class="sec" id="integrations" data-section="3.5">
+    <header class="num" data-reveal><span class="num__n">04½</span> What it integrates</header>
+
+    <div class="sec-head" data-reveal style="--delay: 80ms">
+      <h2 class="display display--section">
+        Editorial work has <em>multiple shapes.</em><br>
+        Mycroft <em>brings the tools</em> in.
+      </h2>
+      <p class="lead">
+        Goose hosts the runtime; Mycroft wires in the editorial extensions.
+        Day-to-day monitoring, deep-dive investigation, source archives —
+        each handled by a purpose-built piece, all in one local workflow.
+      </p>
+    </div>
+
+    <div class="cards-3" data-reveal style="--delay: 160ms">
+      <article class="card-int">
+        <div class="card-int__kind">MONITORING</div>
+        <h3 class="card-int__title"><em>coJournalist.</em></h3>
+        <p class="card-int__body">
+          Continuous awareness of your beat. Pulls feeds, flags signal,
+          drafts the morning brief — so you walk in with leads, not noise.
+        </p>
+      </article>
+
+      <article class="card-int">
+        <div class="card-int__kind">INVESTIGATION</div>
+        <h3 class="card-int__title"><em>Spotlight.</em></h3>
+        <p class="card-int__body">
+          Deep-dive on a name, a company, a place. Spotlight runs
+          structured discovery across your sources and the open web —
+          with citations, no hallucinated quotes.
+        </p>
+      </article>
+
+      <article class="card-int card-int--coming">
+        <div class="card-int__kind">COMING · MAY 2026</div>
+        <h3 class="card-int__title"><em>DataHound</em> + <em>Atelier.</em></h3>
+        <p class="card-int__body">
+          DataHound — public-data discovery (registries, archives, leaks).
+          Atelier — visual production for the published piece.
+          Two more pieces shipping with the next release.
+        </p>
+      </article>
+    </div>
+  </section>
+
+
   <!-- ────────── 05 · INSTALL ────────── -->
   <section class="sec sec--dark" id="install" data-section="4">
     <header class="num" data-reveal><span class="num__n">05</span> Install · five minutes</header>
@@ -2162,6 +2403,14 @@ html.js .is-in .tw__in {
       <p class="lead">No terminal-wrangling. The setup page generates a single script with your config baked in. One file, one run.</p>
     </div>
 
+    <!-- Surface toggle: CLI terminal vs Desktop (Goose app) view -->
+    <div class="surface-toggle" role="tablist" aria-label="View" data-reveal style="--delay: 100ms">
+      <button class="surface-toggle__btn is-active" type="button" data-surface="cli" role="tab" aria-selected="true">CLI</button>
+      <button class="surface-toggle__btn" type="button" data-surface="app" role="tab" aria-selected="false">Desktop</button>
+    </div>
+
+    <div class="surface-stage">
+    <div class="surface surface--cli is-active" data-surface-view="cli">
     <div class="terminal" data-arm>
       <div class="terminal__bar" aria-hidden="true">
         <span></span><span></span><span></span>
@@ -2203,6 +2452,47 @@ html.js .is-in .tw__in {
         <span class="terminal__meta">no terminal wrangling · one file · one run</span>
       </div>
     </div>
+    </div><!-- /.surface--cli -->
+
+    <!-- Desktop / App surface — same conversation, native UI feel. -->
+    <div class="surface surface--app" data-surface-view="app" hidden>
+      <div class="goose-app">
+        <div class="goose-app__chrome" aria-hidden="true">
+          <span class="goose-app__dot goose-app__dot--r"></span>
+          <span class="goose-app__dot goose-app__dot--y"></span>
+          <span class="goose-app__dot goose-app__dot--g"></span>
+          <span class="goose-app__title">Goose · Mycroft</span>
+        </div>
+        <div class="goose-app__body">
+          <aside class="goose-app__side">
+            <div class="goose-app__side-h">Recipes</div>
+            <ul class="goose-app__list">
+              <li><span class="goose-app__bullet">●</span> Morning brief</li>
+              <li><span class="goose-app__bullet">●</span> Fact-check</li>
+              <li><span class="goose-app__bullet">●</span> Source vault</li>
+              <li><span class="goose-app__bullet">○</span> Spotlight</li>
+              <li><span class="goose-app__bullet">○</span> coJournalist</li>
+            </ul>
+          </aside>
+          <div class="goose-app__chat">
+            <div class="goose-app__msg goose-app__msg--user">
+              Brief me on the housing-policy beat for this morning.
+            </div>
+            <div class="goose-app__msg goose-app__msg--bot">
+              <strong>Three signals overnight.</strong><br>
+              · <em>Le Monde</em> reports a draft amendment on rent caps · <em>Mediapart</em> publishes a leaked memo from the prefecture of Île-de-France · ANCT data shows a 9% drop in social-housing starts (Q1 2026).
+              <br><br>
+              <span class="goose-app__cite">3 sources · cached locally · 2 follow-ups suggested</span>
+            </div>
+          </div>
+        </div>
+        <div class="goose-app__foot">
+          <a class="btn btn--solid" href="setup.html">Set up Mycroft <span class="btn__arr">→</span></a>
+          <span class="goose-app__meta">desktop or CLI · same recipes · same keys</span>
+        </div>
+      </div>
+    </div>
+    </div><!-- /.surface-stage -->
   </section>
 
 
@@ -2428,6 +2718,26 @@ document.documentElement.classList.add("js");
     addEventListener("scroll", update, { passive: true });
     addEventListener("resize", update);
     update();
+  }
+
+  // ── Surface toggle (CLI ↔ Desktop App) ──────────────────────
+  const surfaceBtns = document.querySelectorAll(".surface-toggle__btn");
+  if (surfaceBtns.length) {
+    surfaceBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.surface;
+        surfaceBtns.forEach((b) => {
+          const on = b.dataset.surface === target;
+          b.classList.toggle("is-active", on);
+          b.setAttribute("aria-selected", on ? "true" : "false");
+        });
+        document.querySelectorAll("[data-surface-view]").forEach((v) => {
+          const on = v.dataset.surfaceView === target;
+          v.classList.toggle("is-active", on);
+          v.hidden = !on;
+        });
+      });
+    });
   }
 
   // ── Mobile menu ─────────────────────────────────────────────
@@ -6787,31 +7097,42 @@ function boot() {
   const SPHERE_HERO_COUNT = IS_MOBILE ? 80 : 160;
   const SPHERE_CLOSING_COUNT = IS_MOBILE ? 100 : 200;
 
-  // hero sphere — BR corner, mouse-interactive. Disabled on mobile
-  // (small screens + low-power devices) where it'd overflow the layout.
-  if (!IS_MOBILE) {
-    scenes.push(
-      new PaperSphereScene({
-        parent: anchors[0].front,
-        anchor: anchors[0],
-        gui,
-        label: "Hero · sphere",
-        count: SPHERE_HERO_COUNT,
-        mouse: mouseRef,
-        defaults: {
-          visualR: 400,
-          sphereR: 0.84,
-          anchorCorner: "BR",
-          marginX: -111,
-          marginY: -189,
-          offsetX: 0,
-          offsetY: 0,
-          offsetZ: 60,
-          swirlStrength: 0,
-        },
-      }),
-    );
-  }
+  // hero sphere — desktop: BR corner big. Mobile: centered, smaller, in
+  // the upper part of the hero so it appears at the top of the page (per
+  // Tom's feedback — most visitors are mobile, the orb should greet them).
+  scenes.push(
+    new PaperSphereScene({
+      parent: anchors[0].front,
+      anchor: anchors[0],
+      gui,
+      label: "Hero · sphere",
+      count: IS_MOBILE ? 90 : SPHERE_HERO_COUNT,
+      mouse: mouseRef,
+      defaults: IS_MOBILE
+        ? {
+            visualR: 220,
+            sphereR: 0.84,
+            anchorCorner: "CTR",
+            marginX: 0,
+            marginY: 0,
+            offsetX: 0,
+            offsetY: -140, // upper part of the hero
+            offsetZ: 60,
+            swirlStrength: 0,
+          }
+        : {
+            visualR: 400,
+            sphereR: 0.84,
+            anchorCorner: "BR",
+            marginX: -111,
+            marginY: -189,
+            offsetX: 0,
+            offsetY: 0,
+            offsetZ: 60,
+            swirlStrength: 0,
+          },
+    }),
+  );
 
   // closing sphere (manifesto) — centered, split half-front/half-back
   // across the HTML plane via the pool's mirrorParent feature.
