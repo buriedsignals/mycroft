@@ -1840,6 +1840,15 @@ main,
   gap: 14px;
   flex-wrap: wrap;
 }
+.colophon__credit {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(13px, 0.9vw, 15px);
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
+}
 
 @media (max-width: 760px) {
   .colophon__inner {
@@ -3318,6 +3327,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
       <span class="colophon__sig-dot" aria-hidden="true"></span>
       <span>№ 0001</span>
     </span>
+    <span class="colophon__credit">Newspaper text references come from NYU Journalism's <a href="https://journalism.nyu.edu/about-us/news/the-top-100-works-of-journalism-of-the-century/" target="_blank" rel="noreferrer">Top 100 Works of Journalism of the Century</a>.</span>
     <span>© 2026 Buried Signals</span>
   </p>
 </footer>
