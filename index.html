@@ -16,12 +16,12 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mycroft — Goose, configured for journalism">
 <meta property="og:description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a Qwen fine-tune.">
-<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
+<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png">
 <meta property="og:url" content="https://mycroft.buriedsignals.com/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mycroft — Goose, configured for journalism">
 <meta name="twitter:description" content="An opinionated extension pack for Goose — the open-source agent runtime.">
-<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.svg">
+<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png">
 <script>
 /* Always start at top on refresh — disable browser's scroll restoration
    so reloads don't drop the user back into the middle of the orb. */
@@ -769,6 +769,13 @@ main,
   padding-top: clamp(16px, 2.5vh, 24px);
   padding-right: clamp(24px, 5vw, 80px);
   border-top: var(--hairline);
+}
+
+/* Hero headline: black/green parts split on separate lines on mobile
+   only. Desktop keeps the original "phrase + italic emphasis" inline. */
+.hero-br--mobile { display: none; }
+@media (max-width: 700px) {
+  .hero-br--mobile { display: inline; }
 }
 
 /* ── Surface toggle (CLI ↔ Desktop) ──────────────────────────── */
@@ -2204,9 +2211,9 @@ html.js .is-in .tw__in {
     <p class="eyebrow" data-reveal style="--delay: 0ms">Goose, configured for journalism</p>
 
     <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-      Your morning brief,<br><em>before coffee.</em><br>
-      Your fact-check,<br><em>in minutes.</em><br>
-      Your sources,<br><em>on your machine.</em>
+      Your morning brief,<br class="hero-br--mobile"> <em>before coffee.</em><br>
+      Your fact-check,<br class="hero-br--mobile"> <em>in minutes.</em><br>
+      Your sources,<br class="hero-br--mobile"> <em>on your machine.</em>
     </h1>
 
     <p class="lead" data-reveal style="--delay: 280ms">
@@ -7085,13 +7092,14 @@ function boot() {
   document.documentElement.classList.add("is-3d-lifted");
   sentinel.style.height = pageHeight + "px";
 
-  /* ── 5. section bg planes (vellum + dark slab on install) ────── */
+  /* ── 5. section bg planes (vellum, with PIGMENT on .sec--dark) ── */
   const VELLUM = new THREE.Color("#e8e0cf");
   const PIGMENT = new THREE.Color("#131013");
-  const SECTION_BG = [VELLUM, VELLUM, VELLUM, VELLUM, PIGMENT, VELLUM, VELLUM];
   const BG_WIDTH = 4096;
-  sections.forEach((s, i) => {
-    const color = SECTION_BG[i] ?? SECTION_BG[0];
+  sections.forEach((s) => {
+    // Class-based mapping so adding/removing sections doesn't shift the
+    // dark slab to the wrong index.
+    const color = s.el.classList.contains("sec--dark") ? PIGMENT : VELLUM;
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(BG_WIDTH, s.height + 2),
       new THREE.MeshBasicMaterial({
@@ -7173,13 +7181,13 @@ function boot() {
       mouse: mouseRef,
       defaults: IS_MOBILE
         ? {
-            visualR: 160,
+            visualR: 150,
             sphereR: 0.84,
             anchorCorner: "CTR",
             marginX: 0,
             marginY: 0,
-            offsetX: 100, // right of center
-            offsetY: 0,   // vertical center
+            offsetX: 110, // center-right
+            offsetY: 220, // up at title level (hero centerY → titles area)
             offsetZ: 60,
             swirlStrength: 0,
           }
