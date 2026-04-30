@@ -8265,13 +8265,13 @@ function setupHeroBoot() {
   }
   placeCanvas();
 
-  const totalCount = IS_MOBILE ? 14 : 22;
+  const totalCount = IS_MOBILE ? 9 : 14;
   // Back layer: smaller, further away → reads as "background depth".
   const floatingBack = new FloatingPapersScene({
     parent: sceneBack,
     getViewport: () => ({ w: heroW, h: heroH, pageH: heroH }),
     label: "Setup hero · back",
-    visualW: IS_MOBILE ? 100 : 130,
+    visualW: IS_MOBILE ? 70 : 90,
     countOverride: Math.round(totalCount * 0.7),
     bandTopY: heroH / 2,
     bandBottomY: -heroH / 2,
@@ -8283,7 +8283,7 @@ function setupHeroBoot() {
     parent: sceneFront,
     getViewport: () => ({ w: heroW, h: heroH, pageH: heroH }),
     label: "Setup hero · front",
-    visualW: IS_MOBILE ? 180 : 240,
+    visualW: IS_MOBILE ? 130 : 165,
     countOverride: Math.round(totalCount * 0.3),
     bandTopY: heroH / 2,
     bandBottomY: -heroH / 2,
