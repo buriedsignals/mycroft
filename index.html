@@ -208,11 +208,19 @@ body::before {
   -webkit-user-select: inherit;
 }
 
-/* header transparent so it sits over whichever section bg is currently
-   behind it (vellum on light sections, dark on the install slab — the
-   .is-on-dark class flips text colors via existing rules). */
-#page-3d .site-head,
-#page-3d .site-head__bar {
+/* header is OUTSIDE #page-3d so it doesn't ride the lifted CSS3D plane.
+   Pinned as a fixed overlay above the WebGL/CSS3D layers. */
+body > .site-head {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  pointer-events: auto;
+}
+body > .site-head .site-head__bar {
   background: transparent !important;
   backdrop-filter: none !important;
 }
@@ -1920,9 +1928,9 @@ html.js .is-in .tw__in {
   CSS3DObject by main.js so the whole page becomes a textured plane in
   the 3D scene. SEO/a11y-safe — DOM stays unchanged, only transforms apply.
 -->
-<div id="page-3d">
-
-<!-- ────────── HEADER · masthead ────────── -->
+<!-- ────────── HEADER · masthead (fixed overlay, OUTSIDE #page-3d) ──
+     Kept out of the lifted CSS3D plane so it stays sticky on top of
+     the 3D viewport instead of scrolling with the page-as-plane. -->
 <header class="site-head" role="banner">
   <div class="site-head__bar">
     <a class="brand" href="#hero" aria-label="Mycroft, home">
@@ -1950,6 +1958,8 @@ html.js .is-in .tw__in {
     </button>
   </div>
 </header>
+
+<div id="page-3d">
 
 <main class="shell">
 
