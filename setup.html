@@ -2738,6 +2738,14 @@ body.mode-local .cloud-only { display: none; }
 .sec--setup-hero > * { position: relative; z-index: 1; }
 #setup-hero-canvas-back { z-index: 0; }
 #setup-hero-canvas-front { z-index: 2; }
+#setup-grain-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
 </style>
 
 <script type="importmap">
@@ -2780,7 +2788,7 @@ body.mode-local .cloud-only { display: none; }
   <section class="sec sec--hero sec--setup-hero" id="hero">
     <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-        Bring in the<br><em>nosy Goose.</em>
+        Call in the<br><em>nosy Goose.</em>
       </h1>
       <p class="hero__line" data-reveal style="--delay: 220ms">Open source · Local-first · No lock-in · No surveillance</p>
     </div>
@@ -8215,9 +8223,97 @@ class PaperPreview {
 /* ════════════════════════════════════════════════════════════════════
    Setup-page boot — single FloatingPapersScene scoped to the hero.
    ════════════════════════════════════════════════════════════════════ */
+function setupGrainBoot() {
+  const VELLUM = new THREE.Color("#e8e0cf");
+  const grainTime = { value: 0 };
+  const grainShader = {
+    vertex: /* glsl */ `
+      varying vec2 vWorld;
+
+      void main() {
+        vec4 world = modelMatrix * vec4(position, 1.0);
+        vWorld = world.xy;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragment: /* glsl */ `
+      uniform vec3 uBaseColor;
+      uniform float uTime;
+      uniform float uStrength;
+      varying vec2 vWorld;
+
+      float hash(vec2 p) {
+        vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+        p3 += dot(p3, p3.yzx + 33.33);
+        return fract((p3.x + p3.y) * p3.z);
+      }
+
+      void main() {
+        float frame = floor(uTime * 14.0);
+        vec2 fine = floor(vWorld * 0.82);
+        vec2 soft = floor(vWorld * 0.23);
+        float n1 = hash(fine + vec2(frame * 17.17, frame * 3.31));
+        float n2 = hash(soft + vec2(frame * 2.73, frame * 11.19));
+        float grain = ((n1 - 0.5) + (n2 - 0.5) * 0.28) * uStrength;
+        vec3 color = clamp(uBaseColor + vec3(grain), 0.0, 1.0);
+
+        gl_FragColor = vec4(color, 1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }
+    `,
+  };
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.1, 10);
+  camera.position.z = 1;
+  const renderer = new THREE.WebGLRenderer({ alpha: false, antialias: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.domElement.id = "setup-grain-canvas";
+  document.body.appendChild(renderer.domElement);
+
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.ShaderMaterial({
+      uniforms: {
+        uBaseColor: { value: VELLUM.clone() },
+        uTime: grainTime,
+        uStrength: { value: 0.04 },
+      },
+      vertexShader: grainShader.vertex,
+      fragmentShader: grainShader.fragment,
+      depthTest: false,
+      depthWrite: false,
+    }),
+  );
+  scene.add(mesh);
+
+  function resize() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    camera.left = -w / 2;
+    camera.right = w / 2;
+    camera.top = h / 2;
+    camera.bottom = -h / 2;
+    camera.updateProjectionMatrix();
+    mesh.scale.set(w, h, 1);
+    renderer.setSize(w, h);
+  }
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  return {
+    render(t) {
+      grainTime.value = t;
+      renderer.render(scene, camera);
+    },
+  };
+}
+
 function setupHeroBoot() {
   const hero = document.getElementById("hero");
   if (!hero) return;
+  const grain = setupGrainBoot();
 
   const IS_MOBILE =
     window.innerWidth < 768 ||
@@ -8341,6 +8437,7 @@ function setupHeroBoot() {
     Paper.uniforms.uTime.value = t;
     floatingBack.update(t, dt);
     floatingFront.update(t, dt);
+    grain.render(t);
     rendererBack.render(sceneBack, camera);
     rendererFront.render(sceneFront, camera);
     requestAnimationFrame(tick);
