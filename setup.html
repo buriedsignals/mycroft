@@ -4943,6 +4943,41 @@ refresh_profile() {
 Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
 Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
 PROFILE_EOF
+    if [ -n "\${SPOTLIGHT_DIR:-}" ] || [ -d "$MYCROFT_PLUGINS_DIR/spotlight" ]; then
+      SPOTLIGHT_DIR="\${SPOTLIGHT_DIR:-$MYCROFT_PLUGINS_DIR/spotlight}"
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_SPOTLIGHT_EOF
+
+## Spotlight Installed Context
+
+- Spotlight repo: $SPOTLIGHT_DIR
+- Spotlight vault: \${SPOTLIGHT_VAULT_PATH:-}
+- Spotlight cases root: \${SPOTLIGHT_VAULT_PATH:-}/cases
+- Spotlight handoff folder: \${SPOTLIGHT_VAULT_PATH:-}/handoff-to-mycroft
+- Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
+- Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
+- Mycroft ingest target for Spotlight findings: \${SPOTLIGHT_INGEST_TARGET:-}
+
+Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
+Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
+For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
+
+- $SPOTLIGHT_DIR/AGENTS.md
+- $SPOTLIGHT_DIR/agents/fact-checker.md
+- $SPOTLIGHT_DIR/skills/spotlight/SKILL.md
+
+Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
+PROFILE_SPOTLIGHT_EOF
+    fi
+    if [ -n "\${COJOURNALIST_API_KEY:-}" ] || [ "\${SPOTLIGHT_MONITORING_BACKEND:-}" = "cojournalist" ]; then
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_COJO_EOF'
+
+## coJournalist Installed Context
+
+coJournalist is enabled. Use the installed coJournalist skill from the Mycroft skill registry.
+Prefer MCP if configured, then the cojo CLI if installed, then the hosted API with COJOURNALIST_API_KEY and COJOURNALIST_API_BASE.
+Never print the API key.
+PROFILE_COJO_EOF
+    fi
     cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
   fi
 }

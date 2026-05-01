@@ -92,6 +92,8 @@ assertIncludes(script, 'git fetch origin "$branch"');
 assertIncludes(script, 'git merge --ff-only "origin/$branch"');
 assertIncludes(script, 'update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source"');
 assertIncludes(script, "export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH");
+assertIncludes(script, "PROFILE_SPOTLIGHT_EOF");
+assertIncludes(script, "PROFILE_COJO_EOF");
 assertIncludes(script, "doctor failed after update; rolling back app checkouts");
 assertIncludes(script, 'cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"');
 assertIncludes(script, "mycroft-update.timer");
