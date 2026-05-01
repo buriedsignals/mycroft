@@ -2989,11 +2989,11 @@ pip install -U "huggingface_hub[cli]"
 
 # 2. Pull the selected model (example: Mycroft 9B)
 hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \
-  --local-dir ~/.mycroft/models/qwen-journalist-9b \
+  --local-dir ~/.local/share/goose/mycroft/models/qwen-journalist-9b \
   --include "*Q4_K_M.gguf"
 
 # 3. Start llama-server
-llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080</code></pre>
+llama-server -m ~/.local/share/goose/mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080</code></pre>
       <p class="hint" style="margin-top:var(--sp-3);">If Spotlight is enabled, use Gemma 4 or Qwen3.6 27B. The 9B is intentionally Mycroft-only.</p>
     </div>
   </section>
@@ -3249,7 +3249,7 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
         <h2 class="display display--section">Review.<br>Then <em>run.</em></h2>
       </div>
       <p class="lead">
-        The exact bash that will land in your downloads folder. Your keys are baked in plaintext — review before running. It writes secrets to <code>~/.mycroft/.env</code>, Goose config to <code>~/.config/goose/</code>, and an updater job for repo updates.
+        The exact bash that will land in your downloads folder. Your keys are baked in plaintext — review before running. It writes the Goose-facing Mycroft profile to <code>~/.config/goose/mycroft/</code>, updateable source to <code>~/.local/share/goose/mycroft/source/</code>, and an updater job for repo updates.
       </p>
     </div>
 
@@ -3272,10 +3272,8 @@ llama-server -m ~/.mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --po
 
     <div class="success" id="success">
       <strong>Downloaded.</strong>
-      Extract the ZIP, move <code>mycroft-setup.command</code> to the folder where you keep installers, then run it:
-      <pre><code>chmod +x /path/to/mycroft-setup.command
-/path/to/mycroft-setup.command</code></pre>
-      On macOS, right-click <code>mycroft-setup.command</code> → Open → Confirm the first time. After that, plain double-click works. The agent setup ZIP is separate and contains no secrets.
+      Extract the ZIP anywhere, then double-click <code>mycroft-setup.command</code>. The script configures Goose with Mycroft at <code>~/.config/goose/mycroft</code> and uses the vault paths you selected.
+      On macOS, if Apple says it could not verify the file, choose Done, then open System Settings → Privacy &amp; Security → Open Anyway. After the first approved run, plain double-click works. The agent setup ZIP contains the same API keys in its local manifest so an agent can perform setup without asking you to paste secrets into chat.
     </div>
   </section>
 
@@ -3828,14 +3826,60 @@ function localModelMeta(id) {
   return models[id] || models.qwen9b;
 }
 
+function buildSkillRegistry(d) {
+  const skills = [
+    { id: 'knowledge-primitives', path: '~/.local/share/goose/mycroft/source/skills/knowledge-primitives/SKILL.md', source: 'mycroft', enabled: true },
+    { id: 'qmd', path: '~/.local/share/goose/mycroft/source/skills/qmd/SKILL.md', source: 'mycroft', enabled: true },
+    { id: 'obsidian', path: '~/.local/share/goose/mycroft/source/skills/obsidian/SKILL.md', source: 'mycroft', enabled: d.installObsidian },
+    { id: 'obsidian-ingest', path: '~/.local/share/goose/mycroft/source/skills/obsidian-ingest/SKILL.md', source: 'mycroft', enabled: d.installObsidian },
+    { id: 'fact-check', path: '~/.local/share/goose/mycroft/source/skills/fact-check/SKILL.md', source: 'mycroft', enabled: true },
+    { id: 'copywriting', path: '~/.local/share/goose/mycroft/source/skills/copywriting/SKILL.md', source: 'mycroft', enabled: true, status: 'placeholder' },
+    { id: 'mycroft-maintenance', path: '~/.local/share/goose/mycroft/source/skills/mycroft-maintenance/SKILL.md', source: 'mycroft', enabled: true },
+  ];
+  if (d.installFirecrawl || d.firecrawlKey) {
+    skills.push({ id: 'firecrawl', path: '~/.local/share/goose/mycroft/source/skills/firecrawl/SKILL.md', source: 'mycroft', enabled: true });
+  }
+  if (d.cojournalist) {
+    skills.push({ id: 'cojournalist', path: '~/.config/goose/mycroft/skills/cojournalist/SKILL.md', source: 'mycroft-profile', enabled: true, product_skill_url: 'https://cojournalist.ai/skills/cojournalist.md' });
+  }
+  if (d.spotlight) {
+    skills.push(
+      { id: 'spotlight', path: '~/.local/share/goose/mycroft/plugins/spotlight/skills/spotlight/SKILL.md', source: 'spotlight', enabled: true },
+      { id: 'spotlight-ingest', path: '~/.local/share/goose/mycroft/plugins/spotlight/skills/ingest/SKILL.md', source: 'spotlight', enabled: true },
+      { id: 'spotlight-monitoring', path: '~/.local/share/goose/mycroft/plugins/spotlight/skills/monitoring/SKILL.md', source: 'spotlight', enabled: true },
+      { id: 'spotlight-integrations', path: '~/.local/share/goose/mycroft/plugins/spotlight/skills/integrations/SKILL.md', source: 'spotlight', enabled: true },
+    );
+  }
+  return { schema_version: 'mycroft-skill-registry/v1', skills };
+}
+
 function buildScript(d) {
   const mycroftVault = expandHomeForScript(d.vault);
   const spotlightVault = expandHomeForScript(d.spotlightVaultPath);
+  const today = new Date().toISOString().slice(0, 10);
+  const skillRegistry = buildSkillRegistry(d);
+  const skillRegistryJson = JSON.stringify(skillRegistry, null, 2);
+  const requiredDoctorEnv = [];
+  if (d.firecrawlKey) requiredDoctorEnv.push('FIRECRAWL_API_KEY');
+  if (d.fireworks) requiredDoctorEnv.push('FIREWORKS_API_KEY');
+  if (d.together) requiredDoctorEnv.push('TOGETHER_API_KEY');
+  if (d.cojournalist) requiredDoctorEnv.push('COJOURNALIST_API_KEY');
+  if (d.spotlight && d.osintNavigatorKey) requiredDoctorEnv.push('OSINT_NAVIGATOR_API_KEY');
   const envLines = [
     '# Mycroft environment — generated by setup.html',
     `MYCROFT_DEFAULT_SOVEREIGNTY=${shq(d.sovereignty)}`,
     `MYCROFT_VAULT_PATH="${mycroftVault}"`,
-    'MYCROFT_PLUGINS_DIR="$MYCROFT_DIR/plugins"',
+    'MYCROFT_PROFILE_DIR="$HOME/.config/goose/mycroft"',
+    'MYCROFT_DATA_DIR="$HOME/.local/share/goose/mycroft"',
+    'MYCROFT_SOURCE_DIR="$MYCROFT_DATA_DIR/source"',
+    'MYCROFT_PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"',
+    'MYCROFT_PROFILE_SKILLS_DIR="$MYCROFT_PROFILE_DIR/skills"',
+    'MYCROFT_SKILLS_DIR="$MYCROFT_DIR/skills"',
+    'MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"',
+    'MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"',
+    'MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"',
+    'GOOSE_MOIM_MESSAGE_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"',
+    'GOOSE_RECIPE_PATH="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"',
     `MYCROFT_LOCAL_ONLY=${shq(d.localOnly ? '1' : '0')}`,
   ];
   if (d.localOnly) {
@@ -3861,8 +3905,9 @@ function buildScript(d) {
     envLines.push('COJOURNALIST_API_BASE=https://www.cojournalist.ai/api/v1');
   }
   if (d.spotlight) {
-    envLines.push('SPOTLIGHT_DIR="$MYCROFT_DIR/plugins/spotlight"');
+    envLines.push('SPOTLIGHT_DIR="$MYCROFT_PLUGINS_DIR/spotlight"');
     envLines.push(`SPOTLIGHT_VAULT_PATH="${spotlightVault}"`);
+    envLines.push(`SPOTLIGHT_INGEST_TARGET="${mycroftVault}"`);
     envLines.push('SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT=1');
     if (d.cojournalist) envLines.push('SPOTLIGHT_MONITORING_BACKEND=cojournalist');
     if (d.cojournalist) envLines.push('SPOTLIGHT_SCOUT_REQUESTS=cojournalist');
@@ -3872,18 +3917,18 @@ function buildScript(d) {
   }
 
   const providerCopies = [
-    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/" && ok "local-mlx"',
-    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/" && ok "local-llama-server"',
+    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/"\nok "local-mlx"',
+    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/"\nok "local-llama-server"',
   ];
-  if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/" && ok "Fireworks"');
-  if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/" && ok "Together"');
+  if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/"\nok "Fireworks"');
+  if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/"\nok "Together"');
 
   const pluginBlock = [];
   if (d.spotlight) {
     pluginBlock.push('mkdir -p "$PLUGINS_DIR"');
     pluginBlock.push('if [ -d "$SPOTLIGHT_DIR/.git" ]; then update_repo "$SPOTLIGHT_DIR" "Spotlight"; else git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR" && ok "Spotlight cloned"; fi');
     pluginBlock.push('mkdir -p "$SPOTLIGHT_VAULT_PATH" && ok "Spotlight vault $SPOTLIGHT_VAULT_PATH"');
-    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
+    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "mycroft_vault_path": "$VAULT_PATH",\n  "ingest_target": "$SPOTLIGHT_INGEST_TARGET",\n  "cases_root": "$SPOTLIGHT_VAULT_PATH/cases",\n  "handoff_path": "$SPOTLIGHT_VAULT_PATH/handoff-to-mycroft",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
     pluginBlock.push('[ -f "$SPOTLIGHT_DIR/integrations/preflight.py" ] && (set -a; . "$MYCROFT_ENV"; set +a; python3 "$SPOTLIGHT_DIR/integrations/preflight.py" --text || true)');
   }
   if (d.cojournalist) pluginBlock.push('ok "coJournalist hosted API enabled"');
@@ -3891,13 +3936,15 @@ function buildScript(d) {
   const rcBlockLines = [
     '  printf \'\\n%s\\n\' "$MARKER_START"',
     '  printf \'export MYCROFT_DIR="%s"\\n\' "$MYCROFT_DIR"',
+    '  printf \'export MYCROFT_PROFILE_DIR="%s"\\n\' "$MYCROFT_PROFILE_DIR"',
+    '  printf \'export MYCROFT_DATA_DIR="%s"\\n\' "$MYCROFT_DATA_DIR"',
     '  printf \'export MYCROFT_CONFIG="%s"\\n\' "$MYCROFT_CONFIG"',
     '  printf \'export GOOSE_RECIPE_PATH="%s"\\n\' "$GOOSE_RECIPE_PATH_VALUE"',
     '  printf \'[ -f "%s" ] && set -a && . "%s" && set +a\\n\' "$MYCROFT_ENV" "$MYCROFT_ENV"',
     '  printf \'mycroft() {\\n\'',
     '  printf \'  case "${1:-}" in\\n\'',
     '  printf \'    update) "$HOME/.local/bin/mycroft-update" ;;\\n\'',
-    '  printf \'    doctor) (cd "$MYCROFT_DIR" && python3 monitoring/preflight.py --text) ;;\\n\'',
+    '  printf \'    doctor) "$HOME/.local/bin/mycroft-doctor" ;;\\n\'',
     '  printf \'    *) goose recipe list ;;\\n\'',
     '  printf \'  esac\\n\'',
     '  printf \'}\\n\'',
@@ -3906,8 +3953,10 @@ function buildScript(d) {
 
   return `#!/usr/bin/env bash
 # Mycroft setup — generated by buriedsignals/mycroft
-# Move this .command/.sh file to the folder where you keep installers.
-# macOS first run: right-click the file, choose Open, then Confirm.
+# Run this .command/.sh file from any folder; it configures Goose with the Mycroft journalism profile.
+# macOS first run: Control-click the file, choose Open, then approve it.
+# If Gatekeeper still blocks it, choose Done, then use:
+# System Settings -> Privacy & Security -> Open Anyway.
 # Subsequent runs can be launched by double-clicking.
 set -euo pipefail
 
@@ -3920,20 +3969,30 @@ INSTALL_GOOSE=${shq(bool(d.installGoose))}
 INSTALL_OBSIDIAN=${shq(bool(d.installObsidian))}
 INSTALL_FIRECRAWL=${shq(bool(d.installFirecrawl))}
 
-MYCROFT_DIR="$HOME/.mycroft"
-PLUGINS_DIR="$MYCROFT_DIR/plugins"
-MYCROFT_ENV="$MYCROFT_DIR/.env"
-MYCROFT_CONFIG="$MYCROFT_DIR/mycroft-config.json"
 XDG_CONFIG_HOME="\${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_DATA_HOME="\${XDG_DATA_HOME:-$HOME/.local/share}"
 GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
+MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"
+MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"
+MYCROFT_DIR="$MYCROFT_DATA_DIR/source"
+PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"
+MYCROFT_SKILLS_DIR="$MYCROFT_DIR/skills"
+MYCROFT_PROFILE_SKILLS_DIR="$MYCROFT_PROFILE_DIR/skills"
+MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"
+MYCROFT_ENV="$MYCROFT_PROFILE_DIR/.env"
+MYCROFT_CONFIG="$MYCROFT_PROFILE_DIR/mycroft-config.json"
+MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
 PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
 SPOTLIGHT_DIR="$PLUGINS_DIR/spotlight"
 SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
 if [ "$SPOTLIGHT_VAULT_PATH" = "$VAULT_PATH" ]; then
   SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"
 fi
-GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes"
+SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"
+MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
+MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
+GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
@@ -4001,36 +4060,646 @@ install_firecrawl() {
   if have npm; then npm install -g firecrawl-cli && ok "firecrawl"; else warn "npm missing; install firecrawl-cli manually."; fi
 }
 
+ensure_qmd() {
+  if have qmd; then ok "QMD CLI present"; return 0; fi
+  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
+  if have npm; then npm install -g @tobilu/qmd && ok "QMD CLI"; else warn "npm missing; install QMD manually with: npm install -g @tobilu/qmd"; fi
+}
+
+configure_qmd() {
+  if ! have qmd; then warn "QMD CLI missing; vault search and Spotlight query-vault will be unavailable until qmd is installed."; return 0; fi
+  qmd collection add "$VAULT_PATH" --name mycroft >/dev/null 2>&1 || true
+  if [ "${d.spotlight ? '1' : '0'}" = "1" ]; then
+    qmd collection add "$SPOTLIGHT_VAULT_PATH" --name spotlight >/dev/null 2>&1 || true
+  fi
+  qmd update >/dev/null 2>&1 || warn "QMD installed, but initial index update failed; run qmd update after setup."
+  ok "QMD vault search configured"
+}
+
 update_repo() {
   local dir="$1" name="$2"
   if [ ! -d "$dir/.git" ]; then return 1; fi
   (cd "$dir" && git pull --no-rebase --autostash origin main) && ok "$name updated" || warn "$name update needs manual conflict resolution at $dir"
 }
 
-mkdir -p "$VAULT_PATH" "$GOOSE_CONFIG" "$PROVIDERS_DST" && ok "Mycroft vault $VAULT_PATH"
+warn_legacy_layout() {
+  if [ -d "$HOME/.mycroft" ] && [ "$HOME/.mycroft" != "$MYCROFT_DIR" ]; then
+    warn "Found legacy ~/.mycroft. New installs use ~/.config/goose/mycroft and ~/.local/share/goose/mycroft; legacy files were not deleted."
+  fi
+}
+
+install_or_update_mycroft() {
+  if [ -d "$MYCROFT_DIR/.git" ]; then
+    update_repo "$MYCROFT_DIR" "Mycroft"
+    return
+  fi
+  if [ -d "$MYCROFT_DIR" ] && [ "$(find "$MYCROFT_DIR" -mindepth 1 -maxdepth 1 | head -n 1)" ]; then
+    local tmp
+    tmp="$(mktemp -d)"
+    git clone https://github.com/buriedsignals/mycroft.git "$tmp/mycroft"
+    (cd "$tmp/mycroft" && tar cf - .) | (cd "$MYCROFT_DIR" && tar xpf -)
+    rm -rf "$tmp"
+    ok "Mycroft installed into existing $MYCROFT_DIR"
+  else
+    git clone https://github.com/buriedsignals/mycroft.git "$MYCROFT_DIR"
+    ok "Mycroft cloned"
+  fi
+}
+
+install_skill_registry() {
+  mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR" "$MYCROFT_SKILLS_DIR"
+  if [ "${d.cojournalist ? '1' : '0'}" = "1" ] && have curl; then
+    mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist"
+    curl -fsSL https://cojournalist.ai/skills/cojournalist.md -o "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist/SKILL.md" || cp "$MYCROFT_SKILLS_DIR/cojournalist/SKILL.md" "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist/SKILL.md" || warn "Using bundled coJournalist skill; hosted product skill could not be fetched."
+  fi
+  cat > "$MYCROFT_SKILL_REGISTRY" <<'SKILL_REGISTRY_EOF'
+${skillRegistryJson}
+SKILL_REGISTRY_EOF
+  ok "Mycroft skill registry"
+}
+
+write_goose_instructions() {
+  cat "$MYCROFT_DIR/instructions/journalism.md" > "$MYCROFT_GOOSE_INSTRUCTIONS"
+  cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<GOOSE_HINTS_EOF
+
+## Mycroft Installed Context
+
+- Mycroft repo: $MYCROFT_DIR
+- Mycroft Goose profile: $MYCROFT_PROFILE_DIR
+- Mycroft data dir: $MYCROFT_DATA_DIR
+- Mycroft durable knowledge vault: $VAULT_PATH
+- Mycroft recipes: $GOOSE_RECIPE_PATH_VALUE
+- Mycroft skill registry: $MYCROFT_SKILL_REGISTRY
+- Mycroft skills directory: $MYCROFT_SKILLS_DIR
+- Mycroft generated scheduled recipes: $MYCROFT_GENERATED_RECIPES
+- Morning brief monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
+- Mycroft persistent soul file: $MYCROFT_SOUL_FILE
+- QMD vault search: qmd query, qmd search, qmd mcp
+- Goose schedules: mycroft-morning-brief at 07:00, mycroft-vault-audit at 18:15
+- Story work lives in: $VAULT_PATH/stories
+- Durable wiki knowledge lives in: $VAULT_PATH/wiki
+- Raw and processed sources live in: $VAULT_PATH/sources
+
+Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
+Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+Do not use Mycroft as the active OSINT case workspace.
+
+## Fact-Checking Route
+
+When the user asks to fact-check, verify, audit citations, inspect claims, or stress-test a draft, load the Mycroft fact-check skill first:
+
+- $MYCROFT_SKILLS_DIR/fact-check/SKILL.md
+- $MYCROFT_DIR/recipes/fact-check.yaml
+
+Use the Mycroft fact-check path for drafts, quick checks, source assertions, and claim tables.
+GOOSE_HINTS_EOF
+  if [ "${d.spotlight ? '1' : '0'}" = "1" ]; then
+    cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<GOOSE_SPOTLIGHT_EOF
+
+## Spotlight Installed Context
+
+- Spotlight repo: $SPOTLIGHT_DIR
+- Spotlight vault: $SPOTLIGHT_VAULT_PATH
+- Spotlight cases root: $SPOTLIGHT_VAULT_PATH/cases
+- Spotlight handoff folder: $SPOTLIGHT_VAULT_PATH/handoff-to-mycroft
+- Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
+- Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
+- Mycroft ingest target for Spotlight findings: $SPOTLIGHT_INGEST_TARGET
+
+Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
+Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
+For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
+
+- $SPOTLIGHT_DIR/AGENTS.md
+- $SPOTLIGHT_DIR/agents/fact-checker.md
+- $SPOTLIGHT_DIR/skills/spotlight/SKILL.md
+
+Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
+GOOSE_SPOTLIGHT_EOF
+  fi
+  if [ "${d.cojournalist ? '1' : '0'}" = "1" ]; then
+    cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<'GOOSE_COJO_EOF'
+
+## coJournalist Installed Context
+
+coJournalist is enabled. Use the installed coJournalist skill from the Mycroft skill registry.
+Prefer MCP if configured, then the cojo CLI if installed, then the hosted API with COJOURNALIST_API_KEY and COJOURNALIST_API_BASE.
+Never print the API key.
+GOOSE_COJO_EOF
+  fi
+  cp "$MYCROFT_GOOSE_INSTRUCTIONS" "$GOOSE_CONFIG/.goosehints"
+  ok "Goose global .goosehints"
+}
+
+sync_mycroft_profile() {
+  mkdir -p "$MYCROFT_PROFILE_DIR"
+  if [ -f "$MYCROFT_DIR/instructions/mycroft-soul.md" ]; then
+    cp "$MYCROFT_DIR/instructions/mycroft-soul.md" "$MYCROFT_SOUL_FILE"
+  else
+    cat > "$MYCROFT_SOUL_FILE" <<'SOUL_EOF'
+# Mycroft Soul
+
+You are Mycroft, a calm investigative assistant for journalists using Goose and Buried Signals tools.
+SOUL_EOF
+  fi
+  ok "Mycroft Goose profile"
+}
+
+yaml_quote() {
+  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+}
+
+set_goose_config_key() {
+  local key="$1" value="$2" tmp escaped line
+  mkdir -p "$GOOSE_CONFIG"
+  [ -f "$GOOSE_CONFIG/config.yaml" ] || : > "$GOOSE_CONFIG/config.yaml"
+  escaped="$(yaml_quote "$value")"
+  line="$key: \\"$escaped\\""
+  tmp="$(mktemp)"
+  awk -v key="$key" -v line="$line" '
+    index($0, key ":") == 1 { print line; seen = 1; next }
+    { print }
+    END { if (!seen) print line }
+  ' "$GOOSE_CONFIG/config.yaml" > "$tmp"
+  mv "$tmp" "$GOOSE_CONFIG/config.yaml"
+}
+
+store_goose_secret() {
+  local name="$1" value="$2"
+  [ -n "$value" ] || return 0
+  if have goose && goose configure set-secret "$name" "$value" >/dev/null 2>&1; then
+    ok "Goose secret $name"
+  else
+    warn "Could not store $name in Goose keychain; Goose Desktop may ask for it once."
+  fi
+}
+
+configure_goose_persistent_defaults() {
+  [ -f "$MYCROFT_ENV" ] || return 0
+  mkdir -p "$GOOSE_CONFIG"
+  if [ -f "$GOOSE_CONFIG/config.yaml" ] && [ ! -f "$GOOSE_CONFIG/config.yaml.bak" ]; then
+    cp "$GOOSE_CONFIG/config.yaml" "$GOOSE_CONFIG/config.yaml.bak"
+  fi
+  set -a
+  . "$MYCROFT_ENV"
+  set +a
+
+  [ -n "\${GOOSE_PROVIDER:-}" ] && set_goose_config_key GOOSE_PROVIDER "$GOOSE_PROVIDER"
+  [ -n "\${GOOSE_MODEL:-}" ] && set_goose_config_key GOOSE_MODEL "$GOOSE_MODEL"
+  set_goose_config_key GOOSE_RECIPE_PATH "$GOOSE_RECIPE_PATH_VALUE"
+  set_goose_config_key GOOSE_MOIM_MESSAGE_FILE "$MYCROFT_SOUL_FILE"
+
+  store_goose_secret FIREWORKS_API_KEY "\${FIREWORKS_API_KEY:-}"
+  store_goose_secret TOGETHER_API_KEY "\${TOGETHER_API_KEY:-}"
+  store_goose_secret FIRECRAWL_API_KEY "\${FIRECRAWL_API_KEY:-}"
+  store_goose_secret COJOURNALIST_API_KEY "\${COJOURNALIST_API_KEY:-}"
+  store_goose_secret OSINT_NAVIGATOR_API_KEY "\${OSINT_NAVIGATOR_API_KEY:-}"
+
+  ok "Goose default provider config"
+}
+
+write_if_missing() {
+  local path="$1"
+  if [ -e "$path" ]; then return 0; fi
+  mkdir -p "$(dirname "$path")"
+  cat > "$path"
+}
+
+seed_mycroft_vault() {
+  mkdir -p "$VAULT_PATH/_schema" "$VAULT_PATH/_audits" "$VAULT_PATH/context" "$VAULT_PATH/sources/raw" "$VAULT_PATH/sources/processed" "$VAULT_PATH/wiki/entities" "$VAULT_PATH/wiki/topics" "$VAULT_PATH/wiki/sources" "$VAULT_PATH/wiki/methods" "$VAULT_PATH/wiki/claims" "$VAULT_PATH/stories/pitches" "$VAULT_PATH/stories/drafts" "$VAULT_PATH/stories/published" "$VAULT_PATH/handoff/from-spotlight"
+  write_if_missing "$VAULT_PATH/README.md" <<'VAULT_README_EOF'
+---
+type: vault-index
+tags: [mycroft, index]
+created: ${today}
+updated: ${today}
+---
+
+# Mycroft Vault
+
+This vault is the durable knowledge and story workspace Mycroft reads and writes through Goose recipes.
+
+- _schema/ stores ingestion rules and note schemas.
+- _audits/ stores scheduled vault audit reports.
+- sources/raw/ stores immutable source material.
+- sources/processed/ stores cleaned source extracts.
+- wiki/ stores durable linked knowledge.
+- stories/ stores publishable pitches, drafts, and finished work.
+- handoff/from-spotlight/ stores findings promoted from Spotlight.
+- context/ stores beat notes, source policy, and style guidance.
+VAULT_README_EOF
+  write_if_missing "$VAULT_PATH/_index.md" <<'VAULT_INDEX_EOF'
+---
+type: index
+title: Mycroft Index
+description: Entry point for the Mycroft knowledge vault.
+tags: [mycroft, index]
+created: ${today}
+updated: ${today}
+---
+
+# Mycroft Index
+
+## Context
+
+- [[context/beat-notes]]
+- [[context/source-policy]]
+- [[context/style-guide]]
+
+## Knowledge
+
+- Entities: wiki/entities/
+- Topics: wiki/topics/
+- Sources: wiki/sources/
+- Methods: wiki/methods/
+- Claims: wiki/claims/
+
+## Stories
+
+- Pitches: stories/pitches/
+- Drafts: stories/drafts/
+- Published: stories/published/
+
+## Handoff
+
+- Spotlight findings: handoff/from-spotlight/
+VAULT_INDEX_EOF
+  write_if_missing "$VAULT_PATH/_log.md" <<'VAULT_LOG_EOF'
+---
+type: log
+title: Mycroft Ingestion Log
+description: Append-only log of durable knowledge ingestion.
+tags: [mycroft, log]
+created: ${today}
+updated: ${today}
+---
+
+# Mycroft Ingestion Log
+
+- ${today}: Vault scaffold created.
+VAULT_LOG_EOF
+  write_if_missing "$VAULT_PATH/_schema/mycroft.md" <<'VAULT_SCHEMA_EOF'
+---
+type: schema
+title: Mycroft Knowledge Schema
+description: Rules for storing durable journalist knowledge in this vault.
+tags: [mycroft, schema]
+created: ${today}
+updated: ${today}
+---
+
+# Mycroft Knowledge Schema
+
+Use sources/raw for immutable source material, sources/processed for cleaned extracts, wiki for durable linked knowledge, and stories for publishable work.
+
+Every durable note should include frontmatter, a clear title, confidence, source references, and links to related notes.
+VAULT_SCHEMA_EOF
+  write_if_missing "$VAULT_PATH/_schema/frontmatter.md" <<'VAULT_FRONTMATTER_EOF'
+---
+type: schema
+title: Frontmatter
+description: Minimum frontmatter fields for Mycroft notes.
+tags: [mycroft, schema, frontmatter]
+created: ${today}
+updated: ${today}
+---
+
+# Frontmatter
+
+Minimum fields:
+
+title, description, type, created, updated, confidence, tags.
+VAULT_FRONTMATTER_EOF
+  write_if_missing "$VAULT_PATH/_schema/ingest-rules.md" <<'VAULT_INGEST_RULES_EOF'
+---
+type: schema
+title: Ingest Rules
+description: Rules for turning sources and Spotlight handoffs into durable knowledge.
+tags: [mycroft, schema, ingest]
+created: ${today}
+updated: ${today}
+---
+
+# Ingest Rules
+
+Preserve raw sources, create processed extracts, write atomic wiki notes, update _index.md, and append _log.md.
+
+Spotlight handoffs should be promoted only after findings are confirmed or useful as durable knowledge.
+VAULT_INGEST_RULES_EOF
+  write_if_missing "$VAULT_PATH/context/source-policy.md" <<'VAULT_SOURCES_EOF'
+---
+type: context
+name: Source Policy
+tags: [mycroft, sources, context]
+created: ${today}
+updated: ${today}
+---
+
+# Source Policy
+
+Use this note to define source-handling rules for this vault.
+
+- Never paste confidential source identities into cloud tools unless explicitly cleared.
+- Keep durable source records in wiki/sources/.
+- Mark sensitive notes with sensitive: true in frontmatter.
+VAULT_SOURCES_EOF
+  write_if_missing "$VAULT_PATH/context/style-guide.md" <<'VAULT_STYLE_EOF'
+---
+type: context
+name: Style Guide
+tags: [mycroft, style, context]
+created: ${today}
+updated: ${today}
+---
+
+# Style Guide
+
+- Lead with the verified point.
+- Attribute factual claims.
+- Separate evidence, inference, and unanswered questions.
+VAULT_STYLE_EOF
+  write_if_missing "$VAULT_PATH/context/beat-notes.md" <<'VAULT_BEAT_EOF'
+---
+type: context
+name: Beat Notes
+tags: [mycroft, beat, context]
+created: ${today}
+updated: ${today}
+---
+
+# Beat Notes
+
+Add recurring beats, watchlists, and standing questions here.
+VAULT_BEAT_EOF
+  write_if_missing "$VAULT_PATH/stories/pitches/example-story-pitch.md" <<'VAULT_STORY_EOF'
+---
+type: story
+title: Example Story Pitch
+description: Placeholder showing how Spotlight findings can become a publishable story.
+aliases: []
+tags: [mycroft, story, pitch, example]
+created: ${today}
+updated: ${today}
+confidence: unverified
+---
+
+# Example Story Pitch
+
+## Angle
+
+What is the publishable angle?
+
+## Evidence
+
+- Link confirmed findings and sources.
+
+## Why Now
+
+## Next Reporting
+
+VAULT_STORY_EOF
+  write_if_missing "$VAULT_PATH/wiki/entities/example-entity.md" <<'VAULT_ENTITY_EOF'
+---
+type: entity
+title: Example Entity
+description: Placeholder entity note.
+aliases: []
+tags: [mycroft, entity, example]
+created: ${today}
+updated: ${today}
+confidence: unverified
+---
+
+# Example Entity
+
+Replace this with a person, organisation, or place note.
+VAULT_ENTITY_EOF
+  write_if_missing "$VAULT_PATH/wiki/sources/example-source.md" <<'VAULT_SOURCE_EOF'
+---
+type: source
+title: Example Source
+description: Placeholder source note.
+aliases: []
+tags: [mycroft, source, example]
+created: ${today}
+updated: ${today}
+confidence: unverified
+sensitive: false
+---
+
+# Example Source
+
+Use source notes for documents, URLs, interviews, datasets, and credibility assessments.
+VAULT_SOURCE_EOF
+  write_if_missing "$VAULT_PATH/wiki/methods/sift.md" <<'VAULT_SIFT_EOF'
+---
+type: methodology
+title: SIFT
+description: Stop, Investigate, Find, Trace verification method.
+aliases: [Stop, Investigate, Find, Trace]
+tags: [mycroft, methodology, verification]
+created: ${today}
+updated: ${today}
+confidence: verified
+---
+
+# SIFT
+
+- Stop.
+- Investigate the source.
+- Find better coverage.
+- Trace claims to the original context.
+VAULT_SIFT_EOF
+  ok "Mycroft vault scaffold"
+}
+
+seed_spotlight_vault() {
+  [ "${d.spotlight ? '1' : '0'}" = "1" ] || return 0
+  mkdir -p "$SPOTLIGHT_VAULT_PATH/cases/_template" "$SPOTLIGHT_VAULT_PATH/evidence" "$SPOTLIGHT_VAULT_PATH/captures" "$SPOTLIGHT_VAULT_PATH/briefs" "$SPOTLIGHT_VAULT_PATH/exports" "$SPOTLIGHT_VAULT_PATH/handoff-to-mycroft"
+  write_if_missing "$SPOTLIGHT_VAULT_PATH/README.md" <<'SPOTLIGHT_README_EOF'
+---
+type: spotlight-index
+tags: [mycroft, spotlight, index]
+created: ${today}
+updated: ${today}
+---
+
+# Spotlight Vault
+
+This vault is for OSINT casework and evidence trails. Keep durable knowledge in the Mycroft vault.
+
+- cases/{project}/ stores active OSINT casework.
+- evidence/ stores screenshots, captures, and chain-of-custody notes.
+- captures/ stores raw browser captures and downloaded artefacts.
+- briefs/ stores investigation briefings.
+- exports/ stores reports and packaged outputs.
+- handoff-to-mycroft/ stores cleaned entities, sources, and findings ready to promote into Mycroft shared knowledge.
+SPOTLIGHT_README_EOF
+  write_if_missing "$SPOTLIGHT_VAULT_PATH/cases/_template/index.md" <<'SPOTLIGHT_TEMPLATE_EOF'
+---
+type: investigation-note
+name: Spotlight Investigation Template
+aliases: []
+tags: [spotlight, investigation, template]
+created: ${today}
+updated: ${today}
+project: _template
+confidence: unverified
+---
+
+# Spotlight Investigation Template
+
+## Objective
+
+## Evidence Log
+
+## Open Questions
+
+## Promote To Mycroft
+
+- Add durable entities, sources, or verified findings to handoff-to-mycroft/ before syncing into the Mycroft vault.
+SPOTLIGHT_TEMPLATE_EOF
+  ok "Spotlight vault scaffold"
+}
+
+write_scheduled_recipes() {
+  mkdir -p "$MYCROFT_GENERATED_RECIPES"
+  cat > "$MYCROFT_GENERATED_RECIPES/morning-brief.scheduled.yaml" <<SCHEDULED_MORNING_EOF
+version: "1.0.0"
+title: "Mycroft scheduled morning brief"
+description: "Generated by Mycroft setup. Runs the morning brief against the configured local vault paths."
+
+instructions: |
+  Load the Mycroft journalism instructions.
+  Use the configured local monitoring profile and vault paths.
+  Cite every item and write the brief into the Mycroft vault.
+
+parameters: []
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Run the Mycroft morning brief using these configured paths:
+
+  - Mycroft vault: $VAULT_PATH
+  - Obsidian vault name: Mycroft
+  - Monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
+
+  If the monitoring profile does not exist yet, continue with context/beat-notes.md and tell the user to run the Morning brief preflight recipe.
+
+  Follow $MYCROFT_DIR/recipes/morning-brief.yaml exactly. Write the result to:
+
+  $VAULT_PATH/stories/drafts/morning-brief-YYYY-MM-DD.md
+SCHEDULED_MORNING_EOF
+
+  cat > "$MYCROFT_GENERATED_RECIPES/vault-audit.scheduled.yaml" <<SCHEDULED_AUDIT_EOF
+version: "1.0.0"
+title: "Mycroft scheduled vault audit"
+description: "Generated by Mycroft setup. Audits the configured Mycroft vault and optional Spotlight handoffs."
+
+instructions: |
+  Load the Mycroft journalism instructions and knowledge-primitives skill.
+  Audit the configured vault paths. Do not rewrite user notes; write a dated report.
+
+parameters: []
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Run the Mycroft vault audit using these configured paths:
+
+  - Mycroft vault: $VAULT_PATH
+  - Spotlight vault: $SPOTLIGHT_VAULT_PATH
+  - Report directory: $VAULT_PATH/_audits
+
+  Follow $MYCROFT_DIR/recipes/vault-audit.yaml exactly. Write the result to:
+
+  $VAULT_PATH/_audits/vault-audit-YYYY-MM-DD.md
+SCHEDULED_AUDIT_EOF
+
+  ok "generated scheduled Goose recipes"
+}
+
+install_goose_schedules() {
+  [ "$INSTALL_GOOSE" = "1" ] || return 0
+  have goose || { warn "Goose CLI not found; open Goose Scheduler and add Mycroft schedules manually."; return 0; }
+  set -a
+  . "$MYCROFT_ENV"
+  set +a
+  export GOOSE_RECIPE_PATH="$GOOSE_RECIPE_PATH_VALUE"
+
+  goose schedule remove --schedule-id mycroft-morning-brief >/dev/null 2>&1 || true
+  goose schedule remove --schedule-id mycroft-vault-audit >/dev/null 2>&1 || true
+
+  if goose schedule add --schedule-id mycroft-morning-brief --cron "0 0 7 * * *" --recipe-source "$MYCROFT_GENERATED_RECIPES/morning-brief.scheduled.yaml" >/dev/null 2>&1; then
+    ok "Goose schedule mycroft-morning-brief"
+  else
+    warn "Could not create Goose morning-brief schedule; use Goose Scheduler with $MYCROFT_GENERATED_RECIPES/morning-brief.scheduled.yaml"
+  fi
+
+  if goose schedule add --schedule-id mycroft-vault-audit --cron "0 15 18 * * *" --recipe-source "$MYCROFT_GENERATED_RECIPES/vault-audit.scheduled.yaml" >/dev/null 2>&1; then
+    ok "Goose schedule mycroft-vault-audit"
+  else
+    warn "Could not create Goose vault-audit schedule; use Goose Scheduler with $MYCROFT_GENERATED_RECIPES/vault-audit.scheduled.yaml"
+  fi
+}
+
+open_obsidian_vaults() {
+  [ "$INSTALL_OBSIDIAN" = "1" ] || return 0
+  if [ "$(uname -s)" = "Darwin" ]; then
+    open -a Obsidian "$VAULT_PATH" 2>/dev/null || open -a Obsidian 2>/dev/null || true
+    if [ "${d.spotlight ? '1' : '0'}" = "1" ]; then open -a Obsidian "$SPOTLIGHT_VAULT_PATH" 2>/dev/null || true; fi
+    ok "Obsidian opened"
+  fi
+}
+
+open_goose_start() {
+  [ "$INSTALL_GOOSE" = "1" ] || return 0
+  if [ "$(uname -s)" = "Darwin" ]; then
+    if have goose && [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
+      goose recipe open "$MYCROFT_DIR/recipes/morning-brief-preflight.yaml" --param vault_path="$VAULT_PATH" --param vault_name="Mycroft" --param config_path="$MYCROFT_MORNING_BRIEF_CONFIG" >/dev/null 2>&1 || open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
+    else
+      open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
+    fi
+    ok "Goose opened"
+  elif have goose; then
+    if [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
+      goose run --recipe "$MYCROFT_DIR/recipes/morning-brief-preflight.yaml" --interactive --params vault_path="$VAULT_PATH" --params vault_name="Mycroft" --params config_path="$MYCROFT_MORNING_BRIEF_CONFIG" || true
+    else
+      goose recipe list >/dev/null 2>&1 || true
+    fi
+    ok "Goose CLI ready"
+  fi
+}
+
+mkdir -p "$VAULT_PATH" "$GOOSE_CONFIG" "$PROVIDERS_DST" "$MYCROFT_PROFILE_DIR" "$MYCROFT_DATA_DIR" "$PLUGINS_DIR" && ok "Mycroft vault $VAULT_PATH"
+warn_legacy_layout
 ensure_git
 ensure_goose
 install_obsidian
 install_firecrawl
-
-if [ -d "$MYCROFT_DIR/.git" ]; then update_repo "$MYCROFT_DIR" "Mycroft"
-else git clone https://github.com/buriedsignals/mycroft.git "$MYCROFT_DIR" && ok "Mycroft cloned"
-fi
+ensure_qmd
+install_or_update_mycroft
+sync_mycroft_profile
+seed_mycroft_vault
+seed_spotlight_vault
+configure_qmd
 mkdir -p "$PLUGINS_DIR"
 
 mkdir -p "$PROVIDERS_DST"
 ${providerCopies.join('\n')}
-cp "$MYCROFT_DIR/instructions/journalism.md" "$GOOSE_CONFIG/.goosehints" && ok "Goose global .goosehints"
-
-cat > "$GOOSE_CONFIG/config.yaml" <<GOOSE_CONFIG_EOF
-# Mycroft leaves provider/model selectable in Goose, but these env vars
-# are loaded from ~/.mycroft/.env for shell sessions.
-GOOSE_CONFIG_EOF
+install_skill_registry
+write_goose_instructions
 
 cat > "$MYCROFT_ENV" <<'ENV_EOF'
 ${envLines.join('\n')}
 ENV_EOF
 chmod 600 "$MYCROFT_ENV"
+configure_goose_persistent_defaults
 
 ${pluginBlock.length ? pluginBlock.join('\n') : '# (no plugins selected)'}
 
@@ -4038,15 +4707,34 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
 {
   "version": 1,
   "installed_by": "mycroft-setup",
+  "paths": {
+    "profile": "$MYCROFT_PROFILE_DIR",
+    "data": "$MYCROFT_DATA_DIR",
+    "source": "$MYCROFT_DIR",
+    "plugins": "$PLUGINS_DIR",
+    "env": "$MYCROFT_ENV"
+  },
   "goose": {
     "config_dir": "$GOOSE_CONFIG",
     "custom_providers_dir": "$PROVIDERS_DST",
     "hints_file": "$GOOSE_CONFIG/.goosehints",
-    "recipe_path": "$GOOSE_RECIPE_PATH_VALUE"
+    "recipe_path": "$GOOSE_RECIPE_PATH_VALUE",
+    "instructions_file": "$MYCROFT_GOOSE_INSTRUCTIONS",
+    "soul_file": "$MYCROFT_SOUL_FILE",
+    "generated_recipes": "$MYCROFT_GENERATED_RECIPES",
+    "schedules": {
+      "morning_brief": "mycroft-morning-brief",
+      "vault_audit": "mycroft-vault-audit"
+    }
+  },
+  "skills": {
+    "registry": "$MYCROFT_SKILL_REGISTRY",
+    "directory": "$MYCROFT_SKILLS_DIR"
   },
   "vaults": {
     "mycroft": "$VAULT_PATH",
-    "spotlight": "$SPOTLIGHT_VAULT_PATH"
+    "spotlight": "$SPOTLIGHT_VAULT_PATH",
+    "spotlight_ingest_target": "$SPOTLIGHT_INGEST_TARGET"
   },
   "sovereignty": {
     "default": "$SOVEREIGNTY",
@@ -4061,15 +4749,102 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
 CONFIG_EOF
 ok "Mycroft config $MYCROFT_CONFIG"
 
-if [ -f "$MYCROFT_DIR/monitoring/preflight.py" ]; then
-  (set -a; . "$MYCROFT_ENV"; set +a; python3 "$MYCROFT_DIR/monitoring/preflight.py" --text || true)
-fi
+write_scheduled_recipes
+install_goose_schedules
 
 mkdir -p "$HOME/.local/bin" "$XDG_DATA_HOME/mycroft"
+cat > "$HOME/.local/bin/mycroft-doctor" <<'DOCTOR_EOF'
+#!/usr/bin/env bash
+set -u
+fail=0
+ok_check() { printf "OK    %s\\n" "$*"; }
+bad_check() { printf "FAIL  %s\\n" "$*"; fail=1; }
+check_path() {
+  if [ -e "$1" ]; then ok_check "$2"; else bad_check "$2 missing: $1"; fi
+}
+
+GOOSE_CONFIG="\${XDG_CONFIG_HOME:-$HOME/.config}/goose"
+XDG_DATA_HOME="\${XDG_DATA_HOME:-$HOME/.local/share}"
+MYCROFT_PROFILE_DIR="\${MYCROFT_PROFILE_DIR:-$GOOSE_CONFIG/mycroft}"
+MYCROFT_DATA_DIR="\${MYCROFT_DATA_DIR:-$XDG_DATA_HOME/goose/mycroft}"
+MYCROFT_DIR="\${MYCROFT_DIR:-$MYCROFT_DATA_DIR/source}"
+MYCROFT_ENV="$MYCROFT_PROFILE_DIR/.env"
+MYCROFT_CONFIG="\${MYCROFT_CONFIG:-$MYCROFT_PROFILE_DIR/mycroft-config.json}"
+MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"
+MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
+PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
+RECIPE_PATH="$MYCROFT_DIR/recipes"
+REQUIRED_ENV="${requiredDoctorEnv.join(' ')}"
+
+check_path "$MYCROFT_DIR/.git" "Mycroft repo"
+check_path "$MYCROFT_PROFILE_DIR" "Mycroft Goose profile"
+check_path "$MYCROFT_CONFIG" "Mycroft config"
+check_path "$MYCROFT_SKILL_REGISTRY" "Mycroft skill registry"
+check_path "$MYCROFT_GOOSE_INSTRUCTIONS" "Mycroft Goose instructions"
+check_path "$MYCROFT_SOUL_FILE" "Mycroft soul"
+check_path "$MYCROFT_DIR/skills/knowledge-primitives/SKILL.md" "knowledge-primitives skill"
+check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
+check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
+check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
+check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
+check_path "$RECIPE_PATH" "Mycroft recipes"
+check_path "$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml" "scheduled morning brief recipe"
+check_path "$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml" "scheduled vault audit recipe"
+check_path "$GOOSE_CONFIG" "Goose config dir"
+check_path "$PROVIDERS_DST" "Goose custom providers dir"
+check_path "$GOOSE_CONFIG/config.yaml" "Goose config file"
+check_path "$GOOSE_CONFIG/.goosehints" "Goose hints"
+check_path "$MYCROFT_ENV" "Mycroft env"
+
+if [ -f "$MYCROFT_ENV" ]; then
+  set -a
+  . "$MYCROFT_ENV"
+  set +a
+  for name in $REQUIRED_ENV; do
+    if [ -n "\${!name:-}" ]; then ok_check "$name present"; else bad_check "$name missing or empty"; fi
+  done
+fi
+
+if [ -f "$GOOSE_CONFIG/config.yaml" ]; then
+  if grep -q '^GOOSE_PROVIDER:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose provider persisted"; else bad_check "GOOSE_PROVIDER missing from Goose config"; fi
+  if grep -q '^GOOSE_MODEL:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose model persisted"; else bad_check "GOOSE_MODEL missing from Goose config"; fi
+  if grep -q '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose Mycroft soul persisted"; else bad_check "GOOSE_MOIM_MESSAGE_FILE missing from Goose config"; fi
+fi
+
+case ":\${GOOSE_RECIPE_PATH:-}:" in
+  *":$RECIPE_PATH:"*) ok_check "GOOSE_RECIPE_PATH includes $RECIPE_PATH" ;;
+  *) bad_check "GOOSE_RECIPE_PATH missing $RECIPE_PATH" ;;
+esac
+
+if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
+if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
+if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
+  ok_check "Spotlight plugin"
+  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
+  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/skills/ingest/SKILL.md" "Spotlight ingest skill"
+fi
+
+if [ "$fail" -eq 0 ]; then
+  printf "\\nMycroft doctor: OK\\n"
+else
+  printf "\\nMycroft doctor: failed\\n"
+fi
+exit "$fail"
+DOCTOR_EOF
+chmod +x "$HOME/.local/bin/mycroft-doctor"
+
 cat > "$HOME/.local/bin/mycroft-update" <<'UPDATE_EOF'
 #!/usr/bin/env bash
 set -euo pipefail
-log_dir="\${XDG_DATA_HOME:-$HOME/.local/share}/mycroft"
+XDG_CONFIG_HOME="\${XDG_CONFIG_HOME:-$HOME/.config}"
+XDG_DATA_HOME="\${XDG_DATA_HOME:-$HOME/.local/share}"
+GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
+MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"
+MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"
+MYCROFT_SOURCE_DIR="$MYCROFT_DATA_DIR/source"
+MYCROFT_PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"
+log_dir="$MYCROFT_DATA_DIR/logs"
 mkdir -p "$log_dir"
 log="$log_dir/update.log"
 exec >>"$log" 2>&1
@@ -4081,30 +4856,56 @@ update_repo() {
   echo "== $name =="
   (cd "$dir" && git pull --no-rebase --autostash origin main)
 }
-update_repo "$HOME/.mycroft" "Mycroft" || true
-update_repo "$HOME/.mycroft/plugins/spotlight" "Spotlight" || true
+update_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
+update_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
+mkdir -p "$MYCROFT_PROFILE_DIR"
+if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
+  mkdir -p "$GOOSE_CONFIG/custom_providers"
+  for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do
+    [ -f "$src" ] || continue
+    name="$(basename "$src")"
+    if [ -f "$GOOSE_CONFIG/custom_providers/$name" ]; then
+      cp "$src" "$GOOSE_CONFIG/custom_providers/$name"
+    fi
+  done
+fi
+if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
+  cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
+fi
+if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
+  set -a
+  . "$MYCROFT_PROFILE_DIR/.env"
+  set +a
+fi
+if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
+  cat "$MYCROFT_SOURCE_DIR/instructions/journalism.md" > "$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+  cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_EOF
+
+## Mycroft Installed Context
+
+- Mycroft Goose profile: $MYCROFT_PROFILE_DIR
+- Mycroft source: $MYCROFT_SOURCE_DIR
+- Mycroft plugins: $MYCROFT_PLUGINS_DIR
+- Mycroft durable knowledge vault: \${MYCROFT_VAULT_PATH:-}
+- Mycroft recipes: $MYCROFT_SOURCE_DIR/recipes:$MYCROFT_PROFILE_DIR/generated-recipes
+- Mycroft persistent soul file: $MYCROFT_PROFILE_DIR/SOUL.md
+
+Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
+Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+PROFILE_EOF
+  cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
+fi
 UPDATE_EOF
 chmod +x "$HOME/.local/bin/mycroft-update"
 
 if [ "$(uname -s)" = "Darwin" ]; then
-  mkdir -p "$HOME/Library/LaunchAgents"
-  cat > "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" <<PLIST_EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>Label</key><string>com.buriedsignals.mycroft.update</string>
-  <key>ProgramArguments</key>
-  <array><string>$HOME/.local/bin/mycroft-update</string></array>
-  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>10</integer><key>Minute</key><integer>15</integer></dict>
-  <key>StandardOutPath</key><string>$XDG_DATA_HOME/mycroft/update.log</string>
-  <key>StandardErrorPath</key><string>$XDG_DATA_HOME/mycroft/update.log</string>
-</dict>
-</plist>
-PLIST_EOF
-  launchctl unload "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" >/dev/null 2>&1 || true
-  launchctl load "$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist" >/dev/null 2>&1 || warn "LaunchAgent written; load it after reboot if launchctl refused."
-  ok "daily updater LaunchAgent"
+  legacy_plist="$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist"
+  if [ -f "$legacy_plist" ]; then
+    launchctl unload "$legacy_plist" >/dev/null 2>&1 || true
+    rm -f "$legacy_plist"
+    ok "removed old Mycroft LaunchAgent"
+  fi
+  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * * %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "daily updater cron"
 elif have systemctl; then
   mkdir -p "$XDG_CONFIG_HOME/systemd/user"
   cat > "$XDG_CONFIG_HOME/systemd/user/mycroft-update.service" <<SERVICE_EOF
@@ -4132,6 +4933,9 @@ TIMER_EOF
 else
   (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * * %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "daily updater cron"
 fi
+
+open_obsidian_vaults
+open_goose_start
 
 MARKER_START='# === mycroft ==='
 MARKER_END='# === /mycroft ==='
@@ -4250,12 +5054,13 @@ function buildInstallerReadme() {
   return `# Mycroft Setup
 
 1. Extract this ZIP.
-2. Move \`mycroft-setup.command\` to the folder where you keep installers, such as Downloads or Desktop.
-3. On macOS the first run must be explicit: right-click \`mycroft-setup.command\`, choose Open, then Confirm.
+2. Double-click \`mycroft-setup.command\`. It configures Goose with Mycroft at \`~/.config/goose/mycroft\`, keeps updateable source at \`~/.local/share/goose/mycroft/source\`, and uses the vault paths selected in setup.
+3. If macOS says Apple could not verify the file, choose Done, then open System Settings -> Privacy & Security -> Open Anyway.
 4. After the first approved run, you can double-click the file.
 5. When setup finishes, open a new terminal and run \`mycroft doctor\`.
 
-The script writes secrets to \`~/.mycroft/.env\`; the separate agent setup ZIP never contains secret values.
+The installer script handles setup for you and writes fallback script secrets to \`~/.config/goose/mycroft/.env\`; Goose provider secrets are stored through Goose when possible.
+The separate agent setup ZIP contains the same API keys in its local manifest; use it when you want an agent to perform setup without asking you to paste secrets into chat.
 `;
 }
 
@@ -4266,16 +5071,134 @@ function buildAgentManifest(d) {
   if (d.together) required.push('TOGETHER_API_KEY');
   if (d.cojournalist) required.push('COJOURNALIST_API_KEY');
   if (d.spotlight && d.osintNavigatorKey) required.push('OSINT_NAVIGATOR_API_KEY');
+  const defaults = {
+    MYCROFT_DEFAULT_SOVEREIGNTY: d.sovereignty,
+    MYCROFT_VAULT_PATH: d.vault,
+    MYCROFT_PROFILE_DIR: '~/.config/goose/mycroft',
+    MYCROFT_DATA_DIR: '~/.local/share/goose/mycroft',
+    MYCROFT_SOURCE_DIR: '~/.local/share/goose/mycroft/source',
+    MYCROFT_PLUGINS_DIR: '~/.local/share/goose/mycroft/plugins',
+    MYCROFT_PROFILE_SKILLS_DIR: '~/.config/goose/mycroft/skills',
+    MYCROFT_GENERATED_RECIPES: '~/.config/goose/mycroft/generated-recipes',
+    MYCROFT_MORNING_BRIEF_CONFIG: '~/.config/goose/mycroft/morning-brief-config.md',
+    GOOSE_MOIM_MESSAGE_FILE: '~/.config/goose/mycroft/SOUL.md',
+    GOOSE_RECIPE_PATH: '~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes',
+    QMD_COLLECTIONS: 'mycroft,spotlight',
+    MYCROFT_LOCAL_ONLY: d.localOnly ? '1' : '0',
+  };
+  if (d.localOnly) {
+    const localModel = localModelMeta(d.localModel);
+    defaults.GOOSE_PROVIDER = 'local-llama-server';
+    defaults.GOOSE_MODEL = localModel.name;
+    defaults.MYCROFT_LOCAL_MODEL = localModel.name;
+    defaults.MYCROFT_LOCAL_MODEL_REPO = localModel.repo;
+  } else if (d.fireworks) {
+    defaults.GOOSE_PROVIDER = 'fireworks-qwen36plus';
+    defaults.GOOSE_MODEL = 'accounts/fireworks/models/qwen3p6-plus';
+  } else if (d.together) {
+    defaults.GOOSE_PROVIDER = 'together-qwen';
+    defaults.GOOSE_MODEL = 'Qwen/Qwen2.5-72B-Instruct-Turbo';
+  }
+  if (d.cojournalist) defaults.COJOURNALIST_API_BASE = 'https://www.cojournalist.ai/api/v1';
+  if (d.spotlight) {
+    defaults.SPOTLIGHT_DIR = '~/.local/share/goose/mycroft/plugins/spotlight';
+    defaults.SPOTLIGHT_VAULT_PATH = d.spotlightVaultPath;
+    defaults.SPOTLIGHT_INGEST_TARGET = d.vault;
+    defaults.SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT = '1';
+    if (d.cojournalist) defaults.SPOTLIGHT_MONITORING_BACKEND = 'cojournalist';
+    if (d.cojournalist) defaults.SPOTLIGHT_SCOUT_REQUESTS = 'cojournalist';
+    if (d.spotBrowseruse) defaults.SPOTLIGHT_BROWSERUSE = '1';
+  }
+  const values = {};
+  if (d.firecrawlKey) values.FIRECRAWL_API_KEY = d.firecrawlKey;
+  if (d.fireworksKey) values.FIREWORKS_API_KEY = d.fireworksKey;
+  if (d.togetherKey) values.TOGETHER_API_KEY = d.togetherKey;
+  if (d.apifyToken) values.APIFY_API_TOKEN = d.apifyToken;
+  if (d.agentmailKey) values.AGENTMAIL_API_KEY = d.agentmailKey;
+  if (d.cojournalist && d.cojournalistKey) values.COJOURNALIST_API_KEY = d.cojournalistKey;
+  if (d.spotlight && d.osintNavigatorKey) values.OSINT_NAVIGATOR_API_KEY = d.osintNavigatorKey;
+  if (d.junkipediaKey) values.JUNKIPEDIA_API_KEY = d.junkipediaKey;
   return {
     schema_version: 'mycroft-agent-setup/v1',
     generated_at: new Date().toISOString(),
-    install_path: '~/.mycroft',
+    source_repo: 'https://github.com/buriedsignals/mycroft.git',
+    install_path: '~/.local/share/goose/mycroft/source',
+    profile_path: '~/.config/goose/mycroft',
+    data_path: '~/.local/share/goose/mycroft',
     startup_command: 'mycroft doctor',
+    installer: {
+      install_goose: d.installGoose,
+      install_obsidian: d.installObsidian,
+      install_firecrawl: d.installFirecrawl,
+      install_qmd: true,
+      providers: [
+        'local-mlx',
+        'local-llama-server',
+        ...(d.fireworks ? ['fireworks-qwen36plus'] : []),
+        ...(d.together ? ['together-qwen'] : []),
+      ],
+    },
+    skills: buildSkillRegistry(d),
+    vault_scaffold: {
+      mycroft_dirs: [
+        '_schema',
+        '_audits',
+        'sources/raw',
+        'sources/processed',
+        'wiki/entities',
+        'wiki/topics',
+        'wiki/sources',
+        'wiki/methods',
+        'wiki/claims',
+        'stories/pitches',
+        'stories/drafts',
+        'stories/published',
+        'handoff/from-spotlight',
+        'context',
+      ],
+      mycroft_notes: [
+        'README.md',
+        '_index.md',
+        '_log.md',
+        '_schema/mycroft.md',
+        '_schema/frontmatter.md',
+        '_schema/ingest-rules.md',
+        'context/source-policy.md',
+        'context/style-guide.md',
+        'context/beat-notes.md',
+        'stories/pitches/example-story-pitch.md',
+        'wiki/entities/example-entity.md',
+        'wiki/sources/example-source.md',
+        'wiki/methods/sift.md',
+      ],
+      spotlight_dirs: d.spotlight ? [
+        'cases/_template',
+        'evidence',
+        'captures',
+        'briefs',
+        'exports',
+        'handoff-to-mycroft',
+      ] : [],
+      spotlight_notes: d.spotlight ? [
+        'README.md',
+        'cases/_template/index.md',
+      ] : [],
+      open_obsidian: d.installObsidian,
+    },
     goose: {
       config_dir: '~/.config/goose',
       custom_providers_dir: '~/.config/goose/custom_providers',
       hints_file: '~/.config/goose/.goosehints',
-      recipe_path: '~/.mycroft/recipes',
+      recipe_path: '~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes',
+      source_recipes_dir: '~/.local/share/goose/mycroft/source/recipes',
+      instructions_file: '~/.config/goose/mycroft/goose-mycroft.md',
+      soul_file: '~/.config/goose/mycroft/SOUL.md',
+      generated_recipes_dir: '~/.config/goose/mycroft/generated-recipes',
+      schedules: [
+        { id: 'mycroft-morning-brief', cron: '0 0 7 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml' },
+        { id: 'mycroft-vault-audit', cron: '0 15 18 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml' },
+      ],
+      first_run_recipe: '~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml',
     },
     sovereignty: {
       default: d.sovereignty,
@@ -4285,11 +5208,12 @@ function buildAgentManifest(d) {
     vaults: {
       mycroft: d.vault,
       spotlight: d.spotlightVaultPath,
+      spotlight_ingest_target: d.vault,
     },
     plugins: {
       spotlight: {
         enabled: d.spotlight,
-        path: '~/.mycroft/plugins/spotlight',
+        path: '~/.local/share/goose/mycroft/plugins/spotlight',
         inherits_mycroft_sovereignty: true,
         scout_requests: d.cojournalist ? 'cojournalist' : null,
       },
@@ -4302,15 +5226,18 @@ function buildAgentManifest(d) {
     env: {
       required,
       optional: [
-        ...(d.apifyEnabled ? ['APIFY_API_TOKEN'] : []),
-        ...(d.agentmailEnabled ? ['AGENTMAIL_API_KEY'] : []),
+        ...(d.apifyEnabled || d.apifyToken ? ['APIFY_API_TOKEN'] : []),
+        ...(d.agentmailEnabled || d.agentmailKey ? ['AGENTMAIL_API_KEY'] : []),
         ...(d.spotBrowseruse ? ['SPOTLIGHT_BROWSERUSE'] : []),
         ...(d.junkipediaKey ? ['JUNKIPEDIA_API_KEY'] : []),
       ],
+      defaults,
+      values,
     },
     notes: [
-      'This manifest intentionally contains no secret values.',
-      'Secrets are written to ~/.mycroft/.env by the installer.',
+      'This manifest contains local secret values from the setup form.',
+      'Do not paste, print, log, or upload this manifest.',
+      'Copy env.defaults and env.values into ~/.config/goose/mycroft/.env during agent setup.',
       'Spotlight and Mycroft vault paths should stay separate.',
     ],
   };
@@ -4319,18 +5246,60 @@ function buildAgentManifest(d) {
 function buildAgentPrompt(manifest) {
   return `# Mycroft Agent Setup
 
-Use \`mycroft-agent-manifest.json\` as the source of truth. Do not ask the user to paste secrets into chat and do not print secret values.
+Use \`mycroft-agent-manifest.json\` as the source of truth. Handle the setup for the user, then verify it. The manifest contains local secret values under \`env.values\`; do not ask the user to paste secrets into chat, and do not print, log, summarize, or expose secret values.
+
+There are two supported setup paths:
+
+1. Agent setup: use this manifest to install or update Mycroft, configure Goose, create vault directories, configure selected plugins, and run verification.
+2. Command setup: if the user prefers the generated \`mycroft-setup.command\`, stop and let that script handle setup instead.
+
+## Setup
+
+1. Install or update Mycroft source from \`${manifest.source_repo}\` at \`${manifest.install_path}\`. Keep Goose-facing generated profile files under \`${manifest.profile_path}\`.
+2. Create the Mycroft vault at \`${manifest.vaults.mycroft}\`${manifest.plugins.spotlight.enabled ? ` and the Spotlight vault at \`${manifest.vaults.spotlight}\`` : ''}.
+3. Install runtime tools when requested: Goose ${manifest.installer.install_goose ? 'yes' : 'no'}, Obsidian ${manifest.installer.install_obsidian ? 'yes' : 'no'}, Firecrawl CLI ${manifest.installer.install_firecrawl ? 'yes' : 'no'}, QMD CLI ${manifest.installer.install_qmd ? 'yes' : 'no'}.
+4. Create Goose config paths:
+   - \`${manifest.goose.config_dir}\`
+   - \`${manifest.goose.custom_providers_dir}\`
+5. Copy selected provider configs into \`${manifest.goose.custom_providers_dir}\`: ${manifest.installer.providers.join(', ')}.
+6. Install selected skills and write the skill registry at \`${manifest.profile_path}/skill-registry.json\`. Installed skills: ${manifest.skills.skills.filter(s => s.enabled).map(s => s.id).join(', ')}.
+7. Generate Goose instructions at \`${manifest.goose.instructions_file}\` and copy them to \`${manifest.goose.hints_file}\`. Persist Goose defaults in \`${manifest.goose.config_dir}/config.yaml\`: \`GOOSE_PROVIDER\`, \`GOOSE_MODEL\`, \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`, and \`GOOSE_MOIM_MESSAGE_FILE=${manifest.goose.soul_file}\`. Include the Mycroft vault path, Spotlight vault path if enabled, Spotlight ingest target, selected APIs, and skill registry paths.
+8. Create the Obsidian vault scaffold. In the Mycroft vault, create directories: ${manifest.vault_scaffold.mycroft_dirs.join(', ')}. Create starter notes with frontmatter and tags: ${manifest.vault_scaffold.mycroft_notes.join(', ')}.
+${manifest.plugins.spotlight.enabled ? `9. In the Spotlight vault, create directories: ${manifest.vault_scaffold.spotlight_dirs.join(', ')}. Create starter notes with frontmatter and tags: ${manifest.vault_scaffold.spotlight_notes.join(', ')}. Keep this vault separate from Mycroft; ingest target is \`${manifest.vaults.spotlight_ingest_target}\`.` : '9. Skip Spotlight vault scaffold; Spotlight is disabled in this manifest.'}
+10. Configure QMD collections for the Mycroft vault${manifest.plugins.spotlight.enabled ? ' and Spotlight vault' : ''}. QMD backs local knowledge search and Spotlight's \`query-vault\` verb.
+11. Create generated scheduled recipe files in \`${manifest.goose.generated_recipes_dir}\` for morning brief and vault audit using the selected vault paths.
+12. Register Goose-native schedules: ${manifest.goose.schedules.map(s => `${s.id} (${s.cron})`).join(', ')}.
+13. Ensure shell startup exports \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
+14. Create \`${manifest.profile_path}/.env\` from \`env.defaults\` and \`env.values\`. Include required variable names: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}. Include optional values when present. Store selected provider API keys in Goose's own secret store when Goose CLI is available, for example \`goose configure set-secret FIREWORKS_API_KEY <redacted>\`. If a required key is absent or empty in \`env.values\`, stop and report only the missing variable name. Do not echo, cat, or log the file contents. Set file mode \`600\`.
+${manifest.plugins.spotlight.enabled ? `15. Install or update Spotlight at \`${manifest.plugins.spotlight.path}\` and write \`.spotlight-config.json\` with \`vault_path=${manifest.vaults.spotlight}\`, \`mycroft_vault_path=${manifest.vaults.mycroft}\`, \`ingest_target=${manifest.vaults.spotlight_ingest_target}\`, \`cases_root\`, and \`handoff_path\`.` : '15. Skip Spotlight; it is disabled in this manifest.'}
+16. Install the \`mycroft-update\` wrapper at \`~/.local/bin/mycroft-update\` and a daily user-level updater job. It should pull \`${manifest.install_path}\`${manifest.plugins.spotlight.enabled ? ` and \`${manifest.plugins.spotlight.path}\`` : ''}, refresh \`${manifest.goose.soul_file}\`, regenerate \`${manifest.goose.hints_file}\` from source instructions plus local install paths, and refresh already-installed provider JSON files. Do not use Goose schedules for repo updates.
+17. Install the \`mycroft doctor\` wrapper and shell startup block with \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
+18. Open Obsidian to the created vault${manifest.plugins.spotlight.enabled ? 's' : ''} if Obsidian is installed, then open Goose Desktop to \`${manifest.goose.first_run_recipe}\` or start Goose CLI so the user can configure the morning brief.
+19. Tell the user what to do next: start chatting with Mycroft to set up the morning brief, then create a folder for investigations and ask Mycroft to Spotlight it.
 
 ## Verify
 
-1. Confirm Mycroft exists at \`${manifest.install_path}\`.
+1. Confirm Mycroft source exists at \`${manifest.install_path}\` and the Goose profile exists at \`${manifest.profile_path}\`.
 2. Confirm Goose config paths exist:
    - \`${manifest.goose.config_dir}\`
    - \`${manifest.goose.custom_providers_dir}\`
    - \`${manifest.goose.hints_file}\`
-3. Confirm \`~/.mycroft/.env\` contains the required variable names only: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}.
-4. Confirm \`GOOSE_RECIPE_PATH\` includes \`${manifest.goose.recipe_path}\`.
-5. Run \`mycroft doctor\`.
+3. Confirm the Mycroft vault scaffold exists, including \`${manifest.vaults.mycroft}/README.md\`, \`${manifest.vaults.mycroft}/_index.md\`, \`${manifest.vaults.mycroft}/_schema/mycroft.md\`, and \`${manifest.vaults.mycroft}/stories/pitches/example-story-pitch.md\`.
+${manifest.plugins.spotlight.enabled ? `4. Confirm the Spotlight vault scaffold exists, including \`${manifest.vaults.spotlight}/README.md\` and \`${manifest.vaults.spotlight}/cases/_template/index.md\`.` : '4. Confirm Spotlight was not scaffolded because it is disabled.'}
+5. Confirm \`${manifest.profile_path}/skill-registry.json\` exists and includes selected skills, including ${manifest.plugins.spotlight.enabled ? '`spotlight-ingest`' : '`knowledge-primitives`'}.
+6. Confirm QMD CLI exists and can run \`qmd status\`.
+7. Confirm generated scheduled recipes exist at \`${manifest.goose.generated_recipes_dir}\`.
+8. Confirm Goose schedules exist for ${manifest.goose.schedules.map(s => s.id).join(', ')}.
+9. Confirm \`${manifest.goose.hints_file}\` mentions the Mycroft vault path${manifest.plugins.spotlight.enabled ? ', Spotlight vault path, and Spotlight ingest target' : ''}.
+10. Confirm \`${manifest.goose.soul_file}\` exists and \`${manifest.goose.config_dir}/config.yaml\` persists \`GOOSE_PROVIDER\`, \`GOOSE_MODEL\`, \`GOOSE_RECIPE_PATH\`, and \`GOOSE_MOIM_MESSAGE_FILE\`.
+11. Confirm \`${manifest.profile_path}/.env\` contains the required variable names and non-empty values: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}. Do not print the values.
+12. Confirm \`GOOSE_RECIPE_PATH\` includes \`${manifest.goose.recipe_path}\`.
+13. Confirm \`~/.local/bin/mycroft-update\` exists and the user-level updater job is installed.
+14. Run \`mycroft doctor\`.
+
+## Tell The User Next
+
+Setup is complete. Start chatting with Mycroft in Goose to set up your morning brief. Then create a folder for your investigations in the Spotlight vault and ask Mycroft to Spotlight it.
 
 ## Runtime
 

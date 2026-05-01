@@ -1,12 +1,12 @@
 version: "1.0.0"
 title: "Morning brief"
-description: "Daily digest pulled from X bookmarks (ft), AgentMail inbox, and recent changes in your intelligence + knowledge vaults. Writes a dated note into your vault."
+description: "Daily digest pulled from the morning-brief monitoring profile, X bookmarks (ft), AgentMail inbox, and recent vault changes. Writes a dated note into the Mycroft vault."
 
 instructions: |
   Load the Mycroft journalism instructions as session context.
-  Aggregate overnight inputs. Rank by editorial relevance to the journalist's beat (from USER.md / context/beat-notes.md).
+  Aggregate overnight inputs. Rank by editorial relevance to the journalist's beat and monitoring profile.
   Cite every item. No fabrication.
-  Write the result to {{ vault_path }}/drafts/morning-brief-YYYY-MM-DD.md via the obsidian CLI.
+  Write the result to {{ vault_path }}/stories/drafts/morning-brief-YYYY-MM-DD.md via the obsidian CLI or direct file write.
 
 parameters:
   - key: vault_path
@@ -18,12 +18,17 @@ parameters:
     input_type: string
     requirement: required
     description: "Obsidian vault name (used by `obsidian vault=<name>`). E.g. 'intelligence', 'knowledge'."
-    default: "intelligence"
+    default: "Mycroft"
   - key: beat
     input_type: string
     requirement: optional
-    description: "Short beat descriptor to rank by (falls back to USER.md if empty)"
+    description: "Short beat descriptor to rank by (falls back to monitoring_config and context/beat-notes.md if empty)"
     default: ""
+  - key: monitoring_config
+    input_type: string
+    requirement: optional
+    description: "Local morning brief monitoring profile written by morning-brief-preflight."
+    default: "~/.mycroft/morning-brief-config.md"
 
 extensions:
   - type: builtin
@@ -34,6 +39,11 @@ prompt: |
   Build today's morning brief. Current date is today's date in the journalist's timezone.
 
   **Inputs** (gather in parallel; skip any that are unavailable):
+
+  0. **Monitoring profile**:
+     - Read `{{ monitoring_config }}` if it exists.
+     - Also read `{{ vault_path }}/context/morning-brief.md` and `{{ vault_path }}/context/beat-notes.md` if present.
+     - Use these files to rank relevance, define ignored sources, and identify Spotlight handoff triggers.
 
   1. **X/Twitter bookmarks via ft CLI** (optional):
      - Run `ft sync` to refresh (if the command succeeds within 20s; otherwise skip — not blocking).
@@ -84,11 +94,11 @@ prompt: |
   **Write to vault** using obsidian CLI (requires Obsidian app running):
 
   ```sh
-  obsidian vault="{{ vault_name }}" create path="drafts/morning-brief-$(date +%F).md" content="<escaped markdown here>"
+  obsidian vault="{{ vault_name }}" create path="stories/drafts/morning-brief-$(date +%F).md" content="<escaped markdown here>"
   ```
 
   If obsidian CLI is missing or Obsidian is not running, fall back to writing the file directly:
-  `{{ vault_path }}/drafts/morning-brief-$(date +%F).md`.
+  `{{ vault_path }}/stories/drafts/morning-brief-$(date +%F).md`.
 
   **Rules**:
   - Do not fabricate facts, quotes, or links.

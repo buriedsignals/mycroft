@@ -1,0 +1,80 @@
+version: "1.0.0"
+title: "Vault audit"
+description: "Scheduled audit of the Mycroft vault for stale notes, missing frontmatter, orphaned sources, weak claims, and Spotlight handoffs that should be promoted."
+
+instructions: |
+  Load the Mycroft journalism instructions and knowledge-primitives skill.
+  Audit the vault. Do not rewrite the user's notes unless the task explicitly says to fix; by default, write a dated audit report.
+
+parameters:
+  - key: vault_path
+    input_type: string
+    requirement: required
+    description: "Mycroft vault path."
+    default: "~/Documents/Mycroft"
+  - key: spotlight_vault_path
+    input_type: string
+    requirement: optional
+    description: "Spotlight vault path, if installed."
+    default: "~/Documents/Spotlight"
+  - key: output_path
+    input_type: string
+    requirement: optional
+    description: "Directory for audit reports."
+    default: "~/Documents/Mycroft/_audits"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access for reading the vault and writing the audit report."
+
+prompt: |
+  Run a Mycroft vault audit.
+
+  Read markdown files under `{{ vault_path }}`. Skip `.obsidian/`, `.trash/`, and binary files.
+
+  Check:
+
+  1. Missing or malformed frontmatter.
+  2. Source notes without URLs, paths, access dates, or confidence.
+  3. Claim notes without citations or verdicts.
+  4. Orphaned files not linked from `_index.md`, story notes, or wiki notes.
+  5. Raw source files that have no processed extract.
+  6. Spotlight handoffs under `handoff/from-spotlight/` that should become durable wiki notes or story pitches.
+  7. Story pitches that have no evidence links.
+  8. Sensitive notes that lack explicit `sensitive: true` frontmatter.
+
+  If `{{ spotlight_vault_path }}` exists, inspect only:
+
+  - `{{ spotlight_vault_path }}/handoff-to-mycroft/`
+  - `{{ spotlight_vault_path }}/briefs/`
+  - `{{ spotlight_vault_path }}/cases/`
+
+  Do not copy Spotlight casework into Mycroft during the audit.
+
+  Write a dated markdown report to `{{ output_path }}/vault-audit-YYYY-MM-DD.md` with:
+
+  ```markdown
+  # Vault Audit — YYYY-MM-DD
+
+  ## Summary
+
+  ## Needs Attention
+
+  ## Missing Frontmatter
+
+  ## Weak Claims
+
+  ## Orphaned Sources
+
+  ## Spotlight Handoffs
+
+  ## Suggested Next Actions
+  ```
+
+  Keep findings specific: include paths and short reasons.
+
+activities:
+  - "Run today's vault audit"
+  - "Find weak claims and orphaned sources"
+  - "Review Spotlight handoffs"

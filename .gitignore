@@ -29,6 +29,5 @@ node_modules/
 prototypes/
 bun.lock
 package.json
-docs/
 plugins/
 mycroft-config.json

@@ -1403,6 +1403,19 @@ a.card-int:hover {
   transform: translate3d(var(--offset, 0), 0, 0) rotate(var(--tilt, 0deg))
     scale(1);
 }
+.day-card--link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.day-card--link:hover .card__title,
+.day-card--link:focus-visible .card__title {
+  color: var(--oxide-active);
+}
+.day-card--link:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 4px;
+}
 
 .card__kicker {
   display: flex;
@@ -2567,12 +2580,12 @@ html.js .is-in .tw__in {
         <aside class="day-time">
           <span class="day-time__hour">02</span><span class="day-time__ampm">pm</span>
         </aside>
-        <div class="day-card">
-          <p class="card__kicker"><span>§ Investigate · <strong>Spotlight + Qwen</strong></span></p>
+        <a class="day-card day-card--link" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
+          <p class="card__kicker"><span>§ Investigate · <strong>with Spotlight</strong></span></p>
           <h3 class="card__title">Your sources, <em>kept private.</em></h3>
           <p class="card__body">Multi-phase OSINT, adversarial fact-checking, evidence grounding. Local-first. Yours.</p>
           <p class="card__foot">osint · local-first · grounded</p>
-        </div>
+        </a>
       </article>
     </div>
 

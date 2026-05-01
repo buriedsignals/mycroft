@@ -42,7 +42,7 @@ Out-of-scope (report upstream):
 
 Mycroft's privacy posture:
 
-- API keys are embedded client-side into the downloaded `.command` — they **never transit Buried Signals infrastructure**.
+- API keys are embedded client-side into the downloaded `.command` and agent setup manifest — they **never transit Buried Signals infrastructure**.
 - Setup page is deployed static; no backend receives form data.
 - Recipes call user-provided cloud APIs directly; prompts are not proxied through us.
 - Local-first mode routes LLM inference to the user's machine; zero network egress for that component.

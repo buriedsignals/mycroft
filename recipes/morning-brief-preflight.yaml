@@ -1,0 +1,83 @@
+version: "1.0.0"
+title: "Morning brief preflight"
+description: "First-run setup for the Mycroft morning brief. Asks what to monitor, writes a local monitoring profile, and prepares the scheduled brief."
+
+instructions: |
+  Load the Mycroft journalism instructions.
+  This is an interactive first-run setup. Ask only the questions needed to configure the user's morning brief.
+  Do not run monitoring yet. Do not schedule anything. Write the configuration locally so the scheduled morning brief can read it later.
+
+parameters:
+  - key: vault_path
+    input_type: string
+    requirement: required
+    description: "Mycroft vault path."
+    default: "~/Documents/Mycroft"
+  - key: vault_name
+    input_type: string
+    requirement: optional
+    description: "Obsidian vault name."
+    default: "Mycroft"
+  - key: config_path
+    input_type: string
+    requirement: optional
+    description: "Where to write the local morning brief monitoring profile."
+    default: "~/.mycroft/morning-brief-config.md"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access for writing the local monitoring profile."
+
+prompt: |
+  Configure the user's Mycroft morning brief.
+
+  Ask the user these questions, one concise group at a time:
+
+  1. What beats should the morning brief monitor?
+  2. Which places, institutions, companies, people, or topics are must-watch?
+  3. Which sources should be prioritized? Include newsletters, sites, RSS feeds, X/Twitter lists, bookmarks, local folders, or saved searches.
+  4. Which sources should be ignored?
+  5. What time window should the morning brief cover?
+  6. What should trigger a story angle or Spotlight investigation handoff?
+  7. Any sensitive topics or source-handling rules?
+
+  Then write a markdown monitoring profile to `{{ config_path }}` and copy a human-readable version to `{{ vault_path }}/context/morning-brief.md`.
+
+  Use this structure:
+
+  ```markdown
+  ---
+  type: monitoring-profile
+  title: Morning Brief Monitoring Profile
+  vault_path: "{{ vault_path }}"
+  vault_name: "{{ vault_name }}"
+  updated: YYYY-MM-DD
+  tags: [mycroft, morning-brief, monitoring]
+  ---
+
+  # Morning Brief Monitoring Profile
+
+  ## Beats
+
+  ## Watchlist
+
+  ## Priority Sources
+
+  ## Ignore
+
+  ## Time Window
+
+  ## Story Triggers
+
+  ## Spotlight Handoff Triggers
+
+  ## Sensitivity Rules
+  ```
+
+  If the user does not know an answer, leave a short placeholder under that section. Do not invent sources or beats.
+
+activities:
+  - "Configure my morning brief"
+  - "Set my beats and watchlist"
+  - "Update the monitoring profile"

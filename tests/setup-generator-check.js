@@ -63,17 +63,44 @@ if (syntax.status !== 0) {
 }
 assertIncludes(script, 'GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"');
 assertIncludes(script, 'PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"');
-assertIncludes(script, 'cp "$MYCROFT_DIR/instructions/journalism.md" "$GOOSE_CONFIG/.goosehints"');
+assertIncludes(script, 'write_goose_instructions');
+assertIncludes(script, 'MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"');
+assertIncludes(script, 'MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"');
+assertIncludes(script, 'MYCROFT_DIR="$MYCROFT_DATA_DIR/source"');
+assertIncludes(script, 'MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"');
+assertIncludes(script, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
+assertIncludes(script, 'mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist"');
+assertIncludes(script, 'MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"');
+assertIncludes(script, 'MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"');
+assertIncludes(script, 'GOOSE_MOIM_MESSAGE_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"');
+assertIncludes(script, 'GOOSE_RECIPE_PATH="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"');
+assertIncludes(script, "## Fact-Checking Route");
+assertIncludes(script, "$MYCROFT_SKILLS_DIR/fact-check/SKILL.md");
+assertIncludes(script, "$SPOTLIGHT_DIR/agents/fact-checker.md");
+assertIncludes(script, "configure_goose_persistent_defaults");
+assertIncludes(script, "set_goose_config_key GOOSE_PROVIDER");
+assertIncludes(script, "goose configure set-secret");
+assertIncludes(script, "npm install -g @tobilu/qmd");
+assertIncludes(script, 'qmd collection add "$VAULT_PATH" --name mycroft');
+assertIncludes(script, 'goose schedule add --schedule-id mycroft-morning-brief');
+assertIncludes(script, 'goose schedule add --schedule-id mycroft-vault-audit');
+assertIncludes(script, 'morning-brief-preflight.yaml');
 assertIncludes(script, "brew install --cask block-goose");
 assertIncludes(script, "curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh");
 assertIncludes(script, "git pull --no-rebase --autostash origin main");
-assertIncludes(script, "com.buriedsignals.mycroft.update.plist");
+assertIncludes(script, 'update_repo "$MYCROFT_SOURCE_DIR" "Mycroft source"');
+assertIncludes(script, 'cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"');
 assertIncludes(script, "mycroft-update.timer");
+assertIncludes(script, "removed old Mycroft LaunchAgent");
+assertIncludes(script, "daily updater cron");
 assertIncludes(script, "mycroft-setup");
-assertIncludes(script, "Move this .command/.sh file");
+assertIncludes(script, "Run this .command/.sh file from any folder");
+assertIncludes(script, "Privacy & Security -> Open Anyway");
 assertIncludes(script, "COJOURNALIST_API_KEY='coj-test'");
 assertIncludes(script, "SPOTLIGHT_MONITORING_BACKEND=cojournalist");
 assertIncludes(script, "SPOTLIGHT_SCOUT_REQUESTS=cojournalist");
+assertIncludes(script, "Spotlight ingest skill");
+assertIncludes(script, "open_goose_start");
 assertIncludes(script, '"mycroft": "$VAULT_PATH"');
 assertIncludes(script, '"spotlight": "$SPOTLIGHT_VAULT_PATH"');
 assertIncludes(script, '"local_model": "qwen9b"');
@@ -99,6 +126,7 @@ assertIncludes(localScript, "GOOSE_PROVIDER=local-llama-server");
 assertIncludes(localScript, "GOOSE_MODEL=qwen3.6-27b-uncensored-hauhaucs");
 assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive");
 assertIncludes(localScript, 'SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"');
+assertIncludes(localScript, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
 assertExcludes(localScript, "COJOURNALIST_API_KEY=");
 assertExcludes(localScript, "SPOTLIGHT_MONITORING_BACKEND=cojournalist");
 
@@ -112,11 +140,60 @@ if (!(zip instanceof Uint8Array) || zip[0] !== 0x50 || zip[1] !== 0x4b) {
 }
 
 const manifest = context.buildAgentManifest(base);
-if (manifest.env.required.includes("coj-test") || JSON.stringify(manifest).includes("fw-test")) {
-  console.error("Agent manifest leaked a secret value.");
+if (manifest.env.values.FIREWORKS_API_KEY !== "fw-test" || manifest.env.values.COJOURNALIST_API_KEY !== "coj-test") {
+  console.error("Agent manifest missing local secret values.");
   process.exit(1);
 }
-if (!context.buildAgentPrompt(manifest).includes("mycroft doctor")) {
+if (manifest.env.defaults.GOOSE_PROVIDER !== "fireworks-qwen36plus" || manifest.env.defaults.SPOTLIGHT_SCOUT_REQUESTS !== "cojournalist") {
+  console.error("Agent manifest missing env defaults.");
+  process.exit(1);
+}
+if (!manifest.source_repo || !manifest.installer.providers.includes("fireworks-qwen36plus")) {
+  console.error("Agent manifest missing setup instructions.");
+  process.exit(1);
+}
+if (!manifest.vault_scaffold.mycroft_notes.includes("_schema/mycroft.md") || !manifest.vault_scaffold.mycroft_notes.includes("stories/pitches/example-story-pitch.md") || !manifest.vault_scaffold.spotlight_notes.includes("cases/_template/index.md")) {
+  console.error("Agent manifest missing vault scaffold instructions.");
+  process.exit(1);
+}
+if (!manifest.skills.skills.some((s) => s.id === "spotlight-ingest") || !manifest.skills.skills.some((s) => s.id === "copywriting") || !manifest.skills.skills.some((s) => s.id === "fact-check") || !manifest.skills.skills.some((s) => s.id === "qmd") || !manifest.skills.skills.some((s) => s.id === "mycroft-maintenance")) {
+  console.error("Agent manifest missing skill registry entries.");
+  process.exit(1);
+}
+if (!manifest.goose.schedules.some((s) => s.id === "mycroft-morning-brief") || !manifest.goose.schedules.some((s) => s.id === "mycroft-vault-audit")) {
+  console.error("Agent manifest missing Goose schedules.");
+  process.exit(1);
+}
+const agentPrompt = context.buildAgentPrompt(manifest);
+if (!agentPrompt.includes("## Setup") || !agentPrompt.includes("Handle the setup for the user") || !agentPrompt.includes("env.defaults") || !agentPrompt.includes("env.values")) {
+  console.error("Agent prompt missing setup instructions.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("Create the Obsidian vault scaffold") || !agentPrompt.includes("Open Obsidian") || !agentPrompt.includes("skill registry")) {
+  console.error("Agent prompt missing vault scaffold/open instructions.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("Register Goose-native schedules") || !agentPrompt.includes("morning-brief-preflight")) {
+  console.error("Agent prompt missing schedule/preflight instructions.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("GOOSE_MOIM_MESSAGE_FILE") || !agentPrompt.includes("Tell The User Next")) {
+  console.error("Agent prompt missing soul/next-step instructions.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("GOOSE_PROVIDER") || !agentPrompt.includes("goose configure set-secret")) {
+  console.error("Agent prompt missing persistent Goose provider setup.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("mycroft-update") || !agentPrompt.includes("Do not use Goose schedules for repo updates")) {
+  console.error("Agent prompt missing deterministic updater instructions.");
+  process.exit(1);
+}
+if (agentPrompt.includes("fw-test") || agentPrompt.includes("coj-test")) {
+  console.error("Agent prompt printed secret values.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("mycroft doctor")) {
   console.error("Agent prompt missing verification command.");
   process.exit(1);
 }

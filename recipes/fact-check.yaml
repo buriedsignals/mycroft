@@ -4,6 +4,7 @@ description: "Run SIFT methodology against a draft article. Returns per-claim ve
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, SIFT, no fabrication) as session context.
+  Load ~/.mycroft/skills/fact-check/SKILL.md before checking claims.
   Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
   Do not rewrite the draft; do not moralise. Report, let the journalist decide.
 
@@ -45,25 +46,30 @@ prompt: |
 
   1. Extract every factual claim: numbers, dates, quotes, named individuals, events, attributions, causal assertions.
 
-  2. For each claim, assign a verdict from this closed set:
+  2. Check local prior context before broad web search:
+     - Search the Mycroft vault with QMD for known entities, prior source notes, and earlier verdicts.
+     - If Spotlight is installed, search the Spotlight vault for related active case evidence.
+     - Treat prior context as evidence to inspect, not as automatic truth.
+
+  3. For each claim, assign a verdict from this closed set:
      - **verified** — confirmed by 2+ authoritative independent sources (cite all)
      - **partially verified** — one source confirms, others silent; or partial aspects confirmed
      - **unverified** — not found in available sources; flag as needs reporting
      - **contradicted** — a more authoritative source disagrees (cite the contradiction explicitly)
      - **mischaracterized** — source exists but the claim misrepresents it (cite original + explain the gap)
 
-  3. Use the firecrawl CLI for verification:
+  4. Use the firecrawl CLI for verification:
      - `firecrawl search "query"` for discovery
      - `firecrawl scrape <url>` for specific pages
      - Never use WebFetch, curl, or any other browser tool.
 
-  4. Output as a markdown table:
+  5. Output as a markdown table:
 
      | # | Claim | Verdict | Primary source | Notes |
      |---|-------|---------|----------------|-------|
      | 1 | ... | verified | https://... | ... |
 
-  5. End with a summary block:
+  6. End with a summary block:
      - Verdict counts (verified / partially / unverified / contradicted / mischaracterized)
      - Claims needing additional reporting (list with specific next steps)
      - Strongest-supported claim(s)
