@@ -16,7 +16,13 @@ Rerun a current installer. It unloads and removes:
 ~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist
 ```
 
-Then it installs the Mycroft repo updater as a user crontab entry instead.
+Then it installs the Mycroft repo updater as a weekly user crontab entry instead.
+
+You can also remove the old LaunchAgent manually from Finder by deleting:
+
+```text
+~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist
+```
 
 ## Goose Schedules Are Missing
 
@@ -42,6 +48,10 @@ goose run --recipe ~/.local/share/goose/mycroft/source/recipes/morning-brief-pre
 ```
 
 It writes `~/.config/goose/mycroft/morning-brief-config.md`.
+
+## Manual Desktop Update
+
+Ask Goose to run the `update-mycroft` recipe. It uses the installed updater, fetches `origin main`, fast-forwards only, runs `mycroft doctor`, and reports the update log path.
 
 ## QMD Is Missing
 

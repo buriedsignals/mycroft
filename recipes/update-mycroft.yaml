@@ -1,0 +1,37 @@
+version: "1.0.0"
+title: "Update Mycroft"
+description: "Safely update the Goose-installed Mycroft profile from the upstream repository."
+
+instructions: |
+  This recipe is the desktop-safe manual update path for Mycroft.
+  Do not improvise shell commands.
+  Run the deterministic updater wrapper, then summarize the result.
+
+parameters: []
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  Update Mycroft by running exactly:
+
+  ~/.local/bin/mycroft-update --manual
+
+  Then inspect the update log at:
+
+  ~/.local/share/goose/mycroft/logs/update.log
+
+  Report:
+
+  - whether Mycroft updated
+  - whether Spotlight updated
+  - whether `mycroft doctor` passed
+  - any rollback or conflict message
+
+  Do not edit vault files. Do not print secrets. Do not run ad hoc git commands outside the updater wrapper.
+
+activities:
+  - "Update Mycroft"
+  - "Check for Mycroft updates"
+  - "Pull the latest Mycroft skills and recipes"

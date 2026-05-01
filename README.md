@@ -31,13 +31,15 @@ The Mycroft Obsidian vault is a durable journalist knowledge base: `_schema/`, `
 
 QMD is installed as a required local search dependency. Setup registers the Mycroft vault as the `mycroft` QMD collection and, when Spotlight is enabled, registers the Spotlight vault as `spotlight`. Spotlight's `query-vault` path depends on QMD.
 
-The guided installer also installs a daily updater for the Mycroft repo and bundled plugin repos:
+The guided installer also installs a weekly updater for the Mycroft repo and bundled plugin repos:
 
 - macOS: user crontab entry, not a Login Item
 - Linux with systemd: `~/.config/systemd/user/mycroft-update.timer`
 - Other Linux shells: a crontab entry
 
-The updater runs `git pull --no-rebase --autostash origin main` for the Mycroft source checkout and bundled plugin repos. Source recipes and skills are loaded directly from the checkout, so updates apply without copying. After each pull, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints`, and refreshes provider JSON files that are already installed under Goose. Local committed changes are merged with upstream; uncommitted changes are autostashed. If Git hits a conflict, the update log is left at `~/.local/share/goose/mycroft/logs/update.log` for manual resolution.
+The updater fetches `origin main` for the Mycroft source checkout and bundled plugin repos, then fast-forwards only. It skips dirty or divergent checkouts rather than stashing or merging local work. Source recipes and skills are loaded directly from the checkout, so updates apply without copying. After each update, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints`, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`. If doctor fails, it rolls app checkouts back to the pre-update commits and leaves the log at `~/.local/share/goose/mycroft/logs/update.log`.
+
+Desktop users can also trigger the same safe updater by asking Goose to run the `update-mycroft` recipe.
 
 Goose itself stays current through Goose/Homebrew, not through the Mycroft repo updater. Mycroft only layers local recipes, provider configs, instructions, skills, and vault scaffolding on top of Goose.
 
@@ -124,6 +126,7 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 - `source-verify` — SIFT against a single source's credibility
 - `morning-brief` — daily digest from ft (X bookmarks) + AgentMail + vault recent changes
 - `morning-brief-preflight` — first-run monitoring profile setup for the morning brief
+- `update-mycroft` — desktop-triggered safe update using the installed Mycroft updater
 - `vault-audit` — scheduled audit for weak claims, missing frontmatter, orphaned sources, and Spotlight handoffs
 - `newsletter-summarize` — extract signal from a newsletter (URL, AgentMail message, pasted)
 - `vault-sync` — write findings into Obsidian vault with proper frontmatter + wiki-links

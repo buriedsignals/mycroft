@@ -4079,7 +4079,19 @@ configure_qmd() {
 update_repo() {
   local dir="$1" name="$2"
   if [ ! -d "$dir/.git" ]; then return 1; fi
-  (cd "$dir" && git pull --no-rebase --autostash origin main) && ok "$name updated" || warn "$name update needs manual conflict resolution at $dir"
+  (
+    cd "$dir"
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+      warn "$name has local uncommitted changes; skipping automatic update at $dir"
+      return 0
+    fi
+    git fetch origin main
+    if git merge-base --is-ancestor HEAD origin/main; then
+      git merge --ff-only origin/main && ok "$name updated"
+    else
+      warn "$name has local commits or divergent history; skipping automatic update at $dir"
+    fi
+  )
 }
 
 warn_legacy_layout() {
@@ -4837,6 +4849,7 @@ chmod +x "$HOME/.local/bin/mycroft-doctor"
 cat > "$HOME/.local/bin/mycroft-update" <<'UPDATE_EOF'
 #!/usr/bin/env bash
 set -euo pipefail
+mode="\${1:-scheduled}"
 XDG_CONFIG_HOME="\${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_DATA_HOME="\${XDG_DATA_HOME:-$HOME/.local/share}"
 GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
@@ -4850,36 +4863,67 @@ log="$log_dir/update.log"
 exec >>"$log" 2>&1
 echo ""
 date
-update_repo() {
-  local dir="$1" name="$2"
+echo "mode: $mode"
+
+repo_rev() {
+  local dir="$1"
+  [ -d "$dir/.git" ] || return 0
+  (cd "$dir" && git rev-parse HEAD)
+}
+
+rollback_repo() {
+  local dir="$1" name="$2" rev="$3"
+  [ -n "$rev" ] || return 0
+  [ -d "$dir/.git" ] || return 0
+  echo "Rolling back $name to $rev"
+  (cd "$dir" && git reset --hard "$rev")
+}
+
+update_repo_ff_only() {
+  local dir="$1" name="$2" branch="main"
   [ -d "$dir/.git" ] || return 0
   echo "== $name =="
-  (cd "$dir" && git pull --no-rebase --autostash origin main)
-}
-update_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
-update_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
-mkdir -p "$MYCROFT_PROFILE_DIR"
-if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
-  mkdir -p "$GOOSE_CONFIG/custom_providers"
-  for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do
-    [ -f "$src" ] || continue
-    name="$(basename "$src")"
-    if [ -f "$GOOSE_CONFIG/custom_providers/$name" ]; then
-      cp "$src" "$GOOSE_CONFIG/custom_providers/$name"
+  (
+    cd "$dir"
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+      echo "$name has local uncommitted changes; skipping automatic update."
+      return 0
     fi
-  done
-fi
-if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
-  cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
-fi
-if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
-  set -a
-  . "$MYCROFT_PROFILE_DIR/.env"
-  set +a
-fi
-if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
-  cat "$MYCROFT_SOURCE_DIR/instructions/journalism.md" > "$MYCROFT_PROFILE_DIR/goose-mycroft.md"
-  cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_EOF
+    before="$(git rev-parse HEAD)"
+    git fetch origin "$branch"
+    if git merge-base --is-ancestor HEAD "origin/$branch"; then
+      git merge --ff-only "origin/$branch"
+      after="$(git rev-parse HEAD)"
+      echo "$name $before -> $after"
+    else
+      echo "$name has local commits or divergent history; skipping automatic update."
+    fi
+  )
+}
+
+refresh_profile() {
+  mkdir -p "$MYCROFT_PROFILE_DIR"
+  if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
+    mkdir -p "$GOOSE_CONFIG/custom_providers"
+    for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do
+      [ -f "$src" ] || continue
+      name="$(basename "$src")"
+      if [ -f "$GOOSE_CONFIG/custom_providers/$name" ]; then
+        cp "$src" "$GOOSE_CONFIG/custom_providers/$name"
+      fi
+    done
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
+    cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
+  fi
+  if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
+    set -a
+    . "$MYCROFT_PROFILE_DIR/.env"
+    set +a
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
+    cat "$MYCROFT_SOURCE_DIR/instructions/journalism.md" > "$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+    cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_EOF
 
 ## Mycroft Installed Context
 
@@ -4893,8 +4937,30 @@ if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
 Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
 Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
 PROFILE_EOF
-  cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
+    cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
+  fi
+}
+
+mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
+spotlight_before="$(repo_rev "$MYCROFT_PLUGINS_DIR/spotlight" || true)"
+
+update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
+update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
+refresh_profile
+
+if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
+  if "$HOME/.local/bin/mycroft-doctor"; then
+    echo "doctor passed"
+  else
+    echo "doctor failed after update; rolling back app checkouts"
+    rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
+    rollback_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" "$spotlight_before"
+    refresh_profile
+    exit 1
+  fi
 fi
+
+echo "update complete"
 UPDATE_EOF
 chmod +x "$HOME/.local/bin/mycroft-update"
 
@@ -4905,7 +4971,7 @@ if [ "$(uname -s)" = "Darwin" ]; then
     rm -f "$legacy_plist"
     ok "removed old Mycroft LaunchAgent"
   fi
-  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * * %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "daily updater cron"
+  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * 1 %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "weekly updater cron"
 elif have systemctl; then
   mkdir -p "$XDG_CONFIG_HOME/systemd/user"
   cat > "$XDG_CONFIG_HOME/systemd/user/mycroft-update.service" <<SERVICE_EOF
@@ -4918,10 +4984,10 @@ ExecStart=%h/.local/bin/mycroft-update
 SERVICE_EOF
   cat > "$XDG_CONFIG_HOME/systemd/user/mycroft-update.timer" <<TIMER_EOF
 [Unit]
-Description=Daily Mycroft update
+Description=Weekly Mycroft update
 
 [Timer]
-OnCalendar=daily
+OnCalendar=Mon *-*-* 10:15:00
 Persistent=true
 
 [Install]
@@ -4929,9 +4995,9 @@ WantedBy=timers.target
 TIMER_EOF
   systemctl --user daemon-reload >/dev/null 2>&1 || true
   systemctl --user enable --now mycroft-update.timer >/dev/null 2>&1 || warn "systemd timer written; enable it with systemctl --user enable --now mycroft-update.timer"
-  ok "daily updater systemd timer"
+  ok "weekly updater systemd timer"
 else
-  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * * %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "daily updater cron"
+  (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * 1 %s/.local/bin/mycroft-update\\n' "$HOME") | crontab - && ok "weekly updater cron"
 fi
 
 open_obsidian_vaults
@@ -5272,7 +5338,7 @@ ${manifest.plugins.spotlight.enabled ? `9. In the Spotlight vault, create direct
 13. Ensure shell startup exports \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
 14. Create \`${manifest.profile_path}/.env\` from \`env.defaults\` and \`env.values\`. Include required variable names: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}. Include optional values when present. Store selected provider API keys in Goose's own secret store when Goose CLI is available, for example \`goose configure set-secret FIREWORKS_API_KEY <redacted>\`. If a required key is absent or empty in \`env.values\`, stop and report only the missing variable name. Do not echo, cat, or log the file contents. Set file mode \`600\`.
 ${manifest.plugins.spotlight.enabled ? `15. Install or update Spotlight at \`${manifest.plugins.spotlight.path}\` and write \`.spotlight-config.json\` with \`vault_path=${manifest.vaults.spotlight}\`, \`mycroft_vault_path=${manifest.vaults.mycroft}\`, \`ingest_target=${manifest.vaults.spotlight_ingest_target}\`, \`cases_root\`, and \`handoff_path\`.` : '15. Skip Spotlight; it is disabled in this manifest.'}
-16. Install the \`mycroft-update\` wrapper at \`~/.local/bin/mycroft-update\` and a daily user-level updater job. It should pull \`${manifest.install_path}\`${manifest.plugins.spotlight.enabled ? ` and \`${manifest.plugins.spotlight.path}\`` : ''}, refresh \`${manifest.goose.soul_file}\`, regenerate \`${manifest.goose.hints_file}\` from source instructions plus local install paths, and refresh already-installed provider JSON files. Do not use Goose schedules for repo updates.
+16. Install the \`mycroft-update\` wrapper at \`~/.local/bin/mycroft-update\`, a weekly user-level updater job, and the Goose \`update-mycroft\` recipe for manual desktop-triggered updates. The updater must fetch \`origin main\`, fast-forward only, skip dirty or divergent checkouts, refresh \`${manifest.goose.soul_file}\`, regenerate \`${manifest.goose.hints_file}\` from source instructions plus local install paths, refresh already-installed provider JSON files, run \`mycroft doctor\`, and roll back app checkouts if doctor fails. Do not use Goose schedules for repo updates.
 17. Install the \`mycroft doctor\` wrapper and shell startup block with \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
 18. Open Obsidian to the created vault${manifest.plugins.spotlight.enabled ? 's' : ''} if Obsidian is installed, then open Goose Desktop to \`${manifest.goose.first_run_recipe}\` or start Goose CLI so the user can configure the morning brief.
 19. Tell the user what to do next: start chatting with Mycroft to set up the morning brief, then create a folder for investigations and ask Mycroft to Spotlight it.

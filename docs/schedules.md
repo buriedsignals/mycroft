@@ -37,7 +37,7 @@ The scheduled morning brief reads those files before ranking overnight items.
 
 ## Repo Updater
 
-Mycroft repo updates are not Goose schedules. They are plain system jobs that run:
+Mycroft repo updates are not Goose schedules. They are plain system jobs that run weekly:
 
 ```sh
 ~/.local/bin/mycroft-update
@@ -45,9 +45,17 @@ Mycroft repo updates are not Goose schedules. They are plain system jobs that ru
 
 On macOS, setup uses a user crontab entry rather than a LaunchAgent/Login Item. Rerunning setup removes the old `com.buriedsignals.mycroft.update.plist` LaunchAgent if it exists.
 
-The updater pulls:
+Desktop users can trigger the same updater manually from Goose with the `update-mycroft` recipe. The recipe calls:
+
+```sh
+~/.local/bin/mycroft-update --manual
+```
+
+The updater fetches `origin main` and fast-forwards only:
 
 - `~/.local/share/goose/mycroft/source`
 - `~/.local/share/goose/mycroft/plugins/spotlight`
 
-Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the pull. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the updated source instructions plus local install paths, and refreshes provider JSON files that are already installed under Goose. It does not update Goose itself.
+Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the update. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the updated source instructions plus local install paths, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`.
+
+If a checkout is dirty or divergent, the updater skips it. If `mycroft doctor` fails after an update, the updater rolls app checkouts back to their pre-update commits. It does not update Goose itself.

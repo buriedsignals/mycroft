@@ -20,7 +20,7 @@ Mycroft is a Goose profile, not a separate app.
 
 ## Update Path
 
-Automatic updates are deterministic shell work, not agent reasoning.
+Automatic updates are deterministic shell work, not agent reasoning. Setup installs a weekly system job; Goose Desktop can trigger the same path through the `update-mycroft` recipe.
 
 Run:
 
@@ -28,12 +28,14 @@ Run:
 mycroft update
 ```
 
-This calls `~/.local/bin/mycroft-update`, which pulls:
+This calls `~/.local/bin/mycroft-update`, which fetches `origin main` and fast-forwards only:
 
 - `~/.local/share/goose/mycroft/source`
 - `~/.local/share/goose/mycroft/plugins/spotlight`, when installed
 
-Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the pull. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the source instructions plus local install paths, and refreshes provider JSON files that are already installed under Goose.
+Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the update. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the source instructions plus local install paths, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`.
+
+If a checkout is dirty or divergent, the updater skips it. If doctor fails after an update, the updater rolls app checkouts back to their pre-update commits.
 
 ## Doctor
 
