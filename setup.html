@@ -3872,6 +3872,7 @@ function buildScript(d) {
     'MYCROFT_PROFILE_DIR="$HOME/.config/goose/mycroft"',
     'MYCROFT_DATA_DIR="$HOME/.local/share/goose/mycroft"',
     'MYCROFT_SOURCE_DIR="$MYCROFT_DATA_DIR/source"',
+    'MYCROFT_DIR="$MYCROFT_SOURCE_DIR"',
     'MYCROFT_PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"',
     'MYCROFT_PROFILE_SKILLS_DIR="$MYCROFT_PROFILE_DIR/skills"',
     'MYCROFT_SKILLS_DIR="$MYCROFT_DIR/skills"',
@@ -4916,6 +4917,11 @@ refresh_profile() {
   if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
     cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
   fi
+  MYCROFT_DIR="$MYCROFT_SOURCE_DIR"
+  MYCROFT_CONFIG="$MYCROFT_PROFILE_DIR/mycroft-config.json"
+  MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
+  GOOSE_RECIPE_PATH="$MYCROFT_SOURCE_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
+  export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH
   if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
     set -a
     . "$MYCROFT_PROFILE_DIR/.env"

@@ -67,6 +67,7 @@ assertIncludes(script, 'write_goose_instructions');
 assertIncludes(script, 'MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"');
 assertIncludes(script, 'MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"');
 assertIncludes(script, 'MYCROFT_DIR="$MYCROFT_DATA_DIR/source"');
+assertIncludes(script, 'MYCROFT_DIR="$MYCROFT_SOURCE_DIR"');
 assertIncludes(script, 'MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"');
 assertIncludes(script, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
 assertIncludes(script, 'mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist"');
@@ -90,6 +91,7 @@ assertIncludes(script, "curl -fsSL https://github.com/aaif-goose/goose/releases/
 assertIncludes(script, 'git fetch origin "$branch"');
 assertIncludes(script, 'git merge --ff-only "origin/$branch"');
 assertIncludes(script, 'update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source"');
+assertIncludes(script, "export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH");
 assertIncludes(script, "doctor failed after update; rolling back app checkouts");
 assertIncludes(script, 'cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"');
 assertIncludes(script, "mycroft-update.timer");
