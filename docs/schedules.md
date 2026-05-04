@@ -26,9 +26,9 @@ goose schedule run-now --schedule-id mycroft-vault-audit
 
 ## Morning Brief Preflight
 
-The first setup run opens the `morning-brief-preflight` recipe if `~/.config/goose/mycroft/morning-brief-config.md` does not exist.
+The first setup run opens the broader `start` recipe if `~/.config/goose/mycroft/morning-brief-config.md` does not exist. If the user chooses "Create my morning brief," that flow continues into `morning-brief-preflight`.
 
-That recipe asks what the brief should monitor and writes:
+The preflight recipe asks what the brief should monitor and writes:
 
 - `~/.config/goose/mycroft/morning-brief-config.md`
 - `<Mycroft vault>/context/morning-brief.md`

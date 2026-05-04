@@ -1,0 +1,64 @@
+version: "1.0.0"
+title: "Start Mycroft"
+description: "Interactive first-run entry point. Helps a journalist choose what to do first with an empty or newly installed Mycroft vault."
+
+instructions: |
+  Load the Mycroft journalism instructions.
+  This is the default first-run recipe for a new Mycroft install. The user may not know which workflow to ask for yet.
+  Do not assume there is existing reporting material in the vault. Offer concrete starting actions and help the user choose one.
+
+parameters:
+  - key: vault_path
+    input_type: string
+    requirement: required
+    description: "Mycroft vault path."
+    default: "~/Documents/Mycroft"
+  - key: vault_name
+    input_type: string
+    requirement: optional
+    description: "Obsidian vault name."
+    default: "Mycroft"
+  - key: morning_brief_config_path
+    input_type: string
+    requirement: optional
+    description: "Where the morning brief monitoring profile should be written if the user chooses that path."
+    default: "~/.config/goose/mycroft/morning-brief-config.md"
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access for reading the vault scaffold and writing starter notes."
+
+prompt: |
+  Start the user's Mycroft setup.
+
+  First, briefly explain that Mycroft is ready but needs reporting context or source material before it can become useful.
+
+  Offer these choices exactly, with one-line descriptions:
+
+  1. Set up my beat — define beats, geography, institutions, people, sources, ignored noise, and story triggers.
+  2. Add to my knowledge base — ingest URLs, PDFs, newsletters, pasted notes, documents, or folders into structured source, entity, timeline, and story notes.
+  3. Create my morning brief — turn beats and sources into a recurring brief with watchlists and alerts.
+  4. Investigate a lead — start from a name, company, place, document, claim, or allegation and create a structured investigation path.
+  5. Set up scouts — monitor pages, feeds, accounts, agendas, or topics for changes and recurring leads.
+  6. Show me a demo — create a small fake reporting workflow so the user can see how Mycroft organizes knowledge.
+
+  Do not offer "audit my notes" as a default action for a new install. Mention cleanup/import only if the user says they already have an existing vault or lots of notes.
+
+  After the user chooses:
+
+  - For "Set up my beat", ask for beat, geography, must-watch entities, priority sources, ignored topics, and source-handling rules. Write or update `{{ vault_path }}/context/beat-notes.md`.
+  - For "Add to my knowledge base", ask for links, files, pasted notes, or a folder path. Preserve raw material under `sources/raw/` when possible, create durable notes under `wiki/`, append `_log.md`, and update `_index.md`.
+  - For "Create my morning brief", continue with the morning brief preflight questions and write the monitoring profile to `{{ morning_brief_config_path }}` and `{{ vault_path }}/context/morning-brief.md`.
+  - For "Investigate a lead", ask for the lead, jurisdiction, sensitivity level, known sources, and what the user wants to prove or disprove. If Spotlight is installed and the lead needs active OSINT casework, suggest using Spotlight and create a case plan there; otherwise create a Mycroft story pitch and source plan.
+  - For "Set up scouts", ask what should be monitored, how often it matters, and what changes should trigger attention. Use coJournalist if installed; otherwise create a scout plan in `{{ vault_path }}/context/scouts.md`.
+  - For "Show me a demo", create a clearly marked fake demo under `{{ vault_path }}/stories/pitches/demo-story-pitch.md`, `{{ vault_path }}/wiki/entities/demo-acme-corp.md`, and `{{ vault_path }}/wiki/sources/demo-source.md`. Keep every demo note tagged `demo` and `example`.
+
+  Keep the first interaction short. Ask at most one concise group of questions at a time.
+
+activities:
+  - "Start using Mycroft"
+  - "Add material to my knowledge base"
+  - "Set up my beat"
+  - "Create my morning brief"
+  - "Investigate a lead"

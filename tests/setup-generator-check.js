@@ -85,7 +85,9 @@ assertIncludes(script, "npm install -g @tobilu/qmd");
 assertIncludes(script, 'qmd collection add "$VAULT_PATH" --name mycroft');
 assertIncludes(script, 'goose schedule add --schedule-id mycroft-morning-brief');
 assertIncludes(script, 'goose schedule add --schedule-id mycroft-vault-audit');
+assertIncludes(script, 'recipes/start.yaml');
 assertIncludes(script, 'morning-brief-preflight.yaml');
+assertIncludes(script, 'START_HERE.md');
 assertIncludes(script, "brew install --cask block-goose");
 assertIncludes(script, "curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh");
 assertIncludes(script, 'git fetch origin "$branch"');
@@ -160,7 +162,7 @@ if (!manifest.source_repo || !manifest.installer.providers.includes("fireworks-q
   console.error("Agent manifest missing setup instructions.");
   process.exit(1);
 }
-if (!manifest.vault_scaffold.mycroft_notes.includes("_schema/mycroft.md") || !manifest.vault_scaffold.mycroft_notes.includes("stories/pitches/example-story-pitch.md") || !manifest.vault_scaffold.spotlight_notes.includes("cases/_template/index.md")) {
+if (!manifest.vault_scaffold.mycroft_notes.includes("START_HERE.md") || !manifest.vault_scaffold.mycroft_notes.includes("_schema/mycroft.md") || !manifest.vault_scaffold.mycroft_notes.includes("stories/pitches/example-story-pitch.md") || !manifest.vault_scaffold.spotlight_notes.includes("cases/_template/index.md")) {
   console.error("Agent manifest missing vault scaffold instructions.");
   process.exit(1);
 }
@@ -183,6 +185,10 @@ if (!agentPrompt.includes("Create the Obsidian vault scaffold") || !agentPrompt.
 }
 if (!agentPrompt.includes("Register Goose-native schedules") || !agentPrompt.includes("morning-brief-preflight")) {
   console.error("Agent prompt missing schedule/preflight instructions.");
+  process.exit(1);
+}
+if (!agentPrompt.includes("recipes/start.yaml") || !agentPrompt.includes("START_HERE.md") || !agentPrompt.includes("choose a first action")) {
+  console.error("Agent prompt missing first-run start instructions.");
   process.exit(1);
 }
 if (!agentPrompt.includes("GOOSE_MOIM_MESSAGE_FILE") || !agentPrompt.includes("Tell The User Next")) {

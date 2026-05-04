@@ -43,7 +43,7 @@ Desktop users can also trigger the same safe updater by asking Goose to run the 
 
 Goose itself stays current through Goose/Homebrew, not through the Mycroft repo updater. Mycroft only layers local recipes, provider configs, instructions, skills, and vault scaffolding on top of Goose.
 
-The installer also registers Goose-native schedules for the morning brief and vault audit. On first launch it opens the morning-brief preflight recipe so the journalist can define beats, sources, watchlists, ignore rules, and Spotlight handoff triggers.
+The installer also registers Goose-native schedules for the morning brief and vault audit. On first launch it opens the `start` recipe and writes `START_HERE.md` into the vault. The first-run flow offers concrete actions: set up a beat, add material to the knowledge base, create a morning brief, investigate a lead, set up scouts, or generate a demo workflow.
 
 ### Local install (no hosted page)
 
@@ -124,6 +124,7 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 - `fact-check` — SIFT, per-claim verdicts
 - `qmd` — local markdown search over Mycroft and Spotlight vaults
 - `source-verify` — SIFT against a single source's credibility
+- `start` — first-run menu for setting up a beat, adding material, creating a morning brief, investigating a lead, setting up scouts, or generating a demo
 - `morning-brief` — daily digest from ft (X bookmarks) + AgentMail + vault recent changes
 - `morning-brief-preflight` — first-run monitoring profile setup for the morning brief
 - `update-mycroft` — desktop-triggered safe update using the installed Mycroft updater
@@ -163,7 +164,7 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 
 - [Architecture](docs/architecture.md) — how Mycroft plugs into Goose
 - [Schedules](docs/schedules.md) — Goose schedules, morning brief, vault audit, and repo updater
-- [First run](docs/first-run.md) — morning brief monitoring preflight
+- [First run](docs/first-run.md) — getting started in Goose and adding first material
 - [Plugin authoring](docs/plugin-authoring.md) — how to add a new plugin
 - [Troubleshooting](docs/troubleshooting.md) — common failures + fixes
 - [Security policy](SECURITY.md) — disclosure process
@@ -172,7 +173,7 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 
 ## What To Do Next
 
-Start chatting with Mycroft in Goose to set up your morning brief. Tell it what beats, sources, people, places, institutions, and alerts you want monitored.
+Start chatting with Mycroft in Goose or open `START_HERE.md` in the Mycroft vault. Pick one first action: set up your beat, add links/files/notes to the knowledge base, create a morning brief, investigate a lead, set up scouts, or ask for a demo workflow.
 
 Then create a folder for your investigations in the Spotlight vault and ask Mycroft to Spotlight it. Use Spotlight for active OSINT casework and evidence; promote durable findings back into Mycroft when they become useful story or knowledge material.
 

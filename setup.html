@@ -16,18 +16,18 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mycroft — your morning brief, before coffee.">
 <meta property="og:description" content="An opinionated extension pack for Goose: an example reporting day, wired into Obsidian, on your laptop with your keys.">
-<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png?v=20260501">
-<meta property="og:image:secure_url" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png?v=20260501">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="2400">
-<meta property="og:image:height" content="1260">
+<meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
+<meta property="og:image:secure_url" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Mycroft, a Goose setup for investigative journalism">
 <meta property="og:url" content="https://mycroft.buriedsignals.com/">
 <meta property="og:site_name" content="Mycroft">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mycroft — your morning brief, before coffee.">
 <meta name="twitter:description" content="An example reporting day, wired into Obsidian, on your laptop with your keys.">
-<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og.png?v=20260501">
+<meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta name="twitter:image:alt" content="Mycroft, a Goose setup for investigative journalism">
 
 <!-- Set the .js flag synchronously BEFORE the stylesheet so reveal/header
@@ -4164,6 +4164,21 @@ Use Mycroft for durable knowledge, source records, wiki notes, story pitches, dr
 Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
 Do not use Mycroft as the active OSINT case workspace.
 
+## Getting Started Route
+
+When the user is new after install, asks how to start, or the vault contains only scaffold/example files, do not stop at "nothing found." Explain that Mycroft needs reporting context or source material, then offer:
+
+1. Set up my beat.
+2. Add to my knowledge base.
+3. Create my morning brief.
+4. Investigate a lead.
+5. Set up scouts.
+6. Show me a demo.
+
+Prefer "Add to my knowledge base" when the user has links, files, newsletters, pasted notes, PDFs, or folders. Offer vault cleanup or an audit only when the user says they already have an existing note collection.
+
+Use $MYCROFT_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_DIR/recipes/morning-brief-preflight.yaml only when the user specifically chooses the morning brief path.
+
 ## Fact-Checking Route
 
 When the user asks to fact-check, verify, audit citations, inspect claims, or stress-test a draft, load the Mycroft fact-check skill first:
@@ -4308,6 +4323,29 @@ This vault is the durable knowledge and story workspace Mycroft reads and writes
 - handoff/from-spotlight/ stores findings promoted from Spotlight.
 - context/ stores beat notes, source policy, and style guidance.
 VAULT_README_EOF
+  write_if_missing "$VAULT_PATH/START_HERE.md" <<'VAULT_START_EOF'
+---
+type: start-here
+title: Start Here
+description: First actions for a new Mycroft vault.
+tags: [mycroft, start, onboarding]
+created: ${today}
+updated: ${today}
+---
+
+# Start Here
+
+Ask Mycroft one of these:
+
+- Set up my beat.
+- Add these links/files/notes to my knowledge base: ...
+- Create my morning brief.
+- Investigate this lead: ...
+- Set up scouts for these topics or pages: ...
+- Show me a demo reporting workflow.
+
+If the vault is still empty, start by adding material or defining your beat. Vault audits are useful later, after you have real notes.
+VAULT_START_EOF
   write_if_missing "$VAULT_PATH/_index.md" <<'VAULT_INDEX_EOF'
 ---
 type: index
@@ -4319,6 +4357,8 @@ updated: ${today}
 ---
 
 # Mycroft Index
+
+- [[START_HERE]]
 
 ## Context
 
@@ -4681,14 +4721,14 @@ open_goose_start() {
   [ "$INSTALL_GOOSE" = "1" ] || return 0
   if [ "$(uname -s)" = "Darwin" ]; then
     if have goose && [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
-      goose recipe open "$MYCROFT_DIR/recipes/morning-brief-preflight.yaml" --param vault_path="$VAULT_PATH" --param vault_name="Mycroft" --param config_path="$MYCROFT_MORNING_BRIEF_CONFIG" >/dev/null 2>&1 || open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
+      goose recipe open "$MYCROFT_DIR/recipes/start.yaml" --param vault_path="$VAULT_PATH" --param vault_name="Mycroft" --param morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" >/dev/null 2>&1 || open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
     else
       open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
     fi
     ok "Goose opened"
   elif have goose; then
     if [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
-      goose run --recipe "$MYCROFT_DIR/recipes/morning-brief-preflight.yaml" --interactive --params vault_path="$VAULT_PATH" --params vault_name="Mycroft" --params config_path="$MYCROFT_MORNING_BRIEF_CONFIG" || true
+      goose run --recipe "$MYCROFT_DIR/recipes/start.yaml" --interactive --params vault_path="$VAULT_PATH" --params vault_name="Mycroft" --params morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" || true
     else
       goose recipe list >/dev/null 2>&1 || true
     fi
@@ -4949,6 +4989,21 @@ refresh_profile() {
 
 Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
 Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+
+## Getting Started Route
+
+When the user is new after install, asks how to start, or the vault contains only scaffold/example files, do not stop at "nothing found." Explain that Mycroft needs reporting context or source material, then offer:
+
+1. Set up my beat.
+2. Add to my knowledge base.
+3. Create my morning brief.
+4. Investigate a lead.
+5. Set up scouts.
+6. Show me a demo.
+
+Prefer "Add to my knowledge base" when the user has links, files, newsletters, pasted notes, PDFs, or folders. Offer vault cleanup or an audit only when the user says they already have an existing note collection.
+
+Use $MYCROFT_SOURCE_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_SOURCE_DIR/recipes/morning-brief-preflight.yaml only when the user specifically chooses the morning brief path.
 PROFILE_EOF
     if [ -n "\${SPOTLIGHT_DIR:-}" ] || [ -d "$MYCROFT_PLUGINS_DIR/spotlight" ]; then
       SPOTLIGHT_DIR="\${SPOTLIGHT_DIR:-$MYCROFT_PLUGINS_DIR/spotlight}"
@@ -5272,6 +5327,7 @@ function buildAgentManifest(d) {
       ],
       mycroft_notes: [
         'README.md',
+        'START_HERE.md',
         '_index.md',
         '_log.md',
         '_schema/mycroft.md',
@@ -5312,7 +5368,8 @@ function buildAgentManifest(d) {
         { id: 'mycroft-morning-brief', cron: '0 0 7 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml' },
         { id: 'mycroft-vault-audit', cron: '0 15 18 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml' },
       ],
-      first_run_recipe: '~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml',
+      first_run_recipe: '~/.local/share/goose/mycroft/source/recipes/start.yaml',
+      morning_brief_preflight_recipe: '~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml',
     },
     sovereignty: {
       default: d.sovereignty,
@@ -5388,8 +5445,8 @@ ${manifest.plugins.spotlight.enabled ? `9. In the Spotlight vault, create direct
 ${manifest.plugins.spotlight.enabled ? `15. Install or update Spotlight at \`${manifest.plugins.spotlight.path}\` and write \`.spotlight-config.json\` with \`vault_path=${manifest.vaults.spotlight}\`, \`mycroft_vault_path=${manifest.vaults.mycroft}\`, \`ingest_target=${manifest.vaults.spotlight_ingest_target}\`, \`cases_root\`, and \`handoff_path\`.` : '15. Skip Spotlight; it is disabled in this manifest.'}
 16. Install the \`mycroft-update\` wrapper at \`~/.local/bin/mycroft-update\`, a weekly user-level updater job, and the Goose \`update-mycroft\` recipe for manual desktop-triggered updates. The updater must fetch \`origin main\`, fast-forward only, skip dirty or divergent checkouts, refresh \`${manifest.goose.soul_file}\`, regenerate \`${manifest.goose.hints_file}\` from source instructions plus local install paths, refresh already-installed provider JSON files, run \`mycroft doctor\`, and roll back app checkouts if doctor fails. Do not use Goose schedules for repo updates.
 17. Install the \`mycroft doctor\` wrapper and shell startup block with \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
-18. Open Obsidian to the created vault${manifest.plugins.spotlight.enabled ? 's' : ''} if Obsidian is installed, then open Goose Desktop to \`${manifest.goose.first_run_recipe}\` or start Goose CLI so the user can configure the morning brief.
-19. Tell the user what to do next: start chatting with Mycroft to set up the morning brief, then create a folder for investigations and ask Mycroft to Spotlight it.
+18. Open Obsidian to the created vault${manifest.plugins.spotlight.enabled ? 's' : ''} if Obsidian is installed, then open Goose Desktop to \`${manifest.goose.first_run_recipe}\` or start Goose CLI so the user can choose a first action. Keep \`${manifest.goose.morning_brief_preflight_recipe}\` available for the morning brief path.
+19. Tell the user what to do next: run the Start Mycroft recipe, open \`${manifest.vaults.mycroft}/START_HERE.md\`, or ask Mycroft to set up a beat, add material to the knowledge base, create a morning brief, investigate a lead, set up scouts, or show a demo.
 
 ## Verify
 
