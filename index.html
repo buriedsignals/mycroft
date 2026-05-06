@@ -23,7 +23,7 @@
 <meta property="og:image:height" content="1260">
 <meta property="og:image:alt" content="Mycroft, a Goose setup for investigative journalism">
 <meta property="og:url" content="https://mycroft.buriedsignals.com/">
-<meta name="feedback-endpoint" content="/api/feedback">
+<meta name="feedback-endpoint" content="https://api.buriedsignals.com/v1/feedback">
 <meta property="og:site_name" content="Mycroft">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Mycroft — Goose, configured for journalism">
@@ -2498,10 +2498,10 @@ html.js .is-in .tw__in {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: var(--hairline);
+  border: 1px solid color-mix(in oklab, var(--ink) 34%, transparent);
   border-radius: var(--rad-pill);
-  background: var(--oxide);
-  color: var(--vellum);
+  background: var(--vellum-bright);
+  color: var(--ink);
   cursor: pointer;
   transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
 }
@@ -2509,6 +2509,7 @@ html.js .is-in .tw__in {
 .feedback-button:focus-visible {
   background: var(--oxide-active);
   border-color: var(--oxide-active);
+  color: var(--vellum);
   outline: 2px solid var(--oxide);
   outline-offset: 3px;
 }
@@ -7936,7 +7937,7 @@ export {
   </svg>
 </button>
 
-<div id="feedback-modal" class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title" hidden data-project-tag="mycroft">
+<div id="feedback-modal" class="feedback-modal" role="dialog" aria-modal="true" aria-labelledby="feedback-title" hidden data-product="mycroft">
   <div class="feedback-panel">
     <div class="feedback-head">
       <div>
@@ -7968,7 +7969,7 @@ export {
 
 <script>
 (function () {
-  const endpoint = document.querySelector('meta[name="feedback-endpoint"]')?.content || '/api/feedback';
+  const endpoint = document.querySelector('meta[name="feedback-endpoint"]')?.content || 'https://api.buriedsignals.com/v1/feedback';
   const button = document.getElementById('feedback-button');
   const modal = document.getElementById('feedback-modal');
   const close = document.getElementById('feedback-close');
@@ -8004,7 +8005,7 @@ export {
       context: String(data.get('context') || '').trim(),
       url: location.href,
       userAgent: navigator.userAgent,
-      projectTag: modal.dataset.projectTag
+      product: modal.dataset.product
     };
     if (!payload.message) return;
     submit.disabled = true;
