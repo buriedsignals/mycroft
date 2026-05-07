@@ -65,13 +65,13 @@
       "env": ["SPOTLIGHT_VAULT_PATH", "SPOTLIGHT_MONITORING_BACKEND"]
     },
     {
-      "name": "cojournalist",
-      "repo": "https://github.com/buriedsignals/cojournalist",
+      "name": "scoutpost",
+      "repo": "https://github.com/buriedsignals/scoutpost-os",
       "status": "launching with Mycroft",
       "selectable_default": true,
       "mode": "hosted_api",
-      "api_base": "https://www.cojournalist.ai/api/v1",
-      "env": ["COJOURNALIST_API_KEY"]
+      "api_base": "https://www.scoutpost.ai/api/v1",
+      "env": ["SCOUTPOST_API_KEY"]
     },
     {
       "name": "datahound",

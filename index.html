@@ -1162,7 +1162,7 @@ main,
   color: #8a8172;
 }
 
-/* ── Integration cards (cojournalist · spotlight · coming) ────── */
+/* ── Integration cards (scoutpost · spotlight · coming) ────── */
 .cards-3 {
   display: grid;
   gap: 24px;
@@ -2680,7 +2680,7 @@ html.js .is-in .tw__in {
           <span class="day-time__hour">07</span><span class="day-time__ampm">am</span>
         </aside>
         <div class="day-card">
-          <p class="card__kicker"><span>§ Brief · <strong>coJournalist</strong></span></p>
+          <p class="card__kicker"><span>§ Brief · <strong>Scoutpost</strong></span></p>
           <h3 class="card__title">Your morning brief, <em>before coffee.</em></h3>
           <p class="card__body">A digest in your vault: 8 items ranked by editorial value — bookmarks, AgentMail, overnight web. Every claim cited.</p>
           <p class="card__foot">8 items · cited · written to vault</p>
@@ -2821,7 +2821,7 @@ html.js .is-in .tw__in {
   </section>
 
 
-  <!-- ────────── 04bis · INTEGRATIONS · cojournalist + spotlight ──── -->
+  <!-- ────────── 04bis · INTEGRATIONS · scoutpost + spotlight ──── -->
   <section class="sec sec--integrations" id="integrations" data-section="3.5">
     <header class="num" data-reveal><span class="num__n">04½</span> Integrations</header>
 
@@ -2831,15 +2831,15 @@ html.js .is-in .tw__in {
       </h2>
       <p class="lead">
         Goose hosts the runtime; Mycroft brings in the reporting tools.
-        coJournalist monitors the beat, Spotlight investigates leads, and the
+        Scoutpost monitors the beat, Spotlight investigates leads, and the
         next release adds public-data discovery and visual production.
       </p>
     </div>
 
     <div class="cards-3" data-reveal style="--delay: 160ms">
-      <a class="card-int" href="https://cojournalist.ai/" target="_blank" rel="noreferrer">
+      <a class="card-int" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">
         <div class="card-int__kind">MONITORING</div>
-        <h3 class="card-int__title"><em>coJournalist.</em></h3>
+        <h3 class="card-int__title"><em>Scoutpost.</em></h3>
         <p class="card-int__body">
           Continuous awareness of your beat. Pulls feeds, flags signal,
           drafts the morning brief — so you walk in with leads, not noise.
@@ -2916,7 +2916,7 @@ html.js .is-in .tw__in {
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> goose runtime · <span class="t-arg">installed</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> qwen 3.5 weights · <span class="t-arg">loaded</span> (4.2 GB)</p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> obsidian vault · <span class="t-arg">~/Documents/Mycroft</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> plugins enabled · <span class="t-arg">Spotlight · coJournalist</span></p>
+        <p class="t-line t-line--ok"><span class="t-tick">✓</span> plugins enabled · <span class="t-arg">Spotlight · Scoutpost</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> local-first mode · <span class="t-arg">ON</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> zero data retention · <span class="t-arg">confirmed</span></p>
         <p class="t-line t-line--ok t-line--ok-final"><span class="t-tick">✓</span> Mycroft is ready — <span class="t-arg">open a new terminal to begin.</span></p>
@@ -3014,7 +3014,7 @@ html.js .is-in .tw__in {
             <li class="srv">
               <h4 class="srv__title">Cloud extensions</h4>
               <p class="srv__desc">Expanded tool access and priority features.</p>
-              <p class="srv__meta">Navigator · coJournalist · DataHound</p>
+              <p class="srv__meta">Navigator · Scoutpost · DataHound</p>
             </li>
             <li class="srv">
               <h4 class="srv__title">Methods library</h4>
@@ -3121,7 +3121,7 @@ html.js .is-in .tw__in {
       <section class="colophon__col">
         <h3>Other tools</h3>
         <ul role="list">
-          <li><a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">coJournalist</a></li>
+          <li><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a></li>
           <li><a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a></li>
           <li><a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a></li>
         </ul>
@@ -7882,7 +7882,7 @@ export {
 </script>
 <script>
 /* Newsletter signup — posts to the shared Supabase Edge Function used by
-   Spotlight + coJournalist. The function delivers via Resend on the
+   Spotlight + Scoutpost. The function delivers via Resend on the
    Buried Signals account; no API key is exposed client-side. */
 (function () {
   const form = document.getElementById('mycroft-newsletter-form');

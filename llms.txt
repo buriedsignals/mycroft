@@ -1,6 +1,6 @@
 # Mycroft
 
-> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (Fireworks, Together), and optional sovereign-mode local inference via a fine-tuned Qwen on MLX or llama-server. Plugins for Spotlight (OSINT investigations), coJournalist (beat monitoring), DataHound (open-data APIs), and Atelier (visual production) ship alongside.
+> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (Fireworks, Together), and optional sovereign-mode local inference via a fine-tuned Qwen on MLX or llama-server. Plugins for Spotlight (OSINT investigations), Scoutpost (beat monitoring), DataHound (open-data APIs), and Atelier (visual production) ship alongside.
 
 Mycroft is client-side-first: the setup page generates a bash install script with user API keys baked in locally. Keys never transit Buried Signals infrastructure. No backend, no telemetry, no surveillance.
 
@@ -40,4 +40,4 @@ Mycroft is client-side-first: the setup page generates a bash install script wit
 
 - [Goose](https://goose-docs.ai/): upstream agent runtime
 - [Spotlight](https://github.com/buriedsignals/spotlight): OSINT investigation plugin
-- [coJournalist](https://github.com/buriedsignals/cojournalist): beat-monitoring plugin
+- [Scoutpost](https://github.com/buriedsignals/scoutpost-os): beat-monitoring plugin

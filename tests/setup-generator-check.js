@@ -26,13 +26,13 @@ const base = {
   together: false,
   localModel: "qwen9b",
   spotlight: true,
-  cojournalist: true,
+  scoutpost: true,
   fireworksKey: "fw-test",
   togetherKey: "",
   firecrawlKey: "fc-test",
   apifyToken: "",
   agentmailKey: "",
-  cojournalistKey: "coj-test",
+  scoutpostKey: "scout-test",
   spotlightVaultPath: "~/Documents/Spotlight",
   osintNavigatorKey: "ont-test",
   spotBrowseruse: true,
@@ -70,7 +70,7 @@ assertIncludes(script, 'MYCROFT_DIR="$MYCROFT_DATA_DIR/source"');
 assertIncludes(script, 'MYCROFT_DIR="$MYCROFT_SOURCE_DIR"');
 assertIncludes(script, 'MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"');
 assertIncludes(script, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
-assertIncludes(script, 'mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist"');
+assertIncludes(script, 'mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost"');
 assertIncludes(script, 'MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"');
 assertIncludes(script, 'MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"');
 assertIncludes(script, 'GOOSE_MOIM_MESSAGE_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"');
@@ -95,7 +95,7 @@ assertIncludes(script, 'git merge --ff-only "origin/$branch"');
 assertIncludes(script, 'update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source"');
 assertIncludes(script, "export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH");
 assertIncludes(script, "PROFILE_SPOTLIGHT_EOF");
-assertIncludes(script, "PROFILE_COJO_EOF");
+assertIncludes(script, "PROFILE_SCOUTPOST_EOF");
 assertIncludes(script, "doctor failed after update; rolling back app checkouts");
 assertIncludes(script, 'cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"');
 assertIncludes(script, "mycroft-update.timer");
@@ -106,15 +106,15 @@ assertIncludes(script, "OnCalendar=Mon *-*-* 10:15:00");
 assertIncludes(script, "mycroft-setup");
 assertIncludes(script, "Run this .command/.sh file from any folder");
 assertIncludes(script, "Privacy & Security -> Open Anyway");
-assertIncludes(script, "COJOURNALIST_API_KEY='coj-test'");
-assertIncludes(script, "SPOTLIGHT_MONITORING_BACKEND=cojournalist");
-assertIncludes(script, "SPOTLIGHT_SCOUT_REQUESTS=cojournalist");
+assertIncludes(script, "SCOUTPOST_API_KEY='scout-test'");
+assertIncludes(script, "SPOTLIGHT_MONITORING_BACKEND=scoutpost");
+assertIncludes(script, "SPOTLIGHT_SCOUT_REQUESTS=scoutpost");
 assertIncludes(script, "Spotlight ingest skill");
 assertIncludes(script, "open_goose_start");
 assertIncludes(script, '"mycroft": "$VAULT_PATH"');
 assertIncludes(script, '"spotlight": "$SPOTLIGHT_VAULT_PATH"');
 assertIncludes(script, '"local_model": "qwen9b"');
-assertExcludes(script, "cojournalist_mode");
+assertExcludes(script, "scoutpost_mode");
 assertExcludes(script, "self-host");
 
 const localScript = context.buildScript({
@@ -123,8 +123,8 @@ const localScript = context.buildScript({
   localOnly: true,
   localModel: "qwen27b",
   fireworks: false,
-  cojournalist: false,
-  cojournalistKey: "",
+  scoutpost: false,
+  scoutpostKey: "",
   spotlightVaultPath: "~/Documents/Mycroft",
 });
 syntax = spawnSync("bash", ["-n"], { input: localScript, encoding: "utf8" });
@@ -137,8 +137,8 @@ assertIncludes(localScript, "GOOSE_MODEL=qwen3.6-27b-uncensored-hauhaucs");
 assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive");
 assertIncludes(localScript, 'SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"');
 assertIncludes(localScript, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
-assertExcludes(localScript, "COJOURNALIST_API_KEY=");
-assertExcludes(localScript, "SPOTLIGHT_MONITORING_BACKEND=cojournalist");
+assertExcludes(localScript, "SCOUTPOST_API_KEY=");
+assertExcludes(localScript, "SPOTLIGHT_MONITORING_BACKEND=scoutpost");
 
 const zip = context.buildZipEntries([
   { filename: "one.txt", contents: "one\n", executable: false },
@@ -150,11 +150,11 @@ if (!(zip instanceof Uint8Array) || zip[0] !== 0x50 || zip[1] !== 0x4b) {
 }
 
 const manifest = context.buildAgentManifest(base);
-if (manifest.env.values.FIREWORKS_API_KEY !== "fw-test" || manifest.env.values.COJOURNALIST_API_KEY !== "coj-test") {
+if (manifest.env.values.FIREWORKS_API_KEY !== "fw-test" || manifest.env.values.SCOUTPOST_API_KEY !== "scout-test") {
   console.error("Agent manifest missing local secret values.");
   process.exit(1);
 }
-if (manifest.env.defaults.GOOSE_PROVIDER !== "fireworks-qwen36plus" || manifest.env.defaults.SPOTLIGHT_SCOUT_REQUESTS !== "cojournalist") {
+if (manifest.env.defaults.GOOSE_PROVIDER !== "fireworks-qwen36plus" || manifest.env.defaults.SPOTLIGHT_SCOUT_REQUESTS !== "scoutpost") {
   console.error("Agent manifest missing env defaults.");
   process.exit(1);
 }
@@ -203,7 +203,7 @@ if (!agentPrompt.includes("mycroft-update") || !agentPrompt.includes("Do not use
   console.error("Agent prompt missing deterministic updater instructions.");
   process.exit(1);
 }
-if (agentPrompt.includes("fw-test") || agentPrompt.includes("coj-test")) {
+if (agentPrompt.includes("fw-test") || agentPrompt.includes("scout-test")) {
   console.error("Agent prompt printed secret values.");
   process.exit(1);
 }

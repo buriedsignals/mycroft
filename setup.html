@@ -3144,7 +3144,7 @@ llama-server -m ~/.local/share/goose/mycroft/models/qwen-journalist-9b/*.Q4_K_M.
 
         <label class="field-label" for="spotlight_vault_path">Spotlight investigations vault</label>
         <input class="fld" type="text" id="spotlight_vault_path" name="spotlight_vault_path" placeholder="~/Documents/Spotlight" value="~/Documents/Spotlight" autocomplete="off" spellcheck="false">
-        <p class="hint" style="margin-top:8px;">Keep this separate from the Mycroft vault below. Spotlight can still send scout requests to coJournalist.</p>
+        <p class="hint" style="margin-top:8px;">Keep this separate from the Mycroft vault below. Spotlight can still send scout requests to Scoutpost.</p>
 
         <label class="field-label" for="osint_navigator_key">OSINT_NAVIGATOR_API_KEY <span class="opt">— optional</span></label>
         <p class="hint" style="margin-bottom:8px;">Live database of 10,000+ OSINT tools with AI-powered lookup — essential for country-specific registries and niche techniques. <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Get API key →</a></p>
@@ -3175,25 +3175,25 @@ llama-server -m ~/.local/share/goose/mycroft/models/qwen-journalist-9b/*.Q4_K_M.
       </div>
     </div>
 
-    <!-- coJournalist — second feature plugin, same hero treatment -->
-    <div class="plugin-hero" id="coj-item" data-reveal style="--delay: 200ms">
+    <!-- Scoutpost — second feature plugin, same hero treatment -->
+    <div class="plugin-hero" id="scoutpost-item" data-reveal style="--delay: 200ms">
       <div class="plugin-hero__intro">
         <div class="plugin-hero__head">
-          <input type="checkbox" name="cojournalist_enabled" id="cojournalist_enabled" checked>
+          <input type="checkbox" name="scoutpost_enabled" id="scoutpost_enabled" checked>
         </div>
         <h3 class="plugin-hero__title">co<em>Journalist.</em></h3>
         <p class="plugin-hero__lede">
           Schedule scouts to watch your beat — pages, social profiles, council agendas — and get alerted when something changes. Spotlight can also recommend scouts mid-investigation.
         </p>
         <p class="plugin-hero__lede" style="margin-bottom:0;">
-          <a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">cojournalist.ai</a>
+          <a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">scoutpost.ai</a>
         </p>
       </div>
       <div class="plugin-hero__config">
         <p class="note-mono">Hosted API</p>
         <p class="plugin-hero__lede">Nothing to install. Add your API key and you can schedule scouts from Mycroft, or let Spotlight suggest them while you investigate.</p>
-        <label class="field-label" for="cojournalist_api_key">COJOURNALIST_API_KEY</label>
-        <input class="fld" type="password" id="cojournalist_api_key" name="cojournalist_api_key" placeholder="coj_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        <label class="field-label" for="scoutpost_api_key">SCOUTPOST_API_KEY</label>
+        <input class="fld" type="password" id="scoutpost_api_key" name="scoutpost_api_key" placeholder="scout_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
     </div>
 
@@ -3325,7 +3325,7 @@ llama-server -m ~/.local/share/goose/mycroft/models/qwen-journalist-9b/*.Q4_K_M.
       <section class="colophon__col">
         <h3>Other tools</h3>
         <ul role="list">
-          <li><a href="https://cojournalist.ai/" target="_blank" rel="noreferrer">coJournalist</a></li>
+          <li><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a></li>
           <li><a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a></li>
           <li><a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a></li>
         </ul>
@@ -3801,13 +3801,13 @@ function readForm() {
     together: chk('together_enabled') && sovereignty === 'cloud',
     localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'qwen9b',
     spotlight: chk('spotlight_enabled'),
-    cojournalist: chk('cojournalist_enabled'),
+    scoutpost: chk('scoutpost_enabled'),
     fireworksKey: val('fireworks_key'),
     togetherKey: val('together_key'),
     firecrawlKey: val('firecrawl_key'),
     apifyToken: val('apify_token'),
     agentmailKey: val('agentmail_key'),
-    cojournalistKey: val('cojournalist_api_key'),
+    scoutpostKey: val('scoutpost_api_key'),
     spotlightVaultPath: val('spotlight_vault_path') || '~/Documents/Spotlight',
     osintNavigatorKey: val('osint_navigator_key'),
     spotBrowseruse: chk('spot_browseruse'),
@@ -3846,8 +3846,8 @@ function buildSkillRegistry(d) {
   if (d.installFirecrawl || d.firecrawlKey) {
     skills.push({ id: 'firecrawl', path: '~/.local/share/goose/mycroft/source/skills/firecrawl/SKILL.md', source: 'mycroft', enabled: true });
   }
-  if (d.cojournalist) {
-    skills.push({ id: 'cojournalist', path: '~/.config/goose/mycroft/skills/cojournalist/SKILL.md', source: 'mycroft-profile', enabled: true, product_skill_url: 'https://cojournalist.ai/skills/cojournalist.md' });
+  if (d.scoutpost) {
+    skills.push({ id: 'scoutpost', path: '~/.config/goose/mycroft/skills/scoutpost/SKILL.md', source: 'mycroft-profile', enabled: true, product_skill_url: 'https://scoutpost.ai/skills/scoutpost.md' });
   }
   if (d.spotlight) {
     skills.push(
@@ -3870,7 +3870,7 @@ function buildScript(d) {
   if (d.firecrawlKey) requiredDoctorEnv.push('FIRECRAWL_API_KEY');
   if (d.fireworks) requiredDoctorEnv.push('FIREWORKS_API_KEY');
   if (d.together) requiredDoctorEnv.push('TOGETHER_API_KEY');
-  if (d.cojournalist) requiredDoctorEnv.push('COJOURNALIST_API_KEY');
+  if (d.scoutpost) requiredDoctorEnv.push('SCOUTPOST_API_KEY');
   if (d.spotlight && d.osintNavigatorKey) requiredDoctorEnv.push('OSINT_NAVIGATOR_API_KEY');
   const envLines = [
     '# Mycroft environment — generated by setup.html',
@@ -3908,17 +3908,17 @@ function buildScript(d) {
   if (d.firecrawlKey) envLines.push(envLine('FIRECRAWL_API_KEY', d.firecrawlKey));
   if (d.apifyToken) envLines.push(envLine('APIFY_API_TOKEN', d.apifyToken));
   if (d.agentmailKey) envLines.push(envLine('AGENTMAIL_API_KEY', d.agentmailKey));
-  if (d.cojournalist && d.cojournalistKey) {
-    envLines.push(envLine('COJOURNALIST_API_KEY', d.cojournalistKey));
-    envLines.push('COJOURNALIST_API_BASE=https://www.cojournalist.ai/api/v1');
+  if (d.scoutpost && d.scoutpostKey) {
+    envLines.push(envLine('SCOUTPOST_API_KEY', d.scoutpostKey));
+    envLines.push('SCOUTPOST_API_BASE=https://www.scoutpost.ai/api/v1');
   }
   if (d.spotlight) {
     envLines.push('SPOTLIGHT_DIR="$MYCROFT_PLUGINS_DIR/spotlight"');
     envLines.push(`SPOTLIGHT_VAULT_PATH="${spotlightVault}"`);
     envLines.push(`SPOTLIGHT_INGEST_TARGET="${mycroftVault}"`);
     envLines.push('SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT=1');
-    if (d.cojournalist) envLines.push('SPOTLIGHT_MONITORING_BACKEND=cojournalist');
-    if (d.cojournalist) envLines.push('SPOTLIGHT_SCOUT_REQUESTS=cojournalist');
+    if (d.scoutpost) envLines.push('SPOTLIGHT_MONITORING_BACKEND=scoutpost');
+    if (d.scoutpost) envLines.push('SPOTLIGHT_SCOUT_REQUESTS=scoutpost');
     if (d.osintNavigatorKey) envLines.push(envLine('OSINT_NAVIGATOR_API_KEY', d.osintNavigatorKey));
     if (d.junkipediaKey) envLines.push(envLine('JUNKIPEDIA_API_KEY', d.junkipediaKey));
     if (d.spotBrowseruse) envLines.push('SPOTLIGHT_BROWSERUSE=1');
@@ -3936,10 +3936,10 @@ function buildScript(d) {
     pluginBlock.push('mkdir -p "$PLUGINS_DIR"');
     pluginBlock.push('if [ -d "$SPOTLIGHT_DIR/.git" ]; then update_repo "$SPOTLIGHT_DIR" "Spotlight"; else git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR" && ok "Spotlight cloned"; fi');
     pluginBlock.push('mkdir -p "$SPOTLIGHT_VAULT_PATH" && ok "Spotlight vault $SPOTLIGHT_VAULT_PATH"');
-    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "mycroft_vault_path": "$VAULT_PATH",\n  "ingest_target": "$SPOTLIGHT_INGEST_TARGET",\n  "cases_root": "$SPOTLIGHT_VAULT_PATH/cases",\n  "handoff_path": "$SPOTLIGHT_VAULT_PATH/handoff-to-mycroft",\n  "cojournalist": {"enabled": ' + (d.cojournalist ? 'true' : 'false') + ', "api_base": "https://www.cojournalist.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
+    pluginBlock.push('cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF\n{\n  "installed_by": "mycroft",\n  "mode": "inherits-mycroft",\n  "mycroft_config": "$MYCROFT_CONFIG",\n  "vault_path": "$SPOTLIGHT_VAULT_PATH",\n  "mycroft_vault_path": "$VAULT_PATH",\n  "ingest_target": "$SPOTLIGHT_INGEST_TARGET",\n  "cases_root": "$SPOTLIGHT_VAULT_PATH/cases",\n  "handoff_path": "$SPOTLIGHT_VAULT_PATH/handoff-to-mycroft",\n  "scoutpost": {"enabled": ' + (d.scoutpost ? 'true' : 'false') + ', "api_base": "https://www.scoutpost.ai/api/v1"},\n  "integrations": {"browser_use": ' + (d.spotBrowseruse ? 'true' : 'false') + ', "osint_navigator": ' + (!!d.osintNavigatorKey ? 'true' : 'false') + ', "junkipedia": ' + (!!d.junkipediaKey ? 'true' : 'false') + '}\n}\nCONFIG_EOF');
     pluginBlock.push('[ -f "$SPOTLIGHT_DIR/integrations/preflight.py" ] && (set -a; . "$MYCROFT_ENV"; set +a; python3 "$SPOTLIGHT_DIR/integrations/preflight.py" --text || true)');
   }
-  if (d.cojournalist) pluginBlock.push('ok "coJournalist hosted API enabled"');
+  if (d.scoutpost) pluginBlock.push('ok "Scoutpost hosted API enabled"');
 
   const rcBlockLines = [
     '  printf \'\\n%s\\n\' "$MARKER_START"',
@@ -4128,9 +4128,9 @@ install_or_update_mycroft() {
 
 install_skill_registry() {
   mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR" "$MYCROFT_SKILLS_DIR"
-  if [ "${d.cojournalist ? '1' : '0'}" = "1" ] && have curl; then
-    mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist"
-    curl -fsSL https://cojournalist.ai/skills/cojournalist.md -o "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist/SKILL.md" || cp "$MYCROFT_SKILLS_DIR/cojournalist/SKILL.md" "$MYCROFT_PROFILE_SKILLS_DIR/cojournalist/SKILL.md" || warn "Using bundled coJournalist skill; hosted product skill could not be fetched."
+  if [ "${d.scoutpost ? '1' : '0'}" = "1" ] && have curl; then
+    mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost"
+    curl -fsSL https://scoutpost.ai/skills/scoutpost.md -o "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost/SKILL.md" || cp "$MYCROFT_SKILLS_DIR/scoutpost/SKILL.md" "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost/SKILL.md" || warn "Using bundled Scoutpost skill; hosted product skill could not be fetched."
   fi
   cat > "$MYCROFT_SKILL_REGISTRY" <<'SKILL_REGISTRY_EOF'
 ${skillRegistryJson}
@@ -4212,15 +4212,15 @@ For adversarial fact-checking, active case evidence trails, document/image-heavy
 Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
 GOOSE_SPOTLIGHT_EOF
   fi
-  if [ "${d.cojournalist ? '1' : '0'}" = "1" ]; then
-    cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<'GOOSE_COJO_EOF'
+  if [ "${d.scoutpost ? '1' : '0'}" = "1" ]; then
+    cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<'GOOSE_SCOUTPOST_EOF'
 
-## coJournalist Installed Context
+## Scoutpost Installed Context
 
-coJournalist is enabled. Use the installed coJournalist skill from the Mycroft skill registry.
-Prefer MCP if configured, then the cojo CLI if installed, then the hosted API with COJOURNALIST_API_KEY and COJOURNALIST_API_BASE.
+Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
+Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
 Never print the API key.
-GOOSE_COJO_EOF
+GOOSE_SCOUTPOST_EOF
   fi
   cp "$MYCROFT_GOOSE_INSTRUCTIONS" "$GOOSE_CONFIG/.goosehints"
   ok "Goose global .goosehints"
@@ -4287,7 +4287,7 @@ configure_goose_persistent_defaults() {
   store_goose_secret FIREWORKS_API_KEY "\${FIREWORKS_API_KEY:-}"
   store_goose_secret TOGETHER_API_KEY "\${TOGETHER_API_KEY:-}"
   store_goose_secret FIRECRAWL_API_KEY "\${FIRECRAWL_API_KEY:-}"
-  store_goose_secret COJOURNALIST_API_KEY "\${COJOURNALIST_API_KEY:-}"
+  store_goose_secret SCOUTPOST_API_KEY "\${SCOUTPOST_API_KEY:-}"
   store_goose_secret OSINT_NAVIGATOR_API_KEY "\${OSINT_NAVIGATOR_API_KEY:-}"
 
   ok "Goose default provider config"
@@ -4803,7 +4803,7 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
   },
   "plugins": {
     "spotlight": {"enabled": ${d.spotlight ? 'true' : 'false'}, "path": "$SPOTLIGHT_DIR", "inherits_mycroft_sovereignty": true},
-    "cojournalist": {"enabled": ${d.cojournalist ? 'true' : 'false'}, "mode": "hosted", "api_base": "https://www.cojournalist.ai/api/v1"}
+    "scoutpost": {"enabled": ${d.scoutpost ? 'true' : 'false'}, "mode": "hosted", "api_base": "https://www.scoutpost.ai/api/v1"}
   }
 }
 CONFIG_EOF
@@ -5030,15 +5030,15 @@ For adversarial fact-checking, active case evidence trails, document/image-heavy
 Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
 PROFILE_SPOTLIGHT_EOF
     fi
-    if [ -n "\${COJOURNALIST_API_KEY:-}" ] || [ "\${SPOTLIGHT_MONITORING_BACKEND:-}" = "cojournalist" ]; then
-      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_COJO_EOF'
+    if [ -n "\${SCOUTPOST_API_KEY:-}" ] || [ "\${SPOTLIGHT_MONITORING_BACKEND:-}" = "scoutpost" ]; then
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_SCOUTPOST_EOF'
 
-## coJournalist Installed Context
+## Scoutpost Installed Context
 
-coJournalist is enabled. Use the installed coJournalist skill from the Mycroft skill registry.
-Prefer MCP if configured, then the cojo CLI if installed, then the hosted API with COJOURNALIST_API_KEY and COJOURNALIST_API_BASE.
+Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
+Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
 Never print the API key.
-PROFILE_COJO_EOF
+PROFILE_SCOUTPOST_EOF
     fi
     cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
   fi
@@ -5238,7 +5238,7 @@ function buildAgentManifest(d) {
   if (d.firecrawlKey) required.push('FIRECRAWL_API_KEY');
   if (d.fireworks) required.push('FIREWORKS_API_KEY');
   if (d.together) required.push('TOGETHER_API_KEY');
-  if (d.cojournalist) required.push('COJOURNALIST_API_KEY');
+  if (d.scoutpost) required.push('SCOUTPOST_API_KEY');
   if (d.spotlight && d.osintNavigatorKey) required.push('OSINT_NAVIGATOR_API_KEY');
   const defaults = {
     MYCROFT_DEFAULT_SOVEREIGNTY: d.sovereignty,
@@ -5268,14 +5268,14 @@ function buildAgentManifest(d) {
     defaults.GOOSE_PROVIDER = 'together-qwen';
     defaults.GOOSE_MODEL = 'Qwen/Qwen2.5-72B-Instruct-Turbo';
   }
-  if (d.cojournalist) defaults.COJOURNALIST_API_BASE = 'https://www.cojournalist.ai/api/v1';
+  if (d.scoutpost) defaults.SCOUTPOST_API_BASE = 'https://www.scoutpost.ai/api/v1';
   if (d.spotlight) {
     defaults.SPOTLIGHT_DIR = '~/.local/share/goose/mycroft/plugins/spotlight';
     defaults.SPOTLIGHT_VAULT_PATH = d.spotlightVaultPath;
     defaults.SPOTLIGHT_INGEST_TARGET = d.vault;
     defaults.SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT = '1';
-    if (d.cojournalist) defaults.SPOTLIGHT_MONITORING_BACKEND = 'cojournalist';
-    if (d.cojournalist) defaults.SPOTLIGHT_SCOUT_REQUESTS = 'cojournalist';
+    if (d.scoutpost) defaults.SPOTLIGHT_MONITORING_BACKEND = 'scoutpost';
+    if (d.scoutpost) defaults.SPOTLIGHT_SCOUT_REQUESTS = 'scoutpost';
     if (d.spotBrowseruse) defaults.SPOTLIGHT_BROWSERUSE = '1';
   }
   const values = {};
@@ -5284,7 +5284,7 @@ function buildAgentManifest(d) {
   if (d.togetherKey) values.TOGETHER_API_KEY = d.togetherKey;
   if (d.apifyToken) values.APIFY_API_TOKEN = d.apifyToken;
   if (d.agentmailKey) values.AGENTMAIL_API_KEY = d.agentmailKey;
-  if (d.cojournalist && d.cojournalistKey) values.COJOURNALIST_API_KEY = d.cojournalistKey;
+  if (d.scoutpost && d.scoutpostKey) values.SCOUTPOST_API_KEY = d.scoutpostKey;
   if (d.spotlight && d.osintNavigatorKey) values.OSINT_NAVIGATOR_API_KEY = d.osintNavigatorKey;
   if (d.junkipediaKey) values.JUNKIPEDIA_API_KEY = d.junkipediaKey;
   return {
@@ -5386,12 +5386,12 @@ function buildAgentManifest(d) {
         enabled: d.spotlight,
         path: '~/.local/share/goose/mycroft/plugins/spotlight',
         inherits_mycroft_sovereignty: true,
-        scout_requests: d.cojournalist ? 'cojournalist' : null,
+        scout_requests: d.scoutpost ? 'scoutpost' : null,
       },
-      cojournalist: {
-        enabled: d.cojournalist,
+      scoutpost: {
+        enabled: d.scoutpost,
         mode: 'hosted_api',
-        api_base: 'https://www.cojournalist.ai/api/v1',
+        api_base: 'https://www.scoutpost.ai/api/v1',
       },
     },
     env: {
@@ -5479,9 +5479,9 @@ Setup is complete. Start chatting with Mycroft in Goose to set up your morning b
 - Mycroft vault: \`${manifest.vaults.mycroft}\`
 - Spotlight vault: \`${manifest.vaults.spotlight}\`
 - Spotlight enabled: ${manifest.plugins.spotlight.enabled ? 'yes' : 'no'}
-- coJournalist hosted API enabled: ${manifest.plugins.cojournalist.enabled ? 'yes' : 'no'}
+- Scoutpost hosted API enabled: ${manifest.plugins.scoutpost.enabled ? 'yes' : 'no'}
 
-If Spotlight is enabled, verify \`${manifest.plugins.spotlight.path}\` exists and that \`.spotlight-config.json\` points back to Mycroft config. If coJournalist is enabled, Spotlight can create scout requests through the hosted coJournalist API.
+If Spotlight is enabled, verify \`${manifest.plugins.spotlight.path}\` exists and that \`.spotlight-config.json\` points back to Mycroft config. If Scoutpost is enabled, Spotlight can create scout requests through the hosted Scoutpost API.
 `;
 }
 

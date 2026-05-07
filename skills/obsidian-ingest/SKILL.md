@@ -15,7 +15,7 @@ Use this skill when information should be stored as durable Mycroft knowledge.
 - Pasted text
 - Spotlight handoff note or JSON
 - Firecrawl scrape output
-- coJournalist scout result
+- Scoutpost scout result
 
 ## Process
 

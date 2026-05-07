@@ -10,7 +10,7 @@ A Goose Extension Pack for investigative journalists. Privacy-preserving, ZDR-fi
 - Opinionated provider configs: **Zero Data Retention** providers only by default (Fireworks, Together, OpenRouter; local MLX or llama-server for sovereign mode). No Claude / OpenAI / Gemini defaults — their retention policies aren't suitable for journalism.
 - Journalism system prompt with SIFT methodology, strict attribution rules, no-fabrication guardrails
 - Obsidian vault scaffolding for durable journalist knowledge, story work, and Spotlight handoffs
-- Selected skill registry for Goose-aware workflows: knowledge primitives, Obsidian ingest, Firecrawl, coJournalist, Spotlight ingest, maintenance, and copywriting placeholder
+- Selected skill registry for Goose-aware workflows: knowledge primitives, Obsidian ingest, Firecrawl, Scoutpost, Spotlight ingest, maintenance, and copywriting placeholder
 
 ## Install
 
@@ -150,13 +150,13 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 
 - **Mycroft** is durable knowledge and publishing support: source records, wiki notes, claims, methods, story pitches, drafts, published packages, and copywriting guidance.
 - **Spotlight** is active OSINT casework: cases, evidence, captures, briefs, exports, and handoffs into Mycroft.
-- **coJournalist** is hosted beat monitoring and scout requests. When enabled, Mycroft stores the API configuration locally and Goose instructions prefer MCP if available, then the `cojo` CLI, then the hosted API.
+- **Scoutpost** is hosted beat monitoring and scout requests. When enabled, Mycroft stores the API configuration locally and Goose instructions prefer MCP if available, then the `scout` CLI, then the hosted API.
 - **AgentMail MCP** is not bundled yet. Current recipes use the AgentMail REST API via curl where needed.
 
 ## Plugins
 
 - **Spotlight** installs under `~/.local/share/goose/mycroft/plugins/spotlight`, inherits Mycroft's cloud/local provider preference, and keeps its investigation vault separate from the Mycroft vault by default.
-- **coJournalist** is hosted API only in the Mycroft setup flow. Mycroft stores `COJOURNALIST_API_KEY` and exposes it to Spotlight so investigations can request durable scouts and later read information units.
+- **Scoutpost** is hosted API only in the Mycroft setup flow. Mycroft stores `SCOUTPOST_API_KEY` and exposes it to Spotlight so investigations can request durable scouts and later read information units.
 - MCP Apps for investigation dashboard + fact-check scorecard (visual UI in Goose Desktop)
 - Pilot with 3-5 grant-target journalists
 
