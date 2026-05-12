@@ -1,0 +1,174 @@
+version: "1.0.0"
+title: "Fact-check (SIFT + C2PA)"
+description: "Run SIFT methodology against a draft article with C2PA provenance tracking. Returns per-claim verdicts with cryptographically verifiable source references."
+
+instructions: |
+  Load the Mycroft journalism instructions (ethics, SIFT, no fabrication) as session context.
+  Load ~/.mycroft/skills/fact-check/SKILL.md before checking claims.
+  Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
+  Do not rewrite the draft; do not moralise. Report, let the journalist decide.
+
+  IMPORTANT: Use `mycroft-fetch` instead of raw `firecrawl` for all web fetches.
+  This captures provenance (URL, content hash, timestamp) for C2PA signing.
+
+parameters:
+  - key: draft_path
+    input_type: string
+    requirement: optional
+    description: "Path to the draft file (markdown, text, docx)"
+    default: ""
+  - key: draft_text
+    input_type: string
+    requirement: optional
+    description: "Draft text inline (use when draft is short and pastable)"
+    default: ""
+  - key: emit_manifest
+    input_type: boolean
+    requirement: optional
+    description: "Emit SIFT manifest JSON for C2PA signing"
+    default: true
+  - key: c2pa_sign
+    input_type: boolean
+    requirement: optional
+    description: "Automatically sign via C2PA artifact service"
+    default: false
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Shell + file access — reads the draft, invokes mycroft-fetch CLI for verification with provenance capture"
+
+prompt: |
+  SIFT fact-check with C2PA provenance tracking.
+
+  Apply the SIFT framework:
+    - **S**top — don't accept claims at face value
+    - **I**nvestigate the source — who, what track record, what interest
+    - **F**ind better coverage — more authoritative or independent confirmation
+    - **T**race claims to original context — did the source accurately represent the original?
+
+  Draft source:
+  {% if draft_path %}Read the file at `{{ draft_path }}`.{% endif %}
+  {% if draft_text %}
+  ```
+  {{ draft_text }}
+  ```
+  {% endif %}
+
+  Process:
+
+  1. Extract every factual claim: numbers, dates, quotes, named individuals, events, attributions, causal assertions.
+
+  2. Check local prior context before broad web search:
+     - Search the Mycroft vault with QMD for known entities, prior source notes, and earlier verdicts.
+     - If Spotlight is installed, search the Spotlight vault for related active case evidence.
+     - Treat prior context as evidence to inspect, not as automatic truth.
+
+  3. For each claim, assign a verdict from this closed set:
+     - **verified** — confirmed by 2+ authoritative independent sources (cite all)
+     - **partially verified** — one source confirms, others silent; or partial aspects confirmed
+     - **unverified** — not found in available sources; flag as needs reporting
+     - **contradicted** — a more authoritative source disagrees (cite the contradiction explicitly)
+     - **mischaracterized** — source exists but the claim misrepresents it (cite original + explain the gap)
+
+  4. IMPORTANT — Use `mycroft-fetch` (not raw firecrawl) for all web access:
+     - `mycroft-fetch scrape <url>` for specific pages
+     - `mycroft-fetch search "query"` for discovery
+     - This captures content hashes and timestamps for C2PA provenance.
+     - After each fetch, note the provenance ID from the output (e.g., `prov-a1b2c3`).
+     - Never use WebFetch, curl, firecrawl directly, or any other browser tool.
+
+  5. Output as a markdown table:
+
+     | # | Claim | Verdict | Primary source | Prov ID | Notes |
+     |---|-------|---------|----------------|---------|-------|
+     | 1 | ... | verified | https://... | prov-xxx | ... |
+
+  6. End with a summary block:
+     - Verdict counts (verified / partially / unverified / contradicted / mischaracterized)
+     - Claims needing additional reporting (list with specific next steps)
+     - Strongest-supported claim(s)
+     - Weakest/most-at-risk claim(s)
+
+  {% if emit_manifest %}
+  7. After the summary, emit a SIFT manifest JSON block for C2PA signing:
+
+     ```json
+     {
+       "schema": "sift-manifest-v1",
+       "timestamp": "<ISO timestamp>",
+       "investigator": {
+         "name": "<your name from MYCROFT_USER_NAME or 'Mycroft'>",
+         "organization": "<from MYCROFT_ORG or empty>"
+       },
+       "draft": {
+         "path": "{{ draft_path }}",
+         "content_hash": "sha256:<hash of draft content>",
+         "title": "<extracted or inferred title>"
+       },
+       "claims": [
+         {
+           "id": "claim-001",
+           "text": "<claim text>",
+           "verdict": "<verdict>",
+           "sources": ["prov-xxx", "prov-yyy"],
+           "notes": "<optional notes>"
+         }
+       ],
+       "sources": [
+         {
+           "id": "prov-xxx",
+           "url": "<source URL>",
+           "content_hash": "sha256:<from mycroft-fetch>",
+           "access_timestamp": "<from mycroft-fetch>",
+           "access_type": "full",
+           "sift_step": "trace_to_original",
+           "is_primary": true,
+           "title": "<human-readable title>"
+         }
+       ],
+       "summary": {
+         "verified": <count>,
+         "partially_verified": <count>,
+         "unverified": <count>,
+         "contradicted": <count>,
+         "mischaracterized": <count>,
+         "total_claims": <count>,
+         "total_sources": <count>
+       },
+       "methodology": {
+         "name": "SIFT",
+         "version": "1.0",
+         "vault_searched": true,
+         "web_searched": true
+       }
+     }
+     ```
+
+     Save this manifest to `~/.mycroft/sift-manifests/<draft-slug>-<timestamp>.json`
+  {% endif %}
+
+  {% if c2pa_sign %}
+  8. After saving the manifest, call the C2PA artifact service to sign:
+
+     ```bash
+     curl -X POST http://localhost:5002/api/sift/process \
+       -H "Content-Type: application/json" \
+       -d @~/.mycroft/sift-manifests/<manifest-file>.json
+     ```
+
+     Report the resulting manifest_id and claim_id.
+  {% endif %}
+
+  Rules:
+  - Do not rewrite the draft.
+  - Do not moralise.
+  - If you cannot verify a claim and cannot find a contradiction, verdict is `unverified` — that is not a failure, it is the correct verdict.
+  - Never fabricate sources.
+  - Always use mycroft-fetch for provenance tracking.
+
+activities:
+  - "message: **SIFT fact-check ready (C2PA-enabled).** Paste a draft or point to a file. I'll return per-claim verdicts with cryptographic provenance."
+  - "Fact-check my latest draft with C2PA signing"
+  - "Verify claims and generate SIFT manifest"
+  - "Re-run fact-check and update provenance"

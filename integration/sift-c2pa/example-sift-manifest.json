@@ -1,0 +1,118 @@
+{
+  "schema": "sift-manifest-v1",
+  "timestamp": "2026-05-09T15:42:00Z",
+  "investigator": {
+    "did": "did:web:mycroft.buriedsignals.com:users:jane-reporter",
+    "name": "Jane Reporter",
+    "organization": "Independent News Collective"
+  },
+  "draft": {
+    "path": "stories/acme-environmental-violations.md",
+    "content_hash": "sha256:8f14e45fceea167a5a36dedd4bea2543",
+    "title": "Acme Corp's Hidden Environmental Record"
+  },
+  "claims": [
+    {
+      "id": "claim-001",
+      "text": "Acme Corp paid $2.3 million in EPA fines in 2025",
+      "verdict": "verified",
+      "sources": ["prov-a1b2c3d4e5f6", "prov-f6e5d4c3b2a1"],
+      "notes": "Confirmed by EPA enforcement database and company SEC filing"
+    },
+    {
+      "id": "claim-002",
+      "text": "The Springfield facility exceeded emissions limits 47 times",
+      "verdict": "partially_verified",
+      "sources": ["prov-1a2b3c4d5e6f"],
+      "notes": "State records show 42 violations, not 47. Company disputes 3 of these."
+    },
+    {
+      "id": "claim-003",
+      "text": "CEO John Smith claimed the company has 'zero tolerance' for violations",
+      "verdict": "verified",
+      "sources": ["prov-6f5e4d3c2b1a"],
+      "notes": "Direct quote from 2025 shareholder letter, page 4"
+    },
+    {
+      "id": "claim-004",
+      "text": "Three whistleblowers were fired after reporting violations",
+      "verdict": "unverified",
+      "sources": [],
+      "notes": "Unable to independently confirm. Source is anonymous tip. Flagged for additional reporting."
+    },
+    {
+      "id": "claim-005",
+      "text": "Acme's competitor EnviroCo has a cleaner record",
+      "verdict": "contradicted",
+      "sources": ["prov-b2c3d4e5f6a1"],
+      "notes": "EPA database shows EnviroCo has more violations per facility than Acme"
+    }
+  ],
+  "sources": [
+    {
+      "id": "prov-a1b2c3d4e5f6",
+      "url": "https://echo.epa.gov/detailed-facility-report?fid=110012345678",
+      "content_hash": "sha256:a1b2c3d4e5f6789012345678901234567890abcd",
+      "access_timestamp": "2026-05-09T14:15:00Z",
+      "access_type": "full",
+      "sift_step": "trace_to_original",
+      "is_primary": true,
+      "title": "EPA ECHO: Acme Corp Springfield Facility"
+    },
+    {
+      "id": "prov-f6e5d4c3b2a1",
+      "url": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001234567",
+      "content_hash": "sha256:f6e5d4c3b2a1098765432109876543210fedcba",
+      "access_timestamp": "2026-05-09T14:22:00Z",
+      "access_type": "full",
+      "sift_step": "find_better_coverage",
+      "is_primary": true,
+      "title": "SEC EDGAR: Acme Corp 10-K Filing 2025"
+    },
+    {
+      "id": "prov-1a2b3c4d5e6f",
+      "url": "https://state.gov/environmental-enforcement/violations?facility=acme-springfield",
+      "content_hash": "sha256:1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+      "access_timestamp": "2026-05-09T14:30:00Z",
+      "access_type": "full",
+      "sift_step": "investigate_source",
+      "is_primary": true,
+      "title": "State Environmental Enforcement Database"
+    },
+    {
+      "id": "prov-6f5e4d3c2b1a",
+      "url": "https://acmecorp.com/investors/annual-letter-2025.pdf",
+      "content_hash": "sha256:6f5e4d3c2b1a0987654321fedcba098765432100",
+      "access_timestamp": "2026-05-09T14:35:00Z",
+      "access_type": "full",
+      "sift_step": "trace_to_original",
+      "is_primary": true,
+      "title": "Acme Corp 2025 Shareholder Letter"
+    },
+    {
+      "id": "prov-b2c3d4e5f6a1",
+      "url": "https://echo.epa.gov/detailed-facility-report?fid=110098765432",
+      "content_hash": "sha256:b2c3d4e5f6a10987654321abcdef0987654321ab",
+      "access_timestamp": "2026-05-09T14:40:00Z",
+      "access_type": "full",
+      "sift_step": "find_better_coverage",
+      "is_primary": true,
+      "title": "EPA ECHO: EnviroCo Regional Facility"
+    }
+  ],
+  "summary": {
+    "verified": 2,
+    "partially_verified": 1,
+    "unverified": 1,
+    "contradicted": 1,
+    "mischaracterized": 0,
+    "total_claims": 5,
+    "total_sources": 5
+  },
+  "methodology": {
+    "name": "SIFT",
+    "version": "1.0",
+    "vault_searched": true,
+    "web_searched": true
+  }
+}
