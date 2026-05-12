@@ -1,0 +1,261 @@
+#!/usr/bin/env python3
+"""
+mycroft-fetch — Provenance-capturing wrapper for firecrawl
+
+Wraps firecrawl CLI to capture content hashes and access metadata,
+enabling SIFT verification trails to be encoded as C2PA ingredients.
+
+Usage:
+    mycroft-fetch scrape <url> [--format markdown|html] [--output FILE]
+    mycroft-fetch search <query> [--limit N]
+    mycroft-fetch provenance list
+    mycroft-fetch provenance show <id>
+
+Environment:
+    FIRECRAWL_API_KEY    Required for firecrawl
+    MYCROFT_PROV_DIR     Provenance storage (default: ~/.mycroft/provenance)
+"""
+
+import argparse
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+
+# --- Configuration ---
+
+PROV_DIR = Path(os.environ.get('MYCROFT_PROV_DIR', Path.home() / '.mycroft' / 'provenance'))
+
+
+# --- Provenance Record ---
+
+def create_provenance_record(url: str, content: str, format: str, command: str) -> dict:
+    """Create a provenance record for fetched content."""
+    content_bytes = content.encode('utf-8')
+
+    return {
+        'id': f"prov-{uuid.uuid4().hex[:12]}",
+        'url': url,
+        'access_timestamp': datetime.now(timezone.utc).isoformat(),
+        'content_hash': f"sha256:{hashlib.sha256(content_bytes).hexdigest()}",
+        'content_length': len(content_bytes),
+        'format': format,
+        'command': command,
+        'firecrawl_version': get_firecrawl_version(),
+    }
+
+
+def save_provenance(record: dict, content: str) -> Path:
+    """Save provenance record and content to disk."""
+    PROV_DIR.mkdir(parents=True, exist_ok=True)
+
+    prov_id = record['id']
+
+    # Save provenance metadata
+    meta_path = PROV_DIR / f"{prov_id}.json"
+    with open(meta_path, 'w') as f:
+        json.dump(record, f, indent=2)
+
+    # Save content
+    ext = 'md' if record['format'] == 'markdown' else 'html'
+    content_path = PROV_DIR / f"{prov_id}.{ext}"
+    with open(content_path, 'w') as f:
+        f.write(content)
+
+    return meta_path
+
+
+def list_provenance() -> list:
+    """List all provenance records."""
+    if not PROV_DIR.exists():
+        return []
+
+    records = []
+    for path in PROV_DIR.glob('prov-*.json'):
+        with open(path) as f:
+            records.append(json.load(f))
+
+    return sorted(records, key=lambda r: r['access_timestamp'], reverse=True)
+
+
+def get_provenance(prov_id: str) -> dict | None:
+    """Get a specific provenance record."""
+    path = PROV_DIR / f"{prov_id}.json"
+    if path.exists():
+        with open(path) as f:
+            return json.load(f)
+    return None
+
+
+# --- Firecrawl Integration ---
+
+def get_firecrawl_version() -> str:
+    """Get firecrawl CLI version."""
+    try:
+        result = subprocess.run(
+            ['firecrawl', '--version'],
+            capture_output=True,
+            text=True
+        )
+        return result.stdout.strip() or 'unknown'
+    except FileNotFoundError:
+        return 'not-installed'
+
+
+def run_firecrawl_scrape(url: str, format: str = 'markdown') -> tuple[str, int]:
+    """Run firecrawl scrape and return content + exit code."""
+    cmd = ['firecrawl', 'scrape', url, '--format', format]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        return result.stderr or result.stdout, result.returncode
+
+    return result.stdout, 0
+
+
+def run_firecrawl_search(query: str, limit: int = 10) -> tuple[str, int]:
+    """Run firecrawl search and return results + exit code."""
+    cmd = ['firecrawl', 'search', query, '--limit', str(limit)]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        return result.stderr or result.stdout, result.returncode
+
+    return result.stdout, 0
+
+
+# --- Output Formatting ---
+
+def output_result(provenance: dict, content: str, json_output: bool = False):
+    """Output the fetch result."""
+    if json_output:
+        print(json.dumps({
+            'provenance': provenance,
+            'content': content
+        }, indent=2))
+    else:
+        # Human-readable output
+        print(f"# Provenance: {provenance['id']}")
+        print(f"# URL: {provenance['url']}")
+        print(f"# Hash: {provenance['content_hash']}")
+        print(f"# Timestamp: {provenance['access_timestamp']}")
+        print(f"# ---")
+        print(content)
+
+
+# --- CLI ---
+
+def cmd_scrape(args):
+    """Handle scrape command."""
+    content, exit_code = run_firecrawl_scrape(args.url, args.format)
+
+    if exit_code != 0:
+        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        sys.exit(exit_code)
+
+    # Create and save provenance
+    command = f"firecrawl scrape {args.url} --format {args.format}"
+    provenance = create_provenance_record(args.url, content, args.format, command)
+    save_provenance(provenance, content)
+
+    # Output
+    output_result(provenance, content, args.json)
+
+
+def cmd_search(args):
+    """Handle search command."""
+    results, exit_code = run_firecrawl_search(args.query, args.limit)
+
+    if exit_code != 0:
+        print(f"Error: firecrawl failed\n{results}", file=sys.stderr)
+        sys.exit(exit_code)
+
+    # For search, we create a provenance record for the search itself
+    # Individual URLs would be scraped separately
+    command = f"firecrawl search '{args.query}' --limit {args.limit}"
+    provenance = create_provenance_record(
+        url=f"search:{args.query}",
+        content=results,
+        format='json',
+        command=command
+    )
+    save_provenance(provenance, results)
+
+    output_result(provenance, results, args.json)
+
+
+def cmd_provenance_list(args):
+    """List provenance records."""
+    records = list_provenance()
+
+    if args.json:
+        print(json.dumps(records, indent=2))
+    else:
+        if not records:
+            print("No provenance records found.")
+            return
+
+        print(f"{'ID':<20} {'Timestamp':<25} {'URL':<50}")
+        print("-" * 95)
+        for r in records[:20]:  # Show last 20
+            url = r['url'][:47] + '...' if len(r['url']) > 50 else r['url']
+            print(f"{r['id']:<20} {r['access_timestamp'][:25]:<25} {url:<50}")
+
+
+def cmd_provenance_show(args):
+    """Show a specific provenance record."""
+    record = get_provenance(args.id)
+
+    if not record:
+        print(f"Provenance record not found: {args.id}", file=sys.stderr)
+        sys.exit(1)
+
+    print(json.dumps(record, indent=2))
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Provenance-capturing wrapper for firecrawl',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__
+    )
+    parser.add_argument('--json', action='store_true', help='Output as JSON')
+
+    subparsers = parser.add_subparsers(dest='command', required=True)
+
+    # scrape
+    scrape_parser = subparsers.add_parser('scrape', help='Scrape a URL')
+    scrape_parser.add_argument('url', help='URL to scrape')
+    scrape_parser.add_argument('--format', choices=['markdown', 'html'], default='markdown')
+    scrape_parser.set_defaults(func=cmd_scrape)
+
+    # search
+    search_parser = subparsers.add_parser('search', help='Search the web')
+    search_parser.add_argument('query', help='Search query')
+    search_parser.add_argument('--limit', type=int, default=10, help='Max results')
+    search_parser.set_defaults(func=cmd_search)
+
+    # provenance
+    prov_parser = subparsers.add_parser('provenance', help='Manage provenance records')
+    prov_subparsers = prov_parser.add_subparsers(dest='prov_command', required=True)
+
+    prov_list = prov_subparsers.add_parser('list', help='List records')
+    prov_list.set_defaults(func=cmd_provenance_list)
+
+    prov_show = prov_subparsers.add_parser('show', help='Show a record')
+    prov_show.add_argument('id', help='Provenance ID')
+    prov_show.set_defaults(func=cmd_provenance_show)
+
+    args = parser.parse_args()
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
