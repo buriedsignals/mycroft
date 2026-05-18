@@ -3943,6 +3943,7 @@ function buildScript(d) {
 
   const rcBlockLines = [
     '  printf \'\\n%s\\n\' "$MARKER_START"',
+    '  printf \'export PATH="$HOME/.local/bin:$PATH"\\n\'',
     '  printf \'export MYCROFT_DIR="%s"\\n\' "$MYCROFT_DIR"',
     '  printf \'export MYCROFT_PROFILE_DIR="%s"\\n\' "$MYCROFT_PROFILE_DIR"',
     '  printf \'export MYCROFT_DATA_DIR="%s"\\n\' "$MYCROFT_DATA_DIR"',
@@ -4123,6 +4124,21 @@ install_or_update_mycroft() {
   else
     git clone https://github.com/buriedsignals/mycroft.git "$MYCROFT_DIR"
     ok "Mycroft cloned"
+  fi
+}
+
+install_mycroft_cli() {
+  mkdir -p "$HOME/.local/bin"
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-fetch" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-fetch" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
+    ok "mycroft-fetch CLI"
+  else
+    warn "mycroft-fetch missing from $MYCROFT_DIR/scripts"
   fi
 }
 
@@ -4744,6 +4760,7 @@ install_obsidian
 install_firecrawl
 ensure_qmd
 install_or_update_mycroft
+install_mycroft_cli
 sync_mycroft_profile
 seed_mycroft_vault
 seed_spotlight_vault
@@ -4848,6 +4865,8 @@ check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
 check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
 check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
 check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
+check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
+check_path "$HOME/.local/bin/mycroft-fetch" "mycroft-fetch command"
 check_path "$RECIPE_PATH" "Mycroft recipes"
 check_path "$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml" "scheduled morning brief recipe"
 check_path "$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml" "scheduled vault audit recipe"
@@ -4879,6 +4898,7 @@ esac
 
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
 if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
+if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
 if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
   ok_check "Spotlight plugin"
   check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
@@ -4951,6 +4971,15 @@ update_repo_ff_only() {
 
 refresh_profile() {
   mkdir -p "$MYCROFT_PROFILE_DIR"
+  mkdir -p "$HOME/.local/bin"
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" ]; then
+    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" || true
+    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
+  fi
   if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
     mkdir -p "$GOOSE_CONFIG/custom_providers"
     for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do

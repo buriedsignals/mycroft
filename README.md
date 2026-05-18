@@ -163,6 +163,7 @@ All shipped providers are ZDR. For full local (zero network egress), start `mlx_
 ## Documentation
 
 - [Architecture](docs/architecture.md) — how Mycroft plugs into Goose
+- [Grounding and provenance](docs/grounding-provenance-spec.md) — evidence bundles, claim grounding, and C2PA package signing
 - [Schedules](docs/schedules.md) — Goose schedules, morning brief, vault audit, and repo updater
 - [First run](docs/first-run.md) — getting started in Goose and adding first material
 - [Plugin authoring](docs/plugin-authoring.md) — how to add a new plugin

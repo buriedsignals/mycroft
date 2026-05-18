@@ -9,7 +9,8 @@ instructions: |
   Do not rewrite the draft; do not moralise. Report, let the journalist decide.
 
   IMPORTANT: Use `mycroft-fetch` instead of raw `firecrawl` for all web fetches.
-  This captures provenance (URL, content hash, timestamp) for C2PA signing.
+  This captures evidence records (URL, local artifact, SHA-256 hash, timestamp)
+  for grounding and optional C2PA package signing.
 
 parameters:
   - key: draft_path
@@ -39,7 +40,7 @@ extensions:
     description: "Shell + file access — reads the draft, invokes mycroft-fetch CLI for verification with provenance capture"
 
 prompt: |
-  SIFT fact-check with C2PA provenance tracking.
+  SIFT fact-check with Mycroft grounding and optional C2PA provenance tracking.
 
   Apply the SIFT framework:
     - **S**top — don't accept claims at face value
@@ -74,15 +75,15 @@ prompt: |
   4. IMPORTANT — Use `mycroft-fetch` (not raw firecrawl) for all web access:
      - `mycroft-fetch scrape <url>` for specific pages
      - `mycroft-fetch search "query"` for discovery
-     - This captures content hashes and timestamps for C2PA provenance.
-     - After each fetch, note the provenance ID from the output (e.g., `prov-a1b2c3`).
+     - This captures local source artifacts, SHA-256 hashes, timestamps, and evidence IDs.
+     - After each fetch, note the evidence ID from the JSON output (e.g., `E-a1b2c3d4e5f6`).
      - Never use WebFetch, curl, firecrawl directly, or any other browser tool.
 
   5. Output as a markdown table:
 
-     | # | Claim | Verdict | Primary source | Prov ID | Notes |
-     |---|-------|---------|----------------|---------|-------|
-     | 1 | ... | verified | https://... | prov-xxx | ... |
+     | # | Claim | Verdict | Primary source | Evidence ID | Grounding | Notes |
+     |---|-------|---------|----------------|-------------|-----------|-------|
+     | 1 | ... | verified | https://... | E-xxx | direct/full | ... |
 
   6. End with a summary block:
      - Verdict counts (verified / partially / unverified / contradicted / mischaracterized)
@@ -91,7 +92,50 @@ prompt: |
      - Weakest/most-at-risk claim(s)
 
   {% if emit_manifest %}
-  7. After the summary, emit a SIFT manifest JSON block for C2PA signing:
+  7. After the summary, emit an evidence bundle JSON block and a SIFT manifest JSON block:
+
+     Evidence bundle:
+
+     ```json
+     {
+       "schema_version": "1.0",
+       "project": "<draft slug or project>",
+       "run_id": "<optional run id>",
+       "created_at": "<ISO timestamp>",
+       "items": [
+         {
+           "id": "E-xxx",
+           "source_url": "<source URL>",
+           "acquisition_method": "firecrawl",
+           "accessed_at": "<from mycroft-fetch>",
+           "raw_path": "<from mycroft-fetch>",
+           "sha256": "<64 lowercase hex from mycroft-fetch>",
+           "content_type": "text/markdown",
+           "access_method": "full_text",
+           "archive_url": "<Wayback/Archive.today URL if created>",
+           "human_verification_required": false,
+           "claim_links": [
+             {
+               "claim_id": "claim-001",
+               "claim_text": "<claim text>",
+               "support_type": "direct"
+             }
+           ],
+           "missing_source_gate": {
+             "requested_source": "<what you needed>",
+             "returned_artifact": "<raw_path>",
+             "missing": "",
+             "fallback_required": false,
+             "confidence_effect": "none"
+           }
+         }
+       ]
+     }
+     ```
+
+     Save it to `data/evidence-bundle.json` inside the fact-check package directory.
+
+     SIFT manifest:
 
      ```json
      {
@@ -111,15 +155,30 @@ prompt: |
            "id": "claim-001",
            "text": "<claim text>",
            "verdict": "<verdict>",
-           "sources": ["prov-xxx", "prov-yyy"],
+           "confidence": "high|medium|low",
+           "evidence_refs": ["E-xxx", "E-yyy"],
+           "sources": ["E-xxx", "E-yyy"],
+           "grounding": {
+             "support_type": "direct|indirect|inferred|contradicted|insufficient",
+             "grounding_strength": "full|partial|weak|none",
+             "source_role": "primary|secondary|contextual",
+             "quote_match": "exact|paraphrase|contextual|none",
+             "claim_elements_checked": ["actor", "action", "date"],
+             "missing_assumptions": [],
+             "contradiction_search": "<what was searched and found>",
+             "confidence_cap": "high|medium|low",
+             "misgrounding_risk": "<short risk statement>",
+             "assessment": "<why evidence does or does not ground the claim>"
+           },
            "notes": "<optional notes>"
          }
        ],
        "sources": [
          {
-           "id": "prov-xxx",
+           "id": "E-xxx",
+           "evidence_id": "E-xxx",
            "url": "<source URL>",
-           "content_hash": "sha256:<from mycroft-fetch>",
+           "content_hash": "sha256:<64 lowercase hex from mycroft-fetch>",
            "access_timestamp": "<from mycroft-fetch>",
            "access_type": "full",
            "sift_step": "trace_to_original",
@@ -145,19 +204,26 @@ prompt: |
      }
      ```
 
-     Save this manifest to `~/.mycroft/sift-manifests/<draft-slug>-<timestamp>.json`
+     Save this manifest to `data/sift-manifest.json` inside the fact-check package directory.
+     Then run:
+
+     ```bash
+     python3 "$MYCROFT_DIR/tools/validate-grounding.py" <package-dir> --strict-files
+     python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir>
+     ```
   {% endif %}
 
   {% if c2pa_sign %}
-  8. After saving the manifest, call the C2PA artifact service to sign:
+  8. After saving and validating the package, call the C2PA artifact service to sign:
 
      ```bash
-     curl -X POST http://localhost:5002/api/sift/process \
-       -H "Content-Type: application/json" \
-       -d @~/.mycroft/sift-manifests/<manifest-file>.json
+     python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir> \
+       --sign-endpoint "${NOOSPHERE_C2PA_URL:-http://localhost:5002/api/mycroft/provenance/sign}" \
+       --credential-id "${NOOSPHERE_C2PA_CREDENTIAL_ID:-}" \
+       --artifact review.md
      ```
 
-     Report the resulting manifest_id and claim_id.
+     Report the signing status and receipt path. Do not say C2PA proves the claims are true; say the verification package is tamper-evident if signing succeeds.
   {% endif %}
 
   Rules:

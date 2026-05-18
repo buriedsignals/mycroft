@@ -38,11 +38,13 @@ jobs:
           "
       - name: Validate setup generator
         run: node tests/setup-generator-check.js
+      - name: Validate grounding/provenance tooling
+        run: python3 tests/grounding-provenance-check.py
       - name: Validate JSON parses
         run: |
           python3 -c "
           import json, glob
-          for f in glob.glob('providers/*.json') + glob.glob('extensions/*.json'):
+          for f in glob.glob('providers/*.json') + glob.glob('extensions/*.json') + glob.glob('schemas/*.json'):
               json.load(open(f))
               print(f + ': OK')
           "

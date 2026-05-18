@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://buriedsignals.com/schemas/mycroft/sift-manifest-v1.json",
+  "title": "Mycroft SIFT Manifest",
+  "type": "object",
+  "required": ["schema", "timestamp", "draft", "claims", "summary"],
+  "properties": {
+    "schema": { "const": "sift-manifest-v1" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "investigator": {
+      "type": "object",
+      "properties": {
+        "did": { "type": "string", "pattern": "^did:" },
+        "name": { "type": "string" },
+        "organization": { "type": "string" }
+      }
+    },
+    "draft": {
+      "type": "object",
+      "required": ["content_hash"],
+      "properties": {
+        "path": { "type": "string" },
+        "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "title": { "type": "string" }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/claim" }
+    },
+    "sources": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/source" }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "verified",
+        "partially_verified",
+        "unverified",
+        "contradicted",
+        "mischaracterized",
+        "total_claims",
+        "total_sources"
+      ],
+      "properties": {
+        "verified": { "type": "integer", "minimum": 0 },
+        "partially_verified": { "type": "integer", "minimum": 0 },
+        "unverified": { "type": "integer", "minimum": 0 },
+        "contradicted": { "type": "integer", "minimum": 0 },
+        "mischaracterized": { "type": "integer", "minimum": 0 },
+        "total_claims": { "type": "integer", "minimum": 0 },
+        "total_sources": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "methodology": {
+      "type": "object",
+      "properties": {
+        "name": { "const": "SIFT" },
+        "version": { "type": "string" },
+        "vault_searched": { "type": "boolean" },
+        "web_searched": { "type": "boolean" }
+      }
+    }
+  },
+  "definitions": {
+    "claim": {
+      "type": "object",
+      "required": ["id", "text", "verdict", "evidence_refs", "grounding"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^claim-" },
+        "text": { "type": "string" },
+        "verdict": {
+          "enum": ["verified", "partially_verified", "unverified", "contradicted", "mischaracterized"]
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } },
+        "sources": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "string" },
+        "grounding": { "$ref": "#/definitions/grounding" }
+      }
+    },
+    "grounding": {
+      "type": "object",
+      "required": [
+        "support_type",
+        "grounding_strength",
+        "source_role",
+        "quote_match",
+        "claim_elements_checked",
+        "missing_assumptions",
+        "contradiction_search",
+        "confidence_cap",
+        "misgrounding_risk",
+        "assessment"
+      ],
+      "properties": {
+        "support_type": { "enum": ["direct", "indirect", "inferred", "contradicted", "insufficient"] },
+        "grounding_strength": { "enum": ["full", "partial", "weak", "none"] },
+        "source_role": { "enum": ["primary", "secondary", "contextual"] },
+        "quote_match": { "enum": ["exact", "paraphrase", "contextual", "none"] },
+        "claim_elements_checked": { "type": "array", "items": { "type": "string" } },
+        "missing_assumptions": { "type": "array", "items": { "type": "string" } },
+        "contradiction_search": { "type": "string" },
+        "confidence_cap": { "enum": ["high", "medium", "low"] },
+        "misgrounding_risk": { "type": "string" },
+        "assessment": { "type": "string" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "content_hash", "access_timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "evidence_id": { "type": "string" },
+        "url": { "type": "string" },
+        "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "access_timestamp": { "type": "string", "format": "date-time" },
+        "access_type": {
+          "enum": ["full", "excerpt", "abstract", "archive", "inaccessible"]
+        },
+        "sift_step": {
+          "enum": ["stop", "investigate_source", "find_better_coverage", "trace_to_original"]
+        },
+        "is_primary": { "type": "boolean" },
+        "title": { "type": "string" }
+      }
+    }
+  }
+}
