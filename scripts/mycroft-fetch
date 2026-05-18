@@ -1,0 +1,268 @@
+#!/usr/bin/env python3
+"""Provenance-capturing wrapper around the Firecrawl CLI.
+
+The command stores fetched content plus acquisition metadata as Mycroft evidence
+items. It deliberately records provenance; it does not certify that a claim is
+true.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+
+
+def provenance_dir() -> Path:
+    return Path(os.environ.get("MYCROFT_PROV_DIR", Path.home() / ".mycroft" / "provenance"))
+
+
+def atomic_write(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as tmp:
+        tmp.write(data)
+        tmp_path = Path(tmp.name)
+    tmp_path.replace(path)
+
+
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def get_firecrawl_version() -> str:
+    try:
+        result = subprocess.run(["firecrawl", "--version"], capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        return "not-installed"
+    return (result.stdout or result.stderr).strip() or "unknown"
+
+
+def run_firecrawl(args: list[str]) -> tuple[str, int]:
+    try:
+        result = subprocess.run(["firecrawl", *args], capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        return "firecrawl CLI not found. Install with: npm install -g firecrawl-cli", 127
+    if result.returncode != 0:
+        return result.stderr or result.stdout, result.returncode
+    return result.stdout, 0
+
+
+def extension_for_format(fmt: str) -> str:
+    return {
+        "markdown": "md",
+        "html": "html",
+        "json": "json",
+    }.get(fmt, "txt")
+
+
+def create_evidence_record(
+    *,
+    source_url: str,
+    content: str,
+    fmt: str,
+    acquisition_method: str,
+    query_or_task: str,
+    command: list[str],
+    output_path: Path | None = None,
+) -> dict[str, Any]:
+    content_bytes = content.encode("utf-8")
+    evidence_id = f"E-{uuid.uuid4().hex[:12]}"
+    prov_id = f"prov-{uuid.uuid4().hex[:12]}"
+    out_dir = provenance_dir()
+    artifact_path = output_path or out_dir / f"{evidence_id}.{extension_for_format(fmt)}"
+    atomic_write(artifact_path, content_bytes)
+    accessed_at = now_iso()
+
+    record = {
+        "id": evidence_id,
+        "legacy_provenance_id": prov_id,
+        "query_or_task": query_or_task,
+        "source_url": source_url,
+        "url": source_url,
+        "acquisition_method": acquisition_method,
+        "accessed_at": accessed_at,
+        "access_timestamp": accessed_at,
+        "raw_path": str(artifact_path),
+        "sha256": sha256_bytes(content_bytes),
+        "content_hash": f"sha256:{sha256_bytes(content_bytes)}",
+        "content_length": len(content_bytes),
+        "content_type": "text/markdown" if fmt == "markdown" else "text/html" if fmt == "html" else "application/json",
+        "format": fmt,
+        "access_method": "full_text",
+        "human_verification_required": False,
+        "missing_source_gate": {
+            "requested_source": source_url,
+            "returned_artifact": str(artifact_path),
+            "missing": "",
+            "fallback_required": False,
+            "confidence_effect": "none",
+        },
+        "firecrawl_version": get_firecrawl_version(),
+        "command": " ".join(command),
+    }
+
+    meta_path = out_dir / f"{evidence_id}.json"
+    atomic_write(meta_path, (json.dumps(record, indent=2) + "\n").encode("utf-8"))
+
+    legacy_meta_path = out_dir / f"{prov_id}.json"
+    legacy_record = {
+        "id": prov_id,
+        "evidence_id": evidence_id,
+        "url": source_url,
+        "access_timestamp": record["access_timestamp"],
+        "content_hash": record["content_hash"],
+        "content_length": record["content_length"],
+        "format": fmt,
+        "command": record["command"],
+        "firecrawl_version": record["firecrawl_version"],
+    }
+    atomic_write(legacy_meta_path, (json.dumps(legacy_record, indent=2) + "\n").encode("utf-8"))
+    return record
+
+
+def print_result(record: dict[str, Any], content: str, human: bool) -> None:
+    if not human:
+        print(json.dumps({"evidence": record, "provenance": record, "content": content}, indent=2))
+        return
+    print(f"# Evidence: {record['id']}")
+    print(f"# Provenance: {record['legacy_provenance_id']}")
+    print(f"# URL: {record['source_url']}")
+    print(f"# Hash: sha256:{record['sha256']}")
+    print(f"# Timestamp: {record['accessed_at']}")
+    print("# ---")
+    print(content)
+
+
+def cmd_scrape(args: argparse.Namespace) -> int:
+    command = ["firecrawl", "scrape", args.url, "--format", args.format]
+    content, exit_code = run_firecrawl(["scrape", args.url, "--format", args.format])
+    if exit_code != 0:
+        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        return exit_code
+    record = create_evidence_record(
+        source_url=args.url,
+        content=content,
+        fmt=args.format,
+        acquisition_method="firecrawl",
+        query_or_task=f"Scrape {args.url}",
+        command=command,
+        output_path=Path(args.output).expanduser() if args.output else None,
+    )
+    print_result(record, content, args.human)
+    return 0
+
+
+def cmd_search(args: argparse.Namespace) -> int:
+    command = ["firecrawl", "search", args.query, "--limit", str(args.limit)]
+    content, exit_code = run_firecrawl(["search", args.query, "--limit", str(args.limit)])
+    if exit_code != 0:
+        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        return exit_code
+    record = create_evidence_record(
+        source_url=f"search:{args.query}",
+        content=content,
+        fmt="json",
+        acquisition_method="firecrawl",
+        query_or_task=f"Search: {args.query}",
+        command=command,
+        output_path=Path(args.output).expanduser() if args.output else None,
+    )
+    print_result(record, content, args.human)
+    return 0
+
+
+def evidence_records() -> list[dict[str, Any]]:
+    root = provenance_dir()
+    if not root.exists():
+        return []
+    records = []
+    for path in root.glob("E-*.json"):
+        try:
+            records.append(json.loads(path.read_text(encoding="utf-8")))
+        except json.JSONDecodeError:
+            continue
+    return sorted(records, key=lambda item: item.get("accessed_at", ""), reverse=True)
+
+
+def cmd_provenance_list(args: argparse.Namespace) -> int:
+    records = evidence_records()
+    if not args.human:
+        print(json.dumps(records, indent=2))
+        return 0
+    if not records:
+        print("No evidence records found.")
+        return 0
+    print(f"{'ID':<16} {'Timestamp':<22} {'SHA-256':<12} URL")
+    print("-" * 90)
+    for record in records[: args.limit]:
+        print(
+            f"{record.get('id', ''):<16} {record.get('accessed_at', '')[:22]:<22} "
+            f"{record.get('sha256', '')[:12]:<12} {record.get('source_url', '')}"
+        )
+    return 0
+
+
+def cmd_provenance_show(args: argparse.Namespace) -> int:
+    root = provenance_dir()
+    candidates = [root / f"{args.id}.json"]
+    if args.id.startswith("prov-"):
+        for path in root.glob("E-*.json"):
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                continue
+            if data.get("legacy_provenance_id") == args.id:
+                print(json.dumps(data, indent=2))
+                return 0
+    for path in candidates:
+        if path.exists():
+            print(path.read_text(encoding="utf-8"), end="")
+            return 0
+    print(f"Evidence/provenance record not found: {args.id}", file=sys.stderr)
+    return 1
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--human", action="store_true", help="Print human-readable output instead of JSON")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    scrape = subparsers.add_parser("scrape", help="Scrape a URL")
+    scrape.add_argument("url")
+    scrape.add_argument("--format", choices=["markdown", "html"], default="markdown")
+    scrape.add_argument("--output", help="Optional local artifact path")
+    scrape.set_defaults(func=cmd_scrape)
+
+    search = subparsers.add_parser("search", help="Search the web")
+    search.add_argument("query")
+    search.add_argument("--limit", type=int, default=10)
+    search.add_argument("--output", help="Optional local artifact path")
+    search.set_defaults(func=cmd_search)
+
+    provenance = subparsers.add_parser("provenance", help="Manage provenance records")
+    provenance_sub = provenance.add_subparsers(dest="provenance_command", required=True)
+    prov_list = provenance_sub.add_parser("list", help="List evidence records")
+    prov_list.add_argument("--limit", type=int, default=20)
+    prov_list.set_defaults(func=cmd_provenance_list)
+    prov_show = provenance_sub.add_parser("show", help="Show an evidence or legacy provenance record")
+    prov_show.add_argument("id")
+    prov_show.set_defaults(func=cmd_provenance_show)
+
+    args = parser.parse_args()
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

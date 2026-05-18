@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://buriedsignals.com/schemas/mycroft/evidence-bundle-v1.json",
+  "title": "Mycroft Evidence Bundle",
+  "type": "object",
+  "required": ["schema_version", "project", "created_at", "items"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "project": { "type": "string" },
+    "run_id": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/evidence_item" }
+    }
+  },
+  "definitions": {
+    "evidence_item": {
+      "type": "object",
+      "required": [
+        "id",
+        "source_url",
+        "acquisition_method",
+        "accessed_at",
+        "raw_path",
+        "sha256",
+        "access_method",
+        "human_verification_required"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^E-[A-Za-z0-9._-]+$" },
+        "legacy_provenance_id": { "type": "string", "pattern": "^prov-" },
+        "query_or_task": { "type": "string" },
+        "source_url": { "type": "string" },
+        "acquisition_method": { "enum": ["firecrawl", "browser", "manual", "api", "vault", "other"] },
+        "accessed_at": { "type": "string", "format": "date-time" },
+        "raw_path": { "type": "string" },
+        "screenshot_path": { "type": "string" },
+        "downloaded_document_path": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "content_type": { "type": "string" },
+        "access_method": {
+          "enum": ["full_text", "open_access", "archive_copy", "abstract_only", "inaccessible"]
+        },
+        "archive_url": { "type": "string" },
+        "human_verification_required": { "type": "boolean" },
+        "claim_links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["claim_id", "support_type"],
+            "properties": {
+              "claim_id": { "type": "string" },
+              "claim_text": { "type": "string" },
+              "support_type": {
+                "enum": ["direct", "indirect", "inferred", "contradicted", "insufficient"]
+              }
+            }
+          }
+        },
+        "missing_source_gate": {
+          "type": "object",
+          "required": ["requested_source", "returned_artifact", "missing", "fallback_required", "confidence_effect"],
+          "properties": {
+            "requested_source": { "type": "string" },
+            "returned_artifact": { "type": "string" },
+            "missing": { "type": "string" },
+            "fallback_required": { "type": "boolean" },
+            "fallback_reason": { "type": "string" },
+            "confidence_effect": {
+              "enum": ["none", "cap_medium", "cap_low", "human_verification_required"]
+            }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}

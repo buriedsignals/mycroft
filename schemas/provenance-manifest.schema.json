@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://buriedsignals.com/schemas/mycroft/provenance-manifest-v1.json",
+  "title": "Mycroft Provenance Manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "generated_at",
+    "status",
+    "signing",
+    "artifacts",
+    "claims",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "project": { "type": "string" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["unsigned", "signed", "signing_failed"] },
+    "signing": {
+      "type": "object",
+      "required": ["profile", "requires_api_key", "requires_signing_credential", "credential_id", "endpoint"],
+      "properties": {
+        "profile": { "const": "noosphere-c2pa" },
+        "requires_api_key": { "const": false },
+        "requires_signing_credential": { "type": "boolean" },
+        "credential_id": { "type": ["string", "null"] },
+        "endpoint": { "type": ["string", "null"] },
+        "receipt_path": { "type": "string" },
+        "signed_at": { "type": "string", "format": "date-time" },
+        "error": { "type": "string" }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/artifact" }
+    },
+    "claims": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/claim" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/evidence" }
+    }
+  },
+  "definitions": {
+    "artifact": {
+      "type": "object",
+      "required": ["kind", "path", "sha256", "bytes"],
+      "properties": {
+        "kind": {
+          "enum": ["draft", "evidence_bundle", "sift_manifest", "review", "source", "other"]
+        },
+        "path": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "claim": {
+      "type": "object",
+      "required": ["claim_id", "claim_text", "verdict", "grounding_strength", "evidence_refs"],
+      "properties": {
+        "claim_id": { "type": "string" },
+        "claim_text": { "type": "string" },
+        "verdict": {
+          "enum": ["verified", "partially_verified", "unverified", "contradicted", "mischaracterized"]
+        },
+        "confidence": { "enum": ["high", "medium", "low", "unknown"] },
+        "confidence_cap": { "enum": ["high", "medium", "low", "unknown"] },
+        "grounding_strength": { "enum": ["full", "partial", "weak", "none", "unknown"] },
+        "evidence_refs": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "evidence_id",
+        "source_url",
+        "acquisition_method",
+        "accessed_at",
+        "raw_path",
+        "sha256",
+        "human_verification_required"
+      ],
+      "properties": {
+        "evidence_id": { "type": "string" },
+        "source_url": { "type": "string" },
+        "acquisition_method": { "type": "string" },
+        "accessed_at": { "type": "string", "format": "date-time" },
+        "raw_path": { "type": "string" },
+        "archive_url": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "claim_links": { "type": "array" },
+        "human_verification_required": { "type": "boolean" }
+      }
+    }
+  }
+}
