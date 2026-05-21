@@ -4140,6 +4140,13 @@ install_mycroft_cli() {
   else
     warn "mycroft-fetch missing from $MYCROFT_DIR/scripts"
   fi
+  if [ -f "$MYCROFT_DIR/scripts/mycroft_safe.py" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft_safe.py" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"
+    ok "mycroft-safe CLI (shell-safety validator)"
+  else
+    warn "mycroft_safe.py missing from $MYCROFT_DIR/scripts"
+  fi
 }
 
 install_skill_registry() {
@@ -4867,6 +4874,10 @@ check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
 check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
 check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
 check_path "$HOME/.local/bin/mycroft-fetch" "mycroft-fetch command"
+check_path "$MYCROFT_DIR/scripts/mycroft_safe.py" "mycroft_safe.py source"
+check_path "$HOME/.local/bin/mycroft-safe" "mycroft-safe command"
+check_path "$MYCROFT_DIR/skills/shell-safety/SKILL.md" "shell-safety skill"
+check_path "$MYCROFT_DIR/skills/epistemic-grounding/SKILL.md" "epistemic-grounding skill"
 check_path "$RECIPE_PATH" "Mycroft recipes"
 check_path "$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml" "scheduled morning brief recipe"
 check_path "$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml" "scheduled vault audit recipe"
@@ -4899,6 +4910,15 @@ esac
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
 if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
 if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
+if command -v mycroft-safe >/dev/null 2>&1; then
+  if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then
+    ok_check "mycroft-safe CLI"
+  else
+    bad_check "mycroft-safe CLI present but validator failed"
+  fi
+else
+  bad_check "mycroft-safe CLI missing from PATH"
+fi
 if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
   ok_check "Spotlight plugin"
   check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
@@ -4979,6 +4999,10 @@ refresh_profile() {
   if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" ]; then
     chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" || true
     ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" ]; then
+    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" || true
+    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"
   fi
   if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
     mkdir -p "$GOOSE_CONFIG/custom_providers"

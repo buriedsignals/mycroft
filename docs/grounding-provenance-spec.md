@@ -1,11 +1,19 @@
 # Grounding And Provenance Spec
 
-Status: draft
+Status: v1 (2026-05-21)
 
 This spec defines a Mycroft grounding and provenance layer for fact-checking,
 source collection, and publication support. It adapts the stronger parts of the
 Spotlight grounding/C2PA work while keeping Mycroft focused on durable newsroom
 knowledge and draft verification.
+
+Scope is deliberate: this spec applies to the **investigation-grade** profile
+of the `epistemic-grounding` skill (the `fact-check` skill and the
+`fact-check-c2pa.yaml` recipe). Routine Mycroft skills — `morning-brief`,
+`vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator` — use the
+**newsroom-light** profile: the ladder and confidence caps applied in-head plus
+the lighter `confidence:` tag from `SOUL.md`. See
+`skills/epistemic-grounding/SKILL.md` for the profile boundary.
 
 ## Goals
 
@@ -240,14 +248,69 @@ review.
    - render grounding and provenance state in markdown first,
    - later add an HTML review panel if Mycroft grows a report artifact.
 
+## Resolved Decisions
+
+Three of the four open questions from the draft are resolved in this v1. The
+Noosphere endpoint remains open and is tracked below.
+
+### Artifact storage — two-tier
+
+Source artifacts live in **two locations** with a clear promotion gate:
+
+- **Working tier** — `~/.mycroft/provenance/` (the current `mycroft-fetch`
+  default). Every fetch lands here as an evidence item with its sha256, metadata,
+  and raw file. Working-tier items can be garbage-collected after their case is
+  closed or after a retention window.
+- **Durable tier** — vault `sources/raw/<source-id>/` with the matching metadata
+  in `sources/processed/<source-id>.md`. An evidence item is promoted to the
+  durable tier when a fact-check elevates it (verdict published, evidence cited
+  in a vault note, or human reviewer marks `human_review: approved` and tags
+  the item for archive).
+
+The promotion script must copy bytes (not symlink) and recompute the sha256 in
+the durable tier so the durable record is self-contained.
+
+### Search evidence model
+
+`mycroft-fetch search` creates **one evidence item for the search result
+page** (the SERP). When a selected result URL is then scraped, that scrape is
+**a separate evidence item** with its own id, sha256, and acquisition method.
+The SERP item and the scrape item are linked via `parent_evidence_id` on the
+scrape so the chain is auditable.
+
+This matches Spotlight's pattern and prevents claims from being grounded on a
+SERP snippet alone — snippets cap confidence at `low` per the cap table; only
+a full-text scrape can unlock `medium` or `high`.
+
+### Editor verification state
+
+Editor verification state is **separate from model-generated verdicts** so a
+human can approve, reject, or revise the model's call without overwriting it.
+
+Every claim gets a `human_review` field alongside `verdict`:
+
+```json
+{
+  "verdict": "partially_verified",      // model output
+  "human_review": "pending|approved|rejected|revised",
+  "human_review_note": "optional editor comment",
+  "human_reviewer": "optional reviewer id",
+  "human_review_at": "ISO timestamp when reviewed"
+}
+```
+
+Publishing a story or filing to the durable vault tier **requires** every
+referenced claim to be `human_review: approved`. The validator must enforce
+this for any output marked `publication_ready: true`.
+
+When `human_review: rejected` or `revised`, preserve the original model
+`verdict` and `grounding` for audit — do not overwrite them. Add the corrected
+verdict in a separate `human_revised_verdict` field if applicable.
+
 ## Open Questions
 
-- Should Mycroft store source artifacts in `~/.mycroft/provenance` only, or in
-  the durable vault under `sources/raw/` with metadata in `sources/processed/`?
-- Should `mycroft-fetch search` create one evidence item for the search result
-  page, or separate items only after selected result URLs are scraped?
 - What exact Noosphere endpoint should Mycroft target: a shared
   `/api/provenance/sign`, a SIFT-specific route, or separate Spotlight/Mycroft
-  routes with the same payload shape?
-- Should editor verification state be separate from model-generated verdicts so
-  a human can approve, reject, or mark a claim used in a story?
+  routes with the same payload shape? Decision deferred until Noosphere's API
+  contract stabilises; in the meantime `mycroft-fetch` stays signing-agnostic
+  and the manifest builder produces `unsigned` manifests by default.

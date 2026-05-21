@@ -1,6 +1,7 @@
 ---
 name: fact-check
-description: Fact-check drafts, claims, and source assertions through Mycroft's SIFT recipe, escalating to Spotlight for deeper adversarial review when available.
+description: Fact-check drafts, claims, and source assertions through Mycroft's SIFT recipe, escalating to Spotlight for deeper adversarial review when available. Investigation-grade: emits the full grounding object per the grounding-provenance spec.
+requires: [epistemic-grounding, shell-safety]
 ---
 
 # Fact Check
@@ -8,6 +9,10 @@ description: Fact-check drafts, claims, and source assertions through Mycroft's 
 Use this skill when the user asks to fact-check, verify claims, inspect citations, or stress-test a draft.
 
 Load this skill before answering fact-checking requests. Do not rely on general chat behavior for verification work.
+
+**Always load these skills before starting work:**
+- `epistemic-grounding` — the 5-tier ladder, confidence caps, failure router. Mycroft fact-check is investigation-grade and must emit the full `grounding` object on every claim.
+- `shell-safety` — every `mycroft-fetch`, `curl`, and verification command must use safe patterns. Validate URLs, slugs, and paths via `scripts/mycroft_safe.py` before passing to shell.
 
 ## Default Path
 
@@ -37,24 +42,53 @@ Use Spotlight for deeper casework. Keep the fact-checker independent from the in
 
 ## Method
 
-1. Extract discrete factual claims: names, dates, numbers, events, quotes, attributions, locations, causal claims, and cited-source assertions.
+1. Extract discrete factual claims: names, dates, numbers, events, quotes, attributions, locations, causal claims, and cited-source assertions. Break each claim into material elements (actor, action, object, time, place, amount, relationship, status) per the `epistemic-grounding` skill.
 2. Check prior local context first with QMD against the Mycroft and Spotlight collections when installed.
 3. Apply SIFT before corroboration: stop, investigate the source, find better coverage, and trace claims to original context.
-4. Seek both supporting and contradicting evidence. Do not stop at the first source that agrees.
-5. Prefer primary sources over secondary reporting. Record when access is only abstract, archive, excerpt, or inaccessible.
-6. Separate evidence from inference and mark uncertainty formally.
+4. Acquire evidence via `mycroft-fetch` (preferred) or firecrawl through the shell-safety pattern. Every acquisition produces an evidence item — `mycroft-fetch` records the URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. See `docs/grounding-provenance-spec.md` for the schema.
+5. Seek both supporting and contradicting evidence. Do not stop at the first source that agrees.
+6. Prefer primary sources over secondary reporting. Record when access is only abstract, archive, excerpt, or inaccessible — these cap confidence at `low` per the cap table.
+7. Separate evidence from inference and mark uncertainty formally via the `grounding` object below.
+
+## Required Output Contract
+
+Every fact-check claim must emit:
+
+```json
+{
+  "claim_id": "claim-001",
+  "claim_text": "specific factual statement",
+  "verdict": "verified|partially_verified|unverified|contradicted|mischaracterized",
+  "grounding": {
+    "support_type": "direct|indirect|inferred|contradicted|insufficient",
+    "grounding_strength": "full|partial|weak|none",
+    "source_role": "primary|secondary|contextual",
+    "quote_match": "exact|paraphrase|contextual|none",
+    "claim_elements_checked": ["actor", "action", "date", "amount"],
+    "missing_assumptions": [],
+    "contradiction_search": "what was searched and found",
+    "confidence_cap": "high|medium|low",
+    "misgrounding_risk": "short risk statement",
+    "assessment": "why this evidence does or does not ground the claim"
+  },
+  "evidence_refs": ["E1", "E2"],
+  "human_review": "pending|approved|rejected"
+}
+```
+
+The validator (`tools/validate-grounding.py`) must reject any claim whose stated confidence exceeds its `confidence_cap`, or whose `evidence_refs` do not resolve to evidence items in `data/evidence-bundle.json`.
 
 ## Verdict Rules
 
 Use the closed SIFT verdict set:
 
 - verified
-- partially verified
+- partially_verified
 - unverified
 - contradicted
 - mischaracterized
 
-Every verdict needs a citation or a clear note explaining why the claim could not be verified.
+Every verdict needs at least one `evidence_refs` entry or a clear `assessment` explaining why the claim could not be verified. `unverified` is a legitimate finding — do not conflate it with `contradicted` (per SOUL.md).
 
 For Spotlight casework, preserve Spotlight's verdict taxonomy when writing `cases/{project}/data/fact-check.json`:
 
@@ -62,6 +96,8 @@ For Spotlight casework, preserve Spotlight's verdict taxonomy when writing `case
 - unverified
 - disputed
 - false
+
+Add a `grounding_assessment` field on Spotlight handoffs so the Spotlight fact-checker can independently audit how the Mycroft verifier grounded each claim.
 
 ## Safety
 
