@@ -160,15 +160,12 @@ prompt: |
            "sources": ["E-xxx", "E-yyy"],
            "grounding": {
              "support_type": "direct|indirect|inferred|contradicted|insufficient",
-             "grounding_strength": "full|partial|weak|none",
              "source_role": "primary|secondary|contextual",
-             "quote_match": "exact|paraphrase|contextual|none",
              "claim_elements_checked": ["actor", "action", "date"],
              "missing_assumptions": [],
-             "contradiction_search": "<what was searched and found>",
              "confidence_cap": "high|medium|low",
              "misgrounding_risk": "<short risk statement>",
-             "assessment": "<why evidence does or does not ground the claim>"
+             "assessment": "<why evidence does or does not ground the claim; include contradiction-search outcome>"
            },
            "notes": "<optional notes>"
          }

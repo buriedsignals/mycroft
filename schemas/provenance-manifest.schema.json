@@ -60,7 +60,7 @@
     },
     "claim": {
       "type": "object",
-      "required": ["claim_id", "claim_text", "verdict", "grounding_strength", "evidence_refs"],
+      "required": ["claim_id", "claim_text", "verdict", "support_type", "evidence_refs"],
       "properties": {
         "claim_id": { "type": "string" },
         "claim_text": { "type": "string" },
@@ -69,7 +69,7 @@
         },
         "confidence": { "enum": ["high", "medium", "low", "unknown"] },
         "confidence_cap": { "enum": ["high", "medium", "low", "unknown"] },
-        "grounding_strength": { "enum": ["full", "partial", "weak", "none", "unknown"] },
+        "support_type": { "enum": ["direct", "indirect", "inferred", "contradicted", "insufficient", "unknown"] },
         "evidence_refs": { "type": "array", "items": { "type": "string" } }
       }
     },

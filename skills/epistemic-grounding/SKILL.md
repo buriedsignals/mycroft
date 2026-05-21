@@ -19,8 +19,8 @@ A source is only an anchor. Grounding is the relationship between the claim and 
 
 Mycroft uses this skill at two intensities:
 
-- **Newsroom-light** (default) — `morning-brief`, `vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md`'s "investigation-grade outputs" rule plus a `source::` line. No required schema.
-- **Investigation-grade** — `fact-check`, `fact-check-c2pa`, draft-verification work, anything destined for publication or editor review. Emit the full `grounding` object per the schema in `tools/mycroft/docs/grounding-provenance-spec.md` and the `tools/mycroft/schemas/sift-manifest.schema.json`. See the fact-check skill for the contract.
+- **default** — used by `morning-brief`, `vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md` plus a `source::` line. No required schema.
+- **fact-check** — used by `fact-check`, `fact-check-c2pa`, draft-verification work, anything destined for publication or editor review. Emit the full `grounding` object per the schema in `tools/mycroft/docs/grounding-provenance-spec.md` and the `tools/mycroft/schemas/sift-manifest.schema.json`. See the fact-check skill for the contract.
 
 The ladder, confidence caps, and failure router below are universal — they apply at both intensities.
 
@@ -83,9 +83,9 @@ Never upgrade a claim beyond the weakest material element. If the amount is dire
 
 ## When to use the full grounding object
 
-The investigation-grade output schema (10-field `grounding` block, `evidence_bundle_refs`, `human_review` state) is **required only** for the `fact-check` skill (`tools/mycroft/skills/fact-check/SKILL.md`) and the `fact-check-c2pa.yaml` recipe. See `tools/mycroft/docs/grounding-provenance-spec.md` for the schema and `tools/mycroft/schemas/sift-manifest.schema.json` for the validator.
+The `fact-check` profile output schema (7-field `grounding` block, `evidence_refs`, `human_review` state) is **required only** for the `fact-check` skill (`tools/mycroft/skills/fact-check/SKILL.md`) and the `fact-check-c2pa.yaml` recipe. See `tools/mycroft/docs/grounding-provenance-spec.md` for the schema and `tools/mycroft/schemas/sift-manifest.schema.json` for the validator.
 
-Routine Mycroft skills do not emit the full object — they apply the ladder and caps and emit the lighter `confidence:` tag plus a `source::` line in vault frontmatter. Promoting routine outputs to the full schema is over-engineering for daily synthesis work.
+`default`-profile skills do not emit the full object — they apply the ladder and caps in-head and emit the lighter `confidence:` tag plus a `source::` line in vault frontmatter. Promoting routine outputs to the full schema is over-engineering for daily synthesis work.
 
 ## Failure Routing
 

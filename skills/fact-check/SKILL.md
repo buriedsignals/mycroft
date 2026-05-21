@@ -1,6 +1,6 @@
 ---
 name: fact-check
-description: Fact-check drafts, claims, and source assertions through Mycroft's SIFT recipe, escalating to Spotlight for deeper adversarial review when available. Investigation-grade: emits the full grounding object per the grounding-provenance spec.
+description: Fact-check drafts, claims, and source assertions through Mycroft's SIFT recipe, escalating to Spotlight for deeper adversarial review when available. Uses the fact-check profile of epistemic-grounding — emits the full grounding object per the spec.
 requires: [epistemic-grounding, shell-safety]
 ---
 
@@ -11,7 +11,7 @@ Use this skill when the user asks to fact-check, verify claims, inspect citation
 Load this skill before answering fact-checking requests. Do not rely on general chat behavior for verification work.
 
 **Always load these skills before starting work:**
-- `epistemic-grounding` — the 5-tier ladder, confidence caps, failure router. Mycroft fact-check is investigation-grade and must emit the full `grounding` object on every claim.
+- `epistemic-grounding` — the 5-tier ladder, confidence caps, failure router, claim-decomposition discipline. This skill uses the `fact-check` profile and must emit the full `grounding` object on every claim.
 - `shell-safety` — every `mycroft-fetch`, `curl`, and verification command must use safe patterns. Validate URLs, slugs, and paths via `scripts/mycroft_safe.py` before passing to shell.
 
 ## Default Path
@@ -42,13 +42,11 @@ Use Spotlight for deeper casework. Keep the fact-checker independent from the in
 
 ## Method
 
-1. Extract discrete factual claims: names, dates, numbers, events, quotes, attributions, locations, causal claims, and cited-source assertions. Break each claim into material elements (actor, action, object, time, place, amount, relationship, status) per the `epistemic-grounding` skill.
-2. Check prior local context first with QMD against the Mycroft and Spotlight collections when installed.
-3. Apply SIFT before corroboration: stop, investigate the source, find better coverage, and trace claims to original context.
-4. Acquire evidence via `mycroft-fetch` (preferred) or firecrawl through the shell-safety pattern. Every acquisition produces an evidence item — `mycroft-fetch` records the URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. See `docs/grounding-provenance-spec.md` for the schema.
-5. Seek both supporting and contradicting evidence. Do not stop at the first source that agrees.
-6. Prefer primary sources over secondary reporting. Record when access is only abstract, archive, excerpt, or inaccessible — these cap confidence at `low` per the cap table.
-7. Separate evidence from inference and mark uncertainty formally via the `grounding` object below.
+Apply the `epistemic-grounding` skill (claim decomposition, support classification, confidence caps, failure router) to every claim. This skill adds three fact-check-specific moves:
+
+1. **Local context first.** Check Mycroft and Spotlight QMD collections before any web fetch — surface what's already known, link to it, don't re-verify.
+2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` (preferred) or firecrawl through the `shell-safety` pattern. Every acquisition produces an evidence item — `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. See `docs/grounding-provenance-spec.md`.
+3. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
 
 ## Required Output Contract
 
@@ -61,15 +59,12 @@ Every fact-check claim must emit:
   "verdict": "verified|partially_verified|unverified|contradicted|mischaracterized",
   "grounding": {
     "support_type": "direct|indirect|inferred|contradicted|insufficient",
-    "grounding_strength": "full|partial|weak|none",
     "source_role": "primary|secondary|contextual",
-    "quote_match": "exact|paraphrase|contextual|none",
     "claim_elements_checked": ["actor", "action", "date", "amount"],
     "missing_assumptions": [],
-    "contradiction_search": "what was searched and found",
     "confidence_cap": "high|medium|low",
     "misgrounding_risk": "short risk statement",
-    "assessment": "why this evidence does or does not ground the claim"
+    "assessment": "why this evidence does or does not ground the claim; include the contradiction-search outcome here"
   },
   "evidence_refs": ["E1", "E2"],
   "human_review": "unreviewed|approved|rejected"

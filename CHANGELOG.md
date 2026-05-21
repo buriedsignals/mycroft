@@ -38,12 +38,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ### Changed
 - **BREAKING — `fact-check/SKILL.md` output contract.** Every claim now
-  requires a `grounding` object (support_type, grounding_strength, source_role,
-  quote_match, claim_elements_checked, missing_assumptions,
-  contradiction_search, confidence_cap, misgrounding_risk, assessment), an
-  `evidence_refs: [...]` array, and a `human_review: unreviewed|approved|rejected`
-  field. Downstream consumers of `cases/{project}/data/fact-check.json` or the
-  legacy SIFT manifest must update their parsers.
+  requires a 7-field `grounding` object (support_type, source_role,
+  claim_elements_checked, missing_assumptions, confidence_cap,
+  misgrounding_risk, assessment), an `evidence_refs: [...]` array, and a
+  `human_review: unreviewed|approved|rejected` field. Downstream consumers of
+  `cases/{project}/data/fact-check.json` or the legacy SIFT manifest must
+  update their parsers. Earlier drafts of this changelog listed a 10-field
+  object; the redundant `grounding_strength` (overlapped support_type),
+  `quote_match` (implied by support_type + source_role), and
+  `contradiction_search` (free-text duplicate of assessment) were dropped
+  before tagging.
+- Profile names in `epistemic-grounding/SKILL.md` renamed to be functional
+  rather than aspirational: `newsroom-light` → `default`,
+  `investigation-grade` → `fact-check`. Names now describe the consumer, not
+  the marketing tier.
+- `fact-check/SKILL.md` Method section shortened: removed steps that
+  duplicated `epistemic-grounding` discipline (claim decomposition, support
+  classification, primary-source preference). The skill now lists only the
+  three fact-check-specific moves on top of grounding.
+- `schemas/sift-manifest.schema.json` and `schemas/provenance-manifest.schema.json`
+  updated to match the trimmed grounding shape. provenance-manifest's claim
+  block now uses `support_type` instead of `grounding_strength` for
+  vocabulary consistency with sift-manifest.
+- `recipes/fact-check-c2pa.yaml` JSON template updated to the 7-field shape.
 - `fact-check/SKILL.md` now requires `[epistemic-grounding, shell-safety]`.
 - `obsidian-ingest/SKILL.md` (public) now requires `shell-safety` and includes
   a Safety section documenting scraped content as untrusted shell input.

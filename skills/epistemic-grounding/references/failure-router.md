@@ -36,7 +36,7 @@ Avoid these common bad fixes:
 - Adding more adjacent sources instead of finding direct support.
 - Treating repeated syndicated coverage as source independence.
 - Rewriting a claim to sound cautious while keeping unsupported elements.
-- Hiding uncertainty in `confidence_rationale` instead of encoding it in `grounding` (investigation-grade) or in the `confidence:` tag (newsroom-light).
+- Hiding uncertainty in `confidence_rationale` instead of encoding it in `grounding` (fact-check profile) or in the `confidence:` tag (default profile).
 - Letting a fact-check verdict override the claim-to-evidence mismatch.
 - Trusting a model-generated URL because it "sounds right" instead of running it through firecrawl.
 

@@ -7,11 +7,11 @@ source collection, and publication support. It adapts the stronger parts of the
 Spotlight grounding/C2PA work while keeping Mycroft focused on durable newsroom
 knowledge and draft verification.
 
-Scope is deliberate: this spec applies to the **investigation-grade** profile
+Scope is deliberate: this spec applies to the **fact-check** profile
 of the `epistemic-grounding` skill (the `fact-check` skill and the
 `fact-check-c2pa.yaml` recipe). Routine Mycroft skills — `morning-brief`,
 `vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator` — use the
-**newsroom-light** profile: the ladder and confidence caps applied in-head plus
+**default** profile: the ladder and confidence caps applied in-head plus
 the lighter `confidence:` tag from `SOUL.md`. See
 `skills/epistemic-grounding/SKILL.md` for the profile boundary.
 
@@ -87,19 +87,18 @@ Every checked claim gets:
   "claim_text": "specific factual statement",
   "grounding": {
     "support_type": "direct|indirect|inferred|contradicted|insufficient",
-    "grounding_strength": "full|partial|weak|none",
     "source_role": "primary|secondary|contextual",
-    "quote_match": "exact|paraphrase|contextual|none",
     "claim_elements_checked": ["actor", "action", "date", "amount"],
     "missing_assumptions": [],
-    "contradiction_search": "what was searched and found",
     "confidence_cap": "high|medium|low",
     "misgrounding_risk": "short risk statement",
-    "assessment": "why this evidence does or does not ground the claim"
+    "assessment": "why this evidence does or does not ground the claim; include contradiction-search outcome here"
   },
   "evidence_refs": ["E1"]
 }
 ```
+
+The grounding object has seven fields. Earlier drafts also required `grounding_strength`, `quote_match`, and `contradiction_search`; these were dropped in v1 because they were redundant (`grounding_strength` overlapped with `support_type`; `quote_match` was implied by `support_type` + `source_role`) or duplicated free-text rationale already in `assessment`. Add them back when a consumer needs them.
 
 Confidence caps:
 
