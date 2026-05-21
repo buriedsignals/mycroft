@@ -72,11 +72,13 @@ Every fact-check claim must emit:
     "assessment": "why this evidence does or does not ground the claim"
   },
   "evidence_refs": ["E1", "E2"],
-  "human_review": "pending|approved|rejected"
+  "human_review": "unreviewed|approved|rejected"
 }
 ```
 
-The validator (`tools/validate-grounding.py`) must reject any claim whose stated confidence exceeds its `confidence_cap`, or whose `evidence_refs` do not resolve to evidence items in `data/evidence-bundle.json`.
+Evidence items in `data/evidence-bundle.json` may use `linked_evidence_ids: [...]` to chain related acquisitions (SERP→scrape, scrape+screenshot, scrape+web-archive). See `docs/grounding-provenance-spec.md` § Search evidence model.
+
+The validator (`tools/validate-grounding.py`) must reject any claim whose stated confidence exceeds its `confidence_cap`, or whose `evidence_refs` do not resolve to evidence items in `data/evidence-bundle.json`. Publication-ready outputs (`publication_ready: true`) additionally require every referenced claim to be `human_review: approved`.
 
 ## Verdict Rules
 

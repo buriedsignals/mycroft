@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+> **Next tag will be [0.2.0]** (pre-1.0 minor bump): fact-check output contract
+> changes shape, which is a breaking change for downstream consumers parsing
+> `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
+
 ### Added
 - Initial release scaffold.
 - Hosted setup page (`index.html`, `setup.html`) — client-side only, generates a `mycroft-setup.command` bash script.
@@ -15,10 +19,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - IM Fell English wordmark + M-alone favicon.
 - Plugin scaffolding: Spotlight + Scoutpost (launching with Mycroft), DataHound + Atelier (August-September 2026).
 - Memory templates (`memory/USER.md`, `memory/MEMORY.md`).
+- `skills/shell-safety/SKILL.md` and `scripts/mycroft_safe.py` — validation
+  helper for URLs, DOIs, slugs, timestamps, and paths; rejects shell
+  metacharacters, path traversal, leading-dash segments, and non-http schemes.
+  Mirrored from the Spotlight bundle's `spotlight_safe.py` so each public
+  install is self-contained.
+- `tests/shell-safety-check.py` — hostile-input regression suite. Run it after
+  any change to `mycroft_safe.py`.
+- `skills/epistemic-grounding/SKILL.md` plus `references/failure-router.md`
+  and `references/grounding-theory.md` — claim-to-evidence discipline with
+  two profiles (newsroom-light for routine work; investigation-grade for
+  fact-check). Includes the 5-tier grounding ladder and confidence-cap table.
+- Setup installer now symlinks `~/.local/bin/mycroft-safe` →
+  `scripts/mycroft_safe.py`, mirroring the existing `mycroft-fetch` pattern.
+- `mycroft doctor` checks `mycroft-safe` (presence on PATH, runs a sanity
+  `validate-url`) and the new `shell-safety` and `epistemic-grounding` skill
+  paths.
+
+### Changed
+- **BREAKING — `fact-check/SKILL.md` output contract.** Every claim now
+  requires a `grounding` object (support_type, grounding_strength, source_role,
+  quote_match, claim_elements_checked, missing_assumptions,
+  contradiction_search, confidence_cap, misgrounding_risk, assessment), an
+  `evidence_refs: [...]` array, and a `human_review: unreviewed|approved|rejected`
+  field. Downstream consumers of `cases/{project}/data/fact-check.json` or the
+  legacy SIFT manifest must update their parsers.
+- `fact-check/SKILL.md` now requires `[epistemic-grounding, shell-safety]`.
+- `obsidian-ingest/SKILL.md` (public) now requires `shell-safety` and includes
+  a Safety section documenting scraped content as untrusted shell input.
+- `mycroft-doctor` exports `PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"`
+  at the top so the doctor works correctly when run from cron, Goose recipes,
+  or other non-interactive shells. (Same fix Spotlight shipped in
+  `552637d`.)
+- `docs/grounding-provenance-spec.md` status: `draft` → `v1` (2026-05-21).
+  Three of four open questions resolved (artifact storage, search evidence
+  model, editor verification state); Noosphere endpoint deferred.
 
 ### Security
-- All downloaded artefacts carry user's own API keys embedded client-side; no server ingestion.
-- Sovereignty toggle (cloud / local-first) with `MYCROFT_DEFAULT_SOVEREIGNTY` + `MYCROFT_LOCAL_ONLY` env vars.
+- Hard rule added across Mycroft: any string from a fetched page, email body,
+  social post, model output, or external API is untrusted shell input. Validate
+  via `mycroft_safe.py` before passing to bash, curl, or any CLI that
+  interprets quotes/dollars/backticks. Forbids `eval` and `bash -c "..."` on
+  untrusted values.
+- `obsidian-ingest` (public skill) now documents that scraped markdown should
+  be written via stdin or temp file rather than interpolated into a CLI
+  `content="..."` argv element.
 
 ## [0.1.0] — TBD
 

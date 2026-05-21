@@ -4840,6 +4840,7 @@ mkdir -p "$HOME/.local/bin" "$XDG_DATA_HOME/mycroft"
 cat > "$HOME/.local/bin/mycroft-doctor" <<'DOCTOR_EOF'
 #!/usr/bin/env bash
 set -u
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
 fail=0
 ok_check() { printf "OK    %s\\n" "$*"; }
 bad_check() { printf "FAIL  %s\\n" "$*"; fail=1; }
