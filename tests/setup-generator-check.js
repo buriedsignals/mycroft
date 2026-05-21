@@ -141,9 +141,19 @@ if (syntax.status !== 0) {
   console.error(syntax.stderr);
   process.exit(syntax.status || 1);
 }
-assertIncludes(localScript, "GOOSE_PROVIDER=local-llama-server");
-assertIncludes(localScript, "GOOSE_MODEL=qwen3.6-27b-uncensored-hauhaucs");
+assertIncludes(localScript, "GOOSE_PROVIDER=local");
+assertIncludes(localScript, "GOOSE_MODEL=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive:Q4_K_P");
 assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_FILE=Qwen3.6-27B-Uncensored-HauhauCS-Aggressive-Q4_K_P.gguf");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_QUANT=Q4_K_P");
+assertIncludes(localScript, "install_local_model");
+assertIncludes(localScript, "register_local_model_in_goose");
+assertIncludes(localScript, "$XDG_DATA_HOME/goose/models");
+assertIncludes(localScript, "sed 's/\\\\/\\\\\\\\/g; s/\"/\\\\\"/g'");
+assertExcludes(localScript, "GOOSE_PROVIDER=local-llama-server");
+// providers should be *removed* by the new installer, not *copied* — assert no cp of the JSONs
+assertExcludes(localScript, 'cp "$MYCROFT_DIR/providers/local-llama-server.json"');
+assertExcludes(localScript, 'cp "$MYCROFT_DIR/providers/local-mlx.json"');
 assertIncludes(localScript, 'SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"');
 assertIncludes(localScript, 'SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"');
 assertExcludes(localScript, "SCOUTPOST_API_KEY=");

@@ -69,12 +69,12 @@ git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycr
 # 2. Point Goose at the recipes
 export GOOSE_RECIPE_PATH=~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes
 
-# 3. Copy whichever provider configs you want to use (macOS/Linux Goose config path)
+# 3. Copy whichever cloud provider configs you want to use (macOS/Linux Goose config path)
 mkdir -p ~/.config/goose/custom_providers
 cp ~/.local/share/goose/mycroft/source/providers/fireworks-qwen36plus.json   ~/.config/goose/custom_providers/
 cp ~/.local/share/goose/mycroft/source/providers/together-qwen.json          ~/.config/goose/custom_providers/
-cp ~/.local/share/goose/mycroft/source/providers/local-mlx.json              ~/.config/goose/custom_providers/
-cp ~/.local/share/goose/mycroft/source/providers/local-llama-server.json     ~/.config/goose/custom_providers/
+# For local-only, use Goose Desktop's built-in Local Inference (llama.cpp embedded).
+# Settings -> Local Inference -> pick a Mycroft journalist GGUF from HuggingFace.
 # NOTE: providers/openrouter-fallback.json is in the repo but not a shipped default —
 # OpenRouter's GLM-5.1 routing can hit Z.AI-direct (China-hosted). If you want it,
 # copy it manually and configure provider preferences to exclude Z.AI-direct.
@@ -115,7 +115,7 @@ Per-claim verdicts: verified / unverified / contradicted / mischaracterized.
 
 ## Sovereign mode
 
-All shipped providers are ZDR. For full local (zero network egress), start `mlx_lm.server` or `llama-server` with a Mycroft Qwen fine-tune (release TBD — fine-tune in training as of 2026-04-17) and use the `local-mlx` or `local-llama-server` provider.
+All shipped cloud providers are ZDR. For full local (zero network egress), use Goose Desktop's built-in **Local Inference** (`GOOSE_PROVIDER=local`, llama.cpp embedded — no separate server). The guided installer downloads the Mycroft journalist GGUF you picked into `~/models/` and registers it with Goose. Manual route: Goose Desktop -> Settings -> Local Inference -> add a model by HuggingFace repo id (e.g. `tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF:Q4_K_M`).
 
 ## Shipping recipes
 

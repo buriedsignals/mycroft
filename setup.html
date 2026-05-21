@@ -2967,7 +2967,7 @@ body.mode-local .cloud-only { display: none; }
           <span class="item__title">Gemma 4<br><em>Vision lane.</em></span>
           <span class="badge info">spotlight</span>
         </div>
-        <p class="item__lede">Minimum local option for Spotlight-style investigations. Better with 24 GB+ unified memory; includes vision assets for document and image-heavy work. <a href="https://huggingface.co/tomvaillant/gemma4-e4b-journalist" target="_blank" rel="noreferrer">gemma4-e4b-journalist</a></p>
+        <p class="item__lede">Minimum local option for Spotlight-style investigations. Better with 24 GB+ unified memory; includes vision assets for document and image-heavy work. <a href="https://huggingface.co/tomvaillant/gemma4-e4b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">gemma4-e4b-abliterated-journalist-GGUF</a></p>
         <div class="price">
           <span class="price__amt">$0<em>/mo</em></span>
           <span class="price__detail">larger download · more headroom needed</span>
@@ -2990,18 +2990,8 @@ body.mode-local .cloud-only { display: none; }
     </div>
 
     <div class="callout" data-reveal style="--delay: 200ms">
-      <strong>Download + start (after your setup script runs):</strong>
-      <pre class="preview" style="margin-top:var(--sp-3);max-height:none;"><code># 1. Install the HF CLI
-pip install -U "huggingface_hub[cli]"
-
-# 2. Pull the selected model (example: Mycroft 9B)
-hf download tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF \
-  --local-dir ~/.local/share/goose/mycroft/models/qwen-journalist-9b \
-  --include "*Q4_K_M.gguf"
-
-# 3. Start llama-server
-llama-server -m ~/.local/share/goose/mycroft/models/qwen-journalist-9b/*.Q4_K_M.gguf -c 32768 --port 8080</code></pre>
-      <p class="hint" style="margin-top:var(--sp-3);">If Spotlight is enabled, use Gemma 4 or Qwen3.6 27B. The 9B is intentionally Mycroft-only.</p>
+      <strong>One-click local:</strong> the setup script downloads the model you picked into <code>~/models/</code> and registers it with Goose's built-in <strong>Local Inference</strong> (llama.cpp, embedded — no separate server to start). When Goose opens, the model is already selected.
+      <p class="hint" style="margin-top:var(--sp-3);">If Spotlight is enabled, pick Gemma 4 or Qwen3.6 27B. The 9B is intentionally Mycroft-only.</p>
     </div>
   </section>
 
@@ -3820,14 +3810,29 @@ function localModelMeta(id) {
     qwen9b: {
       name: 'qwen3.5-9b-abliterated-journalist',
       repo: 'tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF',
+      filename: 'model-q4_k_m.gguf',
+      quantization: 'Q4_K_M',
+      vision: false,
+      native_tool_calling: true,
+      enable_thinking: true,
     },
     gemma4: {
-      name: 'gemma4-e4b-journalist',
-      repo: 'tomvaillant/gemma4-e4b-journalist',
+      name: 'gemma4-e4b-abliterated-journalist',
+      repo: 'tomvaillant/gemma4-e4b-abliterated-journalist-GGUF',
+      filename: 'model-q4_k_m.gguf',
+      quantization: 'Q4_K_M',
+      vision: true,
+      native_tool_calling: true,
+      enable_thinking: false,
     },
     qwen27b: {
       name: 'qwen3.6-27b-uncensored-hauhaucs',
       repo: 'HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive',
+      filename: 'Qwen3.6-27B-Uncensored-HauhauCS-Aggressive-Q4_K_P.gguf',
+      quantization: 'Q4_K_P',
+      vision: false,
+      native_tool_calling: true,
+      enable_thinking: true,
     },
   };
   return models[id] || models.qwen9b;
@@ -3892,10 +3897,14 @@ function buildScript(d) {
   ];
   if (d.localOnly) {
     const localModel = localModelMeta(d.localModel);
-    envLines.push('GOOSE_PROVIDER=local-llama-server');
-    envLines.push('GOOSE_MODEL=' + localModel.name);
+    envLines.push('GOOSE_PROVIDER=local');
+    envLines.push('GOOSE_MODEL=' + localModel.repo + ':' + localModel.quantization);
     envLines.push('MYCROFT_LOCAL_MODEL=' + localModel.name);
     envLines.push('MYCROFT_LOCAL_MODEL_REPO=' + localModel.repo);
+    envLines.push('MYCROFT_LOCAL_MODEL_FILE=' + localModel.filename);
+    envLines.push('MYCROFT_LOCAL_MODEL_QUANT=' + localModel.quantization);
+    envLines.push('MYCROFT_LOCAL_MODEL_VISION=' + (localModel.vision ? '1' : '0'));
+    envLines.push('MYCROFT_LOCAL_MODEL_THINKING=' + (localModel.enable_thinking ? '1' : '0'));
   } else if (d.fireworks) {
     envLines.push('GOOSE_PROVIDER=fireworks-qwen36plus');
     envLines.push('GOOSE_MODEL=accounts/fireworks/models/qwen3p6-plus');
@@ -3924,10 +3933,7 @@ function buildScript(d) {
     if (d.spotBrowseruse) envLines.push('SPOTLIGHT_BROWSERUSE=1');
   }
 
-  const providerCopies = [
-    'cp "$MYCROFT_DIR/providers/local-mlx.json"          "$PROVIDERS_DST/"\nok "local-mlx"',
-    'cp "$MYCROFT_DIR/providers/local-llama-server.json" "$PROVIDERS_DST/"\nok "local-llama-server"',
-  ];
+  const providerCopies = [];
   if (d.fireworks) providerCopies.push('cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/"\nok "Fireworks"');
   if (d.together)  providerCopies.push('cp "$MYCROFT_DIR/providers/together-qwen.json"        "$PROVIDERS_DST/"\nok "Together"');
 
@@ -4147,6 +4153,13 @@ install_mycroft_cli() {
   else
     warn "mycroft_safe.py missing from $MYCROFT_DIR/scripts"
   fi
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-repair" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-repair" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-repair" "$HOME/.local/bin/mycroft-repair"
+    ok "mycroft-repair CLI"
+  else
+    warn "mycroft-repair missing from $MYCROFT_DIR/scripts"
+  fi
 }
 
 install_skill_registry() {
@@ -4264,7 +4277,7 @@ SOUL_EOF
 }
 
 yaml_quote() {
-  printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
+  printf '%s' "$1" | sed 's/\\\\/\\\\\\\\/g; s/"/\\\\"/g'
 }
 
 set_goose_config_key() {
@@ -4290,6 +4303,133 @@ store_goose_secret() {
   else
     warn "Could not store $name in Goose keychain; Goose Desktop may ask for it once."
   fi
+}
+
+install_local_model() {
+  [ "$LOCAL_ONLY" = "1" ] || return 0
+  [ -f "$MYCROFT_ENV" ] || { warn "MYCROFT_ENV missing; skipping local model download"; return 0; }
+  set -a
+  . "$MYCROFT_ENV"
+  set +a
+  [ -n "\${MYCROFT_LOCAL_MODEL_REPO:-}" ] || { warn "MYCROFT_LOCAL_MODEL_REPO unset; cannot download model"; return 0; }
+  [ -n "\${MYCROFT_LOCAL_MODEL_FILE:-}" ] || { warn "MYCROFT_LOCAL_MODEL_FILE unset; cannot download model"; return 0; }
+
+  local models_root="$HOME/models"
+  local model_leaf
+  model_leaf="$(basename "$MYCROFT_LOCAL_MODEL_REPO")"
+  local model_dir="$models_root/$model_leaf"
+  local model_path="$model_dir/$MYCROFT_LOCAL_MODEL_FILE"
+  mkdir -p "$model_dir"
+
+  if [ -f "$model_path" ]; then
+    ok "local model already present ($model_path)"
+  else
+    say "Downloading $MYCROFT_LOCAL_MODEL_REPO/$MYCROFT_LOCAL_MODEL_FILE — this can take a while..."
+    if have hf; then
+      if hf download "$MYCROFT_LOCAL_MODEL_REPO" "$MYCROFT_LOCAL_MODEL_FILE" --local-dir "$model_dir" >/dev/null; then
+        ok "local model downloaded via hf"
+      else
+        warn "hf download failed — retry later from Goose Desktop -> Settings -> Local Inference"
+      fi
+    elif have curl; then
+      if curl -fL "https://huggingface.co/$MYCROFT_LOCAL_MODEL_REPO/resolve/main/$MYCROFT_LOCAL_MODEL_FILE" -o "$model_path"; then
+        ok "local model downloaded via curl"
+      else
+        rm -f "$model_path"
+        warn "curl download failed — retry later from Goose Desktop -> Settings -> Local Inference"
+      fi
+    else
+      warn "Neither hf nor curl found; install one and rerun, or download from Goose Desktop"
+    fi
+  fi
+
+  if [ -f "$model_path" ]; then
+    register_local_model_in_goose "$model_path"
+  else
+    warn "Skipping Goose model registry write — model file not present. Add the model from Goose Desktop -> Settings -> Local Inference once you have it."
+  fi
+}
+
+register_local_model_in_goose() {
+  local model_path="$1"
+  local registry_dir="$XDG_DATA_HOME/goose/models"
+  local registry_file="$registry_dir/registry.json"
+  mkdir -p "$registry_dir"
+  [ -f "$registry_file" ] || printf '%s\\n' '{"models":[]}' > "$registry_file"
+
+  if ! have python3; then
+    warn "python3 not found; cannot write Goose model registry. Open Goose Desktop -> Settings -> Local Inference and pick the model manually."
+    return 0
+  fi
+
+  XDG_DATA_HOME="$XDG_DATA_HOME" \\
+  MYCROFT_LOCAL_MODEL_REPO="$MYCROFT_LOCAL_MODEL_REPO" \\
+  MYCROFT_LOCAL_MODEL_FILE="$MYCROFT_LOCAL_MODEL_FILE" \\
+  MYCROFT_LOCAL_MODEL_QUANT="$MYCROFT_LOCAL_MODEL_QUANT" \\
+  MYCROFT_LOCAL_MODEL_VISION="\${MYCROFT_LOCAL_MODEL_VISION:-0}" \\
+  MYCROFT_LOCAL_MODEL_THINKING="\${MYCROFT_LOCAL_MODEL_THINKING:-0}" \\
+  MODEL_PATH="$model_path" \\
+  python3 - <<'REGISTRY_PY'
+import json, os, pathlib
+
+repo = os.environ.get("MYCROFT_LOCAL_MODEL_REPO", "")
+filename = os.environ.get("MYCROFT_LOCAL_MODEL_FILE", "")
+quant = os.environ.get("MYCROFT_LOCAL_MODEL_QUANT", "")
+vision = os.environ.get("MYCROFT_LOCAL_MODEL_VISION", "0") == "1"
+thinking = os.environ.get("MYCROFT_LOCAL_MODEL_THINKING", "0") == "1"
+local_path = os.environ.get("MODEL_PATH", "")
+registry_path = pathlib.Path(os.environ["XDG_DATA_HOME"]) / "goose" / "models" / "registry.json"
+
+if not (repo and filename and quant and local_path):
+    raise SystemExit(0)
+
+model_id = repo + ":" + quant
+try:
+    data = json.loads(registry_path.read_text() or "{}")
+except json.JSONDecodeError:
+    data = {}
+size_bytes = os.path.getsize(local_path) if os.path.exists(local_path) else 0
+
+entry = {
+    "id": model_id,
+    "repo_id": repo,
+    "filename": filename,
+    "quantization": quant,
+    "local_path": local_path,
+    "source_url": "https://huggingface.co/" + repo + "/resolve/main/" + filename,
+    "settings": {
+        "context_size": None,
+        "max_output_tokens": None,
+        "sampling": {"type": "Temperature", "temperature": 0.8, "top_k": 40, "top_p": 0.95, "min_p": 0.05, "seed": None},
+        "repeat_penalty": 1.0,
+        "repeat_last_n": 64,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "n_batch": None,
+        "n_gpu_layers": None,
+        "use_mlock": False,
+        "flash_attention": None,
+        "n_threads": None,
+        "native_tool_calling": True,
+        "use_jinja": False,
+        "enable_thinking": thinking,
+        "vision_capable": vision,
+        "image_token_estimate": 256,
+        "mmproj_size_bytes": 0,
+    },
+    "size_bytes": size_bytes,
+    "mmproj_size_bytes": 0,
+    "shard_files": [],
+}
+
+models = [m for m in (data.get("models") or []) if m.get("id") != model_id]
+models.append(entry)
+data["models"] = models
+tmp = registry_path.with_suffix(".tmp")
+tmp.write_text(json.dumps(data, indent=2))
+tmp.replace(registry_path)
+REGISTRY_PY
+  ok "Goose local-inference registry entry"
 }
 
 configure_goose_persistent_defaults() {
@@ -4775,6 +4915,8 @@ configure_qmd
 mkdir -p "$PLUGINS_DIR"
 
 mkdir -p "$PROVIDERS_DST"
+# Clean up obsolete custom providers (pre-2026-05 installer copied these; we now use Goose's built-in Local Inference)
+rm -f "$PROVIDERS_DST/local-llama-server.json" "$PROVIDERS_DST/local-mlx.json"
 ${providerCopies.join('\n')}
 install_skill_registry
 write_goose_instructions
@@ -4783,6 +4925,7 @@ cat > "$MYCROFT_ENV" <<'ENV_EOF'
 ${envLines.join('\n')}
 ENV_EOF
 chmod 600 "$MYCROFT_ENV"
+install_local_model
 configure_goose_persistent_defaults
 
 ${pluginBlock.length ? pluginBlock.join('\n') : '# (no plugins selected)'}
@@ -5311,10 +5454,12 @@ function buildAgentManifest(d) {
   };
   if (d.localOnly) {
     const localModel = localModelMeta(d.localModel);
-    defaults.GOOSE_PROVIDER = 'local-llama-server';
-    defaults.GOOSE_MODEL = localModel.name;
+    defaults.GOOSE_PROVIDER = 'local';
+    defaults.GOOSE_MODEL = localModel.repo + ':' + localModel.quantization;
     defaults.MYCROFT_LOCAL_MODEL = localModel.name;
     defaults.MYCROFT_LOCAL_MODEL_REPO = localModel.repo;
+    defaults.MYCROFT_LOCAL_MODEL_FILE = localModel.filename;
+    defaults.MYCROFT_LOCAL_MODEL_QUANT = localModel.quantization;
   } else if (d.fireworks) {
     defaults.GOOSE_PROVIDER = 'fireworks-qwen36plus';
     defaults.GOOSE_MODEL = 'accounts/fireworks/models/qwen3p6-plus';
@@ -5355,8 +5500,6 @@ function buildAgentManifest(d) {
       install_firecrawl: d.installFirecrawl,
       install_qmd: true,
       providers: [
-        'local-mlx',
-        'local-llama-server',
         ...(d.fireworks ? ['fireworks-qwen36plus'] : []),
         ...(d.together ? ['together-qwen'] : []),
       ],

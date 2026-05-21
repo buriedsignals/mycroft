@@ -17,7 +17,7 @@ For setup.html bugs: attach (or redact) the generated mycroft-setup.command exce
 - macOS / Linux version:
 - Goose version: `goose --version`
 - Mycroft commit: `(cd ~/.mycroft && git rev-parse --short HEAD)`
-- Provider(s) configured: Fireworks / Together / local-mlx / local-llama-server / other
+- Provider(s) configured: Fireworks / Together / Goose Local Inference (built-in llama.cpp) / other
 - Sovereignty mode: cloud / local
 
 **Logs / output**

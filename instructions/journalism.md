@@ -100,7 +100,7 @@ Two environment variables control routing:
 
 When `MYCROFT_LOCAL_ONLY=1`:
 
-- **Route all LLM inference to the local provider** (`local-mlx` or `local-llama-server`). Do not call Fireworks, Together, or any other cloud LLM.
+- **Route all LLM inference to Goose's built-in Local Inference** (`GOOSE_PROVIDER=local`, llama.cpp embedded — running the Mycroft journalist GGUF installed under `~/models/`). Do not call Fireworks, Together, or any other cloud LLM.
 - **Cloud data APIs remain available** — Firecrawl (web search/scrape), Apify (social), AgentMail (inbox) all call third-party services by nature. Sovereign mode is about *LLM inference staying local*, not about a full network-island. Data ingestion from the web is still cloud-bound.
 - **Flag any recipe step that would send sensitive source content through a cloud service.** Examples: running `fact-check` on a draft that quotes a confidential source — the draft text becomes part of the Firecrawl query payload only if you ask Firecrawl to look up the claim; you can redact the source attribution before calling out.
 - **Acknowledge the tradeoff**: local inference on an 8B-class model is weaker at adversarial fact-checking and multi-hop reasoning than a frontier model. If the journalist asks for deep analysis while in local mode, note the quality ceiling and ask whether they want to temporarily switch to cloud for that specific query.
