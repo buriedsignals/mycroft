@@ -128,6 +128,8 @@ Mycroft and [Spotlight](https://github.com/buriedsignals/spotlight) share the sa
 
 The 9B handles daily-driver Mycroft work (vault QA, morning brief, fact-check) **and** Spotlight investigations — same model, same vault, same skills. The 27B is for journalists with 32 GB+ Macs who want maximum reasoning depth and accept the 3–5× slower per-prompt latency. Earlier drafts of the setup form encoded a "9B is Mycroft-only, Spotlight needs a bigger model" rule; the [Spotlight bench](https://github.com/buriedsignals/spotlight/tree/main/tools/fine-tuning/eval) refuted it — the 9B handles OSINT-grade refusal probes at 100% (vs the 8B Gemma 4 E4B variant at 97% with one hedge), so size for size's sake isn't justified.
 
+When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers. Note: the 27B requires Qwen's `/no_think` directive baked into the Ollama Modelfile to disable thinking mode — without it, `content` comes back empty. Spotlight's installer handles this; if you're configuring Goose's Local Inference manually, add `SYSTEM "/no_think"` to your Modelfile.
+
 Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), and the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues; Huihui's variant uses standard Q4_K quants and ships as a native Ollama tag).
 
 ## Shipping recipes
