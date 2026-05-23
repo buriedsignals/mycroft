@@ -128,7 +128,17 @@ Mycroft and [Spotlight](https://github.com/buriedsignals/spotlight) share the sa
 
 The 9B handles daily-driver Mycroft work (vault QA, morning brief, fact-check) **and** Spotlight investigations — same model, same vault, same skills. The 27B is for journalists with 32 GB+ Macs who want maximum reasoning depth and accept the 3–5× slower per-prompt latency. Earlier drafts of the setup form encoded a "9B is Mycroft-only, Spotlight needs a bigger model" rule; the [Spotlight bench](https://github.com/buriedsignals/spotlight/tree/main/tools/fine-tuning/eval) refuted it — the 9B handles OSINT-grade refusal probes at 100% (vs the 8B Gemma 4 E4B variant at 97% with one hedge), so size for size's sake isn't justified.
 
-When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers. Note: the 27B requires Qwen's `/no_think` directive baked into the Ollama Modelfile to disable thinking mode — without it, `content` comes back empty. Spotlight's installer handles this; if you're configuring Goose's Local Inference manually, add `SYSTEM "/no_think"` to your Modelfile.
+When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers.
+
+### 27B thinking-mode caveat (different mechanism than Spotlight)
+
+Qwen 3.6 abliterated variants default to thinking mode and ignore the OpenAI-compat `think: false` field. On Spotlight (which uses Ollama), the installer overrides the chat template to inject `/no_think` into every user message and sets opencode's `limit.output: 16384` to give the model enough budget for reasoning + content. End-to-end verified.
+
+Mycroft uses Goose Desktop's **Local Inference** (llama.cpp embedded, no Ollama). Different surface:
+
+- The Mycroft installer writes a Goose registry entry with `"enable_thinking": false` for the 27B. Whether Goose's embedded llama.cpp honors that as a true `/no_think`-equivalent or just hides the thinking UI is **untested at the time of writing** — Goose's Local Inference is newer and less documented than Ollama's path.
+- If you load the 27B in Goose and see empty responses, the workaround is to manually set `max_output_tokens` to ~16384 in Goose Desktop → Settings → Local Inference → Model → Advanced. With enough output budget the model produces content even with thinking on.
+- For maximum reliability on the 27B, run it through Spotlight's Ollama path instead — the same model (`huihui_ai/Qwen3.6-abliterated:27b`) is bench-validated working there. Mycroft can still drive that Ollama instance via a `local` provider config.
 
 Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), and the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues; Huihui's variant uses standard Q4_K quants and ships as a native Ollama tag).
 
