@@ -3813,7 +3813,14 @@ function localModelMeta(id) {
       min_ram_gb: 32,
       vision: false,
       native_tool_calling: true,
-      enable_thinking: true,
+      // Disabled: Qwen 3.6 abliterated emits thinking by default and the
+      // model burns ~10k tokens of reasoning on complex prompts. Goose's
+      // Local Inference picks up this flag in the registry settings; if
+      // the embedded llama.cpp honors it, content fits within reasonable
+      // max_output_tokens. If it doesn't, see README — Goose Local
+      // Inference handling is more limited than Spotlight's Ollama path
+      // (where we override the chat template to inject /no_think).
+      enable_thinking: false,
     },
   };
   return models[id] || models.qwen9b;
