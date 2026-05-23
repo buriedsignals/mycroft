@@ -115,7 +115,22 @@ Per-claim verdicts: verified / unverified / contradicted / mischaracterized.
 
 ## Sovereign mode
 
-All shipped cloud providers are ZDR. For full local (zero network egress), use Goose Desktop's built-in **Local Inference** (`GOOSE_PROVIDER=local`, llama.cpp embedded — no separate server). The guided installer downloads the Mycroft journalist GGUF you picked into `~/models/` and registers it with Goose. Manual route: Goose Desktop -> Settings -> Local Inference -> add a model by HuggingFace repo id (e.g. `tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF:Q4_K_M`).
+All shipped cloud providers are ZDR. For full local (zero network egress), use Goose Desktop's built-in **Local Inference** (`GOOSE_PROVIDER=local`, llama.cpp embedded — no separate server). The guided installer downloads the Mycroft journalist GGUF you picked into `~/models/` and registers it with Goose. Manual route: Goose Desktop -> Settings -> Local Inference -> add a model by HuggingFace repo id.
+
+### Local model picker — two tiers
+
+Mycroft and [Spotlight](https://github.com/buriedsignals/spotlight) share the same two-tier local model fleet so the same vault and skills work across both.
+
+| Tier | Model | RAM | Notes |
+|------|-------|-----|-------|
+| **Default** | [`tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF:Q4_K_M`](https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF) | 16 GB | Tom's 9B fine-tune on the [investigative-journalism-training corpus](https://huggingface.co/datasets/tomvaillant/investigative-journalism-training). ~6 GB on disk. Bench winner among 8–9B options. |
+| **Heavy** (fit-check gated) | [`huihui_ai/Qwen3.6-abliterated:27b`](https://ollama.com/huihui_ai/Qwen3.6-abliterated) | 32 GB minimum | 27B dense, abliterated by huihui-ai. ~17 GB on disk. The setup form fit-check confirms RAM before this option commits. |
+
+The 9B handles daily-driver Mycroft work (vault QA, morning brief, fact-check) **and** Spotlight investigations — same model, same vault, same skills. The 27B is for journalists with 32 GB+ Macs who want maximum reasoning depth and accept the 3–5× slower per-prompt latency. Earlier drafts of the setup form encoded a "9B is Mycroft-only, Spotlight needs a bigger model" rule; the [Spotlight bench](https://github.com/buriedsignals/spotlight/tree/main/tools/fine-tuning/eval) refuted it — the 9B handles OSINT-grade refusal probes at 100% (vs the 8B Gemma 4 E4B variant at 97% with one hedge), so size for size's sake isn't justified.
+
+When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers. Note: the 27B requires Qwen's `/no_think` directive baked into the Ollama Modelfile to disable thinking mode — without it, `content` comes back empty. Spotlight's installer handles this; if you're configuring Goose's Local Inference manually, add `SYSTEM "/no_think"` to your Modelfile.
+
+Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), and the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues; Huihui's variant uses standard Q4_K quants and ships as a native Ollama tag).
 
 ## Shipping recipes
 
