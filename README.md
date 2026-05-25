@@ -124,27 +124,19 @@ Mycroft and [Spotlight](https://github.com/buriedsignals/spotlight) share the sa
 | Tier | Model | RAM | Notes |
 |------|-------|-----|-------|
 | **Default** | [`tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF:Q4_K_M`](https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF) | 16 GB | Tom's 9B fine-tune on the [investigative-journalism-training corpus](https://huggingface.co/datasets/tomvaillant/investigative-journalism-training). ~6 GB on disk. Bench winner among 8–9B options. |
-| **Heavy** (fit-check gated) | [`huihui_ai/Qwen3.6-abliterated:27b`](https://ollama.com/huihui_ai/Qwen3.6-abliterated) | 32 GB minimum | 27B dense, abliterated by huihui-ai. ~17 GB on disk. The setup form fit-check confirms RAM before this option commits. |
+| **Heavy** (fit-check gated) | [`tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF:Q4_K_M`](https://huggingface.co/tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF) | 32 GB minimum | Tom's 27B fine-tune on the same investigative-journalism corpus as the 9B, on Huihui's abliterated Qwen 3.6 base. ~15 GB on disk. Runs in thinking mode (see below). The setup form fit-check confirms RAM before this option commits. |
 
 The 9B handles daily-driver Mycroft work (vault QA, morning brief, fact-check) **and** Spotlight investigations — same model, same vault, same skills. The 27B is for journalists with 32 GB+ Macs who want maximum reasoning depth and accept the 3–5× slower per-prompt latency. Earlier drafts of the setup form encoded a "9B is Mycroft-only, Spotlight needs a bigger model" rule; the [Spotlight bench](https://github.com/buriedsignals/spotlight/tree/main/tools/fine-tuning/eval) refuted it — the 9B handles OSINT-grade refusal probes at 100% (vs the 8B Gemma 4 E4B variant at 97% with one hedge), so size for size's sake isn't justified.
 
 When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers.
 
-### 27B thinking-mode handling (different mechanism than Spotlight)
+### 27B runs in thinking mode (was: /no_think; we reversed)
 
-Qwen 3.6 abliterated variants default to thinking mode and ignore the OpenAI-compat `think: false` field. On Spotlight (which uses Ollama), the installer overrides the chat template to inject `/no_think` into every user message and sets opencode's `limit.output: 16384` to give the model enough budget for reasoning + content. End-to-end verified.
+Earlier revisions tried to disable thinking on the 27B (Goose registry `enable_thinking: false`; Spotlight Ollama TEMPLATE override injecting `/no_think`) to save the ~10k reasoning tokens Qwen 3.6 burns on complex prompts. We reversed both. **The abliterated Qwen 3.6 family's `/no_think` codepath is damaged** — verified empirically against the Huihui base and Tom's journalist fine-tune at Q4_K_M with Qwen-recommended sampling: output collapses into random multilingual tokens and lock-loops within ~200 tokens. Most likely cause: abliteration calibration only covered the thinking codepath, leaving the no-think branch with broken refusal-direction subtraction; quantization amplifies it.
 
-Mycroft uses Goose Desktop's **Local Inference** ([aaif-goose/goose](https://github.com/aaif-goose/goose), llama.cpp embedded). The Mycroft installer writes a Goose model registry entry at `$XDG_DATA_HOME/goose/models/registry.json` with `"settings": {"enable_thinking": false}` for the 27B. This is honored end-to-end (source-code traced + behaviorally verified against a running Goose Desktop instance):
+The Mycroft installer now writes `"settings": {"enable_thinking": true}` for the 27B in `$XDG_DATA_HOME/goose/models/registry.json`. Goose Desktop's Local Inference threads that through llama.cpp's Jinja chat template so the `<think>` block renders normally. You'll see ~3-5× longer responses than the 9B; bump `max_output_tokens` to ~4096+ if you see truncation. To override per-session: `GOOSE_LOCAL_ENABLE_THINKING=0` before launching, or Goose Desktop → Settings → Local Inference → Model → Advanced — but expect garbage output, this is escape-hatch only.
 
-- `crates/goose/src/providers/local_inference.rs:456` reads `settings.enable_thinking` from the registry (or `GOOSE_LOCAL_ENABLE_THINKING=0` as a request-level override).
-- `crates/goose/src/providers/local_inference/llamacpp/inference_native_tools.rs:43-52` threads it through to llama.cpp's completion request as `reasoning_format: None` + `enable_thinking: false`.
-- llama.cpp's Jinja chat template engine honors that on Qwen 3.5/3.6 by rendering the chat template *without* the `<think>` block — so the model doesn't emit reasoning at generation time, and `content` is populated normally.
-
-Goose Desktop exposes a `PUT /local-inference/models/{id}/settings` endpoint that accepts the toggle live — we verified the flag round-trips correctly against a running instance before merge. So flipping thinking back on for a specific session is possible without re-running the installer: either set `GOOSE_LOCAL_ENABLE_THINKING=1` before launching Goose, or PUT `enable_thinking: true` through Goose Desktop → Settings → Local Inference → Model → Advanced.
-
-For the 27B specifically, also bump `max_output_tokens` to ~4096 in the same panel if you see truncation — Qwen 3.6 can still produce substantial responses even without thinking.
-
-Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), and the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues; Huihui's variant uses standard Q4_K quants and ships as a native Ollama tag).
+Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues), and the raw Huihui Qwen 3.6 27B Abliterated (superseded by the journalist fine-tune built on the same base).
 
 ## Shipping recipes
 

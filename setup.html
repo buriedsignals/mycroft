@@ -2964,13 +2964,13 @@ body.mode-local .cloud-only { display: none; }
         <input type="radio" name="local_model" value="qwen27b">
         <p class="item__num"><em>27B</em> Heavy tier</p>
         <div class="item__head">
-          <span class="item__title">Qwen 3.6 27B<br><em>Abliterated.</em></span>
+          <span class="item__title">Qwen 3.6 27B<br><em>Journalist.</em></span>
           <span class="badge req">32 GB</span>
         </div>
-        <p class="item__lede">Heavy tier when you have the hardware. 27B dense, abliterated by <a href="https://huggingface.co/huihui-ai" target="_blank" rel="noreferrer">huihui-ai</a> (abliteration originators). Ollama-native tag, standard Q4_K quant. <strong>Needs 32 GB unified memory minimum</strong> — the fit-check below confirms before this option commits. <a href="https://ollama.com/huihui_ai/Qwen3.6-abliterated" target="_blank" rel="noreferrer">huihui_ai/Qwen3.6-abliterated:27b</a></p>
+        <p class="item__lede">Heavy tier when you have the hardware. 27B dense, abliterated Huihui base, fine-tuned on the same investigative-journalism corpus as the 9B. Runs in thinking mode — the abliterated Qwen 3.6 family's <code>/no_think</code> path is broken (produces token soup) so we keep reasoning on. <strong>Needs 32 GB unified memory minimum</strong> — the fit-check below confirms before this option commits. <a href="https://huggingface.co/tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF" target="_blank" rel="noreferrer">qwen3.6-27b-abliterated-journalist-GGUF</a></p>
         <div class="price">
           <span class="price__amt">$0<em>/mo</em></span>
-          <span class="price__detail">~17 GB disk · 32 GB unified memory</span>
+          <span class="price__detail">~15 GB disk · 32 GB unified memory</span>
         </div>
       </label>
     </div>
@@ -3805,22 +3805,20 @@ function localModelMeta(id) {
       enable_thinking: true,
     },
     qwen27b: {
-      name: 'huihui-qwen3.6-27b-abliterated',
-      repo: 'huihui-ai/Huihui-Qwen3.6-27B-abliterated-MTP-GGUF',
-      filename: 'model-Q4_K.gguf',
-      ollama_tag: 'huihui_ai/Qwen3.6-abliterated:27b',
-      quantization: 'Q4_K',
+      name: 'qwen3.6-27b-abliterated-journalist',
+      repo: 'tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF',
+      filename: 'qwen3.6-27b-abliterated-journalist-Q4_K_M.gguf',
+      ollama_tag: 'hf.co/tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF:Q4_K_M',
+      quantization: 'Q4_K_M',
       min_ram_gb: 32,
       vision: false,
       native_tool_calling: true,
-      // Disabled: Qwen 3.6 abliterated emits thinking by default and the
-      // model burns ~10k tokens of reasoning on complex prompts. Goose's
-      // Local Inference picks up this flag in the registry settings; if
-      // the embedded llama.cpp honors it, content fits within reasonable
-      // max_output_tokens. If it doesn't, see README — Goose Local
-      // Inference handling is more limited than Spotlight's Ollama path
-      // (where we override the chat template to inject /no_think).
-      enable_thinking: false,
+      // Thinking ON: the abliterated Qwen 3.6 family's /no_think path is
+      // damaged (verified empirically — produces multilingual token soup
+      // and lock-loops on both the Huihui base and this journalist tune).
+      // Thinking-on produces coherent, useful output. Cost is ~3-5× more
+      // tokens per response; bump max_output_tokens if you see truncation.
+      enable_thinking: true,
     },
   };
   return models[id] || models.qwen9b;
@@ -5755,7 +5753,7 @@ async function runFitCheck() {
 
   // Mycroft and Spotlight now share the same two-model fleet:
   //   - qwen9b:  Tom's Qwen 3.5 9B Journalist (Tom's HF, ~6 GB) — default for both.
-  //   - qwen27b: Huihui's Qwen 3.6 27B abliterated (~17 GB) — needs 32 GB minimum.
+  //   - qwen27b: Tom's Qwen 3.6 27B Journalist (Tom's HF, ~15 GB) — needs 32 GB minimum.
   // Spotlight-enabled is no longer used to push to a larger model: the bench
   // showed the 9B handles Spotlight-grade refusal probes as well as a 27B,
   // and the 27B's 3-5× slower per-prompt latency rarely earns its hardware cost.
@@ -5764,7 +5762,7 @@ async function runFitCheck() {
   if (deviceMemGB && deviceMemGB >= 32) {
     state = 'green';
     heading = 'Qwen 3.6 27B fits — your machine can run it';
-    message = `Browser reports roughly ${deviceMemGB} GB+ RAM. The 27B (~17 GB on disk, ~24 GB at runtime) loads cleanly with headroom for the rest of the stack. The 9B is also a fine pick if you want faster responses.`;
+    message = `Browser reports roughly ${deviceMemGB} GB+ RAM. The 27B (~15 GB on disk, ~22 GB at runtime) loads cleanly with headroom for the rest of the stack. The 9B is also a fine pick if you want faster responses.`;
     recommended = 'qwen27b';
   } else if (deviceMemGB && deviceMemGB >= 16) {
     if (currentSel === 'qwen27b') {
