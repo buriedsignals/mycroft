@@ -142,10 +142,10 @@ if (syntax.status !== 0) {
   process.exit(syntax.status || 1);
 }
 assertIncludes(localScript, "GOOSE_PROVIDER=local");
-assertIncludes(localScript, "GOOSE_MODEL=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive:Q4_K_P");
-assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=HauhauCS/Qwen3.6-27B-Uncensored-HauhauCS-Aggressive");
-assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_FILE=Qwen3.6-27B-Uncensored-HauhauCS-Aggressive-Q4_K_P.gguf");
-assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_QUANT=Q4_K_P");
+assertIncludes(localScript, "GOOSE_MODEL=huihui-ai/Huihui-Qwen3.6-27B-abliterated-MTP-GGUF:Q4_K");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_REPO=huihui-ai/Huihui-Qwen3.6-27B-abliterated-MTP-GGUF");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_FILE=model-Q4_K.gguf");
+assertIncludes(localScript, "MYCROFT_LOCAL_MODEL_QUANT=Q4_K");
 assertIncludes(localScript, "install_local_model");
 assertIncludes(localScript, "register_local_model_in_goose");
 assertIncludes(localScript, "$XDG_DATA_HOME/goose/models");

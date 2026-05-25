@@ -5688,17 +5688,21 @@ function recommendLocalModel(model) {
 // Heavy-tier enforcement: auto-trigger the fit-check when the user selects
 // the 27B if no fit-check verdict is on screen yet — the warning copy in
 // runFitCheck() then handles the "your machine can't run this" path.
-document.querySelectorAll('input[name="local_model"]').forEach(el => {
-  el.addEventListener('change', () => {
-    if (el.checked && el.value === 'qwen27b') {
-      const panel = document.getElementById('fitPanel');
-      if (panel && !panel.classList.contains('green') &&
-          !panel.classList.contains('amber') && !panel.classList.contains('red')) {
-        runFitCheck();
+// Guarded so the validate workflow can extract these helpers into a Node
+// vm context (no `document`) without blowing up at import time.
+if (typeof document !== 'undefined') {
+  document.querySelectorAll('input[name="local_model"]').forEach(el => {
+    el.addEventListener('change', () => {
+      if (el.checked && el.value === 'qwen27b') {
+        const panel = document.getElementById('fitPanel');
+        if (panel && !panel.classList.contains('green') &&
+            !panel.classList.contains('amber') && !panel.classList.contains('red')) {
+          runFitCheck();
+        }
       }
-    }
+    });
   });
-});
+}
 
 async function runFitCheck() {
   const panel = document.getElementById('fitPanel');
