@@ -1,12 +1,19 @@
 version: "1.0.0"
-title: "Fact-check (SIFT)"
-description: "Run SIFT methodology against a draft article. Returns per-claim verdicts with cited sources."
+title: "Fact-check (SIFT + provenance)"
+description: "Run SIFT methodology against a draft article. Returns per-claim verdicts with cited sources and a provenance package when available."
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, SIFT, no fabrication) as session context.
   Load ~/.mycroft/skills/fact-check/SKILL.md before checking claims.
   Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
   Do not rewrite the draft; do not moralise. Report, let the journalist decide.
+  Provenance is default but not mandatory: attempt evidence capture, validation,
+  and manifest generation for every fact-check, but do not fail the fact-check
+  unless strict provenance is requested.
+
+  IMPORTANT: Use `mycroft-fetch` instead of raw `firecrawl` for web fetches.
+  This captures evidence records (URL, local artifact, SHA-256 hash, timestamp)
+  for grounding and optional C2PA package signing.
 
 parameters:
   - key: draft_path
@@ -19,14 +26,29 @@ parameters:
     requirement: optional
     description: "Draft text inline (use when draft is short and pastable)"
     default: ""
+  - key: emit_manifest
+    input_type: boolean
+    requirement: optional
+    description: "Emit evidence, SIFT, and provenance manifests when possible"
+    default: true
+  - key: strict_provenance
+    input_type: boolean
+    requirement: optional
+    description: "Fail the fact-check if provenance validation or manifest generation fails"
+    default: false
+  - key: c2pa_sign
+    input_type: boolean
+    requirement: optional
+    description: "Automatically sign via Noosphere/C2PA signer when configured"
+    default: false
 
 extensions:
   - type: builtin
     name: developer
-    description: "Shell + file access — reads the draft, invokes firecrawl CLI for verification"
+    description: "Shell + file access — reads the draft, invokes mycroft-fetch for verification with provenance capture"
 
 prompt: |
-  SIFT fact-check.
+  SIFT fact-check with default provenance capture.
 
   Apply the SIFT framework:
     - **S**top — don't accept claims at face value
@@ -58,31 +80,183 @@ prompt: |
      - **contradicted** — a more authoritative source disagrees (cite the contradiction explicitly)
      - **mischaracterized** — source exists but the claim misrepresents it (cite original + explain the gap)
 
-  4. Use the firecrawl CLI for verification:
-     - `firecrawl search "query"` for discovery
-     - `firecrawl scrape <url>` for specific pages
-     - Never use WebFetch, curl, or any other browser tool.
+  4. Use `mycroft-fetch` for web verification whenever it is available:
+     - `mycroft-fetch search "query"` for discovery
+     - `mycroft-fetch scrape <url>` for specific pages
+     - This captures evidence IDs, source URLs, timestamps, local artifact paths, and SHA-256 hashes.
+     - Never use WebFetch, curl, raw firecrawl, or any other browser tool for normal fetches.
+     - If `mycroft-fetch` is unavailable, continue only if the fact-check can still be cited clearly; report "provenance incomplete: mycroft-fetch unavailable".
 
   5. Output as a markdown table:
 
-     | # | Claim | Verdict | Primary source | Notes |
-     |---|-------|---------|----------------|-------|
-     | 1 | ... | verified | https://... | ... |
+     | # | Claim | Verdict | Primary source | Evidence ID | Grounding | Notes |
+     |---|-------|---------|----------------|-------------|-----------|-------|
+     | 1 | ... | verified | https://... | E-xxx | direct/full | ... |
 
   6. End with a summary block:
      - Verdict counts (verified / partially / unverified / contradicted / mischaracterized)
      - Claims needing additional reporting (list with specific next steps)
      - Strongest-supported claim(s)
      - Weakest/most-at-risk claim(s)
+     - Provenance status:
+       - `created` when evidence bundle, SIFT manifest, and provenance manifest exist
+       - `incomplete` when fetch, validation, or manifest generation failed
+       - `unsigned` when package exists and C2PA signing was not requested
+       - `signed` when the signer returns a receipt
+       - `signing_failed` when signing fails but the unsigned package remains usable
+
+  {% if emit_manifest %}
+  7. After the summary, create a fact-check package directory and save:
+
+     - `data/evidence-bundle.json`
+     - `data/sift-manifest.json`
+     - `data/provenance-manifest.json` when the manifest build succeeds
+
+     Evidence bundle shape:
+
+     ```json
+     {
+       "schema_version": "1.0",
+       "project": "<draft slug or project>",
+       "run_id": "<optional run id>",
+       "created_at": "<ISO timestamp>",
+       "items": [
+         {
+           "id": "E-xxx",
+           "source_url": "<source URL>",
+           "acquisition_method": "firecrawl",
+           "accessed_at": "<from mycroft-fetch>",
+           "raw_path": "<from mycroft-fetch>",
+           "sha256": "<64 lowercase hex from mycroft-fetch>",
+           "content_type": "text/markdown",
+           "access_method": "full_text",
+           "archive_url": "<Wayback/Archive.today URL if created>",
+           "human_verification_required": false,
+           "claim_links": [
+             {
+               "claim_id": "claim-001",
+               "claim_text": "<claim text>",
+               "support_type": "direct"
+             }
+           ],
+           "missing_source_gate": {
+             "requested_source": "<what you needed>",
+             "returned_artifact": "<raw_path>",
+             "missing": "",
+             "fallback_required": false,
+             "confidence_effect": "none"
+           }
+         }
+       ]
+     }
+     ```
+
+     SIFT manifest shape:
+
+     ```json
+     {
+       "schema": "sift-manifest-v1",
+       "timestamp": "<ISO timestamp>",
+       "investigator": {
+         "name": "<your name from MYCROFT_USER_NAME or 'Mycroft'>",
+         "organization": "<from MYCROFT_ORG or empty>"
+       },
+       "draft": {
+         "path": "{{ draft_path }}",
+         "content_hash": "sha256:<hash of draft content>",
+         "title": "<extracted or inferred title>"
+       },
+       "claims": [
+         {
+           "id": "claim-001",
+           "text": "<claim text>",
+           "verdict": "<verdict>",
+           "confidence": "high|medium|low",
+           "evidence_refs": ["E-xxx", "E-yyy"],
+           "sources": ["E-xxx", "E-yyy"],
+           "grounding": {
+             "support_type": "direct|indirect|inferred|contradicted|insufficient",
+             "source_role": "primary|secondary|contextual",
+             "claim_elements_checked": ["actor", "action", "date"],
+             "missing_assumptions": [],
+             "confidence_cap": "high|medium|low",
+             "misgrounding_risk": "<short risk statement>",
+             "assessment": "<why evidence does or does not ground the claim; include contradiction-search outcome>"
+           },
+           "human_review": "unreviewed",
+           "notes": "<optional notes>"
+         }
+       ],
+       "sources": [
+         {
+           "id": "E-xxx",
+           "evidence_id": "E-xxx",
+           "url": "<source URL>",
+           "content_hash": "sha256:<64 lowercase hex from mycroft-fetch>",
+           "access_timestamp": "<from mycroft-fetch>",
+           "access_type": "full",
+           "sift_step": "trace_to_original",
+           "is_primary": true,
+           "title": "<human-readable title>"
+         }
+       ],
+       "summary": {
+         "verified": <count>,
+         "partially_verified": <count>,
+         "unverified": <count>,
+         "contradicted": <count>,
+         "mischaracterized": <count>,
+         "total_claims": <count>,
+         "total_sources": <count>
+       },
+       "methodology": {
+         "name": "SIFT",
+         "version": "1.0",
+         "vault_searched": true,
+         "web_searched": true
+       }
+     }
+     ```
+
+     Then run:
+
+     ```bash
+     python3 "$MYCROFT_DIR/tools/validate-grounding.py" <package-dir> --strict-files
+     python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir>
+     ```
+
+     If provenance validation or manifest generation fails, continue the fact-check unless `strict_provenance` is true. Preserve the markdown verdict table and report:
+     - exact command that failed
+     - short error
+     - "provenance incomplete"
+     - whether claim verdicts remain usable as cited, unsigned editorial review output
+
+     If `strict_provenance` is true, stop and report the provenance failure before presenting the fact-check as complete.
+  {% endif %}
+
+  {% if c2pa_sign %}
+  8. C2PA signing is optional and off by default. If signing is requested, call the configured Noosphere/C2PA signer only after local validation succeeds:
+
+     ```bash
+     python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir> \
+       --sign-endpoint "${NOOSPHERE_C2PA_URL:-http://localhost:5002/api/mycroft/provenance/sign}" \
+       --credential-id "${NOOSPHERE_C2PA_CREDENTIAL_ID:-}" \
+       --artifact review.md
+     ```
+
+     If signing fails, keep the unsigned provenance package and report `signing_failed`. Do not say C2PA proves the claims are true; say the package is tamper-evident if signing succeeds.
+  {% endif %}
 
   Rules:
   - Do not rewrite the draft.
   - Do not moralise.
   - If you cannot verify a claim and cannot find a contradiction, verdict is `unverified` — that is not a failure, it is the correct verdict.
   - Never fabricate sources.
+  - Always try to use mycroft-fetch for provenance tracking in fact-checking.
+  - Do not make C2PA signing a requirement unless the user explicitly asks for signing or strict provenance.
 
 activities:
-  - "message: **SIFT fact-check ready.** Paste a draft or point to a file. I'll return per-claim verdicts."
+  - "message: **SIFT fact-check ready.** Paste a draft or point to a file. I'll return per-claim verdicts with provenance when available."
   - "Fact-check my latest draft"
   - "Verify just the numeric claims in this draft"
   - "Re-run after I update the sources"

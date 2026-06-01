@@ -112,6 +112,11 @@ goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check.yaml \
 ```
 
 Per-claim verdicts: verified / unverified / contradicted / mischaracterized.
+The default fact-check path is provenance-first: it tries to capture evidence
+with `mycroft-fetch`, write source hashes, and build an unsigned provenance
+package. This is not a hard dependency for quick editorial review unless you
+pass `--params strict_provenance=true`. Live Noosphere/C2PA signing remains
+opt-in with `--params c2pa_sign=true`.
 
 ## Sovereign mode
 
@@ -142,7 +147,7 @@ Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (supersede
 
 **Core journalism:**
 - `vault-qa` — vault + web Q&A with citations
-- `fact-check` — SIFT, per-claim verdicts
+- `fact-check` — SIFT, per-claim verdicts, default provenance package when available
 - `qmd` — local markdown search over Mycroft and Spotlight vaults
 - `source-verify` — SIFT against a single source's credibility
 - `start` — first-run menu for setting up a beat, adding material, creating a morning brief, investigating a lead, setting up scouts, or generating a demo
