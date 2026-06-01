@@ -113,6 +113,57 @@ goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check.yaml \
 
 Per-claim verdicts: verified / unverified / contradicted / mischaracterized.
 
+### SIFT × C2PA signed fact-check (killer demo 3)
+
+Same as above, but with cryptographic provenance signing via the Noosphere platform:
+
+```sh
+goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check-c2pa.yaml \
+  --params draft_path=./article.md
+```
+
+This creates a signed C2PA manifest with:
+- Tamper-evident claim chain (draft → sources → verification → publication)
+- Source hashes captured at access time via `mycroft-fetch`
+- SIFT verdicts embedded as cryptographic assertions
+- Journalist DID and verifiable credentials
+
+**Requires a Noosphere API key** — see below.
+
+#### Obtaining a Noosphere API Key
+
+1. **Sign up / Log in** at [platform.noosphere.tech](https://platform.noosphere.tech)
+
+2. **Navigate to Settings** → **API Keys**
+
+3. **Create a new API key:**
+   - Click "Create API Key"
+   - Enter a name (e.g., "Mycroft SIFT Integration")
+   - Select scopes: `read`, `write`, `sift`
+   - Click "Generate"
+
+4. **Copy the key immediately** — it's only shown once:
+   ```
+   noosphere_a1b2c3d4e5f6789012345678901234ab
+   ```
+
+5. **Add to your environment:**
+   ```bash
+   export NOOSPHERE_API_KEY="noosphere_..."
+   ```
+
+   Or add to `~/.config/goose/mycroft/.env` for persistent configuration.
+
+**Key format:** `noosphere_` + 32 hex characters
+
+**Security notes:**
+- API keys are hashed on the server — lost keys cannot be recovered
+- Keys can be revoked anytime from the Settings page
+- Use separate keys for different environments
+- Keys inherit your organization's signing credentials and policies
+
+See `integration/sift-c2pa/` for full technical documentation.
+
 ## Sovereign mode
 
 All shipped providers are ZDR. For full local (zero network egress), start `mlx_lm.server` or `llama-server` with a Mycroft Qwen fine-tune (release TBD — fine-tune in training as of 2026-04-17) and use the `local-mlx` or `local-llama-server` provider.
