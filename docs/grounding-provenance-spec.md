@@ -8,8 +8,9 @@ Spotlight grounding/C2PA work while keeping Mycroft focused on durable newsroom
 knowledge and draft verification.
 
 Scope is deliberate: this spec applies to the **fact-check** profile
-of the `epistemic-grounding` skill (the `fact-check` skill and the
-`fact-check-c2pa.yaml` recipe). Routine Mycroft skills — `morning-brief`,
+of the `epistemic-grounding` skill (the `fact-check` skill, the default
+`fact-check.yaml` recipe, and the compatibility `fact-check-c2pa.yaml` recipe).
+Routine Mycroft skills — `morning-brief`,
 `vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator` — use the
 **default** profile: the ladder and confidence caps applied in-head plus
 the lighter `confidence:` tag from `SOUL.md`. See
@@ -126,6 +127,12 @@ Required top-level files for a fact-check package:
 - `data/sift-manifest.json`
 - `data/provenance-manifest.json`
 
+The default `fact-check.yaml` recipe should attempt to create these files for
+every fact-check. This is a default, not a mandatory gate: quick editorial
+fact-checking may continue with `provenance incomplete` reported when local
+tooling is unavailable. `strict_provenance=true` turns provenance failures into
+blocking failures. Noosphere/C2PA signing remains opt-in.
+
 The existing `sift-manifest-v1` should be revised to:
 
 - require 64-character SHA-256 hashes,
@@ -233,10 +240,13 @@ review.
    - recomputed file-hash checks.
 
 4. Update recipes:
-   - `fact-check-c2pa.yaml` should use evidence bundle IDs, not free-form
-     provenance IDs only,
+   - `fact-check.yaml` should use `mycroft-fetch`, emit manifests by default,
+     and continue with a visible warning when provenance fails unless
+     `strict_provenance=true`,
+   - `fact-check-c2pa.yaml` remains a compatibility explicit-C2PA route and
+     should use evidence bundle IDs, not free-form provenance IDs only,
    - keep C2PA signing opt-in,
-   - fail clearly when `mycroft-fetch` is missing.
+   - report clearly when `mycroft-fetch` is missing.
 
 5. Add manifest builder:
    - build unsigned package manifests locally,

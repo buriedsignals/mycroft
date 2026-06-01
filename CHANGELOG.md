@@ -37,6 +37,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
   paths.
 
 ### Changed
+- `recipes/fact-check.yaml` is now provenance-first by default for
+  fact-checking: it instructs agents to use `mycroft-fetch`, emit evidence and
+  SIFT manifests, and build an unsigned provenance manifest when available.
+  Provenance failures are reported as incomplete but non-blocking unless
+  `strict_provenance=true`; live Noosphere/C2PA signing remains opt-in with
+  `c2pa_sign=true`.
 - **BREAKING — `fact-check/SKILL.md` output contract.** Every claim now
   requires a 7-field `grounding` object (support_type, source_role,
   claim_elements_checked, missing_assumptions, confidence_cap,

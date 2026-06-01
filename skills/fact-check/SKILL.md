@@ -16,7 +16,9 @@ Load this skill before answering fact-checking requests. Do not rely on general 
 
 ## Default Path
 
-Use the Mycroft recipe first:
+Use the Mycroft recipe first. The default fact-check path attempts provenance
+capture and unsigned manifest generation for every run, but it does not require
+Noosphere/C2PA signing.
 
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check.yaml --params draft_path="<path>"
@@ -27,6 +29,11 @@ If the user provides short pasted text instead of a file:
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check.yaml --params draft_text="<text>"
 ```
+
+For newsroom workflows where provenance must be complete before delivery, pass
+`strict_provenance=true`. To request live Noosphere/C2PA signing, pass
+`c2pa_sign=true`; signing remains opt-in and fact-check verdicts remain
+editorial outputs, not C2PA truth claims.
 
 ## Spotlight Escalation
 
@@ -45,7 +52,7 @@ Use Spotlight for deeper casework. Keep the fact-checker independent from the in
 Apply the `epistemic-grounding` skill (claim decomposition, support classification, confidence caps, failure router) to every claim. This skill adds three fact-check-specific moves:
 
 1. **Local context first.** Check Mycroft and Spotlight QMD collections before any web fetch — surface what's already known, link to it, don't re-verify.
-2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` (preferred) or firecrawl through the `shell-safety` pattern. Every acquisition produces an evidence item — `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. See `docs/grounding-provenance-spec.md`.
+2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` first. Every acquisition should produce an evidence item: `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. If provenance tooling is unavailable, continue the fact-check only as a cited editorial review output and report `provenance incomplete` unless `strict_provenance=true`. See `docs/grounding-provenance-spec.md`.
 3. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
 
 ## Required Output Contract
