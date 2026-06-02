@@ -1,51 +1,128 @@
 # Mycroft
 
-A Goose Extension Pack for investigative journalists. Privacy-preserving, ZDR-first, sovereign-capable.
+Mycroft is a Goose extension pack for newsroom memory, recurring editorial
+workflows, source-grounded fact-checking, and handoffs between monitoring,
+investigation, and publishing.
 
-**Status:** Phase 1 — killer demos + provider configs. See the plan: `~/.claude/plans/if-goose-can-we-modular-feather.md`.
+It gives an investigative journalist a durable local knowledge base, a set of
+Goose recipes for common reporting work, and a privacy-conscious provider setup
+that can run with ZDR cloud models or local inference.
 
-## What it is
+## What Mycroft Does
 
-- Curated Goose Recipes for journalism workflows (vault Q&A, SIFT fact-check, beat monitoring, interview prep, inbox sweep, story pitch)
-- Opinionated provider configs: **Zero Data Retention** providers only by default (Fireworks, Together, OpenRouter; local MLX or llama-server for sovereign mode). No Claude / OpenAI / Gemini defaults — their retention policies aren't suitable for journalism.
-- Journalism system prompt with SIFT methodology, strict attribution rules, no-fabrication guardrails
-- Obsidian vault scaffolding for durable journalist knowledge, story work, and Spotlight handoffs
-- Selected skill registry for Goose-aware workflows: knowledge primitives, Obsidian ingest, Firecrawl, Scoutpost, Spotlight ingest, maintenance, and copywriting placeholder
+- Maintains an Obsidian-compatible journalism vault for sources, notes, methods,
+  story material, and handoffs.
+- Ingests links, PDFs, newsletters, pasted notes, documents, and folders into
+  structured local knowledge.
+- Answers questions over the vault with citations.
+- Runs SIFT-style source checks and draft fact-checks.
+- Produces morning briefs and recurring vault audits.
+- Helps set up beats, watchlists, source-monitoring profiles, and story
+  triggers.
+- Connects Scoutpost monitoring to Spotlight investigations and durable vault
+  memory.
+- Keeps provider and vault configuration local to the user's machine.
+
+## Core Workflows
+
+| Workflow | What it does | Main recipe |
+|---|---|---|
+| Start | First-run menu for beats, knowledge ingest, morning brief, scouts, lead investigation, or demo flow. | `start` |
+| Vault Q&A | Answers questions over local newsroom memory and live sources with citations. | `vault-qa` |
+| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured vault material. | `vault-sync`, `obsidian-ingest`, `newsletter-summarize` |
+| Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
+| Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
+| Morning brief | Builds a recurring digest from configured beats, watchlists, AgentMail, bookmarks, and recent vault changes. | `morning-brief` |
+| Vault audit | Finds weak claims, missing frontmatter, orphaned sources, and stale handoffs. | `vault-audit` |
+| Browser acquisition | Opens a journalist-controlled browser session for portals, forms, downloads, and authenticated source capture. | `dev-browser` |
+| Scoutpost | Sets up or queries hosted monitoring scouts and information units. | `scoutpost` skill |
+| Spotlight handoff | Moves active case findings into durable newsroom memory. | Spotlight plugin + ingest |
+
+## Mycroft, Spotlight, Scoutpost
+
+- **Mycroft** is durable knowledge and publishing support: source records, wiki
+  notes, claim checks, methods, story pitches, drafts, briefings, and published
+  packages.
+- **Spotlight** is active OSINT casework: briefs, methodology, research cycles,
+  evidence, fact-checking, review, exports, and handoffs.
+- **Scoutpost** is hosted monitoring: page scouts, beat scouts, social/civic
+  scouts, information units, and follow-up alerts.
+
+The normal loop is: Scoutpost surfaces leads, Spotlight investigates them,
+Mycroft preserves the durable knowledge and supports publication.
+
+## First Run
+
+After setup, Mycroft opens Goose and writes `START_HERE.md` into the vault. The
+first-run menu offers:
+
+- Set up my beat.
+- Add material to my knowledge base.
+- Create my morning brief.
+- Investigate a lead.
+- Set up scouts.
+- Show me a demo workflow.
+
+If the vault is empty and the journalist already has material, start with
+knowledge ingest. If the journalist already knows the beat, start with the
+morning brief preflight. If the lead needs active OSINT work, hand it to
+Spotlight.
+
+See [docs/first-run.md](docs/first-run.md).
+
+## Vaults
+
+Mycroft and Spotlight use separate vaults because they serve different editorial
+states.
+
+The Mycroft vault is durable newsroom memory:
+
+```text
+_schema/
+sources/raw/
+sources/processed/
+wiki/
+stories/
+context/
+handoff/from-spotlight/
+```
+
+The Spotlight vault is active casework:
+
+```text
+cases/
+evidence/
+captures/
+briefs/
+exports/
+handoff-to-mycroft/
+```
+
+QMD indexes both vaults when Spotlight is enabled, so agents can search prior
+work without flattening casework into published knowledge.
 
 ## Install
 
-### Guided install (hosted setup page)
+### Guided Install
 
-Visit the setup page (deployed from `index.html` in this repo — URL TBD, e.g. `mycroft.buriedsignals.com`):
+Open the setup page from this repo or the hosted Mycroft setup page.
 
-1. Fill the form: sovereignty preference, API keys, cloud providers, vault path
-2. Click **Download installer ZIP** — your browser saves `mycroft-setup.zip` with a double-clickable `mycroft-setup.command` and `README-FIRST.txt`
-3. Extract the ZIP anywhere, then double-click `mycroft-setup.command`. The script configures Goose with the Mycroft profile at `~/.config/goose/mycroft`, keeps updateable source at `~/.local/share/goose/mycroft/source`, and uses the vault paths you selected.
-   If macOS says Apple could not verify it, choose **Done**, then use **System Settings → Privacy & Security → Open Anyway**; later runs can be double-clicked.
-4. Optional: click **Download agent setup ZIP** to export a local JSON manifest plus a prompt another agent can use to perform and verify the install without asking you to paste secrets into chat.
-5. Open a new terminal — shell rc updates take effect
+1. Fill in sovereignty preference, provider keys, optional integrations, and
+   vault paths.
+2. Download `mycroft-setup.zip`.
+3. Extract it and run `mycroft-setup.command`.
+4. Open a new terminal so shell configuration changes take effect.
+5. Start Goose with the Mycroft profile.
 
-The setup page runs **entirely in your browser** — no form submissions, no server round-trips, no API keys crossing the network. The downloaded `.command` script clones this repo to `~/.local/share/goose/mycroft/source/`, copies provider configs to `~/.config/goose/custom_providers/`, writes fallback script secrets to `~/.config/goose/mycroft/.env`, stores selected provider keys in Goose's secret store when possible, persists `GOOSE_PROVIDER`, `GOOSE_MODEL`, `GOOSE_RECIPE_PATH`, and `GOOSE_MOIM_MESSAGE_FILE` in `~/.config/goose/config.yaml`, installs QMD for local vault search, references skills from the source checkout, generates Goose instructions at `~/.config/goose/mycroft/goose-mycroft.md`, copies them to `~/.config/goose/.goosehints`, and installs a replaceable `# === mycroft ===` block in your shell rc. The agent setup ZIP also contains the API keys in its local manifest so an agent can write `.env`; keep it private like the command installer.
+The setup page runs in the browser. It generates local installer artifacts; it
+does not submit API keys to a server.
 
-The Mycroft Obsidian vault is a durable journalist knowledge base: `_schema/`, `_index.md`, `_log.md`, `sources/`, `wiki/`, `stories/`, `context/`, and `handoff/from-spotlight/`. If Spotlight is enabled, its separate vault stays casework-oriented: `cases/`, `evidence/`, `captures/`, `briefs/`, `exports/`, and `handoff-to-mycroft/`. Goose is told both paths and the Spotlight ingest target through generated instructions.
+The installer configures Goose, provider files, recipe discovery, vault paths,
+QMD indexing, Mycroft instructions, updater recipes, scheduled workflows, and
+the first-run menu. Architecture details live in
+[docs/architecture.md](docs/architecture.md).
 
-QMD is installed as a required local search dependency. Setup registers the Mycroft vault as the `mycroft` QMD collection and, when Spotlight is enabled, registers the Spotlight vault as `spotlight`. Spotlight's `query-vault` path depends on QMD.
-
-The guided installer also installs a weekly updater for the Mycroft repo and bundled plugin repos:
-
-- macOS: user crontab entry, not a Login Item
-- Linux with systemd: `~/.config/systemd/user/mycroft-update.timer`
-- Other Linux shells: a crontab entry
-
-The updater fetches `origin main` for the Mycroft source checkout and bundled plugin repos, then fast-forwards only. It skips dirty or divergent checkouts rather than stashing or merging local work. Source recipes and skills are loaded directly from the checkout, so updates apply without copying. After each update, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints`, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`. If doctor fails, it rolls app checkouts back to the pre-update commits and leaves the log at `~/.local/share/goose/mycroft/logs/update.log`.
-
-Desktop users can also trigger the same safe updater by asking Goose to run the `update-mycroft` recipe.
-
-Goose itself stays current through Goose/Homebrew, not through the Mycroft repo updater. Mycroft only layers local recipes, provider configs, instructions, skills, and vault scaffolding on top of Goose.
-
-The installer also registers Goose-native schedules for the morning brief and vault audit. On first launch it opens the `start` recipe and writes `START_HERE.md` into the vault. The first-run flow offers concrete actions: set up a beat, add material to the knowledge base, create a morning brief, investigate a lead, set up scouts, or generate a demo workflow.
-
-### Local install (no hosted page)
+### Local Install
 
 Clone the repo and open `index.html` directly:
 
@@ -55,155 +132,106 @@ git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycr
 open ~/.local/share/goose/mycroft/source/index.html
 ```
 
-Same setup form, just loaded from `file://`. Follow steps 1-4 above. The installer still puts the durable install under Goose's config/data paths.
+Then follow the guided setup.
 
-### Manual install (advanced)
+### Manual Install
 
-If you'd rather not run the guided installer:
+Manual setup is for development and debugging. At minimum:
 
 ```sh
-# 1. Clone
 mkdir -p ~/.local/share/goose/mycroft
 git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycroft/source
 
-# 2. Point Goose at the recipes
 export GOOSE_RECIPE_PATH=~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes
 
-# 3. Copy whichever cloud provider configs you want to use (macOS/Linux Goose config path)
 mkdir -p ~/.config/goose/custom_providers
-cp ~/.local/share/goose/mycroft/source/providers/fireworks-qwen36plus.json   ~/.config/goose/custom_providers/
-cp ~/.local/share/goose/mycroft/source/providers/together-qwen.json          ~/.config/goose/custom_providers/
-# For local-only, use Goose Desktop's built-in Local Inference (llama.cpp embedded).
-# Settings -> Local Inference -> pick a Mycroft journalist GGUF from HuggingFace.
-# NOTE: providers/openrouter-fallback.json is in the repo but not a shipped default —
-# OpenRouter's GLM-5.1 routing can hit Z.AI-direct (China-hosted). If you want it,
-# copy it manually and configure provider preferences to exclude Z.AI-direct.
+cp ~/.local/share/goose/mycroft/source/providers/fireworks-qwen36plus.json ~/.config/goose/custom_providers/
+cp ~/.local/share/goose/mycroft/source/providers/together-qwen.json ~/.config/goose/custom_providers/
 
-# 4. Set env vars
-export FIREWORKS_API_KEY=...
-export TOGETHER_API_KEY=...
-export OPENROUTER_API_KEY=...
-
-# 5. Install global journalism instructions and persistent identity
 mkdir -p ~/.config/goose/mycroft
 cp ~/.local/share/goose/mycroft/source/instructions/mycroft-soul.md ~/.config/goose/mycroft/SOUL.md
 cp ~/.local/share/goose/mycroft/source/instructions/journalism.md ~/.config/goose/.goosehints
 ```
 
-Goose path notes checked against the Goose docs: macOS/Linux use `~/.config/goose/config.yaml`, `~/.config/goose/custom_providers/`, and global `~/.config/goose/.goosehints`. Provider/model defaults belong in `config.yaml`; provider secrets belong in the Goose keychain or file-backed secret store; recipe discovery uses `GOOSE_RECIPE_PATH`.
+Use the guided installer for normal use; it also handles QMD, schedules, updater
+state, generated instructions, and first-run files.
 
-## Run the Phase 1 demos
+## Privacy And Providers
 
-### Vault Q&A (killer demo 1)
+Mycroft is designed for privacy-sensitive reporting:
 
-```sh
-goose run --recipe ~/.local/share/goose/mycroft/source/recipes/vault-qa.yaml \
-  --params question="What do I already have on the Acme Corp investigation?" \
-  --params vault_path=~/Documents/my-vault
-```
+- ZDR providers are the default cloud posture.
+- Local inference is available for sovereign workflows.
+- Vaults, schedules, generated instructions, and fallback script secrets live on
+  the user's machine.
+- API keys are stored locally through Goose or Mycroft config files, not in the
+  vault.
+- Source acquisition and fact-check recipes preserve local evidence trails where
+  tooling is available.
 
-Answers from your vault + live web (via `firecrawl` CLI). Every claim cited.
+Model choice belongs in provider/runtime docs, not the product overview. The
+important contract is that Mycroft can operate with the newsroom's chosen
+provider posture.
 
-### SIFT fact-check (killer demo 2)
+## Shipping Recipes
 
-```sh
-goose run --recipe ~/.local/share/goose/mycroft/source/recipes/fact-check.yaml \
-  --params draft_path=./article.md
-```
+**Core journalism**
 
-Per-claim verdicts: verified / unverified / contradicted / mischaracterized.
-The default fact-check path is provenance-first: it tries to capture evidence
-with `mycroft-fetch`, write source hashes, and build an unsigned provenance
-package. This is not a hard dependency for quick editorial review unless you
-pass `--params strict_provenance=true`. Live Noosphere/C2PA signing remains
-opt-in with `--params c2pa_sign=true`.
+- `start`
+- `vault-qa`
+- `fact-check`
+- `source-verify`
+- `morning-brief`
+- `morning-brief-preflight`
+- `vault-audit`
+- `newsletter-summarize`
+- `vault-sync`
+- `qmd`
 
-## Sovereign mode
+**Source acquisition and parsing**
 
-All shipped cloud providers are ZDR. For full local (zero network egress), use Goose Desktop's built-in **Local Inference** (`GOOSE_PROVIDER=local`, llama.cpp embedded — no separate server). The guided installer downloads the Mycroft journalist GGUF you picked into `~/models/` and registers it with Goose. Manual route: Goose Desktop -> Settings -> Local Inference -> add a model by HuggingFace repo id.
+- `firecrawl-scrape`
+- `firecrawl-change-track`
+- `firecrawl-pdf`
+- `firecrawl-batch`
+- `firecrawl-map`
+- `dev-browser`
+- `liteparse`
 
-### Local model picker — two tiers
+**Social and optional workflows**
 
-Mycroft and [Spotlight](https://github.com/buriedsignals/spotlight) share the same two-tier local model fleet so the same vault and skills work across both.
-
-| Tier | Model | RAM | Notes |
-|------|-------|-----|-------|
-| **Default** | [`tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF:Q4_K_M`](https://huggingface.co/tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF) | 16 GB | Tom's 9B fine-tune on the [investigative-journalism-training corpus](https://huggingface.co/datasets/tomvaillant/investigative-journalism-training). ~6 GB on disk. Bench winner among 8–9B options. |
-| **Heavy** (fit-check gated) | [`tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF:Q4_K_M`](https://huggingface.co/tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF) | 32 GB minimum | Tom's 27B fine-tune on the same investigative-journalism corpus as the 9B, on Huihui's abliterated Qwen 3.6 base. ~15 GB on disk. Runs in thinking mode (see below). The setup form fit-check confirms RAM before this option commits. |
-
-The 9B handles daily-driver Mycroft work (vault QA, morning brief, fact-check) **and** Spotlight investigations — same model, same vault, same skills. The 27B is for journalists with 32 GB+ Macs who want maximum reasoning depth and accept the 3–5× slower per-prompt latency. Earlier drafts of the setup form encoded a "9B is Mycroft-only, Spotlight needs a bigger model" rule; the [Spotlight bench](https://github.com/buriedsignals/spotlight/tree/main/tools/fine-tuning/eval) refuted it — the 9B handles OSINT-grade refusal probes at 100% (vs the 8B Gemma 4 E4B variant at 97% with one hedge), so size for size's sake isn't justified.
-
-When the 27B IS justified, head-to-head bench data: **27B 100.0 composite vs 9B 91.2** on a 5-prompt subset, both at 100% refusal-resistance and 100% directness; the 27B's edge is concreteness (3× more tool URLs per response) and zero hedge markers.
-
-### 27B runs in thinking mode (was: /no_think; we reversed)
-
-Earlier revisions tried to disable thinking on the 27B (Goose registry `enable_thinking: false`; Spotlight Ollama TEMPLATE override injecting `/no_think`) to save the ~10k reasoning tokens Qwen 3.6 burns on complex prompts. We reversed both. **The abliterated Qwen 3.6 family's `/no_think` codepath is damaged** — verified empirically against the Huihui base and Tom's journalist fine-tune at Q4_K_M with Qwen-recommended sampling: output collapses into random multilingual tokens and lock-loops within ~200 tokens. Most likely cause: abliteration calibration only covered the thinking codepath, leaving the no-think branch with broken refusal-direction subtraction; quantization amplifies it.
-
-The Mycroft installer now writes `"settings": {"enable_thinking": true}` for the 27B in `$XDG_DATA_HOME/goose/models/registry.json`. Goose Desktop's Local Inference threads that through llama.cpp's Jinja chat template so the `<think>` block renders normally. You'll see ~3-5× longer responses than the 9B; bump `max_output_tokens` to ~4096+ if you see truncation. To override per-session: `GOOSE_LOCAL_ENABLE_THINKING=0` before launching, or Goose Desktop → Settings → Local Inference → Model → Advanced — but expect garbage output, this is escape-hatch only.
-
-Models dropped from the previous picker: Tom's Gemma 4 E4B journalist (superseded by the 9B), the Gemma 4 26B A4B MoE (17 GB blob OOMs on 16 GB Macs despite "active" being 3.8B), the HauhauCS Qwen 3.6 27B IQ2_M (failed to load via Ollama on test hardware — non-standard K_P quants and a multimodal mmproj projection file cause loader issues), and the raw Huihui Qwen 3.6 27B Abliterated (superseded by the journalist fine-tune built on the same base).
-
-## Shipping recipes
-
-**Core journalism:**
-- `vault-qa` — vault + web Q&A with citations
-- `fact-check` — SIFT, per-claim verdicts, default provenance package when available
-- `qmd` — local markdown search over Mycroft and Spotlight vaults
-- `source-verify` — SIFT against a single source's credibility
-- `start` — first-run menu for setting up a beat, adding material, creating a morning brief, investigating a lead, setting up scouts, or generating a demo
-- `morning-brief` — daily digest from ft (X bookmarks) + AgentMail + vault recent changes
-- `morning-brief-preflight` — first-run monitoring profile setup for the morning brief
-- `update-mycroft` — desktop-triggered safe update using the installed Mycroft updater
-- `vault-audit` — scheduled audit for weak claims, missing frontmatter, orphaned sources, and Spotlight handoffs
-- `newsletter-summarize` — extract signal from a newsletter (URL, AgentMail message, pasted)
-- `vault-sync` — write findings into Obsidian vault with proper frontmatter + wiki-links
-
-**Firecrawl wrappers:**
-- `firecrawl-scrape` / `firecrawl-change-track` / `firecrawl-pdf` / `firecrawl-batch` / `firecrawl-map`
-
-**Apify social scrapers** (need `APIFY_API_TOKEN`):
-- `apify-social/select-actor` — natural-language router
-- `apify-social/{instagram, x, facebook, tiktok, instagram-comments, linkedin}`
-
-**Document + interactive:**
-- `dev-browser` — interactive source acquisition with chain-of-custody
-- `liteparse` — fast structured extraction from PDF/HTML/docx
-
-**Optional config:**
-- `voice-setup` — TTS/STT (edge + local whisper defaults)
-
-## What belongs where
-
-- **Mycroft** is durable knowledge and publishing support: source records, wiki notes, claims, methods, story pitches, drafts, published packages, and copywriting guidance.
-- **Spotlight** is active OSINT casework: cases, evidence, captures, briefs, exports, and handoffs into Mycroft.
-- **Scoutpost** is hosted beat monitoring and scout requests. When enabled, Mycroft stores the API configuration locally and Goose instructions prefer MCP if available, then the `scout` CLI, then the hosted API.
-- **AgentMail MCP** is not bundled yet. Current recipes use the AgentMail REST API via curl where needed.
-
-## Plugins
-
-- **Spotlight** installs under `~/.local/share/goose/mycroft/plugins/spotlight`, inherits Mycroft's cloud/local provider preference, and keeps its investigation vault separate from the Mycroft vault by default.
-- **Scoutpost** is hosted API only in the Mycroft setup flow. Mycroft stores `SCOUTPOST_API_KEY` and exposes it to Spotlight so investigations can request durable scouts and later read information units.
-- MCP Apps for investigation dashboard + fact-check scorecard (visual UI in Goose Desktop)
-- Pilot with 3-5 grant-target journalists
+- `apify-social/select-actor`
+- `apify-social/instagram`
+- `apify-social/x`
+- `apify-social/facebook`
+- `apify-social/tiktok`
+- `apify-social/instagram-comments`
+- `apify-social/linkedin`
+- `voice-setup`
+- `update-mycroft`
 
 ## Documentation
 
-- [Architecture](docs/architecture.md) — how Mycroft plugs into Goose
-- [Grounding and provenance](docs/grounding-provenance-spec.md) — evidence bundles, claim grounding, and C2PA package signing
-- [Schedules](docs/schedules.md) — Goose schedules, morning brief, vault audit, and repo updater
-- [First run](docs/first-run.md) — getting started in Goose and adding first material
-- [Plugin authoring](docs/plugin-authoring.md) — how to add a new plugin
-- [Troubleshooting](docs/troubleshooting.md) — common failures + fixes
-- [Security policy](SECURITY.md) — disclosure process
-- [Contributing](CONTRIBUTING.md) — how to submit changes
-- [Changelog](CHANGELOG.md) — version history
+- [Architecture](docs/architecture.md) — how Mycroft layers onto Goose.
+- [First run](docs/first-run.md) — what happens after setup.
+- [Grounding and provenance](docs/grounding-provenance-spec.md) — evidence
+  bundles, claim grounding, and optional C2PA signing.
+- [Schedules](docs/schedules.md) — morning brief, vault audit, and updater
+  schedules.
+- [Plugin authoring](docs/plugin-authoring.md) — adding workflows and plugins.
+- [Troubleshooting](docs/troubleshooting.md) — common install and runtime
+  failures.
+- [Security policy](SECURITY.md) — disclosure process.
+- [Contributing](CONTRIBUTING.md) — contribution guidance.
+- [Changelog](CHANGELOG.md) — release history.
 
 ## What To Do Next
 
-Start chatting with Mycroft in Goose or open `START_HERE.md` in the Mycroft vault. Pick one first action: set up your beat, add links/files/notes to the knowledge base, create a morning brief, investigate a lead, set up scouts, or ask for a demo workflow.
-
-Then create a folder for your investigations in the Spotlight vault and ask Mycroft to Spotlight it. Use Spotlight for active OSINT casework and evidence; promote durable findings back into Mycroft when they become useful story or knowledge material.
+Start Goose with the Mycroft profile and choose one action from the first-run
+menu. Use Mycroft for durable knowledge and publishing support. Use Spotlight
+when a lead needs active investigation. Use Scoutpost when something should be
+monitored over time.
 
 ## License
 
-[MIT](LICENSE) — © 2026 Buried Signals.
+[MIT](LICENSE) - © 2026 Buried Signals.
