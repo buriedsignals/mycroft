@@ -32,12 +32,14 @@ jobs:
           import html.parser
           class V(html.parser.HTMLParser):
               def error(self, m): raise Exception(m)
-          for f in ['index.html', 'setup.html']:
+          for f in ['index.html', 'setup.html', 'install/configure.html']:
               V().feed(open(f).read())
               print(f + ': OK')
           "
-      - name: Validate setup generator
-        run: node tests/setup-generator-check.js
+      - name: Validate installer script
+        run: bash tests/install-sh-check.sh
+      - name: Validate configurator server
+        run: python3 tests/setup-server-check.py
       - name: Validate grounding/provenance tooling
         run: python3 tests/grounding-provenance-check.py
       - name: Validate JSON parses

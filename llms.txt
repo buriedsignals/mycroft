@@ -21,7 +21,8 @@ Mycroft is client-side-first: the setup page generates a bash install script wit
 ## Setup
 
 - [index.html](index.html): public landing page
-- [setup.html](setup.html): guided install form (client-side only)
+- [setup.html](setup.html): install landing — one-line curl installer + local configurator
+- [install.sh](install.sh): canonical static installer (runs the local configurator)
 
 ## Recipes
 

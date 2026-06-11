@@ -26,10 +26,10 @@ Please include:
 
 In-scope:
 
-- The setup page (`index.html`, `setup.html`) including the client-side bash generator
+- The landing pages (`index.html`, `setup.html`)
+- The canonical installer (`install.sh`) and local configurator (`install/setup_server.py`, `install/configure.html`)
 - Recipe YAML files and any executable paths they invoke
 - Provider configuration JSONs
-- The generated `mycroft-setup.command` installer
 - Anything under `tools/`, `extensions/`, `scripts/`
 
 Out-of-scope (report upstream):
@@ -42,8 +42,8 @@ Out-of-scope (report upstream):
 
 Mycroft's privacy posture:
 
-- API keys are embedded client-side into the downloaded `.command` script — they **never transit Buried Signals infrastructure**.
-- Setup page is deployed static; no backend receives form data.
+- API keys are entered on a configurator page served from `127.0.0.1` by the installer itself and written directly to `~/.config/goose/mycroft/.env` (mode 600) — they **never transit Buried Signals infrastructure** and never exist in any downloadable artifact.
+- The hosted pages are static and contain no forms; the configurator accepts POSTs only on the loopback interface, guarded by a per-run token.
 - Recipes call user-provided cloud APIs directly; prompts are not proxied through us.
 - Local-first mode routes LLM inference to the user's machine; zero network egress for that component.
 

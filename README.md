@@ -53,9 +53,9 @@ Mycroft preserves the durable knowledge and supports publication.
 
 ## First Run
 
-When the installer finishes it opens `GETTING-STARTED.html` in the browser — a
-personalized guide to the install with example prompts and first workflows (a
-copy is kept at `~/.config/goose/mycroft/getting-started.html`). Mycroft also
+When the installer finishes it opens a personalized getting-started guide in
+the browser — example prompts and first workflows, written to
+`~/.config/goose/mycroft/getting-started.html`. Mycroft also
 opens Goose and writes `START_HERE.md` into the vault. The first-run menu
 offers:
 
@@ -98,7 +98,7 @@ evidence/
 captures/
 briefs/
 exports/
-handoff-to-mycroft/
+_schema/
 ```
 
 QMD indexes both vaults when Spotlight is enabled, so agents can search prior
@@ -108,17 +108,21 @@ work without flattening casework into published knowledge.
 
 ### Guided Install
 
-Open the setup page from this repo or the hosted Mycroft setup page.
+```bash
+curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
+```
 
-1. Fill in sovereignty preference, provider keys, optional integrations, and
-   vault paths.
-2. Download `mycroft-setup.zip`.
-3. Extract it and run `mycroft-setup.command`.
-4. Open a new terminal so shell configuration changes take effect.
-5. Start Goose with the Mycroft profile.
+One static, reviewable script ([`install.sh`](install.sh)) for every install.
+It fetches this repo, then opens a local configurator page in the browser —
+served from `127.0.0.1` by `install/setup_server.py`. Sovereignty preference,
+provider keys, plugins, and vault paths (with a native folder picker) are all
+collected there; keys are verified live with each provider and written straight
+to `~/.config/goose/mycroft/.env` with owner-only permissions. **No API key
+ever appears on a website or inside a downloadable artifact.**
 
-The setup page runs in the browser. It generates local installer artifacts; it
-does not submit API keys to a server.
+Prefer a file? The hosted setup page offers a ZIP whose `install.command`
+fetches and runs the same canonical script. When the install finishes, open a
+new terminal so shell configuration changes take effect.
 
 The installer configures Goose, provider files, recipe discovery, vault paths,
 QMD indexing, Mycroft instructions, updater recipes, scheduled workflows, and
@@ -127,15 +131,13 @@ the first-run menu. Architecture details live in
 
 ### Local Install
 
-Clone the repo and open `index.html` directly:
+Clone the repo and run the same installer from the working tree:
 
 ```sh
 mkdir -p ~/.local/share/goose/mycroft
 git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycroft/source
-open ~/.local/share/goose/mycroft/source/index.html
+bash ~/.local/share/goose/mycroft/source/install.sh
 ```
-
-Then follow the guided setup.
 
 ### Manual Install
 

@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mycroft — Configure your install</title>
+<style>
+  :root {
+    --vellum: #e8e0cf; --vellum-bright: #faf5e8; --vellum-2: #dfd5be;
+    --ink: #1a1a1f; --ink-soft: #4a4439; --ink-dim: #8e8676;
+    --oxide: #4a7363; --oxide-active: #2b5247; --alert: #a83a26;
+    --hairline: 1px solid rgba(26,26,31,0.22);
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--vellum); color: var(--ink); font: 15px/1.6 var(--sans); }
+  .shell { max-width: 920px; margin: 0 auto; padding: clamp(32px, 6vw, 72px) clamp(20px, 4vw, 48px) 120px; }
+  .brand { font-family: var(--serif); font-weight: 800; font-size: 20px; }
+  .brand em { color: var(--oxide); font-style: normal; }
+  h1 { font-family: var(--serif); font-weight: 800; font-size: clamp(38px, 6.5vw, 58px); line-height: 1.02; letter-spacing: -0.02em; margin: 20px 0 12px; }
+  h1 em, h2 em { font-style: italic; color: var(--oxide); }
+  .lede { font-size: 16px; color: var(--ink-soft); max-width: 62ch; }
+  .local-note { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--oxide-active); border: 1px solid var(--oxide); display: inline-block; padding: 6px 12px; margin-top: 14px; }
+  .num { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); margin: 56px 0 6px; }
+  h2 { font-family: var(--serif); font-weight: 800; font-size: clamp(24px, 4vw, 32px); letter-spacing: -0.015em; margin: 0 0 6px; }
+  .sec-lead { color: var(--ink-soft); margin: 0 0 20px; max-width: 64ch; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+  .item { background: var(--vellum-bright); border: var(--hairline); padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+  .item__head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .item__title { font-family: var(--serif); font-weight: 800; font-size: 19px; }
+  .item__title em { font-style: italic; color: var(--oxide); }
+  .item__lede { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+  .badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 3px 8px; border: var(--hairline); color: var(--ink-dim); white-space: nowrap; }
+  .badge.req { color: var(--oxide-active); border-color: var(--oxide); }
+  .check { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+  input[type=checkbox], input[type=radio] { accent-color: var(--oxide); width: 15px; height: 15px; margin: 0; }
+  .field-label { display: block; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); margin: 8px 0 6px; }
+  .field-label .opt { text-transform: none; letter-spacing: 0.04em; font-weight: 400; }
+  .fld { display: block; width: 100%; padding: 11px 14px; font-family: var(--mono); font-size: 13px; background: #fff; color: var(--ink); border: var(--hairline); border-radius: 0; outline: none; }
+  .fld:focus { border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--oxide); }
+  .fld.fld--missing { border-color: var(--alert); box-shadow: inset 0 -2px 0 0 var(--alert); }
+  .mini-btn { display: inline-block; width: fit-content; padding: 7px 13px; font: 500 10.5px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); border: var(--hairline); background: var(--vellum); text-decoration: none; cursor: pointer; }
+  .mini-btn:hover { background: #fff; }
+  .hint { font-size: 12.5px; color: var(--ink-dim); margin: 6px 0 0; }
+  .callout { background: var(--vellum-2); border: var(--hairline); border-left: 3px solid var(--oxide); padding: 14px 18px; font-size: 13.5px; }
+  .callout.warn { border-left-color: var(--ink); }
+  .callout ol { margin: 6px 0 0; padding-left: 1.3em; }
+  .sov { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px) { .sov { grid-template-columns: 1fr; } }
+  .sov label { display: block; background: var(--vellum-bright); border: var(--hairline); padding: 20px 22px; cursor: pointer; }
+  .sov label:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 -3px 0 0 var(--oxide); background: #fff; }
+  .sov input { position: absolute; opacity: 0; }
+  .sov-num { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 8px; }
+  .sov-title { font-family: var(--serif); font-weight: 800; font-size: 24px; line-height: 1.1; display: block; }
+  .sov-title em { font-style: italic; color: var(--oxide); }
+  .sov-desc { font-size: 13.5px; color: var(--ink-soft); margin: 10px 0 6px; }
+  .sov-meta { font-family: var(--mono); font-size: 11.5px; color: var(--ink-dim); margin: 0; }
+  body.mode-cloud .local-only { display: none; }
+  body.mode-local .cloud-only { display: none; }
+  .model-card { cursor: pointer; }
+  .model-card:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 -3px 0 0 var(--oxide); background: #fff; }
+  .fit-panel { border: var(--hairline); background: var(--vellum-bright); padding: 16px 18px; margin-top: 14px; font-size: 13.5px; }
+  .fit-panel.green { border-left: 3px solid var(--oxide); }
+  .fit-panel.amber { border-left: 3px solid #b58a2a; }
+  .fit-panel.red { border-left: 3px solid var(--alert); }
+  .fit-panel[hidden] { display: none; }
+  .path-row { display: flex; gap: 8px; align-items: stretch; }
+  .path-row .fld { flex: 1; }
+  .path-row .mini-btn { white-space: nowrap; display: inline-flex; align-items: center; }
+  .os-chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .os-chip.active { background: #fff; border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--oxide); }
+  .plugin { background: var(--vellum-bright); border: var(--hairline); padding: 20px 22px; margin-bottom: 14px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 24px; }
+  @media (max-width: 760px) { .plugin { grid-template-columns: 1fr; } }
+  .plugin h3 { font-family: var(--serif); font-weight: 800; font-size: 26px; margin: 8px 0 8px; }
+  .plugin h3 em { font-style: italic; color: var(--oxide); }
+  .plugin p { font-size: 13.5px; color: var(--ink-soft); }
+  .submit-bar { margin-top: 64px; background: var(--ink); color: var(--vellum); padding: 26px 28px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .submit-bar strong { font-family: var(--serif); font-style: italic; font-size: 22px; }
+  .submit-bar span { display: block; font-size: 13px; color: rgba(232,224,207,0.75); max-width: 52ch; }
+  .submit-bar button { font: 600 12px/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; padding: 14px 22px; background: var(--vellum); color: var(--ink); border: 0; cursor: pointer; }
+  .submit-bar button:hover { background: #fff; }
+  .submit-bar button:disabled { opacity: 0.5; cursor: wait; }
+  .form-errors { background: var(--vellum-bright); border: var(--hairline); border-left: 3px solid var(--alert); padding: 18px 22px; margin: 16px 0 0; }
+  .form-errors[hidden] { display: none; }
+  .form-errors strong { font-family: var(--serif); font-style: italic; font-size: 19px; color: var(--alert); display: block; margin-bottom: 8px; }
+  .form-errors ul { margin: 0; padding-left: 1.2em; }
+  .done { text-align: center; padding: 96px 24px; }
+  .done h1 { font-size: clamp(40px, 7vw, 64px); }
+  .done p { font-size: 16px; color: var(--ink-soft); max-width: 52ch; margin: 12px auto; }
+  a { color: var(--oxide); }
+</style>
+</head>
+<body class="mode-cloud">
+<div class="shell" id="formShell">
+  <p class="brand">Mycroft<em>.</em></p>
+  <h1>Configure your <em>install.</em></h1>
+  <p class="lede">Pick how Mycroft runs, paste your keys, point it at a vault. This page is served by the installer running on your machine — everything you enter goes to <code>127.0.0.1</code> only and is written to <code>~/.config/goose/mycroft</code>. Nothing is uploaded.</p>
+  <p class="local-note">Local page · keys never leave this machine</p>
+
+  <form id="form" onsubmit="return false;">
+
+  <p class="num">01 — Sovereignty</p>
+  <h2>Where the work <em>happens.</em></h2>
+  <p class="sec-lead"><strong>Pick one.</strong> Cloud is fast and affordable — ZDR open-weight providers in the US/EU. Local is yours, fully — a fine-tuned Qwen on your machine. Whichever you choose is the default; the other side stays available as fallback.</p>
+  <div class="sov">
+    <label>
+      <input type="radio" name="sovereignty" value="cloud" checked>
+      <p class="sov-num"><em>01</em> Cloud-first</p>
+      <span class="sov-title">Fast.<br><em>Affordable.</em></span>
+      <p class="sov-desc">Recipes route to your cloud provider by default. Local model is the sovereign-mode fallback for sensitive work.</p>
+      <p class="sov-meta"><strong>$6-40 est/mo</strong> · ZDR · open-weight</p>
+    </label>
+    <label>
+      <input type="radio" name="sovereignty" value="local">
+      <p class="sov-num"><em>02</em> Local-first</p>
+      <span class="sov-title">Yours,<br><em>Truly.</em></span>
+      <p class="sov-desc">Recipes route to your local fine-tuned Qwen by default. Cloud is fallback. Some features feature-flagged off.</p>
+      <p class="sov-meta"><strong>$0 / mo</strong> · 16 GB+ RAM · built-in inference</p>
+    </label>
+  </div>
+
+  <div class="cloud-only">
+    <p class="num">02 — Providers</p>
+    <h2>Open-weight, <em>ZDR.</em></h2>
+    <p class="sec-lead"><strong>Toggle the providers you want and paste your keys.</strong> Keys are checked live against the provider when you finish — a typo fails here, not three days later in a recipe.</p>
+    <div class="grid-2">
+      <div class="item">
+        <div class="item__head">
+          <label class="check"><input type="checkbox" id="fireworks" checked><span class="item__title">Fireworks AI<br><em>Qwen 3.6 Plus</em></span></label>
+          <span class="badge req">primary</span>
+        </div>
+        <p class="item__lede">Open-weight Qwen, Fireworks US data centers. 1M-token context. ZDR by default — no opt-in needed. ~$6-40/mo at moderate journalism use.</p>
+        <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key →</a>
+        <div>
+          <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
+          <input class="fld" type="password" id="fireworks_key" placeholder="fw_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="item">
+        <div class="item__head">
+          <label class="check"><input type="checkbox" id="together"><span class="item__title">Together AI<br><em>Qwen 2.5-72B Turbo</em></span></label>
+          <span class="badge">alt</span>
+        </div>
+        <p class="item__lede">Open-weight, Together US data centers, SOC 2 Type 2. ZDR is opt-in — set <em>both</em> dashboard privacy toggles to "No" before first use.</p>
+        <a class="mini-btn" href="https://together.ai" target="_blank" rel="noreferrer">Get API key →</a>
+        <div>
+          <label class="field-label" for="together_key">TOGETHER_API_KEY</label>
+          <input class="fld" type="password" id="together_key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="local-only">
+    <p class="num">02 — Local model</p>
+    <h2>Local <em>models.</em></h2>
+    <p class="sec-lead">Pick the model that matches your hardware. The 9B is the Mycroft daily driver and fits any 16 GB+ machine; the 27B needs 32 GB+ unified memory. The installer downloads it into <code>~/models/</code> and registers it with Goose's built-in local inference.</p>
+    <button type="button" class="mini-btn" id="fitCheckBtn">Check my computer</button>
+    <span class="hint">Browser-only hardware probe. No data leaves this page.</span>
+    <div class="fit-panel" id="fitPanel" hidden></div>
+    <div class="grid-2" style="margin-top:14px;">
+      <label class="item model-card">
+        <div class="item__head">
+          <span class="item__title"><input type="radio" name="local_model" value="qwen9b" checked style="margin-right:8px;">Qwen 3.5 9B<br><em>Journalist.</em></span>
+          <span class="badge">16 GB</span>
+        </div>
+        <p class="item__lede">Default for both Mycroft and Spotlight. 9B dense, abliterated, investigative-journalism fine-tune. ~6 GB on disk, ~8 GB at runtime.</p>
+      </label>
+      <label class="item model-card">
+        <div class="item__head">
+          <span class="item__title"><input type="radio" name="local_model" value="qwen27b" style="margin-right:8px;">Qwen 3.6 27B<br><em>Journalist.</em></span>
+          <span class="badge req">32 GB</span>
+        </div>
+        <p class="item__lede">Heavy tier for 32 GB+ machines. Maximum reasoning depth, 3-5× slower responses. ~15 GB on disk.</p>
+      </label>
+    </div>
+  </div>
+
+  <p class="num">03 — Required</p>
+  <h2>Three <em>pieces.</em></h2>
+  <p class="sec-lead"><strong>All three are required.</strong> Leave the auto-install boxes ticked to let the installer handle them, or untick and install manually.</p>
+  <div class="grid-3">
+    <div class="item">
+      <div class="item__head"><span class="item__title">Goose<em>.</em></span><span class="badge req">required</span></div>
+      <p class="item__lede">The agent runtime Mycroft plugs into. Desktop or CLI.</p>
+      <label class="check"><input type="checkbox" id="installGoose" checked> Auto-install</label>
+    </div>
+    <div class="item">
+      <div class="item__head"><span class="item__title">Obsidian<em>.</em></span><span class="badge req">required</span></div>
+      <p class="item__lede">Mycroft reads/writes your knowledge vault through Obsidian's built-in CLI.</p>
+      <label class="check"><input type="checkbox" id="installObsidian" checked> Auto-install</label>
+      <div class="callout warn"><strong>Two manual steps after first launch:</strong>
+        <ol><li>Settings → General → Advanced → <strong>CLI: ON</strong></li><li>Keep Obsidian <strong>running</strong> for vault recipes</li></ol>
+      </div>
+    </div>
+    <div class="item">
+      <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge req">required</span></div>
+      <p class="item__lede">Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</p>
+      <label class="check"><input type="checkbox" id="installFirecrawl" checked> Auto-install</label>
+      <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
+      <div>
+        <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
+        <input class="fld" type="password" id="firecrawl_key" placeholder="fc-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+  </div>
+
+  <div class="item" style="margin-top:14px;">
+    <div class="item__head"><span class="item__title">Your <em>vault.</em></span><span class="badge req">required</span></div>
+    <p class="item__lede">Where Mycroft's durable newsroom memory lives — an Obsidian-compatible folder, created if it doesn't exist. Spotlight uses its own vault path in the plugin section below.</p>
+    <div class="path-row">
+      <input class="fld" type="text" id="vault_path" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
+      <button type="button" class="mini-btn" data-browse="vault_path" data-prompt="Choose your Mycroft vault folder">Browse…</button>
+    </div>
+    <div class="os-chips" role="group" aria-label="Default path per operating system">
+      <span class="hint" style="margin:0;">Default for:</span>
+      <button type="button" class="mini-btn os-chip" data-os="mac">macOS</button>
+      <button type="button" class="mini-btn os-chip" data-os="linux">Linux</button>
+      <button type="button" class="mini-btn os-chip" data-os="windows-wsl">Windows · WSL2</button>
+    </div>
+    <p class="hint" id="vaultOsHint"></p>
+  </div>
+
+  <p class="num">04 — Optional</p>
+  <h2>Plug, or <em>skip.</em></h2>
+  <p class="sec-lead"><strong>Tick what you use, skip the rest.</strong> Recipes that depend on a missing tool degrade gracefully — they just skip that data source.</p>
+  <div class="grid-3">
+    <div class="item">
+      <label class="check"><input type="checkbox" id="ftEnabled"><span class="item__title">ft<em> CLI.</em></span></label>
+      <p class="item__lede">Self-custody sync of X/Twitter bookmarks. Feeds the morning brief.</p>
+    </div>
+    <div class="item">
+      <label class="check"><input type="checkbox" id="agentmailEnabled"><span class="item__title">AgentMail<em>.</em></span></label>
+      <p class="item__lede">A dedicated inbox for newsletters, tips, and source mail. Feeds the morning brief + newsletter summaries.</p>
+      <a class="mini-btn" href="https://agentmail.to" target="_blank" rel="noreferrer">Sign up →</a>
+      <div>
+        <label class="field-label" for="agentmail_key">AGENTMAIL_API_KEY</label>
+        <input class="fld" type="password" id="agentmail_key" placeholder="am_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+    <div class="item">
+      <label class="check"><input type="checkbox" id="apifyEnabled"><span class="item__title">Apify<em>.</em></span></label>
+      <p class="item__lede">Scraping infrastructure for social recipes — Instagram, X, Facebook, TikTok, LinkedIn.</p>
+      <a class="mini-btn" href="https://apify.com" target="_blank" rel="noreferrer">Sign up →</a>
+      <div>
+        <label class="field-label" for="apify_token">APIFY_API_TOKEN</label>
+        <input class="fld" type="password" id="apify_token" placeholder="apify_api_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+  </div>
+
+  <p class="num">05 — Plugins</p>
+  <h2>Specialized <em>engines.</em></h2>
+  <div class="plugin">
+    <div>
+      <label class="check"><input type="checkbox" id="spotlight" checked><span class="item__title" style="font-size:24px;"><em>Spotlight.</em></span></label>
+      <p>OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, knowledge vault ingestion. Inherits your Mycroft cloud/local preference. <a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">spotlight.buriedsignals.com</a></p>
+    </div>
+    <div>
+      <label class="field-label" for="spotlight_vault_path">Spotlight investigations vault</label>
+      <div class="path-row">
+        <input class="fld" type="text" id="spotlight_vault_path" value="~/Documents/Spotlight" autocomplete="off" spellcheck="false">
+        <button type="button" class="mini-btn" data-browse="spotlight_vault_path" data-prompt="Choose your Spotlight investigations vault folder">Browse…</button>
+      </div>
+      <p class="hint">Keep this separate from the Mycroft vault in the required section.</p>
+      <label class="field-label" for="osint_navigator_key">OSINT_NAV_API_KEY <span class="opt">— optional</span></label>
+      <p class="hint" style="margin:0 0 6px;">Live database of 10,000+ OSINT tools with AI-powered lookup. <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Get API key →</a></p>
+      <input class="fld" type="password" id="osint_navigator_key" placeholder="ont_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      <label class="check" style="margin-top:12px;"><input type="checkbox" id="spotDevBrowser" checked> dev-browser — sandboxed Playwright browser for portals, forms, JS-heavy pages, screenshots. No key; downloads Chromium (~300&nbsp;MB).</label>
+      <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY <span class="opt">— optional</span></label>
+      <input class="fld" type="password" id="junkipedia_key" placeholder="jk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="plugin">
+    <div>
+      <label class="check"><input type="checkbox" id="scoutpost" checked><span class="item__title" style="font-size:24px;">Scout<em>post.</em></span></label>
+      <p>Schedule scouts to watch your beat — pages, social profiles, council agendas — and get alerted when something changes. Spotlight can also recommend scouts mid-investigation. <a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">scoutpost.ai</a></p>
+    </div>
+    <div>
+      <p class="hint" style="margin:0 0 6px;">Hosted API — nothing to install. Add your key, or untick the plugin.</p>
+      <label class="field-label" for="scoutpost_api_key">SCOUTPOST_API_KEY</label>
+      <input class="fld" type="password" id="scoutpost_api_key" placeholder="scout_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+
+  <div class="submit-bar">
+    <div>
+      <strong>Finish configuration.</strong>
+      <span>Keys are verified live with each provider, then written to <code style="color:inherit;">~/.config/goose/mycroft/.env</code> (owner-only permissions). The install continues in your terminal.</span>
+    </div>
+    <button type="button" id="submitBtn">Save &amp; continue install →</button>
+  </div>
+  <div class="form-errors" id="formErrors" hidden>
+    <strong>Before you can continue:</strong>
+    <ul id="formErrorsList"></ul>
+  </div>
+
+  </form>
+</div>
+
+<div class="shell done" id="doneShell" hidden>
+  <p class="brand">Mycroft<em>.</em></p>
+  <h1>Configured<em>.</em></h1>
+  <p>Your choices and keys are saved on this machine. The installer is now setting up Goose, your vault, recipes, and schedules — <strong>watch the terminal</strong> for progress.</p>
+  <p>When it finishes, your personalized getting-started guide opens automatically.</p>
+  <p id="doneWarnings" style="color:var(--ink-dim); font-size:13.5px;"></p>
+</div>
+
+<script>
+const TOKEN = "__SETUP_TOKEN__";
+const PLATFORM = "__PLATFORM__"; // mac | linux | windows-wsl — detected by the local server
+
+/* Vault path: native Browse (the local server opens a real OS folder dialog)
+   plus per-OS default chips. */
+const OS_DEFAULTS = {
+  'mac': { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight',
+    hint: 'macOS default — ~ is your home folder.' },
+  'linux': { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight',
+    hint: 'Linux default — ~ is your home folder.' },
+  'windows-wsl': { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/Mycroft', spotlight: '/mnt/c/Users/YOUR-USERNAME/Documents/Spotlight',
+    hint: 'Replace YOUR-USERNAME with your Windows username. Keeping the vault under /mnt/c/… lets Windows Obsidian read it from WSL.' },
+};
+
+function applyOsDefault(os, force) {
+  const defs = OS_DEFAULTS[os] || OS_DEFAULTS.mac;
+  const vault = document.getElementById('vault_path');
+  const spot = document.getElementById('spotlight_vault_path');
+  if (force || !vault.dataset.touched) vault.value = defs.vault;
+  if (force || !spot.dataset.touched) spot.value = defs.spotlight;
+  document.getElementById('vaultOsHint').textContent = defs.hint;
+  document.querySelectorAll('.os-chip').forEach(ch => ch.classList.toggle('active', ch.dataset.os === os));
+}
+['vault_path', 'spotlight_vault_path'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => { e.target.dataset.touched = '1'; });
+});
+document.querySelectorAll('.os-chip').forEach(ch => ch.addEventListener('click', () => applyOsDefault(ch.dataset.os, true)));
+applyOsDefault(OS_DEFAULTS[PLATFORM] ? PLATFORM : 'mac', false);
+
+document.querySelectorAll('[data-browse]').forEach(btn => btn.addEventListener('click', async () => {
+  const field = document.getElementById(btn.dataset.browse);
+  const orig = btn.textContent;
+  btn.textContent = 'Choosing…';
+  btn.disabled = true;
+  try {
+    const res = await fetch('/pick-folder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: TOKEN, prompt: btn.dataset.prompt }),
+    });
+    const data = await res.json();
+    if (data.path) {
+      field.value = data.path;
+      field.dataset.touched = '1';
+      field.classList.remove('fld--missing');
+    } else if (data.error) {
+      alert(data.error);
+    } // cancelled -> leave as-is
+  } catch (e) {
+    alert('Could not open the folder picker — type the path instead.');
+  } finally {
+    btn.textContent = orig;
+    btn.disabled = false;
+  }
+}));
+
+function applyMode() {
+  const local = document.querySelector('input[name="sovereignty"][value="local"]').checked;
+  document.body.classList.toggle('mode-cloud', !local);
+  document.body.classList.toggle('mode-local', local);
+}
+document.querySelectorAll('input[name="sovereignty"]').forEach(el => el.addEventListener('change', applyMode));
+applyMode();
+
+/* Hardware fit check — browser-only probe, mirrors the old setup page. */
+document.getElementById('fitCheckBtn').addEventListener('click', () => {
+  const panel = document.getElementById('fitPanel');
+  const ua = navigator.userAgent || '';
+  const cores = navigator.hardwareConcurrency || 0;
+  const memGB = navigator.deviceMemory || 0; // capped at 8 in most browsers
+  const isMac = /Mac/.test(ua);
+  const isLinux = /Linux/.test(ua) && !/Android/.test(ua);
+  let cls = 'amber', msg;
+  if (memGB && memGB < 8) {
+    cls = 'red';
+    msg = `<strong>Below the local minimum — use cloud-first.</strong> Browser reports roughly ${memGB} GB RAM, below the 16 GB minimum for the 9B Journalist.`;
+  } else if (isMac) {
+    msg = '<strong>Apple Silicon likely; confirm memory.</strong> Browsers hide actual RAM. The <strong>9B Journalist</strong> is safe on any 16 GB+ Apple Silicon Mac; the 27B needs 32 GB+. Check with: <code>system_profiler SPHardwareDataType | grep Memory</code>';
+  } else if (isLinux) {
+    msg = '<strong>Linux detected; check RAM/VRAM.</strong> Use the <strong>9B Journalist</strong> with 16 GB+ system RAM or any 8+ GB GPU. The 27B needs 32 GB+ system RAM or 24+ GB VRAM. Check with: <code>free -h</code>';
+  } else {
+    msg = '<strong>Hardware check inconclusive.</strong> Use cloud-first unless you can confirm at least 16 GB RAM. The 9B Journalist is the safe local default.';
+  }
+  panel.className = 'fit-panel ' + cls;
+  panel.innerHTML = msg + `<br><span class="hint">CPU cores: ${cores || 'n/a'} · reported RAM: ${memGB ? '~' + memGB + ' GB+' : 'n/a'}</span>`;
+  panel.hidden = false;
+});
+document.querySelectorAll('input[name="local_model"]').forEach(el => el.addEventListener('change', () => {
+  if (el.checked && el.value === 'qwen27b' && document.getElementById('fitPanel').hidden) {
+    document.getElementById('fitCheckBtn').click();
+  }
+}));
+
+function readForm() {
+  const v = id => (document.getElementById(id)?.value || '').trim();
+  const c = id => !!document.getElementById(id)?.checked;
+  return {
+    token: TOKEN,
+    sovereignty: document.querySelector('input[name="sovereignty"]:checked').value,
+    localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'qwen9b',
+    vault: v('vault_path'),
+    spotlightVaultPath: v('spotlight_vault_path'),
+    installGoose: c('installGoose'),
+    installObsidian: c('installObsidian'),
+    installFirecrawl: c('installFirecrawl'),
+    ftEnabled: c('ftEnabled'),
+    agentmailEnabled: c('agentmailEnabled'),
+    apifyEnabled: c('apifyEnabled'),
+    fireworks: c('fireworks'),
+    together: c('together'),
+    spotlight: c('spotlight'),
+    scoutpost: c('scoutpost'),
+    spotDevBrowser: c('spotDevBrowser'),
+    fireworksKey: v('fireworks_key'),
+    togetherKey: v('together_key'),
+    firecrawlKey: v('firecrawl_key'),
+    apifyToken: v('apify_token'),
+    agentmailKey: v('agentmail_key'),
+    scoutpostKey: v('scoutpost_api_key'),
+    osintNavigatorKey: v('osint_navigator_key'),
+    junkipediaKey: v('junkipedia_key'),
+  };
+}
+
+function showErrors(errors) {
+  const box = document.getElementById('formErrors');
+  const list = document.getElementById('formErrorsList');
+  document.querySelectorAll('.fld--missing').forEach(el => el.classList.remove('fld--missing'));
+  if (!errors.length) { box.hidden = true; return; }
+  list.innerHTML = errors.map(e => `<li>${e.message}</li>`).join('');
+  box.hidden = false;
+  let first = null;
+  errors.forEach(e => {
+    const el = document.getElementById(e.field);
+    if (el) { el.classList.add('fld--missing'); if (!first) first = el; }
+  });
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+document.getElementById('submitBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying keys…';
+  try {
+    const res = await fetch('/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(readForm()),
+    });
+    const data = await res.json().catch(() => ({ errors: [{ field: '', message: 'Unexpected response from the local installer.' }] }));
+    if (res.ok && data.ok) {
+      document.getElementById('formShell').hidden = true;
+      const done = document.getElementById('doneShell');
+      done.hidden = false;
+      if (data.warnings && data.warnings.length) {
+        document.getElementById('doneWarnings').textContent = data.warnings.join(' ');
+      }
+      window.scrollTo(0, 0);
+    } else {
+      showErrors(data.errors || [{ field: '', message: 'Configuration failed — check the terminal.' }]);
+    }
+  } catch (e) {
+    showErrors([{ field: '', message: 'Could not reach the local installer — is the terminal still running? Re-run the install command if not.' }]);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save & continue install →';
+  }
+});
+</script>
+</body>
+</html>

@@ -10,28 +10,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
-### Added
-- `GETTING-STARTED.html` bundled into the installer ZIP — a personalized,
-  self-contained guide (install summary, Obsidian switches, first-run menu,
-  copy-paste example prompts, schedules, doctor/update). The setup script
-  copies it to `~/.config/goose/mycroft/getting-started.html` and opens it in
-  the browser when setup finishes.
-- OS selector (macOS / Linux / Windows·WSL2) on the setup page — auto-detected,
-  adjusts suggested vault paths (Windows defaults under `/mnt/c/…` so Windows
-  Obsidian can read the vault from WSL) and per-OS run instructions in
-  `README-FIRST.txt`, with an explicit WSL2-experimental warning for Windows.
-
-### Changed
-- Setup page now hard-blocks installer generation until required fields are
-  filled (Firecrawl key always; a provider key in cloud mode; Scoutpost key
-  while the plugin is enabled; vault paths). Inline field errors replace the
-  old "Generate anyway?" confirm dialog. The Copy-script path is gated by the
-  same validation.
+### Changed — installation architecture (supersedes the generated-installer model)
+- **One static installer**: `curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash`.
+  `install.sh` is a real, reviewable file in the repo (shellcheck/bash -n in CI)
+  instead of bash generated client-side in the browser. The hosted `setup.html`
+  is now a landing page (how it works, keys checklist, command + ZIP fallback);
+  its ZIP contains only a bootstrap `install.command` that runs the same script.
+- **Local configurator**: the installer serves `install/configure.html` from
+  `127.0.0.1` (`install/setup_server.py`, stdlib only, per-run CSRF token).
+  All choices move there — sovereignty, providers, local model + fit check,
+  prereqs, optional tools, plugins, vault paths with a **native folder picker**
+  (osascript/zenity/kdialog) and per-OS default chips. API keys are entered on
+  the local page, **live-validated against each provider** (401/403 rejects;
+  network failures never block), and written straight to
+  `~/.config/goose/mycroft/.env` (0600). Keys never appear on a website or in
+  any downloadable artifact. The configurator also writes `setup-config.env`,
+  `skill-registry.json`, and the personalized `getting-started.html` guide that
+  opens when the install completes.
+- **Spotlight integration aligned with the current spotlight repo**:
+  `OSINT_NAV_API_KEY` (was wrongly `OSINT_NAVIGATOR_API_KEY`), dev-browser
+  (pinned 0.2.8 + Chromium) installed as the primary browser-automation path
+  (browser-use toggle removed), `.spotlight-config.json` rewritten to the
+  canonical schema (`search_library`, `case_workspace_root`, `runtime: goose`,
+  per-integration objects incl. `dev_browser`/`unpaywall`/`rlm`/`scoutpost`),
+  and the dormant `handoff-to-mycroft/` scaffolding removed to match upstream.
+- Hard validation: configuration cannot be submitted until required fields are
+  present (Firecrawl key always; a provider key in cloud mode; Scoutpost key
+  while enabled; vault paths).
 
 ### Removed
-- Agent-prompt installation method: the "Download agent setup ZIP" button,
-  `mycroft-agent-manifest.json`, and `mycroft-agent-prompt.md` are gone. The
-  `mycroft-setup.command` script is the single supported install path.
+- Client-side bash generator, per-user installer ZIPs (`mycroft-setup.zip`),
+  the agent-prompt installation method, and the macOS Gatekeeper "Open Anyway"
+  dance (terminal-launched scripts never trigger it).
 
 ### Added (earlier unreleased work)
 - Initial release scaffold.

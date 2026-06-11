@@ -2,7 +2,7 @@
 
 ## macOS Says It Cannot Verify The Installer
 
-Choose **Done**, then open **System Settings -> Privacy & Security -> Open Anyway** for `mycroft-setup.command`.
+This only happens with the ZIP path (`install.command`): right-click the file, choose **Open**, then **Open** again. The recommended `curl … | bash` command never triggers Gatekeeper.
 
 Do not require journalists to run `xattr`, `chmod`, or other shell commands for normal installation.
 

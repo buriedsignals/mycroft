@@ -16,7 +16,7 @@ cd mycroft
 
 # Preview the setup page locally
 open index.html       # landing
-open setup.html       # setup form
+open setup.html       # install landing page
 
 # Validate all recipes + configs
 python3 tools/validate-recipes.py
@@ -33,7 +33,7 @@ No build step. The repo is static files — HTML, YAML, JSON, SVG, Markdown.
 
 ## Adding a plugin
 
-See [`docs/plugin-authoring.md`](docs/plugin-authoring.md) for the full pattern (separate repo, `AGENTS.md`, install hooks, setup.html integration).
+See [`docs/plugin-authoring.md`](docs/plugin-authoring.md) for the full pattern (separate repo, `AGENTS.md`, install hooks, configurator integration).
 
 ## Recipe style
 
@@ -53,7 +53,7 @@ Conventional style appreciated:
 ## PR checklist
 
 - [ ] `python3 tools/validate-recipes.py` passes
-- [ ] HTML validates (`python3 -c "import html.parser; html.parser.HTMLParser().feed(open('setup.html').read())"`)
+- [ ] HTML validates (`bash tests/install-sh-check.sh && python3 tests/setup-server-check.py`)
 - [ ] No API keys, no PII, no secrets in the diff
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` if user-visible
 - [ ] For plugin integration changes, [`docs/plugin-authoring.md`](docs/plugin-authoring.md) updated
