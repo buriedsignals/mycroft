@@ -11,6 +11,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
 ### Added
+- `GETTING-STARTED.html` bundled into the installer ZIP — a personalized,
+  self-contained guide (install summary, Obsidian switches, first-run menu,
+  copy-paste example prompts, schedules, doctor/update). The setup script
+  copies it to `~/.config/goose/mycroft/getting-started.html` and opens it in
+  the browser when setup finishes.
+- OS selector (macOS / Linux / Windows·WSL2) on the setup page — auto-detected,
+  adjusts suggested vault paths (Windows defaults under `/mnt/c/…` so Windows
+  Obsidian can read the vault from WSL) and per-OS run instructions in
+  `README-FIRST.txt`, with an explicit WSL2-experimental warning for Windows.
+
+### Changed
+- Setup page now hard-blocks installer generation until required fields are
+  filled (Firecrawl key always; a provider key in cloud mode; Scoutpost key
+  while the plugin is enabled; vault paths). Inline field errors replace the
+  old "Generate anyway?" confirm dialog. The Copy-script path is gated by the
+  same validation.
+
+### Removed
+- Agent-prompt installation method: the "Download agent setup ZIP" button,
+  `mycroft-agent-manifest.json`, and `mycroft-agent-prompt.md` are gone. The
+  `mycroft-setup.command` script is the single supported install path.
+
+### Added (earlier unreleased work)
 - Initial release scaffold.
 - Hosted setup page (`index.html`, `setup.html`) — client-side only, generates a `mycroft-setup.command` bash script.
 - Goose Extension Pack: 22 recipes across journalism workflows, Firecrawl wrappers, Apify social scrapers, document tools.

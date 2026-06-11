@@ -2638,6 +2638,32 @@ pre.preview {
   border-color: var(--vellum);
 }
 
+/* OS SELECTOR ROW */
+.os-row { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.os-row .toggle { padding: 10px 14px; }
+.os-row .toggle input[type=radio] { margin: 0; accent-color: var(--oxide); width: 14px; height: 14px; }
+.os-row .toggle:has(input:checked) { background: #fff; border-color: var(--ink); box-shadow: inset 0 -2px 0 0 var(--oxide); }
+
+/* VALIDATION */
+input.fld.fld--missing { border-color: #a83a26; box-shadow: inset 0 -2px 0 0 #a83a26; }
+.form-errors {
+  background: var(--vellum-bright);
+  border: var(--hairline);
+  border-left: 3px solid #a83a26;
+  padding: var(--sp-6);
+  margin: var(--sp-5) 0;
+  font-family: var(--sans); font-size: 14px; line-height: 1.6; color: var(--ink);
+}
+.form-errors > strong {
+  display: block;
+  font-family: var(--serif); font-style: italic; font-weight: 800;
+  font-size: 22px; letter-spacing: -0.015em;
+  margin: 0 0 var(--sp-3); color: #a83a26;
+}
+.form-errors ul { margin: 0; padding-left: 1.2em; }
+.form-errors li { margin: 4px 0; }
+.form-errors a { color: var(--ink); }
+
 /* SUCCESS BLOCK */
 .success {
   display: none;
@@ -3219,8 +3245,20 @@ body.mode-local .cloud-only { display: none; }
     </div>
 
     <div data-reveal style="--delay: 120ms" style="border:var(--hairline);padding:clamp(28px,3vw,40px);background:var(--vellum-bright);max-width:680px;">
+      <label class="field-label">Operating system</label>
+      <div class="os-row" role="radiogroup" aria-label="Operating system">
+        <label class="toggle"><input type="radio" name="target_os" value="mac" checked> macOS</label>
+        <label class="toggle"><input type="radio" name="target_os" value="linux"> Linux</label>
+        <label class="toggle"><input type="radio" name="target_os" value="windows"> Windows · WSL2</label>
+      </div>
+      <p class="hint" id="osHint" style="margin:8px 0 var(--sp-5);">Detected automatically — switch it to adjust the suggested vault paths and install instructions.</p>
+      <div class="callout warn" id="windowsCallout" hidden style="margin:0 0 var(--sp-5);">
+        <strong>Windows runs Mycroft through WSL2 (experimental).</strong>
+        The installer is a bash script: install <a href="https://learn.microsoft.com/windows/wsl/install" target="_blank" rel="noreferrer">WSL2 + Ubuntu</a> first, install Goose Desktop and Obsidian on the Windows side manually, then run <code>bash mycroft-setup.command</code> inside WSL. Keep the vault under <code>/mnt/c/…</code> so Windows Obsidian can read it.
+      </div>
       <label class="field-label" for="vault_path">Vault path</label>
       <input class="fld" type="text" id="vault_path" name="vault_path" placeholder="~/Documents/Mycroft" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
+      <p class="hint" id="vaultPathHint" style="margin-top:8px;">An Obsidian-compatible folder — created if it doesn't exist. Browsers can't open a native folder picker that returns a full path, so paste or type the path here.</p>
     </div>
   </section>
 
@@ -3247,16 +3285,21 @@ body.mode-local .cloud-only { display: none; }
         <span>Client-side only — your API keys are embedded in the file, nothing is sent over the network.</span>
       </div>
       <div class="install-bar__actions">
-        <button type="button" id="agentSetupBtn" class="btn--secondary">Download agent setup ZIP</button>
         <button type="button" id="copyBtn" class="btn--secondary">Copy script</button>
         <button type="button" id="downloadBtn">Download installer ZIP <span aria-hidden="true">→</span></button>
       </div>
     </div>
 
+    <div class="form-errors" id="formErrors" hidden>
+      <strong>Before you can download:</strong>
+      <ul id="formErrorsList"></ul>
+    </div>
+
     <div class="success" id="success">
       <strong>Downloaded.</strong>
       Extract the ZIP anywhere, then double-click <code>mycroft-setup.command</code>. The script configures Goose with Mycroft at <code>~/.config/goose/mycroft</code> and uses the vault paths you selected.
-      On macOS, if Apple says it could not verify the file, choose Done, then open System Settings → Privacy &amp; Security → Open Anyway. After the first approved run, plain double-click works. The agent setup ZIP contains the same API keys in its local manifest so an agent can perform setup without asking you to paste secrets into chat.
+      On macOS, if Apple says it could not verify the file, choose Done, then open System Settings → Privacy &amp; Security → Open Anyway. After the first approved run, plain double-click works.
+      When setup finishes, <code>GETTING-STARTED.html</code> opens in your browser — a guide to your install with example prompts and first workflows.
     </div>
   </section>
 
@@ -3762,9 +3805,11 @@ function readForm() {
   const chk = n => (g(n) ? !!g(n).checked : false);
 
   const sovereignty = document.querySelector('input[name="sovereignty"]:checked').value;
+  const targetOs = (document.querySelector('input[name="target_os"]:checked') || {}).value || 'mac';
 
   return {
     sovereignty,
+    targetOs,
     localOnly: sovereignty === 'local',
     vault: val('vault_path') || '~/Documents/Mycroft',
     installGoose: chk('install_goose'),
@@ -3960,6 +4005,8 @@ function buildScript(d) {
 # System Settings -> Privacy & Security -> Open Anyway.
 # Subsequent runs can be launched by double-clicking.
 set -euo pipefail
+
+SETUP_BUNDLE_DIR="$(cd "$(dirname "\${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 && pwd)"
 
 SOVEREIGNTY=${shq(d.sovereignty)}
 LOCAL_ONLY=${shq(bool(d.localOnly))}
@@ -5306,9 +5353,22 @@ ${rcBlockLines.join('\n')}
 } >> "$tmp_rc"
 mv "$tmp_rc" "$SHELL_RC"
 
+GETTING_STARTED_SRC="$SETUP_BUNDLE_DIR/GETTING-STARTED.html"
+GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"
+if [ -f "$GETTING_STARTED_SRC" ]; then
+  cp "$GETTING_STARTED_SRC" "$GETTING_STARTED" 2>/dev/null || GETTING_STARTED="$GETTING_STARTED_SRC"
+  if [ "$(uname -s)" = "Darwin" ]; then
+    open "$GETTING_STARTED" 2>/dev/null || true
+  elif have xdg-open; then
+    xdg-open "$GETTING_STARTED" >/dev/null 2>&1 || true
+  fi
+  ok "Getting-started guide: $GETTING_STARTED"
+fi
+
 say "Mycroft setup complete"
 echo "Open a new terminal, then run: mycroft doctor"
 echo "Manual update anytime: mycroft update"
+echo "Getting-started guide: $GETTING_STARTED"
 `;
 }
 
@@ -5402,269 +5462,178 @@ function buildZipEntries(entries) {
   return total;
 }
 
-function buildInstallerReadme() {
+function buildInstallerReadme(d) {
+  const os = (d && d.targetOs) || 'mac';
+  const runSteps = os === 'mac'
+    ? `2. Double-click \`mycroft-setup.command\`. It configures Goose with Mycroft at \`~/.config/goose/mycroft\`, keeps updateable source at \`~/.local/share/goose/mycroft/source\`, and uses the vault paths selected in setup.
+3. If macOS says Apple could not verify the file, choose Done, then open System Settings -> Privacy & Security -> Open Anyway.
+4. After the first approved run, you can double-click the file.`
+    : os === 'windows'
+    ? `2. Install WSL2 with Ubuntu first (https://learn.microsoft.com/windows/wsl/install) if you have not already.
+3. Install Goose Desktop and Obsidian on the Windows side manually — the script cannot install Windows apps from WSL.
+4. Open a WSL terminal in the extracted folder and run: \`bash mycroft-setup.command\`.`
+    : `2. Open a terminal in the extracted folder and run: \`bash mycroft-setup.command\`. It configures Goose with Mycroft at \`~/.config/goose/mycroft\`, keeps updateable source at \`~/.local/share/goose/mycroft/source\`, and uses the vault paths selected in setup.
+3. The script cannot auto-install Goose Desktop or Obsidian on Linux — install them with your package manager if the script asks.`;
   return `# Mycroft Setup
 
 1. Extract this ZIP.
-2. Double-click \`mycroft-setup.command\`. It configures Goose with Mycroft at \`~/.config/goose/mycroft\`, keeps updateable source at \`~/.local/share/goose/mycroft/source\`, and uses the vault paths selected in setup.
-3. If macOS says Apple could not verify the file, choose Done, then open System Settings -> Privacy & Security -> Open Anyway.
-4. After the first approved run, you can double-click the file.
-5. When setup finishes, open a new terminal and run \`mycroft doctor\`.
+${runSteps}
+5. When setup finishes, GETTING-STARTED.html opens in your browser — keep it around, it is your guide to first workflows.
+6. Open a new terminal and run \`mycroft doctor\`.
 
 The installer script handles setup for you and writes fallback script secrets to \`~/.config/goose/mycroft/.env\`; Goose provider secrets are stored through Goose when possible.
-The separate agent setup ZIP contains the same API keys in its local manifest; use it when you want an agent to perform setup without asking you to paste secrets into chat.
 `;
 }
 
-function buildAgentManifest(d) {
-  const required = [];
-  if (d.firecrawlKey) required.push('FIRECRAWL_API_KEY');
-  if (d.fireworks) required.push('FIREWORKS_API_KEY');
-  if (d.together) required.push('TOGETHER_API_KEY');
-  if (d.scoutpost) required.push('SCOUTPOST_API_KEY');
-  if (d.spotlight && d.osintNavigatorKey) required.push('OSINT_NAVIGATOR_API_KEY');
-  const defaults = {
-    MYCROFT_DEFAULT_SOVEREIGNTY: d.sovereignty,
-    MYCROFT_VAULT_PATH: d.vault,
-    MYCROFT_PROFILE_DIR: '~/.config/goose/mycroft',
-    MYCROFT_DATA_DIR: '~/.local/share/goose/mycroft',
-    MYCROFT_SOURCE_DIR: '~/.local/share/goose/mycroft/source',
-    MYCROFT_PLUGINS_DIR: '~/.local/share/goose/mycroft/plugins',
-    MYCROFT_PROFILE_SKILLS_DIR: '~/.config/goose/mycroft/skills',
-    MYCROFT_GENERATED_RECIPES: '~/.config/goose/mycroft/generated-recipes',
-    MYCROFT_MORNING_BRIEF_CONFIG: '~/.config/goose/mycroft/morning-brief-config.md',
-    GOOSE_MOIM_MESSAGE_FILE: '~/.config/goose/mycroft/SOUL.md',
-    GOOSE_RECIPE_PATH: '~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes',
-    QMD_COLLECTIONS: 'mycroft,spotlight',
-    MYCROFT_LOCAL_ONLY: d.localOnly ? '1' : '0',
-  };
-  if (d.localOnly) {
-    const localModel = localModelMeta(d.localModel);
-    defaults.GOOSE_PROVIDER = 'local';
-    defaults.GOOSE_MODEL = localModel.repo + ':' + localModel.quantization;
-    defaults.MYCROFT_LOCAL_MODEL = localModel.name;
-    defaults.MYCROFT_LOCAL_MODEL_REPO = localModel.repo;
-    defaults.MYCROFT_LOCAL_MODEL_FILE = localModel.filename;
-    defaults.MYCROFT_LOCAL_MODEL_QUANT = localModel.quantization;
-  } else if (d.fireworks) {
-    defaults.GOOSE_PROVIDER = 'fireworks-qwen36plus';
-    defaults.GOOSE_MODEL = 'accounts/fireworks/models/qwen3p6-plus';
-  } else if (d.together) {
-    defaults.GOOSE_PROVIDER = 'together-qwen';
-    defaults.GOOSE_MODEL = 'Qwen/Qwen2.5-72B-Instruct-Turbo';
+function validateForm(d) {
+  const errors = [];
+  if (!String(d.vault || '').trim()) {
+    errors.push({ field: 'vault_path', message: 'Vault path is required — Mycroft has nowhere to keep your knowledge without it.' });
   }
-  if (d.scoutpost) defaults.SCOUTPOST_API_BASE = 'https://www.scoutpost.ai/api/v1';
-  if (d.spotlight) {
-    defaults.SPOTLIGHT_DIR = '~/.local/share/goose/mycroft/plugins/spotlight';
-    defaults.SPOTLIGHT_VAULT_PATH = d.spotlightVaultPath;
-    defaults.SPOTLIGHT_INGEST_TARGET = d.vault;
-    defaults.SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT = '1';
-    if (d.scoutpost) defaults.SPOTLIGHT_MONITORING_BACKEND = 'scoutpost';
-    if (d.scoutpost) defaults.SPOTLIGHT_SCOUT_REQUESTS = 'scoutpost';
-    if (d.spotBrowseruse) defaults.SPOTLIGHT_BROWSERUSE = '1';
+  if (!d.firecrawlKey) {
+    errors.push({ field: 'firecrawl_key', message: 'FIRECRAWL_API_KEY is required — every web-capable recipe depends on it. Get a key at firecrawl.dev.' });
   }
-  const values = {};
-  if (d.firecrawlKey) values.FIRECRAWL_API_KEY = d.firecrawlKey;
-  if (d.fireworksKey) values.FIREWORKS_API_KEY = d.fireworksKey;
-  if (d.togetherKey) values.TOGETHER_API_KEY = d.togetherKey;
-  if (d.apifyToken) values.APIFY_API_TOKEN = d.apifyToken;
-  if (d.agentmailKey) values.AGENTMAIL_API_KEY = d.agentmailKey;
-  if (d.scoutpost && d.scoutpostKey) values.SCOUTPOST_API_KEY = d.scoutpostKey;
-  if (d.spotlight && d.osintNavigatorKey) values.OSINT_NAVIGATOR_API_KEY = d.osintNavigatorKey;
-  if (d.junkipediaKey) values.JUNKIPEDIA_API_KEY = d.junkipediaKey;
-  return {
-    schema_version: 'mycroft-agent-setup/v1',
-    generated_at: new Date().toISOString(),
-    source_repo: 'https://github.com/buriedsignals/mycroft.git',
-    install_path: '~/.local/share/goose/mycroft/source',
-    profile_path: '~/.config/goose/mycroft',
-    data_path: '~/.local/share/goose/mycroft',
-    startup_command: 'mycroft doctor',
-    installer: {
-      install_goose: d.installGoose,
-      install_obsidian: d.installObsidian,
-      install_firecrawl: d.installFirecrawl,
-      install_qmd: true,
-      providers: [
-        ...(d.fireworks ? ['fireworks-qwen36plus'] : []),
-        ...(d.together ? ['together-qwen'] : []),
-      ],
-    },
-    skills: buildSkillRegistry(d),
-    vault_scaffold: {
-      mycroft_dirs: [
-        '_schema',
-        '_audits',
-        'sources/raw',
-        'sources/processed',
-        'wiki/entities',
-        'wiki/topics',
-        'wiki/sources',
-        'wiki/methods',
-        'wiki/claims',
-        'stories/pitches',
-        'stories/drafts',
-        'stories/published',
-        'handoff/from-spotlight',
-        'context',
-      ],
-      mycroft_notes: [
-        'README.md',
-        'START_HERE.md',
-        '_index.md',
-        '_log.md',
-        '_schema/mycroft.md',
-        '_schema/frontmatter.md',
-        '_schema/ingest-rules.md',
-        'context/source-policy.md',
-        'context/style-guide.md',
-        'context/beat-notes.md',
-        'stories/pitches/example-story-pitch.md',
-        'wiki/entities/example-entity.md',
-        'wiki/sources/example-source.md',
-        'wiki/methods/sift.md',
-      ],
-      spotlight_dirs: d.spotlight ? [
-        'cases/_template',
-        'evidence',
-        'captures',
-        'briefs',
-        'exports',
-        'handoff-to-mycroft',
-      ] : [],
-      spotlight_notes: d.spotlight ? [
-        'README.md',
-        'cases/_template/index.md',
-      ] : [],
-      open_obsidian: d.installObsidian,
-    },
-    goose: {
-      config_dir: '~/.config/goose',
-      custom_providers_dir: '~/.config/goose/custom_providers',
-      hints_file: '~/.config/goose/.goosehints',
-      recipe_path: '~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes',
-      source_recipes_dir: '~/.local/share/goose/mycroft/source/recipes',
-      instructions_file: '~/.config/goose/mycroft/goose-mycroft.md',
-      soul_file: '~/.config/goose/mycroft/SOUL.md',
-      generated_recipes_dir: '~/.config/goose/mycroft/generated-recipes',
-      schedules: [
-        { id: 'mycroft-morning-brief', cron: '0 0 7 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml' },
-        { id: 'mycroft-vault-audit', cron: '0 15 18 * * *', recipe_source: '~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml' },
-      ],
-      first_run_recipe: '~/.local/share/goose/mycroft/source/recipes/start.yaml',
-      morning_brief_preflight_recipe: '~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml',
-    },
-    sovereignty: {
-      default: d.sovereignty,
-      local_only: d.localOnly,
-      local_model: d.localModel || 'qwen9b',
-    },
-    vaults: {
-      mycroft: d.vault,
-      spotlight: d.spotlightVaultPath,
-      spotlight_ingest_target: d.vault,
-    },
-    plugins: {
-      spotlight: {
-        enabled: d.spotlight,
-        path: '~/.local/share/goose/mycroft/plugins/spotlight',
-        inherits_mycroft_sovereignty: true,
-        scout_requests: d.scoutpost ? 'scoutpost' : null,
-      },
-      scoutpost: {
-        enabled: d.scoutpost,
-        mode: 'hosted_api',
-        api_base: 'https://www.scoutpost.ai/api/v1',
-      },
-    },
-    env: {
-      required,
-      optional: [
-        ...(d.apifyEnabled || d.apifyToken ? ['APIFY_API_TOKEN'] : []),
-        ...(d.agentmailEnabled || d.agentmailKey ? ['AGENTMAIL_API_KEY'] : []),
-        ...(d.spotBrowseruse ? ['SPOTLIGHT_BROWSERUSE'] : []),
-        ...(d.junkipediaKey ? ['JUNKIPEDIA_API_KEY'] : []),
-      ],
-      defaults,
-      values,
-    },
-    notes: [
-      'This manifest contains local secret values from the setup form.',
-      'Do not paste, print, log, or upload this manifest.',
-      'Copy env.defaults and env.values into ~/.config/goose/mycroft/.env during agent setup.',
-      'Spotlight and Mycroft vault paths should stay separate.',
-    ],
-  };
+  if (!d.localOnly) {
+    if (!d.fireworks && !d.together) {
+      errors.push({ field: 'fireworks_key', message: 'Cloud-first needs at least one provider — enable Fireworks or Together in section 02, or switch to Local-first.' });
+    }
+    if (d.fireworks && !d.fireworksKey) {
+      errors.push({ field: 'fireworks_key', message: 'FIREWORKS_API_KEY is required while Fireworks is your provider.' });
+    }
+    if (d.together && !d.togetherKey) {
+      errors.push({ field: 'together_key', message: 'TOGETHER_API_KEY is required while Together is your provider.' });
+    }
+  }
+  if (d.scoutpost && !d.scoutpostKey) {
+    errors.push({ field: 'scoutpost_api_key', message: 'SCOUTPOST_API_KEY is required while coJournalist is enabled — add a key or untick the plugin.' });
+  }
+  if (d.spotlight && !String(d.spotlightVaultPath || '').trim()) {
+    errors.push({ field: 'spotlight_vault_path', message: 'Spotlight needs its own vault path while it is enabled.' });
+  }
+  return errors;
 }
 
-function buildAgentPrompt(manifest) {
-  return `# Mycroft Agent Setup
+function buildGettingStarted(d) {
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const providerLabel = d.localOnly
+    ? (localModelMeta(d.localModel).name + ' · runs on your machine, $0/mo')
+    : d.fireworks ? 'Fireworks AI · Qwen 3.6 Plus (ZDR cloud)'
+    : d.together ? 'Together AI · Qwen 2.5-72B Turbo (ZDR cloud)'
+    : 'No provider configured';
+  const optionalTools = [
+    d.ftEnabled ? 'ft CLI (X bookmarks)' : null,
+    d.agentmailEnabled || d.agentmailKey ? 'AgentMail (newsletters + tips inbox)' : null,
+    d.apifyEnabled || d.apifyToken ? 'Apify (social scraping)' : null,
+  ].filter(Boolean);
+  const prompts = [
+    { label: 'Set up your beat', text: 'Set up my beat. I cover [your beat] in [your region].' },
+    { label: 'Feed the vault', text: 'Add this to my knowledge base: [paste a link, or drop a PDF / folder path]' },
+    { label: 'Ask your vault', text: 'What do we know about [person, company, or topic]?' },
+    { label: 'Morning brief', text: 'Create my morning brief.' },
+    { label: 'Fact-check', text: 'Fact-check this draft: [paste your draft]' },
+    ...(d.spotlight ? [{ label: 'Investigate', text: 'Investigate [your lead] — open a Spotlight case.' }] : []),
+    ...(d.scoutpost ? [{ label: 'Watch a source', text: 'Set up a scout to watch [page, account, or council agenda].' }] : []),
+    { label: 'See it work', text: 'Show me a demo workflow.' },
+  ];
+  const promptCards = prompts.map((p, i) => `
+      <div class="card">
+        <p class="k">${String(i + 1).padStart(2, '0')} — ${esc(p.label)}</p>
+        <code>${esc(p.text)}</code>
+      </div>`).join('');
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mycroft — Getting started</title>
+<style>
+  :root {
+    --vellum: #e8e0cf; --vellum-bright: #faf5e8; --vellum-2: #dfd5be;
+    --ink: #1a1a1f; --ink-soft: #4a4439; --ink-dim: #8e8676;
+    --oxide: #4a7363; --hairline: 1px solid rgba(26,26,31,0.22);
+    --serif: Georgia, 'Times New Roman', serif;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--vellum); color: var(--ink); font: 15px/1.65 var(--sans); }
+  .shell { max-width: 860px; margin: 0 auto; padding: clamp(32px, 6vw, 80px) clamp(20px, 4vw, 48px) 96px; }
+  .brand { font-family: var(--serif); font-weight: 800; font-size: 20px; letter-spacing: -0.01em; }
+  .brand em { color: var(--oxide); font-style: normal; }
+  h1 { font-family: var(--serif); font-weight: 800; font-size: clamp(40px, 7vw, 64px); line-height: 1.02; letter-spacing: -0.02em; margin: 24px 0 12px; }
+  h1 em { font-style: italic; color: var(--oxide); }
+  .lede { font-size: 17px; color: var(--ink-soft); max-width: 56ch; }
+  .num { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-dim); margin: 64px 0 8px; }
+  h2 { font-family: var(--serif); font-weight: 800; font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.015em; margin: 0 0 16px; }
+  h2 em { font-style: italic; color: var(--oxide); }
+  .card { background: var(--vellum-bright); border: var(--hairline); padding: 20px 22px; margin: 0 0 12px; }
+  .card .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 8px; }
+  .card code, .card pre { font-family: var(--mono); font-size: 13px; color: var(--ink); background: none; white-space: pre-wrap; word-break: break-word; }
+  table { width: 100%; border-collapse: collapse; background: var(--vellum-bright); border: var(--hairline); }
+  th, td { text-align: left; padding: 10px 16px; border-bottom: 1px solid rgba(26,26,31,0.12); font-size: 14px; vertical-align: top; }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-dim); font-weight: 500; }
+  td code { font-family: var(--mono); font-size: 12.5px; word-break: break-all; }
+  .callout { background: var(--vellum-2); border: var(--hairline); border-left: 3px solid var(--oxide); padding: 18px 22px; margin: 16px 0; }
+  .callout.urgent { border-left-color: #a83a26; }
+  ol, ul { padding-left: 1.3em; } li { margin: 6px 0; }
+  a { color: var(--oxide); }
+  .foot { margin-top: 80px; padding-top: 24px; border-top: var(--hairline); font-size: 13px; color: var(--ink-dim); }
+</style>
+</head>
+<body>
+<div class="shell">
+  <p class="brand">Mycroft<em>.</em></p>
+  <h1>You're <em>in.</em></h1>
+  <p class="lede">Mycroft is installed and wired into Goose. This page is your map for the first hour — what landed on your machine, the two switches that matter, and what to say to Mycroft first.</p>
 
-Use \`mycroft-agent-manifest.json\` as the source of truth. Handle the setup for the user, then verify it. The manifest contains local secret values under \`env.values\`; do not ask the user to paste secrets into chat, and do not print, log, summarize, or expose secret values.
+  <p class="num">01 — Your install</p>
+  <h2>What landed <em>where.</em></h2>
+  <table>
+    <tr><th>Mode</th><td>${esc(d.sovereignty === 'local' ? 'Local-first' : 'Cloud-first')} · ${esc(providerLabel)}</td></tr>
+    <tr><th>Knowledge vault</th><td><code>${esc(d.vault)}</code> — your durable newsroom memory (Obsidian-compatible)</td></tr>
+    ${d.spotlight ? `<tr><th>Spotlight vault</th><td><code>${esc(d.spotlightVaultPath)}</code> — active investigation casework, kept separate</td></tr>` : ''}
+    <tr><th>Profile</th><td><code>~/.config/goose/mycroft</code> — config, env, skill registry</td></tr>
+    <tr><th>Source</th><td><code>~/.local/share/goose/mycroft/source</code> — recipes + skills, auto-updated weekly</td></tr>
+    ${d.spotlight ? '<tr><th>Plugins</th><td>Spotlight (OSINT investigations)' + (d.scoutpost ? ' · coJournalist/Scoutpost (hosted monitoring)' : '') + '</td></tr>' : (d.scoutpost ? '<tr><th>Plugins</th><td>coJournalist/Scoutpost (hosted monitoring)</td></tr>' : '')}
+    ${optionalTools.length ? `<tr><th>Optional tools</th><td>${esc(optionalTools.join(' · '))}</td></tr>` : ''}
+  </table>
 
-There are two supported setup paths:
+  ${d.installObsidian ? `<p class="num">02 — Before anything else</p>
+  <h2>Two switches in <em>Obsidian.</em></h2>
+  <div class="callout urgent">
+    <strong>Vault recipes fail silently without these.</strong>
+    <ol>
+      <li>Open Obsidian → Settings → General → Advanced → <strong>CLI: ON</strong></li>
+      <li>Keep Obsidian <strong>running</strong> whenever you work with Mycroft</li>
+    </ol>
+  </div>` : ''}
 
-1. Agent setup: use this manifest to install or update Mycroft, configure Goose, create vault directories, configure selected plugins, and run verification.
-2. Command setup: if the user prefers the generated \`mycroft-setup.command\`, stop and let that script handle setup instead.
+  <p class="num">0${d.installObsidian ? '3' : '2'} — First run</p>
+  <h2>Open Goose, meet <em>Mycroft.</em></h2>
+  <p>Goose opened at the end of setup with the <strong>Start Mycroft</strong> recipe (if not, open Goose and pick it from the recipe list). Your vault also has a <code>START_HERE.md</code> note. The first-run menu offers: set up your beat, add material to your knowledge base, create your morning brief, investigate a lead, set up scouts, or a demo workflow.</p>
 
-## Setup
+  <p class="num">0${d.installObsidian ? '4' : '3'} — Things to say</p>
+  <h2>Copy, paste, <em>adapt.</em></h2>
+  ${promptCards}
 
-1. Install or update Mycroft source from \`${manifest.source_repo}\` at \`${manifest.install_path}\`. Keep Goose-facing generated profile files under \`${manifest.profile_path}\`.
-2. Create the Mycroft vault at \`${manifest.vaults.mycroft}\`${manifest.plugins.spotlight.enabled ? ` and the Spotlight vault at \`${manifest.vaults.spotlight}\`` : ''}.
-3. Install runtime tools when requested: Goose ${manifest.installer.install_goose ? 'yes' : 'no'}, Obsidian ${manifest.installer.install_obsidian ? 'yes' : 'no'}, Firecrawl CLI ${manifest.installer.install_firecrawl ? 'yes' : 'no'}, QMD CLI ${manifest.installer.install_qmd ? 'yes' : 'no'}.
-4. Create Goose config paths:
-   - \`${manifest.goose.config_dir}\`
-   - \`${manifest.goose.custom_providers_dir}\`
-5. Copy selected provider configs into \`${manifest.goose.custom_providers_dir}\`: ${manifest.installer.providers.join(', ')}.
-6. Install selected skills and write the skill registry at \`${manifest.profile_path}/skill-registry.json\`. Installed skills: ${manifest.skills.skills.filter(s => s.enabled).map(s => s.id).join(', ')}.
-7. Generate Goose instructions at \`${manifest.goose.instructions_file}\` and copy them to \`${manifest.goose.hints_file}\`. Persist Goose defaults in \`${manifest.goose.config_dir}/config.yaml\`: \`GOOSE_PROVIDER\`, \`GOOSE_MODEL\`, \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`, and \`GOOSE_MOIM_MESSAGE_FILE=${manifest.goose.soul_file}\`. Include the Mycroft vault path, Spotlight vault path if enabled, Spotlight ingest target, selected APIs, and skill registry paths.
-8. Create the Obsidian vault scaffold. In the Mycroft vault, create directories: ${manifest.vault_scaffold.mycroft_dirs.join(', ')}. Create starter notes with frontmatter and tags: ${manifest.vault_scaffold.mycroft_notes.join(', ')}.
-${manifest.plugins.spotlight.enabled ? `9. In the Spotlight vault, create directories: ${manifest.vault_scaffold.spotlight_dirs.join(', ')}. Create starter notes with frontmatter and tags: ${manifest.vault_scaffold.spotlight_notes.join(', ')}. Keep this vault separate from Mycroft; ingest target is \`${manifest.vaults.spotlight_ingest_target}\`.` : '9. Skip Spotlight vault scaffold; Spotlight is disabled in this manifest.'}
-10. Configure QMD collections for the Mycroft vault${manifest.plugins.spotlight.enabled ? ' and Spotlight vault' : ''}. QMD backs local knowledge search and Spotlight's \`query-vault\` verb.
-11. Create generated scheduled recipe files in \`${manifest.goose.generated_recipes_dir}\` for morning brief and vault audit using the selected vault paths.
-12. Register Goose-native schedules: ${manifest.goose.schedules.map(s => `${s.id} (${s.cron})`).join(', ')}.
-13. Ensure shell startup exports \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
-14. Create \`${manifest.profile_path}/.env\` from \`env.defaults\` and \`env.values\`. Include required variable names: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}. Include optional values when present. Store selected provider API keys in Goose's own secret store when Goose CLI is available, for example \`goose configure set-secret FIREWORKS_API_KEY <redacted>\`. If a required key is absent or empty in \`env.values\`, stop and report only the missing variable name. Do not echo, cat, or log the file contents. Set file mode \`600\`.
-${manifest.plugins.spotlight.enabled ? `15. Install or update Spotlight at \`${manifest.plugins.spotlight.path}\` and write \`.spotlight-config.json\` with \`vault_path=${manifest.vaults.spotlight}\`, \`mycroft_vault_path=${manifest.vaults.mycroft}\`, \`ingest_target=${manifest.vaults.spotlight_ingest_target}\`, \`cases_root\`, and \`handoff_path\`.` : '15. Skip Spotlight; it is disabled in this manifest.'}
-16. Install the \`mycroft-update\` wrapper at \`~/.local/bin/mycroft-update\`, a weekly user-level updater job, and the Goose \`update-mycroft\` recipe for manual desktop-triggered updates. The updater must fetch \`origin main\`, fast-forward only, skip dirty or divergent checkouts, refresh \`${manifest.goose.soul_file}\`, regenerate \`${manifest.goose.hints_file}\` from source instructions plus local install paths, refresh already-installed provider JSON files, run \`mycroft doctor\`, and roll back app checkouts if doctor fails. Do not use Goose schedules for repo updates.
-17. Install the \`mycroft doctor\` wrapper and shell startup block with \`MYCROFT_DIR=${manifest.install_path}\`, \`MYCROFT_PROFILE_DIR=${manifest.profile_path}\`, \`MYCROFT_CONFIG=${manifest.profile_path}/mycroft-config.json\`, and \`GOOSE_RECIPE_PATH=${manifest.goose.recipe_path}\`.
-18. Open Obsidian to the created vault${manifest.plugins.spotlight.enabled ? 's' : ''} if Obsidian is installed, then open Goose Desktop to \`${manifest.goose.first_run_recipe}\` or start Goose CLI so the user can choose a first action. Keep \`${manifest.goose.morning_brief_preflight_recipe}\` available for the morning brief path.
-19. Tell the user what to do next: run the Start Mycroft recipe, open \`${manifest.vaults.mycroft}/START_HERE.md\`, or ask Mycroft to set up a beat, add material to the knowledge base, create a morning brief, investigate a lead, set up scouts, or show a demo.
+  <p class="num">0${d.installObsidian ? '5' : '4'} — On schedule</p>
+  <h2>While you <em>sleep.</em></h2>
+  <table>
+    <tr><th>Morning brief</th><td>Daily 07:00 — digest from your beats, watchlists${d.agentmailEnabled || d.agentmailKey ? ', AgentMail inbox' : ''}${d.ftEnabled ? ', X bookmarks' : ''}, and recent vault changes. Run "Create my morning brief" once to configure it.</td></tr>
+    <tr><th>Vault audit</th><td>Daily 18:15 — flags weak claims, missing frontmatter, orphaned sources, stale handoffs.</td></tr>
+    <tr><th>Updates</th><td>Weekly Monday 10:15 — pulls the latest recipes and skills, verifies with <code>mycroft doctor</code>, rolls back on failure.</td></tr>
+  </table>
 
-## Verify
+  <p class="num">0${d.installObsidian ? '6' : '5'} — When something breaks</p>
+  <h2>Doctor first, <em>then docs.</em></h2>
+  <div class="card"><p class="k">In a new terminal</p><pre>mycroft doctor    # checks every install path and key
+mycroft update    # manual update anytime</pre></div>
+  <p>Still stuck? <a href="https://github.com/buriedsignals/mycroft/blob/main/docs/troubleshooting.md">Troubleshooting guide</a> · <a href="https://github.com/buriedsignals/mycroft/issues">Open an issue</a></p>
 
-1. Confirm Mycroft source exists at \`${manifest.install_path}\` and the Goose profile exists at \`${manifest.profile_path}\`.
-2. Confirm Goose config paths exist:
-   - \`${manifest.goose.config_dir}\`
-   - \`${manifest.goose.custom_providers_dir}\`
-   - \`${manifest.goose.hints_file}\`
-3. Confirm the Mycroft vault scaffold exists, including \`${manifest.vaults.mycroft}/README.md\`, \`${manifest.vaults.mycroft}/_index.md\`, \`${manifest.vaults.mycroft}/_schema/mycroft.md\`, and \`${manifest.vaults.mycroft}/stories/pitches/example-story-pitch.md\`.
-${manifest.plugins.spotlight.enabled ? `4. Confirm the Spotlight vault scaffold exists, including \`${manifest.vaults.spotlight}/README.md\` and \`${manifest.vaults.spotlight}/cases/_template/index.md\`.` : '4. Confirm Spotlight was not scaffolded because it is disabled.'}
-5. Confirm \`${manifest.profile_path}/skill-registry.json\` exists and includes selected skills, including ${manifest.plugins.spotlight.enabled ? '`spotlight-ingest`' : '`knowledge-primitives`'}.
-6. Confirm QMD CLI exists and can run \`qmd status\`.
-7. Confirm generated scheduled recipes exist at \`${manifest.goose.generated_recipes_dir}\`.
-8. Confirm Goose schedules exist for ${manifest.goose.schedules.map(s => s.id).join(', ')}.
-9. Confirm \`${manifest.goose.hints_file}\` mentions the Mycroft vault path${manifest.plugins.spotlight.enabled ? ', Spotlight vault path, and Spotlight ingest target' : ''}.
-10. Confirm \`${manifest.goose.soul_file}\` exists and \`${manifest.goose.config_dir}/config.yaml\` persists \`GOOSE_PROVIDER\`, \`GOOSE_MODEL\`, \`GOOSE_RECIPE_PATH\`, and \`GOOSE_MOIM_MESSAGE_FILE\`.
-11. Confirm \`${manifest.profile_path}/.env\` contains the required variable names and non-empty values: ${manifest.env.required.length ? manifest.env.required.join(', ') : 'none'}. Do not print the values.
-12. Confirm \`GOOSE_RECIPE_PATH\` includes \`${manifest.goose.recipe_path}\`.
-13. Confirm \`~/.local/bin/mycroft-update\` exists and the user-level updater job is installed.
-14. Run \`mycroft doctor\`.
-
-## Tell The User Next
-
-Setup is complete. Start chatting with Mycroft in Goose to set up your morning brief. Then create a folder for your investigations in the Spotlight vault and ask Mycroft to Spotlight it.
-
-## Runtime
-
-- Sovereignty: ${manifest.sovereignty.default}
-- Local model: ${manifest.sovereignty.local_model}
-- Mycroft vault: \`${manifest.vaults.mycroft}\`
-- Spotlight vault: \`${manifest.vaults.spotlight}\`
-- Spotlight enabled: ${manifest.plugins.spotlight.enabled ? 'yes' : 'no'}
-- Scoutpost hosted API enabled: ${manifest.plugins.scoutpost.enabled ? 'yes' : 'no'}
-
-If Spotlight is enabled, verify \`${manifest.plugins.spotlight.path}\` exists and that \`.spotlight-config.json\` points back to Mycroft config. If Scoutpost is enabled, Spotlight can create scout requests through the hosted Scoutpost API.
+  <p class="foot">Mycroft · Every journalist, a newsroom. Built by <a href="https://buriedsignals.com/">Buried Signals</a>. A copy of this guide lives at <code>~/.config/goose/mycroft/getting-started.html</code>.</p>
+</div>
+</body>
+</html>
 `;
 }
 
@@ -5820,18 +5789,36 @@ function refreshPreview() {
   catch (e) { pre.textContent = 'Error generating preview: ' + e.message; }
 }
 
+function showFormErrors(errors) {
+  const box = document.getElementById('formErrors');
+  const list = document.getElementById('formErrorsList');
+  document.querySelectorAll('.fld--missing').forEach(el => el.classList.remove('fld--missing'));
+  if (!errors.length) { box.hidden = true; return; }
+  list.innerHTML = errors.map(e => `<li>${e.message}</li>`).join('');
+  box.hidden = false;
+  let firstField = null;
+  errors.forEach(e => {
+    const el = document.getElementById(e.field);
+    if (el) {
+      el.classList.add('fld--missing');
+      if (!firstField) firstField = el;
+    }
+  });
+  if (firstField) {
+    firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => firstField.focus({ preventScroll: true }), 600);
+  }
+}
+
 function download() {
   const d = readForm();
-  const missing = [];
-  if (d.installFirecrawl && !d.firecrawlKey) missing.push('FIRECRAWL_API_KEY');
-  if (d.fireworks && !d.fireworksKey) missing.push('FIREWORKS_API_KEY');
-  if (d.together && !d.togetherKey) missing.push('TOGETHER_API_KEY');
-  if (missing.length) {
-    if (!confirm('Missing required keys:\n\n' + missing.map(k => '  • ' + k).join('\n') + '\n\nGenerate anyway?')) return;
-  }
+  const errors = validateForm(d);
+  showFormErrors(errors);
+  if (errors.length) return;
   const zip = buildZipEntries([
     { filename: 'mycroft-setup.command', contents: buildScript(d), executable: true },
-    { filename: 'README-FIRST.txt', contents: buildInstallerReadme(), executable: false },
+    { filename: 'GETTING-STARTED.html', contents: buildGettingStarted(d), executable: false },
+    { filename: 'README-FIRST.txt', contents: buildInstallerReadme(d), executable: false },
   ]);
   const blob = new Blob([zip], {type: 'application/zip'});
   const url = URL.createObjectURL(blob);
@@ -5846,37 +5833,15 @@ function download() {
 
 document.getElementById('downloadBtn').addEventListener('click', download);
 
-function downloadAgentSetup() {
-  const d = readForm();
-  const manifest = buildAgentManifest(d);
-  const zip = buildZipEntries([
-    {
-      filename: 'mycroft-agent-manifest.json',
-      contents: JSON.stringify(manifest, null, 2) + '\n',
-      executable: false,
-    },
-    {
-      filename: 'mycroft-agent-prompt.md',
-      contents: buildAgentPrompt(manifest),
-      executable: false,
-    },
-  ]);
-  const blob = new Blob([zip], {type: 'application/zip'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'mycroft-agent-setup.zip';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
-}
-document.getElementById('agentSetupBtn').addEventListener('click', downloadAgentSetup);
-
 async function copyToClipboard() {
   const btn = document.getElementById('copyBtn');
   const orig = btn.textContent;
+  const d = readForm();
+  const errors = validateForm(d);
+  showFormErrors(errors);
+  if (errors.length) return;
   try {
-    await navigator.clipboard.writeText(buildScript(readForm()));
+    await navigator.clipboard.writeText(buildScript(d));
     btn.textContent = 'Copied';
   } catch (e) { btn.textContent = 'Copy failed'; }
   setTimeout(() => { btn.textContent = orig; }, 2000);
@@ -5884,6 +5849,44 @@ async function copyToClipboard() {
 document.getElementById('copyBtn').addEventListener('click', copyToClipboard);
 document.getElementById('form').addEventListener('input', refreshPreview);
 document.getElementById('form').addEventListener('change', refreshPreview);
+
+/* OS selector — auto-detect, swap suggested vault paths (until the user
+   edits them by hand), and surface the Windows/WSL2 caveat. */
+const OS_PATH_DEFAULTS = {
+  mac: { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight' },
+  linux: { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight' },
+  windows: { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/Mycroft', spotlight: '/mnt/c/Users/YOUR-USERNAME/Documents/Spotlight' },
+};
+const OS_HINTS = {
+  mac: 'Paths use your Mac home folder; ~ expands automatically.',
+  linux: 'Paths use your Linux home folder; ~ expands automatically.',
+  windows: 'Replace YOUR-USERNAME with your Windows username. Keeping the vault under /mnt/c/… lets Windows Obsidian read it from WSL.',
+};
+['vault_path', 'spotlight_vault_path'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', () => { el.dataset.touched = '1'; });
+});
+function applyTargetOs() {
+  const os = (document.querySelector('input[name="target_os"]:checked') || {}).value || 'mac';
+  const defs = OS_PATH_DEFAULTS[os];
+  const vault = document.getElementById('vault_path');
+  const spotVault = document.getElementById('spotlight_vault_path');
+  if (vault && !vault.dataset.touched) { vault.value = defs.vault; vault.placeholder = defs.vault; }
+  if (spotVault && !spotVault.dataset.touched) { spotVault.value = defs.spotlight; spotVault.placeholder = defs.spotlight; }
+  const winCallout = document.getElementById('windowsCallout');
+  if (winCallout) winCallout.hidden = os !== 'windows';
+  const osHint = document.getElementById('osHint');
+  if (osHint) osHint.textContent = OS_HINTS[os];
+  refreshPreview();
+}
+document.querySelectorAll('input[name="target_os"]').forEach(el => el.addEventListener('change', applyTargetOs));
+(() => {
+  const ua = navigator.userAgent || '';
+  const detected = /Windows/.test(ua) ? 'windows' : /Mac/.test(ua) ? 'mac' : /Linux/.test(ua) ? 'linux' : 'mac';
+  const radio = document.querySelector(`input[name="target_os"][value="${detected}"]`);
+  if (radio && !radio.checked) { radio.checked = true; }
+  applyTargetOs();
+})();
 document.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => { if (d.open) refreshPreview(); }));
 document.getElementById('fitCheckBtn')?.addEventListener('click', runFitCheck);
 document.getElementById('fitCmdCopy')?.addEventListener('click', async () => {

@@ -13,10 +13,11 @@ if (!match) {
 const source = match[0].replace(/\nfunction refreshPreview\(\)$/, "");
 const context = { TextEncoder, Uint8Array, Uint32Array, DataView, Date };
 vm.createContext(context);
-vm.runInContext(source + "\nthis.buildScript = buildScript; this.buildZipEntries = buildZipEntries; this.buildAgentManifest = buildAgentManifest; this.buildAgentPrompt = buildAgentPrompt;", context);
+vm.runInContext(source + "\nthis.buildScript = buildScript; this.buildZipEntries = buildZipEntries; this.buildGettingStarted = buildGettingStarted; this.buildInstallerReadme = buildInstallerReadme; this.validateForm = validateForm;", context);
 
 const base = {
   sovereignty: "cloud",
+  targetOs: "mac",
   localOnly: false,
   vault: "~/Documents/Mycroft",
   installGoose: true,
@@ -168,66 +169,78 @@ if (!(zip instanceof Uint8Array) || zip[0] !== 0x50 || zip[1] !== 0x4b) {
   process.exit(1);
 }
 
-const manifest = context.buildAgentManifest(base);
-if (manifest.env.values.FIREWORKS_API_KEY !== "fw-test" || manifest.env.values.SCOUTPOST_API_KEY !== "scout-test") {
-  console.error("Agent manifest missing local secret values.");
+// Getting-started guide bundled into the installer ZIP
+const guide = context.buildGettingStarted(base);
+if (!guide.includes("<!doctype html>") || !guide.includes("Getting started")) {
+  console.error("Getting-started guide is not an HTML page.");
   process.exit(1);
 }
-if (manifest.env.defaults.GOOSE_PROVIDER !== "fireworks-qwen36plus" || manifest.env.defaults.SPOTLIGHT_SCOUT_REQUESTS !== "scoutpost") {
-  console.error("Agent manifest missing env defaults.");
+for (const needle of ["~/Documents/Mycroft", "~/Documents/Spotlight", "mycroft doctor", "START_HERE.md", "CLI: ON", "Spotlight", "Fireworks"]) {
+  if (!guide.includes(needle)) {
+    console.error(`Getting-started guide missing: ${needle}`);
+    process.exit(1);
+  }
+}
+for (const secret of ["fw-test", "fc-test", "scout-test", "ont-test", "jk-test"]) {
+  if (guide.includes(secret)) {
+    console.error("Getting-started guide leaked a secret value.");
+    process.exit(1);
+  }
+}
+const localGuide = context.buildGettingStarted({ ...base, sovereignty: "local", localOnly: true, spotlight: false, scoutpost: false });
+if (!localGuide.includes("Local-first") || localGuide.includes("Spotlight vault")) {
+  console.error("Getting-started guide does not adapt to local/no-spotlight installs.");
   process.exit(1);
 }
-if (!manifest.source_repo || !manifest.installer.providers.includes("fireworks-qwen36plus")) {
-  console.error("Agent manifest missing setup instructions.");
+
+// The installer opens the bundled guide and keeps a copy in the profile
+assertIncludes(script, 'GETTING_STARTED_SRC="$SETUP_BUNDLE_DIR/GETTING-STARTED.html"');
+assertIncludes(script, 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"');
+assertIncludes(script, 'open "$GETTING_STARTED"');
+
+// README adapts run instructions to the selected OS
+const macReadme = context.buildInstallerReadme(base);
+if (!macReadme.includes("Double-click") || !macReadme.includes("GETTING-STARTED.html") || macReadme.includes("agent setup")) {
+  console.error("macOS README is wrong.");
   process.exit(1);
 }
-if (!manifest.vault_scaffold.mycroft_notes.includes("START_HERE.md") || !manifest.vault_scaffold.mycroft_notes.includes("_schema/mycroft.md") || !manifest.vault_scaffold.mycroft_notes.includes("stories/pitches/example-story-pitch.md") || !manifest.vault_scaffold.spotlight_notes.includes("cases/_template/index.md")) {
-  console.error("Agent manifest missing vault scaffold instructions.");
+const linuxReadme = context.buildInstallerReadme({ ...base, targetOs: "linux" });
+if (!linuxReadme.includes("bash mycroft-setup.command") || linuxReadme.includes("Privacy & Security")) {
+  console.error("Linux README is wrong.");
   process.exit(1);
 }
-if (!manifest.skills.skills.some((s) => s.id === "spotlight-ingest") || !manifest.skills.skills.some((s) => s.id === "copywriting") || !manifest.skills.skills.some((s) => s.id === "fact-check") || !manifest.skills.skills.some((s) => s.id === "qmd") || !manifest.skills.skills.some((s) => s.id === "mycroft-maintenance")) {
-  console.error("Agent manifest missing skill registry entries.");
+const winReadme = context.buildInstallerReadme({ ...base, targetOs: "windows" });
+if (!winReadme.includes("WSL2") || !winReadme.includes("bash mycroft-setup.command")) {
+  console.error("Windows README is wrong.");
   process.exit(1);
 }
-if (!manifest.goose.schedules.some((s) => s.id === "mycroft-morning-brief") || !manifest.goose.schedules.some((s) => s.id === "mycroft-vault-audit")) {
-  console.error("Agent manifest missing Goose schedules.");
+
+// Hard validation: complete form passes, missing required fields block
+if (context.validateForm(base).length !== 0) {
+  console.error("validateForm rejected a complete form.");
   process.exit(1);
 }
-const agentPrompt = context.buildAgentPrompt(manifest);
-if (!agentPrompt.includes("## Setup") || !agentPrompt.includes("Handle the setup for the user") || !agentPrompt.includes("env.defaults") || !agentPrompt.includes("env.values")) {
-  console.error("Agent prompt missing setup instructions.");
+const checks = [
+  [{ ...base, firecrawlKey: "" }, "firecrawl_key"],
+  [{ ...base, fireworksKey: "" }, "fireworks_key"],
+  [{ ...base, fireworks: false, together: false }, "fireworks_key"],
+  [{ ...base, scoutpostKey: "" }, "scoutpost_api_key"],
+  [{ ...base, vault: " " }, "vault_path"],
+  [{ ...base, spotlightVaultPath: "" }, "spotlight_vault_path"],
+];
+for (const [form, field] of checks) {
+  const errs = context.validateForm(form);
+  if (!errs.some((e) => e.field === field)) {
+    console.error(`validateForm missed required field: ${field}`);
+    process.exit(1);
+  }
+}
+if (context.validateForm({ ...base, sovereignty: "local", localOnly: true, fireworksKey: "", togetherKey: "" }).length !== 0) {
+  console.error("validateForm requires provider keys in local-only mode.");
   process.exit(1);
 }
-if (!agentPrompt.includes("Create the Obsidian vault scaffold") || !agentPrompt.includes("Open Obsidian") || !agentPrompt.includes("skill registry")) {
-  console.error("Agent prompt missing vault scaffold/open instructions.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("Register Goose-native schedules") || !agentPrompt.includes("morning-brief-preflight")) {
-  console.error("Agent prompt missing schedule/preflight instructions.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("recipes/start.yaml") || !agentPrompt.includes("START_HERE.md") || !agentPrompt.includes("choose a first action")) {
-  console.error("Agent prompt missing first-run start instructions.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("GOOSE_MOIM_MESSAGE_FILE") || !agentPrompt.includes("Tell The User Next")) {
-  console.error("Agent prompt missing soul/next-step instructions.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("GOOSE_PROVIDER") || !agentPrompt.includes("goose configure set-secret")) {
-  console.error("Agent prompt missing persistent Goose provider setup.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("mycroft-update") || !agentPrompt.includes("Do not use Goose schedules for repo updates")) {
-  console.error("Agent prompt missing deterministic updater instructions.");
-  process.exit(1);
-}
-if (agentPrompt.includes("fw-test") || agentPrompt.includes("scout-test")) {
-  console.error("Agent prompt printed secret values.");
-  process.exit(1);
-}
-if (!agentPrompt.includes("mycroft doctor")) {
-  console.error("Agent prompt missing verification command.");
+if (context.validateForm({ ...base, scoutpost: false, scoutpostKey: "" }).length !== 0) {
+  console.error("validateForm requires Scoutpost key with the plugin disabled.");
   process.exit(1);
 }
 

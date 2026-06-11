@@ -53,8 +53,11 @@ Mycroft preserves the durable knowledge and supports publication.
 
 ## First Run
 
-After setup, Mycroft opens Goose and writes `START_HERE.md` into the vault. The
-first-run menu offers:
+When the installer finishes it opens `GETTING-STARTED.html` in the browser — a
+personalized guide to the install with example prompts and first workflows (a
+copy is kept at `~/.config/goose/mycroft/getting-started.html`). Mycroft also
+opens Goose and writes `START_HERE.md` into the vault. The first-run menu
+offers:
 
 - Set up my beat.
 - Add material to my knowledge base.
