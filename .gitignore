@@ -31,3 +31,4 @@ bun.lock
 package.json
 plugins/
 mycroft-config.json
+__pycache__/
