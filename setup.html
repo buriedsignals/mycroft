@@ -3183,7 +3183,7 @@ body.mode-local .cloud-only { display: none; }
         <div class="plugin-hero__head">
           <input type="checkbox" name="scoutpost_enabled" id="scoutpost_enabled" checked>
         </div>
-        <h3 class="plugin-hero__title">co<em>Journalist.</em></h3>
+        <h3 class="plugin-hero__title">Scout<em>post.</em></h3>
         <p class="plugin-hero__lede">
           Schedule scouts to watch your beat — pages, social profiles, council agendas — and get alerted when something changes. Spotlight can also recommend scouts mid-investigation.
         </p>
@@ -5505,7 +5505,7 @@ function validateForm(d) {
     }
   }
   if (d.scoutpost && !d.scoutpostKey) {
-    errors.push({ field: 'scoutpost_api_key', message: 'SCOUTPOST_API_KEY is required while coJournalist is enabled — add a key or untick the plugin.' });
+    errors.push({ field: 'scoutpost_api_key', message: 'SCOUTPOST_API_KEY is required while Scoutpost is enabled — add a key or untick the plugin.' });
   }
   if (d.spotlight && !String(d.spotlightVaultPath || '').trim()) {
     errors.push({ field: 'spotlight_vault_path', message: 'Spotlight needs its own vault path while it is enabled.' });
@@ -5594,7 +5594,7 @@ function buildGettingStarted(d) {
     ${d.spotlight ? `<tr><th>Spotlight vault</th><td><code>${esc(d.spotlightVaultPath)}</code> — active investigation casework, kept separate</td></tr>` : ''}
     <tr><th>Profile</th><td><code>~/.config/goose/mycroft</code> — config, env, skill registry</td></tr>
     <tr><th>Source</th><td><code>~/.local/share/goose/mycroft/source</code> — recipes + skills, auto-updated weekly</td></tr>
-    ${d.spotlight ? '<tr><th>Plugins</th><td>Spotlight (OSINT investigations)' + (d.scoutpost ? ' · coJournalist/Scoutpost (hosted monitoring)' : '') + '</td></tr>' : (d.scoutpost ? '<tr><th>Plugins</th><td>coJournalist/Scoutpost (hosted monitoring)</td></tr>' : '')}
+    ${d.spotlight ? '<tr><th>Plugins</th><td>Spotlight (OSINT investigations)' + (d.scoutpost ? ' · Scoutpost (hosted monitoring)' : '') + '</td></tr>' : (d.scoutpost ? '<tr><th>Plugins</th><td>Scoutpost (hosted monitoring)</td></tr>' : '')}
     ${optionalTools.length ? `<tr><th>Optional tools</th><td>${esc(optionalTools.join(' · '))}</td></tr>` : ''}
   </table>
 
