@@ -7881,9 +7881,9 @@ export {
 })();
 </script>
 <script>
-/* Newsletter signup — posts to the shared Supabase Edge Function used by
-   Spotlight + Scoutpost. The function delivers via Resend on the
-   Buried Signals account; no API key is exposed client-side. */
+/* Newsletter signup — posts to the Navigator API, the shared signup
+   endpoint for all Buried Signals properties (CORS allowlisted). Delivers
+   via Resend on the Buried Signals account; no API key exposed client-side. */
 (function () {
   const form = document.getElementById('mycroft-newsletter-form');
   const emailInput = document.getElementById('mycroft-newsletter-email');
@@ -7892,8 +7892,7 @@ export {
   const successEl = document.getElementById('mycroft-newsletter-success');
   if (!form || !emailInput || !submitBtn || !errorEl || !successEl) return;
 
-  const supabaseUrl = 'https://gfmdziplticfoakhrfpt.supabase.co';
-  const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4';
+  const NEWSLETTER_ENDPOINT = 'https://navigator.indicator.media/api/newsletter/subscribe';
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -7906,12 +7905,9 @@ export {
     errorEl.classList.add('hidden');
 
     try {
-      const res = await fetch(`${supabaseUrl}/functions/v1/newsletter-subscribe`, {
+      const res = await fetch(NEWSLETTER_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: supabaseAnonKey
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: value, newsletters: ['buried_signals'] })
       });
       const data = await res.json().catch(() => ({}));
