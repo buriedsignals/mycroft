@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "min_engine_version": "0.1.0",
+  "products": {
+    "mycroft": { "version": "0.2.1", "repo": "buriedsignals/mycroft", "ref": "v0.2.1", "entitlement": "mycroft.core" }
+  },
+  "skills": [
+    { "id": "copywriting", "name": "Copywriting", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/copywriting", "requires_keys": [], "version": "0.2.1" },
+    { "id": "epistemic-grounding", "name": "Epistemic grounding", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/epistemic-grounding", "requires_keys": [], "version": "0.2.1" },
+    { "id": "fact-check", "name": "Fact-check", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/fact-check", "requires_keys": ["FIRECRAWL_API_KEY"], "version": "0.2.1" },
+    { "id": "firecrawl", "name": "Firecrawl web research", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/firecrawl", "requires_keys": ["FIRECRAWL_API_KEY"], "version": "0.2.1" },
+    { "id": "knowledge-primitives", "name": "Knowledge primitives", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/knowledge-primitives", "requires_keys": [], "version": "0.2.1" },
+    { "id": "mycroft-maintenance", "name": "Mycroft maintenance", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/mycroft-maintenance", "requires_keys": [], "version": "0.2.1" },
+    { "id": "obsidian", "name": "Obsidian vault", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/obsidian", "requires_keys": [], "version": "0.2.1" },
+    { "id": "obsidian-ingest", "name": "Obsidian ingest", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/obsidian-ingest", "requires_keys": [], "version": "0.2.1" },
+    { "id": "qmd", "name": "QMD knowledge search", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/qmd", "requires_keys": [], "version": "0.2.1" },
+    { "id": "scoutpost", "name": "Scoutpost monitoring", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/scoutpost", "requires_keys": ["SCOUTPOST_API_KEY", "SCOUTPOST_SUPABASE_ANON_KEY"], "version": "0.2.1" },
+    { "id": "shell-safety", "name": "Shell safety", "audience": ["journalist"], "entitlement": "mycroft.core",
+      "path": "skills/shell-safety", "requires_keys": [], "version": "0.2.1" }
+  ],
+  "artifacts": [],
+  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.0.1" }
+}
