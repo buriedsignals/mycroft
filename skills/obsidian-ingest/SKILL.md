@@ -30,7 +30,7 @@ Use this skill when information should be stored as durable Mycroft knowledge.
    - `wiki/claims/`
    - `wiki/topics/`
 6. Add story candidates under `stories/pitches/` only when there is a publishable angle.
-7. Update `_index.md` and `_log.md`.
+7. Update `index.md` and `log.md`.
 
 ## Spotlight Handoff
 

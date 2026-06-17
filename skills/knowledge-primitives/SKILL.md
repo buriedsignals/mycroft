@@ -18,8 +18,8 @@ Mycroft uses a journalist knowledge base with three layers:
 The vault also keeps:
 
 - `_schema/` for rules, frontmatter, and ingestion policy.
-- `_index.md` for navigation.
-- `_log.md` for ingestion history.
+- `index.md` for navigation.
+- `log.md` for ingestion history.
 - `stories/` for publishable story work derived from investigations and knowledge.
 - `handoff/from-spotlight/` for findings promoted from Spotlight.
 
@@ -51,6 +51,6 @@ tags: []
 After writing a durable note:
 
 1. Add links to related notes when obvious.
-2. Update `_index.md` if the note is important.
-3. Append a short entry to `_log.md` with date, path, and source.
+2. Update `index.md` if the note is important.
+3. Append a short entry to `log.md` with date, path, and source.
 4. If the note came from Spotlight, preserve the case reference and evidence path.

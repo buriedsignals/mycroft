@@ -194,6 +194,19 @@ install_skill_registry() {
     warn "Missing $MYCROFT_SKILL_REGISTRY — the configurator did not finish; re-run the installer."
     exit 1
   fi
+  # Surface skills where Goose discovers them: per-skill symlinks under
+  # ~/.agents/skills/mycroft/<skill> (engine-matching <root>/<product>/<skill>
+  # shape; Goose scans ~/.agents/skills recursively). Goose does not read the
+  # skill registry's "directory" pointer, so without these links the curated
+  # skills are off its discovery path.
+  mkdir -p "$HOME/.agents/skills/mycroft"
+  for skill_dir in "$MYCROFT_SKILLS_DIR"/*/; do
+    [ -d "$skill_dir" ] || continue
+    ln -sfn "$skill_dir" "$HOME/.agents/skills/mycroft/$(basename "$skill_dir")"
+  done
+  if [ "$ENABLE_SCOUTPOST" = "1" ] && [ -d "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost" ]; then
+    ln -sfn "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost" "$HOME/.agents/skills/mycroft/scoutpost"
+  fi
   ok "Mycroft skill registry"
 }
 
@@ -533,7 +546,7 @@ Ask Mycroft one of these:
 
 If the vault is still empty, start by adding material or defining your beat. Vault audits are useful later, after you have real notes.
 VAULT_START_EOF
-  write_if_missing "$VAULT_PATH/_index.md" <<'VAULT_INDEX_EOF'
+  write_if_missing "$VAULT_PATH/index.md" <<'VAULT_INDEX_EOF'
 ---
 type: index
 title: Mycroft Index
@@ -571,7 +584,7 @@ updated: $TODAY
 
 - Spotlight findings: handoff/from-spotlight/
 VAULT_INDEX_EOF
-  write_if_missing "$VAULT_PATH/_log.md" <<'VAULT_LOG_EOF'
+  write_if_missing "$VAULT_PATH/log.md" <<'VAULT_LOG_EOF'
 ---
 type: log
 title: Mycroft Ingestion Log
@@ -629,7 +642,7 @@ updated: $TODAY
 
 # Ingest Rules
 
-Preserve raw sources, create processed extracts, write atomic wiki notes, update _index.md, and append _log.md.
+Preserve raw sources, create processed extracts, write atomic wiki notes, update index.md, and append log.md.
 
 Spotlight handoffs should be promoted only after findings are confirmed or useful as durable knowledge.
 VAULT_INGEST_RULES_EOF

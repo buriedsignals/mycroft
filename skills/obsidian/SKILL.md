@@ -37,8 +37,8 @@ If Obsidian CLI is unavailable, use direct file reads/writes under the configure
 
 ```text
 _schema/
-_index.md
-_log.md
+index.md
+log.md
 context/
 sources/raw/
 sources/processed/
