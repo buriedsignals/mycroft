@@ -113,7 +113,10 @@ curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
 ```
 
 One static, reviewable script ([`install.sh`](install.sh)) for every install.
-It fetches this repo, then opens a local configurator page in the browser —
+It surfaces exactly the skills listed in [`skills.manifest`](skills.manifest) — the
+engine-resolved set for the Goose runtime (`bsig skills resolve`; the engine catalog is the
+source of truth) — into `~/.agents/skills/mycroft/`. Regenerate the manifest when the catalog
+changes. The script also fetches this repo, then opens a local configurator page in the browser —
 served from `127.0.0.1` by `install/setup_server.py`. Sovereignty preference,
 provider keys, plugins, and vault paths (with a native folder picker) are all
 collected there; keys are verified live with each provider and written straight
