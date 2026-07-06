@@ -1279,6 +1279,21 @@ update_repo_ff_only() {
   )
 }
 
+# Re-place skills per the engine placement contract: new ids in the vendored
+# skills.manifest gain canonical links under ~/.agents/skills/mycroft/ (where
+# Goose discovers them); content changes need no re-link at all. Stale ids
+# linger until the installer re-runs — additions are the update-critical case.
+replace_skills() {
+  local canon="$HOME/.agents/skills/mycroft" sid
+  [ -s "$MYCROFT_SOURCE_DIR/skills.manifest" ] || return 0
+  mkdir -p "$canon"
+  while IFS= read -r sid; do
+    { [ -n "$sid" ] && [ -d "$MYCROFT_SOURCE_DIR/skills/$sid" ]; } || continue
+    ln -sfn "$MYCROFT_SOURCE_DIR/skills/$sid" "$canon/$sid"
+  done < "$MYCROFT_SOURCE_DIR/skills.manifest"
+  echo "skills re-placed from skills.manifest"
+}
+
 refresh_profile() {
   mkdir -p "$MYCROFT_PROFILE_DIR"
   mkdir -p "$HOME/.local/bin"
@@ -1391,6 +1406,7 @@ spotlight_before="$(repo_rev "$MYCROFT_PLUGINS_DIR/spotlight" || true)"
 
 update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
 update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
+replace_skills || true
 refresh_profile
 
 if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
