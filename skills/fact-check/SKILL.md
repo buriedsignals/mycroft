@@ -55,6 +55,17 @@ Apply the `epistemic-grounding` skill (claim decomposition, support classificati
 2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` first. Every acquisition should produce an evidence item: `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. If provenance tooling is unavailable, continue the fact-check only as a cited editorial review output and report `provenance incomplete` unless `strict_provenance=true`. See `docs/grounding-provenance-spec.md`.
 3. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
 
+### Suspect media triage
+
+For images, video, or audio whose authenticity is in question, triage before escalating:
+
+1. **Provenance first.** Check Content Credentials at `contentcredentials.org/verify` (C2PA manifest: signer, capture device, edit history, AI involvement). A valid manifest from a known signer is strong positive provenance — but signing keys get compromised (Nikon Z6 III, 2025), so treat it as evidence, not proof. Absence of a manifest proves nothing: most legitimate media is unsigned, and screenshots or platform re-encoding strip manifests.
+2. **Two detectors minimum.** A single-tool verdict is not evidence. Run at least two (Reality Defender has a free tier; AI or Not for fast triage; Hive for volume). TrueMedia.org shut down January 2025 — do not cite it. Detector agreement caps the claim at `medium` confidence; disagreement means escalate, not average.
+3. **Eye and ear are triage only.** Current diffusion-class output has eliminated the classic tells; voice cloning is past the indistinguishable threshold for casual listeners, so voice-only verification fails. Remaining leaks: boundary regions (hairlines, glasses edges), shadow physics, catchlight mismatches, phoneme-lip drift, uniform noise texture.
+4. **Escalate.** Anything load-bearing goes to Spotlight for forensic casework and source contact. Record each detector run as an evidence item (tool, date, verdict).
+
+This consumes C2PA manifests on incoming media. It is independent of the sift-c2pa signing pipeline, which signs Mycroft's own outputs.
+
 ## Required Output Contract
 
 Every fact-check claim must emit:
@@ -82,6 +93,8 @@ Evidence items in `data/evidence-bundle.json` may use `linked_evidence_ids: [...
 
 The validator (`tools/validate-grounding.py`) must reject any claim whose stated confidence exceeds its `confidence_cap`, or whose `evidence_refs` do not resolve to evidence items in `data/evidence-bundle.json`. Publication-ready outputs (`publication_ready: true`) additionally require every referenced claim to be `human_review: approved`.
 
+**Right of response.** A claim that rates a named person or organization `contradicted` or `mischaracterized` is not `publication_ready` until the subject has been offered a chance to respond — state the exact claim, give a reasonable deadline (24-48h is a common newsroom norm; deadlines and legal obligations vary by jurisdiction and outlet) — and the response or non-response is logged as an evidence item. This is an editorial gate for the human reviewer, not a validator check.
+
 ## Verdict Rules
 
 Use the closed SIFT verdict set:
@@ -103,9 +116,28 @@ For Spotlight casework, preserve Spotlight's verdict taxonomy when writing `case
 
 Add a `grounding_assessment` field on Spotlight handoffs so the Spotlight fact-checker can independently audit how the Mycroft verifier grounded each claim.
 
+## Corrections
+
+When an error surfaces in an already-delivered fact-check or published draft:
+
+| Situation | Action |
+|---|---|
+| Factual error | Correct immediately; append a dated correction note |
+| Missing context | Add context; formal correction optional |
+| New information | Update; mark "Updated: [date]" |
+| Subject disputes characterization | Re-run the claim through the recipe; correct only if the re-check warrants it |
+
+Re-emit the corrected claim object with the new verdict, reset `human_review` to `unreviewed`, and add the correction to the evidence bundle so the trail preserves both states. If the output was C2PA-signed, the correction is a new claim in the chain — never mutate a signed manifest.
+
+Correction note format: "Correction [date]: an earlier version stated [error]. In fact, [correct information]."
+
 ## Safety
 
 - Do not rewrite the user's draft unless asked.
 - Do not fabricate sources.
 - Keep confidential source identities out of cloud tools unless the user explicitly approves.
 - Separate evidence from inference.
+
+---
+
+*Suspect-media triage, right-of-response gate, and corrections protocol adapted (one-off, 2026-07-06) from Joe Amditis's `source-verification` and `fact-check-workflow` skills (jamditis/claude-skills-journalism, MIT).*
