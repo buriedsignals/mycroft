@@ -240,6 +240,16 @@ menu. Use Mycroft for durable knowledge and publishing support. Use Spotlight
 when a lead needs active investigation. Use Scoutpost when something should be
 monitored over time.
 
+## Acknowledgements
+
+Five of Mycroft's journalism skills — `foia-requests`, `interview-prep`,
+`story-pitch`, `photo-metadata`, and `ai-writing-detox` — are adapted from
+[claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism)
+by [Joe Amditis](https://skills.amditis.tech/) (Center for Cooperative Media,
+Montclair State University), MIT licensed. Each skill carries its attribution
+and our localization edits; the full record lives in [NOTICE.md](NOTICE.md)
+and [docs/amditis-catalogue.md](docs/amditis-catalogue.md).
+
 ## License
 
 [MIT](LICENSE) - © 2026 Buried Signals.
