@@ -10,12 +10,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Mycroft — Goose, configured for journalism</title>
-<meta name="description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a Qwen fine-tune.">
+<meta name="description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a local Gemma runtime.">
 <meta name="theme-color" content="#E8E0CF">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-50%20-50%20100%20100%22%3E%3Cg%20stroke%3D%22%23131013%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%22-20.5%22%20x2%3D%2212.7%22%20y2%3D%22-12.7%22%2F%3E%3Cline%20x1%3D%2232%22%20y1%3D%220%22%20x2%3D%2218%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2212.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%220%22%20y1%3D%2232%22%20x2%3D%220%22%20y2%3D%2218%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%2220.5%22%20x2%3D%22-12.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%22-32%22%20y1%3D%220%22%20x2%3D%22-18%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%22-20.5%22%20x2%3D%22-12.7%22%20y2%3D%22-12.7%22%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%220%22%20y1%3D%22-34%22%20x2%3D%220%22%20y2%3D%22-16%22%20stroke%3D%22%234A7363%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mycroft — Goose, configured for journalism">
-<meta property="og:description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a Qwen fine-tune.">
+<meta property="og:description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a local Gemma runtime.">
 <meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta property="og:image:secure_url" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta property="og:image:type" content="image/jpeg">
@@ -2238,6 +2238,22 @@ a.card-int:hover {
   color: var(--ink-dim);
   margin: 0;
 }
+.sec--ack {
+  text-align: center;
+  padding: 0 var(--gut) calc(var(--sp-section-yb) * 0.7);
+  border-bottom: 0;
+}
+.ack-list {
+  list-style: none;
+  margin: var(--sp-5) auto 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+  justify-items: center;
+}
+.ack-list li { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-dim); letter-spacing: 0.02em; }
+.ack-list a { color: var(--ink); text-decoration: none; border-bottom: 1px solid rgba(26,26,31,0.25); }
+.ack-list a:hover { color: var(--oxide); border-bottom-color: var(--oxide); }
 
 /* ── 19 · Colophon (footer) ────────────────────────────────────── */
 .colophon {
@@ -2720,8 +2736,8 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Goose, Qwen,<br><em>Obsidian.</em></h2>
-      <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with a Qwen 3.5 fine-tuned on investigative methodology — abliterated, open-weight, yours to audit. It also sets up Obsidian as the place where briefs, sources, claims, and findings land as local markdown.</p>
+      <h2 class="display display--section">Goose, Gemma,<br><em>Obsidian.</em></h2>
+      <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with Gemma 4 31B running fully local — open-weight, quantization-aware, no cloud required. It also sets up Obsidian as the place where briefs, sources, claims, and findings land as local markdown.</p>
     </div>
 
     <div class="equation" data-cascade>
@@ -2737,10 +2753,10 @@ html.js .is-in .tw__in {
 
       <div class="term" style="--delay: 140ms">
         <span class="term__pre">↳ model</span>
-        <h3 class="term__name">Qwen 3.5<em class="term__dot">.</em></h3>
+        <h3 class="term__name">Gemma 4<em class="term__dot">.</em></h3>
         <span class="term__rule"></span>
-        <p class="term__role">journalist · abliterated</p>
-        <p class="term__spec">9B · 35B · GGUF</p>
+        <p class="term__role">local · open-weight</p>
+        <p class="term__spec">31B · QAT · GGUF</p>
       </div>
 
       <div class="term-op" style="--delay: 340ms"><span>+</span></div>
@@ -2858,9 +2874,9 @@ html.js .is-in .tw__in {
 
       <article class="card-int card-int--coming">
         <div class="card-int__kind">COMING · AUGUST-SEPTEMBER 2026</div>
-        <h3 class="card-int__title"><em>DataHound</em> + <em>Atelier.</em></h3>
+        <h3 class="card-int__title"><em>Data Navigator</em> + <em>Atelier.</em></h3>
         <p class="card-int__body">
-          DataHound — public-data discovery (registries, archives, leaks).
+          Data Navigator — public-data discovery (registries, archives, leaks).
           Atelier — visual production for the published piece.
           Two more pieces shipping with the next release.
         </p>
@@ -2914,7 +2930,7 @@ html.js .is-in .tw__in {
         <div class="t-divider" aria-hidden="true"></div>
 
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> goose runtime · <span class="t-arg">installed</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> qwen 3.5 weights · <span class="t-arg">loaded</span> (4.2 GB)</p>
+        <p class="t-line t-line--ok"><span class="t-tick">✓</span> gemma 4 31b weights · <span class="t-arg">loaded</span> (QAT q4)</p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> obsidian vault · <span class="t-arg">~/Documents/Mycroft</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> plugins enabled · <span class="t-arg">Spotlight · Scoutpost</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> local-first mode · <span class="t-arg">ON</span></p>
@@ -2955,7 +2971,7 @@ html.js .is-in .tw__in {
             <div class="goose-app__chat-head">
               <div class="goose-app__session">
                 <strong>Mycroft morning brief</strong>
-                <span>qwen-journalist · local vault</span>
+                <span>gemma4-31b · local vault</span>
               </div>
               <span class="goose-app__status">Running</span>
             </div>
@@ -3014,7 +3030,7 @@ html.js .is-in .tw__in {
             <li class="srv">
               <h4 class="srv__title">Cloud extensions</h4>
               <p class="srv__desc">Expanded tool access and priority features.</p>
-              <p class="srv__meta">Navigator · Scoutpost · DataHound</p>
+              <p class="srv__meta">OSINT Navigator · Scoutpost · Data Navigator</p>
             </li>
             <li class="srv">
               <h4 class="srv__title">Methods library</h4>
@@ -3080,6 +3096,19 @@ html.js .is-in .tw__in {
     <p class="closing__line" data-reveal style="--delay: 220ms">— Open source · Self-hostable · No lock-in · No surveillance —</p>
   </section>
 
+
+  <!-- ────────── ACKNOWLEDGEMENTS ────────── -->
+  <section class="sec sec--ack" id="acknowledgements">
+    <p class="closing__tag" data-reveal>Standing on open work</p>
+    <ul class="ack-list" role="list" data-reveal style="--delay: 120ms">
+      <li><a href="https://github.com/block/goose" target="_blank" rel="noreferrer">Goose</a> <span>— Block · the open-source runtime Mycroft is built on</span></li>
+      <li><a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">Joe Amditis</a> <span>— five journalism skills, adapted · MIT</span></li>
+      <li><a href="https://hapgood.us/2019/06/19/sift-the-four-moves/" target="_blank" rel="noreferrer">Mike Caulfield</a> <span>— the SIFT verification method</span></li>
+      <li><a href="https://exiftool.org/" target="_blank" rel="noreferrer">exiftool</a> <span>— Phil Harvey · powers photo-metadata</span></li>
+      <li><a href="https://www.npmjs.com/package/@tobilu/qmd" target="_blank" rel="noreferrer">QMD</a> <span>— tobilu · local vault search</span></li>
+    </ul>
+  </section>
+
 </main>
 
 
@@ -3104,10 +3133,6 @@ html.js .is-in .tw__in {
       <p class="colophon__imprint">
         Built by <a href="https://buriedsignals.com/" target="_blank" rel="noreferrer"><em>Buried Signals</em></a>.
         Open-source tools for investigative reporting.
-      </p>
-      <p class="colophon__imprint">
-        Journalism skills adapted from <a href="https://skills.amditis.tech/" target="_blank" rel="noreferrer">claude-skills-journalism</a>
-        by <em>Joe Amditis</em>, Center for Cooperative Media — MIT, with thanks.
       </p>
     </section>
 
