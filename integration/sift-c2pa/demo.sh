@@ -277,16 +277,16 @@ demo_mycroft_fetch() {
     echo "   → Lists all captured provenance records"
     echo ""
 
-    # Check if firecrawl is available
-    if command -v firecrawl &> /dev/null; then
-        print_success "firecrawl CLI available - mycroft-fetch ready to use"
+    # Sovereign default: Crawl4AI (crwl). Firecrawl is only the optional fallback.
+    if command -v crwl &> /dev/null || command -v uvx &> /dev/null; then
+        print_success "Crawl4AI available - mycroft-fetch ready to use (sovereign default)"
         echo ""
         echo "Try: $FETCH_CMD scrape https://example.com"
     else
-        print_warning "firecrawl CLI not installed"
+        print_warning "Crawl4AI not installed"
         echo ""
-        echo "Install with: npm install -g firecrawl"
-        echo "Then set FIRECRAWL_API_KEY environment variable"
+        echo "Install with: uv tool install crawl4ai && crawl4ai-setup"
+        echo "(Optional Firecrawl fallback: npm install -g firecrawl + FIRECRAWL_API_KEY)"
     fi
 }
 
@@ -352,7 +352,7 @@ show_summary() {
     echo ""
     echo -e "${BOLD}Next Steps:${NC}"
     echo "  1. Configure a signing credential in C2PA artifact service"
-    echo "  2. Install firecrawl CLI: npm install -g firecrawl"
+    echo "  2. Install Crawl4AI: uv tool install crawl4ai && crawl4ai-setup"
     echo "  3. Run a real fact-check: goose run --recipe fact-check-c2pa.yaml"
     echo ""
 }

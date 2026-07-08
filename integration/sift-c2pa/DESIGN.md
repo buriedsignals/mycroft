@@ -58,7 +58,8 @@ Instead, sources are **referenced as ingredients with content hashes**. The hash
 
 ### 1. `mycroft-fetch` CLI
 
-Wrapper around `firecrawl` that captures provenance metadata:
+Provenance-capturing fetch/search — sovereign default (Crawl4AI scrape / SearXNG
+search), Firecrawl fallback — that records provenance metadata:
 
 ```bash
 mycroft-fetch scrape https://example.com/article
@@ -234,7 +235,7 @@ When someone views a SIFT-verified article:
 
 | Component | Location | Description |
 |-----------|----------|-------------|
-| `mycroft-fetch` CLI | `integration/sift-c2pa/mycroft-fetch` | Provenance-capturing wrapper for firecrawl |
+| `mycroft-fetch` CLI | `integration/sift-c2pa/mycroft-fetch` | Provenance-capturing fetch/search (Crawl4AI/SearXNG default, Firecrawl fallback) |
 | SIFT manifest schema | `integration/sift-c2pa/sift-manifest-schema.json` | JSON Schema for structured output |
 | SIFT routes | `c2pa-artifact/server/routes/sift_routes.py` | `/api/sift/process`, `/api/sift/verify`, `/api/sift/schema` |
 | Journalism policy | `c2pa-artifact/server/config/policy_settings.json` | New artifact type + SIFT policy |

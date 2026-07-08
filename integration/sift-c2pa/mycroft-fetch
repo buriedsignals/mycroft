@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """
-mycroft-fetch — Provenance-capturing wrapper for firecrawl
+mycroft-fetch — Provenance-capturing web fetch/search for the SIFT/C2PA demo
 
-Wraps firecrawl CLI to capture content hashes and access metadata,
-enabling SIFT verification trails to be encoded as C2PA ingredients.
+Sovereign default: scrape via Crawl4AI, search via SearXNG; Firecrawl is an
+optional fallback. Captures content hashes and access metadata so SIFT
+verification trails can be encoded as C2PA ingredients. acquisition_method
+records the tool that actually acquired the evidence.
 
 Usage:
     mycroft-fetch scrape <url> [--format markdown|html] [--output FILE]
@@ -12,7 +14,8 @@ Usage:
     mycroft-fetch provenance show <id>
 
 Environment:
-    FIRECRAWL_API_KEY    Required for firecrawl
+    SEARXNG_URL          Local SearXNG endpoint (default http://localhost:8899)
+    FIRECRAWL_API_KEY    Optional — enables the Firecrawl fallback
     MYCROFT_PROV_DIR     Provenance storage (default: ~/.mycroft/provenance)
 """
 
@@ -20,6 +23,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import uuid
@@ -34,7 +38,8 @@ PROV_DIR = Path(os.environ.get('MYCROFT_PROV_DIR', Path.home() / '.mycroft' / 'p
 
 # --- Provenance Record ---
 
-def create_provenance_record(url: str, content: str, format: str, command: str) -> dict:
+def create_provenance_record(url: str, content: str, format: str, command: str,
+                             acquisition_method: str = 'crawl4ai') -> dict:
     """Create a provenance record for fetched content."""
     content_bytes = content.encode('utf-8')
 
@@ -46,7 +51,8 @@ def create_provenance_record(url: str, content: str, format: str, command: str) 
         'content_length': len(content_bytes),
         'format': format,
         'command': command,
-        'firecrawl_version': get_firecrawl_version(),
+        'acquisition_method': acquisition_method,
+        'scraper_version': get_scraper_version(acquisition_method),
     }
 
 
@@ -107,6 +113,72 @@ def get_firecrawl_version() -> str:
         return 'not-installed'
 
 
+def get_scraper_version(method: str) -> str:
+    """Version of the tool that actually acquired the evidence."""
+    if method == 'crawl4ai':
+        try:
+            r = subprocess.run(['uv', 'tool', 'list'], capture_output=True, text=True)
+            for line in r.stdout.splitlines():
+                if line.strip().startswith('crawl4ai'):
+                    parts = line.split()
+                    return 'crawl4ai ' + parts[1] if len(parts) > 1 else 'crawl4ai'
+        except FileNotFoundError:
+            pass
+        return 'crawl4ai'
+    if method == 'firecrawl':
+        return get_firecrawl_version()
+    if method == 'searxng':
+        return 'searxng@' + os.environ.get('SEARXNG_URL', 'http://localhost:8899')
+    return 'unknown'
+
+
+def run_crawl4ai_scrape(url: str, format: str = 'markdown') -> tuple[str, int, list]:
+    """Sovereign scrape via Crawl4AI. Returns (content, exit_code, command_list).
+
+    The CLI renders clean markdown; html/links are not first-class, so we always
+    request markdown (the demo default) and record the requested format label.
+    """
+    base = ['crwl'] if shutil.which('crwl') else ['uvx', '--from', 'crawl4ai', 'crwl']
+    cmd = base + ['crawl', url, '-o', 'markdown']
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    except FileNotFoundError:
+        return 'crawl4ai CLI not found', 127, cmd
+    if result.returncode != 0 or not result.stdout.strip():
+        return (result.stderr or 'crawl4ai returned empty'), (result.returncode or 3), cmd
+    return result.stdout, 0, cmd
+
+
+def run_searxng_search(query: str, limit: int = 10) -> tuple[str, int, list]:
+    """Sovereign search via a local SearXNG JSON endpoint. Returns (json, code, cmd)."""
+    import urllib.parse
+    import urllib.request
+    base = os.environ.get('SEARXNG_URL', 'http://localhost:8899').rstrip('/')
+    cmd = ['searxng', base, query]
+    hits = []
+    seen = set()
+    try:
+        for page in range(1, 4):
+            u = base + '/search?' + urllib.parse.urlencode({'q': query, 'format': 'json', 'pageno': page})
+            data = json.loads(urllib.request.urlopen(
+                urllib.request.Request(u, headers={'User-Agent': 'mycroft-fetch/1.0'}), timeout=30).read())
+            results = data.get('results') or []
+            if not results:
+                break
+            for r in results:
+                url_ = r.get('url')
+                if not url_ or url_ in seen:
+                    continue
+                seen.add(url_)
+                hits.append({'url': url_, 'title': r.get('title', ''),
+                             'snippet': (r.get('content') or '')[:300], 'date': r.get('publishedDate')})
+                if len(hits) >= limit:
+                    return json.dumps(hits, indent=2), 0, cmd
+    except Exception as exc:  # noqa: BLE001 - SearXNG unreachable
+        return f'SearXNG unreachable at {base}: {exc}', 3, cmd
+    return json.dumps(hits, indent=2), 0, cmd
+
+
 def run_firecrawl_scrape(url: str, format: str = 'markdown') -> tuple[str, int]:
     """Run firecrawl scrape and return content + exit code."""
     cmd = ['firecrawl', 'scrape', url, '--format', format]
@@ -153,16 +225,22 @@ def output_result(provenance: dict, content: str, json_output: bool = False):
 # --- CLI ---
 
 def cmd_scrape(args):
-    """Handle scrape command."""
-    content, exit_code = run_firecrawl_scrape(args.url, args.format)
+    """Handle scrape command (sovereign default: Crawl4AI; Firecrawl fallback)."""
+    content, exit_code, command_list = run_crawl4ai_scrape(args.url, args.format)
+    method = 'crawl4ai'
+    if exit_code != 0 and shutil.which('firecrawl'):
+        print("[crawl4ai failed] falling back to firecrawl", file=sys.stderr)
+        content, exit_code = run_firecrawl_scrape(args.url, args.format)
+        command_list = ['firecrawl', 'scrape', args.url, '--format', args.format]
+        method = 'firecrawl'
 
     if exit_code != 0:
-        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        print(f"Error: scrape failed\n{content}", file=sys.stderr)
         sys.exit(exit_code)
 
-    # Create and save provenance
-    command = f"firecrawl scrape {args.url} --format {args.format}"
-    provenance = create_provenance_record(args.url, content, args.format, command)
+    # Create and save provenance (acquisition_method = the tool that acquired it)
+    provenance = create_provenance_record(args.url, content, args.format,
+                                          ' '.join(command_list), method)
     save_provenance(provenance, content)
 
     # Output
@@ -170,21 +248,27 @@ def cmd_scrape(args):
 
 
 def cmd_search(args):
-    """Handle search command."""
-    results, exit_code = run_firecrawl_search(args.query, args.limit)
+    """Handle search command (sovereign default: SearXNG; Firecrawl fallback)."""
+    results, exit_code, command_list = run_searxng_search(args.query, args.limit)
+    method = 'searxng'
+    if exit_code != 0 and shutil.which('firecrawl'):
+        print("[searxng failed] falling back to firecrawl", file=sys.stderr)
+        results, exit_code = run_firecrawl_search(args.query, args.limit)
+        command_list = ['firecrawl', 'search', args.query, '--limit', str(args.limit)]
+        method = 'firecrawl'
 
     if exit_code != 0:
-        print(f"Error: firecrawl failed\n{results}", file=sys.stderr)
+        print(f"Error: search failed\n{results}", file=sys.stderr)
         sys.exit(exit_code)
 
     # For search, we create a provenance record for the search itself
     # Individual URLs would be scraped separately
-    command = f"firecrawl search '{args.query}' --limit {args.limit}"
     provenance = create_provenance_record(
         url=f"search:{args.query}",
         content=results,
         format='json',
-        command=command
+        command=' '.join(command_list),
+        acquisition_method=method,
     )
     save_provenance(provenance, results)
 

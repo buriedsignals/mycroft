@@ -8,12 +8,7 @@
 Sovereign default: Crawl4AI (open-source, no API key) via `uvx --from crawl4ai
 crwl`. On a Crawl4AI failure the optional Firecrawl escape hatch is used *only*
 if the `firecrawl` CLI is present (KTD4/KTD6 in tools/GOING_LOCAL.md). Local PDFs
-go through pdftotext.
-
-NOTE (install-time): the intended middle rung is Scrapling (`stealthy-fetch`) for
-bot-hostile sources, between Crawl4AI and Firecrawl — it needs the Crawl4AI/
-Scrapling env the installer provisions (`crawl4ai-setup` browser runtime). Until
-that lands, the ladder here is Crawl4AI -> (optional) Firecrawl.
+go through pdftotext. The ladder is Crawl4AI -> (optional) Firecrawl.
 
 Exit 0 on success; 3 on a fetch/parse failure with the error on stderr.
 """
