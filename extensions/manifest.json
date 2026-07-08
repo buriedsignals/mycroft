@@ -69,8 +69,8 @@
       "repo": "https://github.com/buriedsignals/scoutpost-os",
       "status": "launching with Mycroft",
       "selectable_default": true,
-      "mode": "hosted_api",
-      "api_base": "https://www.scoutpost.ai/api/v1",
+      "mode": "cli_or_api",
+      "api_base": "https://scoutpost.ai/functions/v1",
       "env": ["SCOUTPOST_API_KEY"]
     },
     {
