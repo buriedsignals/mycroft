@@ -1,0 +1,218 @@
+#!/usr/bin/env bash
+set -euo pipefail
+mode="${1:-scheduled}"
+XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
+MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"
+MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"
+MYCROFT_SOURCE_DIR="$MYCROFT_DATA_DIR/source"
+MYCROFT_PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"
+log_dir="$MYCROFT_DATA_DIR/logs"
+mkdir -p "$log_dir"
+log="$log_dir/update.log"
+exec >>"$log" 2>&1
+echo ""
+date
+echo "mode: $mode"
+
+repo_rev() {
+  local dir="$1"
+  [ -d "$dir/.git" ] || return 0
+  (cd "$dir" && git rev-parse HEAD)
+}
+
+rollback_repo() {
+  local dir="$1" name="$2" rev="$3"
+  [ -n "$rev" ] || return 0
+  [ -d "$dir/.git" ] || return 0
+  echo "Rolling back $name to $rev"
+  (cd "$dir" && git reset --hard "$rev")
+}
+
+update_repo_ff_only() {
+  local dir="$1" name="$2" branch="main"
+  [ -d "$dir/.git" ] || return 0
+  echo "== $name =="
+  (
+    cd "$dir"
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+      echo "$name has local uncommitted changes; skipping automatic update."
+      return 0
+    fi
+    before="$(git rev-parse HEAD)"
+    git fetch origin "$branch"
+    if git merge-base --is-ancestor HEAD "origin/$branch"; then
+      git merge --ff-only "origin/$branch"
+      after="$(git rev-parse HEAD)"
+      echo "$name $before -> $after"
+    else
+      echo "$name has local commits or divergent history; skipping automatic update."
+    fi
+  )
+}
+
+# Re-place skills per the engine placement contract: new ids in the vendored
+# skills.manifest gain canonical links under ~/.agents/skills/mycroft/ (where
+# Goose discovers them); content changes need no re-link at all. Stale ids
+# linger until the installer re-runs — additions are the update-critical case.
+replace_skills() {
+  local canon="$HOME/.agents/skills/mycroft" sid
+  [ -s "$MYCROFT_SOURCE_DIR/skills.manifest" ] || return 0
+  mkdir -p "$canon"
+  while IFS= read -r sid; do
+    { [ -n "$sid" ] && [ -d "$MYCROFT_SOURCE_DIR/skills/$sid" ]; } || continue
+    ln -sfn "$MYCROFT_SOURCE_DIR/skills/$sid" "$canon/$sid"
+  done < "$MYCROFT_SOURCE_DIR/skills.manifest"
+  echo "skills re-placed from skills.manifest"
+}
+
+refresh_profile() {
+  mkdir -p "$MYCROFT_PROFILE_DIR"
+  mkdir -p "$HOME/.local/bin"
+  case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) export PATH="$HOME/.local/bin:$PATH" ;;
+  esac
+  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" ]; then
+    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" || true
+    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" ]; then
+    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" || true
+    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"
+  fi
+  # Re-link the updater + doctor to their repo scripts (self-heal): converts an old
+  # static-copy wrapper into a symlink, so from here on `mycroft update` always runs
+  # the current repo version — no reinstall needed for future updater/doctor fixes.
+  for _cli in mycroft-update mycroft-doctor; do
+    if [ -f "$MYCROFT_SOURCE_DIR/scripts/$_cli" ]; then
+      chmod +x "$MYCROFT_SOURCE_DIR/scripts/$_cli" || true
+      ln -sf "$MYCROFT_SOURCE_DIR/scripts/$_cli" "$HOME/.local/bin/$_cli"
+    fi
+  done
+  if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
+    mkdir -p "$GOOSE_CONFIG/custom_providers"
+    for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do
+      [ -f "$src" ] || continue
+      name="$(basename "$src")"
+      if [ -f "$GOOSE_CONFIG/custom_providers/$name" ]; then
+        cp "$src" "$GOOSE_CONFIG/custom_providers/$name"
+      fi
+    done
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
+    # rm -f first so a pre-existing SOUL.md *symlink* into the source is replaced by a
+    # real copy — otherwise `cp` sees src==dst ("identical") and errors under set -e.
+    rm -f "$MYCROFT_PROFILE_DIR/SOUL.md"
+    cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
+  fi
+  MYCROFT_DIR="$MYCROFT_SOURCE_DIR"
+  MYCROFT_CONFIG="$MYCROFT_PROFILE_DIR/mycroft-config.json"
+  MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
+  GOOSE_RECIPE_PATH="$MYCROFT_SOURCE_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
+  export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH
+  if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
+    set -a
+    . "$MYCROFT_PROFILE_DIR/.env"
+    set +a
+  fi
+  if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
+    cat "$MYCROFT_SOURCE_DIR/instructions/journalism.md" > "$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+    cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_EOF
+
+## Mycroft Installed Context
+
+- Mycroft Goose profile: $MYCROFT_PROFILE_DIR
+- Mycroft source: $MYCROFT_SOURCE_DIR
+- Mycroft plugins: $MYCROFT_PLUGINS_DIR
+- Mycroft durable knowledge vault: ${MYCROFT_VAULT_PATH:-}
+- Mycroft recipes: $MYCROFT_SOURCE_DIR/recipes:$MYCROFT_PROFILE_DIR/generated-recipes
+- Mycroft persistent soul file: $MYCROFT_PROFILE_DIR/SOUL.md
+
+Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
+Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+
+## Getting Started Route
+
+When the user is new after install, asks how to start, or the vault contains only scaffold/example files, do not stop at "nothing found." Explain that Mycroft needs reporting context or source material, then offer:
+
+1. Set up my beat.
+2. Add to my knowledge base.
+3. Create my morning brief.
+4. Investigate a lead.
+5. Set up scouts.
+6. Show me a demo.
+
+Prefer "Add to my knowledge base" when the user has links, files, newsletters, pasted notes, PDFs, or folders. Offer vault cleanup or an audit only when the user says they already have an existing note collection.
+
+Use $MYCROFT_SOURCE_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_SOURCE_DIR/recipes/morning-brief-preflight.yaml only when the user specifically chooses the morning brief path.
+PROFILE_EOF
+    if [ -n "${SPOTLIGHT_DIR:-}" ] || [ -d "$MYCROFT_PLUGINS_DIR/spotlight" ]; then
+      SPOTLIGHT_DIR="${SPOTLIGHT_DIR:-$MYCROFT_PLUGINS_DIR/spotlight}"
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_SPOTLIGHT_EOF
+
+## Spotlight Installed Context
+
+- Spotlight repo: $SPOTLIGHT_DIR
+- Spotlight vault: ${SPOTLIGHT_VAULT_PATH:-}
+- Spotlight cases root: ${SPOTLIGHT_VAULT_PATH:-}/cases
+- Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
+- Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
+- Mycroft ingest target for Spotlight findings: ${SPOTLIGHT_INGEST_TARGET:-}
+
+Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
+Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
+For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
+
+- $SPOTLIGHT_DIR/AGENTS.md
+- $SPOTLIGHT_DIR/agents/fact-checker.md
+- $SPOTLIGHT_DIR/skills/spotlight/SKILL.md
+
+Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
+PROFILE_SPOTLIGHT_EOF
+    fi
+    if [ -n "${SCOUTPOST_API_KEY:-}" ] || [ "${SPOTLIGHT_MONITORING_BACKEND:-}" = "scoutpost" ]; then
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_SCOUTPOST_EOF'
+
+## Scoutpost Installed Context
+
+Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
+Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
+Never print the API key.
+PROFILE_SCOUTPOST_EOF
+    fi
+    cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
+  fi
+}
+
+mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
+spotlight_before="$(repo_rev "$MYCROFT_PLUGINS_DIR/spotlight" || true)"
+
+update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
+update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
+replace_skills || true
+refresh_profile
+
+# Provision/refresh the sovereign stack (Crawl4AI + poppler + SearXNG) from the
+# just-updated source so an existing install gains the backends the new sovereign
+# recipes need — not just the recipe changes. Idempotent + best-effort (a down
+# Docker or missing tool warns, never fails the update). Tor stays opt-in.
+if [ -f "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" ]; then
+  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
+    bash "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" || true
+fi
+
+if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
+  if "$HOME/.local/bin/mycroft-doctor"; then
+    echo "doctor passed"
+  else
+    echo "doctor failed after update; rolling back app checkouts"
+    rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
+    rollback_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" "$spotlight_before"
+    refresh_profile
+    exit 1
+  fi
+fi
+
+echo "update complete"

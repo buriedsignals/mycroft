@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+set -u
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
+fail=0
+ok_check() { printf "OK    %s\n" "$*"; }
+bad_check() { printf "FAIL  %s\n" "$*"; fail=1; }
+warn_check() { printf "WARN  %s\n" "$*"; }
+check_path() {
+  if [ -e "$1" ]; then ok_check "$2"; else bad_check "$2 missing: $1"; fi
+}
+
+GOOSE_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/goose"
+XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+MYCROFT_PROFILE_DIR="${MYCROFT_PROFILE_DIR:-$GOOSE_CONFIG/mycroft}"
+MYCROFT_DATA_DIR="${MYCROFT_DATA_DIR:-$XDG_DATA_HOME/goose/mycroft}"
+MYCROFT_DIR="${MYCROFT_DIR:-$MYCROFT_DATA_DIR/source}"
+MYCROFT_ENV="$MYCROFT_PROFILE_DIR/.env"
+MYCROFT_CONFIG="${MYCROFT_CONFIG:-$MYCROFT_PROFILE_DIR/mycroft-config.json}"
+MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"
+MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
+MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
+PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
+RECIPE_PATH="$MYCROFT_DIR/recipes"
+REQUIRED_ENV=""
+if [ -f "$MYCROFT_PROFILE_DIR/setup-config.env" ]; then
+  REQUIRED_ENV="$(. "$MYCROFT_PROFILE_DIR/setup-config.env" 2>/dev/null; printf '%s' "${REQUIRED_DOCTOR_ENV:-}")"
+fi
+
+check_path "$MYCROFT_DIR/.git" "Mycroft repo"
+check_path "$MYCROFT_PROFILE_DIR" "Mycroft Goose profile"
+check_path "$MYCROFT_CONFIG" "Mycroft config"
+check_path "$MYCROFT_SKILL_REGISTRY" "Mycroft skill registry"
+check_path "$MYCROFT_GOOSE_INSTRUCTIONS" "Mycroft Goose instructions"
+check_path "$MYCROFT_SOUL_FILE" "Mycroft soul"
+check_path "$MYCROFT_DIR/skills/knowledge-primitives/SKILL.md" "knowledge-primitives skill"
+check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
+check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
+check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
+check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
+check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
+check_path "$HOME/.local/bin/mycroft-fetch" "mycroft-fetch command"
+check_path "$MYCROFT_DIR/scripts/mycroft_safe.py" "mycroft_safe.py source"
+check_path "$HOME/.local/bin/mycroft-safe" "mycroft-safe command"
+check_path "$MYCROFT_DIR/skills/shell-safety/SKILL.md" "shell-safety skill"
+check_path "$MYCROFT_DIR/skills/epistemic-grounding/SKILL.md" "epistemic-grounding skill"
+check_path "$RECIPE_PATH" "Mycroft recipes"
+check_path "$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml" "scheduled morning brief recipe"
+check_path "$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml" "scheduled vault audit recipe"
+check_path "$GOOSE_CONFIG" "Goose config dir"
+check_path "$PROVIDERS_DST" "Goose custom providers dir"
+check_path "$GOOSE_CONFIG/config.yaml" "Goose config file"
+check_path "$GOOSE_CONFIG/.goosehints" "Goose hints"
+check_path "$MYCROFT_ENV" "Mycroft env"
+
+if [ -f "$MYCROFT_ENV" ]; then
+  set -a
+  . "$MYCROFT_ENV"
+  set +a
+  for name in $REQUIRED_ENV; do
+    if [ -n "${!name:-}" ]; then ok_check "$name present"; else bad_check "$name missing or empty"; fi
+  done
+fi
+
+if [ -f "$GOOSE_CONFIG/config.yaml" ]; then
+  if grep -q '^GOOSE_PROVIDER:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose provider persisted"; else bad_check "GOOSE_PROVIDER missing from Goose config"; fi
+  if grep -q '^GOOSE_MODEL:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose model persisted"; else bad_check "GOOSE_MODEL missing from Goose config"; fi
+  if grep -q '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose Mycroft soul persisted"; else bad_check "GOOSE_MOIM_MESSAGE_FILE missing from Goose config"; fi
+fi
+
+case ":${GOOSE_RECIPE_PATH:-}:" in
+  *":$RECIPE_PATH:"*) ok_check "GOOSE_RECIPE_PATH includes $RECIPE_PATH" ;;
+  *) bad_check "GOOSE_RECIPE_PATH missing $RECIPE_PATH" ;;
+esac
+
+if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
+if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
+if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
+# Sovereign stack (soft checks — Crawl4AI has a uvx cold-start, SearXNG a Firecrawl
+# fallback, so a missing one warns rather than failing the doctor / triggering rollback).
+if command -v crwl >/dev/null 2>&1; then ok_check "crawl4ai (crwl)"; else warn_check "crawl4ai (crwl) not on PATH — scrape cold-starts via uvx"; fi
+if command -v pdftotext >/dev/null 2>&1; then ok_check "pdftotext (PDF extract)"; else warn_check "pdftotext missing — PDF extraction unavailable"; fi
+SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
+if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
+  ok_check "SearXNG reachable ($SEARXNG_URL_CHECK)"
+else
+  warn_check "SearXNG not reachable at $SEARXNG_URL_CHECK — start it (docker start mycroft-searxng) or set SEARXNG_URL"
+fi
+if command -v mycroft-safe >/dev/null 2>&1; then
+  if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then
+    ok_check "mycroft-safe CLI"
+  else
+    bad_check "mycroft-safe CLI present but validator failed"
+  fi
+else
+  bad_check "mycroft-safe CLI missing from PATH"
+fi
+if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
+  ok_check "Spotlight plugin"
+  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
+  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/skills/ingest/SKILL.md" "Spotlight ingest skill"
+fi
+
+if [ "$fail" -eq 0 ]; then
+  printf "\nMycroft doctor: OK\n"
+else
+  printf "\nMycroft doctor: failed\n"
+fi
+exit "$fail"
