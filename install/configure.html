@@ -118,38 +118,26 @@
       <input type="radio" name="sovereignty" value="local">
       <p class="sov-num"><em>02</em> Local-first</p>
       <span class="sov-title">Yours,<br><em>Truly.</em></span>
-      <p class="sov-desc">Recipes route to your local fine-tuned Qwen by default. Cloud is fallback. Some features feature-flagged off.</p>
-      <p class="sov-meta"><strong>$0 / mo</strong> · 16 GB+ RAM · built-in inference</p>
+      <p class="sov-desc">Recipes route to a local model by default. Cloud is fallback. Some features feature-flagged off.</p>
+      <p class="sov-meta"><strong>$0 / mo</strong> · 32 GB+ RAM · built-in inference</p>
     </label>
   </div>
 
   <div class="cloud-only">
     <p class="num">02 — Providers</p>
     <h2>Open-weight, <em>ZDR.</em></h2>
-    <p class="sec-lead"><strong>Toggle the providers you want and paste your keys.</strong> Keys are checked live against the provider when you finish — a typo fails here, not three days later in a recipe.</p>
-    <div class="grid-2">
+    <p class="sec-lead"><strong>One ZDR cloud frontier: Fireworks serving GLM-5.2.</strong> Fireworks runs the open weights on its own US GPUs — "not a router," so your queries never reach Z.AI in China. ZDR is on by default for open models. Paste your key; it's checked live when you finish, so a typo fails here, not three days later in a recipe.</p>
+    <div>
       <div class="item">
         <div class="item__head">
-          <label class="check"><input type="checkbox" id="fireworks" checked><span class="item__title">Fireworks AI<br><em>Qwen 3.6 Plus</em></span></label>
-          <span class="badge req">primary</span>
+          <label class="check"><input type="checkbox" id="fireworks" checked><span class="item__title">Fireworks AI<br><em>GLM-5.2</em></span></label>
+          <span class="badge req">ZDR cloud</span>
         </div>
-        <p class="item__lede">Open-weight Qwen, Fireworks US data centers. 1M-token context. ZDR by default — no opt-in needed. ~$6-40/mo at moderate journalism use.</p>
+        <p class="item__lede">GLM-5.2 (open-weight flagship by Z.ai) hosted in-house on Fireworks' US data centers — not proxied to the origin lab. 1M-token context, top ZDR model on our OSINT benchmark. ~$6-40/mo at moderate journalism use.</p>
         <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key →</a>
         <div>
           <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
           <input class="fld" type="password" id="fireworks_key" placeholder="fw_xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-        </div>
-      </div>
-      <div class="item">
-        <div class="item__head">
-          <label class="check"><input type="checkbox" id="together"><span class="item__title">Together AI<br><em>Qwen 2.5-72B Turbo</em></span></label>
-          <span class="badge">alt</span>
-        </div>
-        <p class="item__lede">Open-weight, Together US data centers, SOC 2 Type 2. ZDR is opt-in — set <em>both</em> dashboard privacy toggles to "No" before first use.</p>
-        <a class="mini-btn" href="https://together.ai" target="_blank" rel="noreferrer">Get API key →</a>
-        <div>
-          <label class="field-label" for="together_key">TOGETHER_API_KEY</label>
-          <input class="fld" type="password" id="together_key" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
         </div>
       </div>
     </div>
@@ -158,24 +146,24 @@
   <div class="local-only">
     <p class="num">02 — Local model</p>
     <h2>Local <em>models.</em></h2>
-    <p class="sec-lead">Pick the model that matches your hardware. The 9B is the Mycroft daily driver and fits any 16 GB+ machine; the 27B needs 32 GB+ unified memory. The installer downloads it into <code>~/models/</code> and registers it with Goose's built-in local inference.</p>
+    <p class="sec-lead">Pick the model that matches your hardware. Both local models need 32 GB+ unified memory; on lighter machines choose cloud-first instead. The installer registers the model with Goose's built-in local inference.</p>
     <button type="button" class="mini-btn" id="fitCheckBtn">Check my computer</button>
     <span class="hint">Browser-only hardware probe. No data leaves this page.</span>
     <div class="fit-panel" id="fitPanel" hidden></div>
     <div class="grid-2" style="margin-top:14px;">
       <label class="item model-card">
         <div class="item__head">
-          <span class="item__title"><input type="radio" name="local_model" value="qwen9b" checked style="margin-right:8px;">Qwen 3.5 9B<br><em>Journalist.</em></span>
-          <span class="badge">16 GB</span>
+          <span class="item__title"><input type="radio" name="local_model" value="gemma31b" checked style="margin-right:8px;">Gemma 4 31B<br><em>Recommended.</em></span>
+          <span class="badge req">32 GB</span>
         </div>
-        <p class="item__lede">Default for both Mycroft and Spotlight. 9B dense, abliterated, investigative-journalism fine-tune. ~6 GB on disk, ~8 GB at runtime.</p>
+        <p class="item__lede">Default for both Mycroft and Spotlight. Top-tier reasoning at its size, served via the official Ollama <code>gemma4:31b-it-qat</code> tag. ~18 GB on disk.</p>
       </label>
       <label class="item model-card">
         <div class="item__head">
           <span class="item__title"><input type="radio" name="local_model" value="qwen27b" style="margin-right:8px;">Qwen 3.6 27B<br><em>Journalist.</em></span>
           <span class="badge req">32 GB</span>
         </div>
-        <p class="item__lede">Heavy tier for 32 GB+ machines. Maximum reasoning depth, 3-5× slower responses. ~15 GB on disk.</p>
+        <p class="item__lede">Abliterated investigative-journalism fine-tune for 32 GB+ machines. 3-5× slower responses. ~15 GB on disk.</p>
       </label>
     </div>
   </div>
@@ -386,20 +374,20 @@ document.getElementById('fitCheckBtn').addEventListener('click', () => {
   let cls = 'amber', msg;
   if (memGB && memGB < 8) {
     cls = 'red';
-    msg = `<strong>Below the local minimum — use cloud-first.</strong> Browser reports roughly ${memGB} GB RAM, below the 16 GB minimum for the 9B Journalist.`;
+    msg = `<strong>Below the local minimum — use cloud-first.</strong> Browser reports roughly ${memGB} GB RAM, well below the 32 GB both local models need.`;
   } else if (isMac) {
-    msg = '<strong>Apple Silicon likely; confirm memory.</strong> Browsers hide actual RAM. The <strong>9B Journalist</strong> is safe on any 16 GB+ Apple Silicon Mac; the 27B needs 32 GB+. Check with: <code>system_profiler SPHardwareDataType | grep Memory</code>';
+    msg = '<strong>Apple Silicon likely; confirm memory.</strong> Browsers hide actual RAM. Both local models (<strong>Gemma 4 31B</strong> and the 27B) need <strong>32 GB+</strong> unified memory; on lighter Macs choose cloud-first. Check with: <code>system_profiler SPHardwareDataType | grep Memory</code>';
   } else if (isLinux) {
-    msg = '<strong>Linux detected; check RAM/VRAM.</strong> Use the <strong>9B Journalist</strong> with 16 GB+ system RAM or any 8+ GB GPU. The 27B needs 32 GB+ system RAM or 24+ GB VRAM. Check with: <code>free -h</code>';
+    msg = '<strong>Linux detected; check RAM/VRAM.</strong> Both local models need <strong>32 GB+</strong> system RAM or 24+ GB VRAM. On lighter hardware choose cloud-first. Check with: <code>free -h</code>';
   } else {
-    msg = '<strong>Hardware check inconclusive.</strong> Use cloud-first unless you can confirm at least 16 GB RAM. The 9B Journalist is the safe local default.';
+    msg = '<strong>Hardware check inconclusive.</strong> Use cloud-first unless you can confirm at least 32 GB RAM. Both local models need that floor.';
   }
   panel.className = 'fit-panel ' + cls;
   panel.innerHTML = msg + `<br><span class="hint">CPU cores: ${cores || 'n/a'} · reported RAM: ${memGB ? '~' + memGB + ' GB+' : 'n/a'}</span>`;
   panel.hidden = false;
 });
 document.querySelectorAll('input[name="local_model"]').forEach(el => el.addEventListener('change', () => {
-  if (el.checked && el.value === 'qwen27b' && document.getElementById('fitPanel').hidden) {
+  if (el.checked && document.getElementById('fitPanel').hidden) {
     document.getElementById('fitCheckBtn').click();
   }
 }));
@@ -410,7 +398,7 @@ function readForm() {
   return {
     token: TOKEN,
     sovereignty: document.querySelector('input[name="sovereignty"]:checked').value,
-    localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'qwen9b',
+    localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'gemma31b',
     vault: v('vault_path'),
     spotlightVaultPath: v('spotlight_vault_path'),
     installGoose: c('installGoose'),
@@ -420,12 +408,10 @@ function readForm() {
     agentmailEnabled: c('agentmailEnabled'),
     apifyEnabled: c('apifyEnabled'),
     fireworks: c('fireworks'),
-    together: c('together'),
     spotlight: c('spotlight'),
     scoutpost: c('scoutpost'),
     spotDevBrowser: c('spotDevBrowser'),
     fireworksKey: v('fireworks_key'),
-    togetherKey: v('together_key'),
     firecrawlKey: v('firecrawl_key'),
     apifyToken: v('apify_token'),
     agentmailKey: v('agentmail_key'),

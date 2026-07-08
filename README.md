@@ -153,8 +153,7 @@ git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycr
 export GOOSE_RECIPE_PATH=~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes
 
 mkdir -p ~/.config/goose/custom_providers
-cp ~/.local/share/goose/mycroft/source/providers/fireworks-qwen36plus.json ~/.config/goose/custom_providers/
-cp ~/.local/share/goose/mycroft/source/providers/together-qwen.json ~/.config/goose/custom_providers/
+cp ~/.local/share/goose/mycroft/source/providers/fireworks-glm52.json ~/.config/goose/custom_providers/
 
 mkdir -p ~/.config/goose/mycroft
 cp ~/.local/share/goose/mycroft/source/instructions/mycroft-soul.md ~/.config/goose/mycroft/SOUL.md

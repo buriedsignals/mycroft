@@ -79,14 +79,17 @@ def pick_folder_natively(prompt):
         return None, f"Folder picker failed: {e}"
 
 LOCAL_MODELS = {
-    "qwen9b": {
-        "name": "qwen3.5-9b-abliterated-journalist",
-        "repo": "tomvaillant/qwen3.5-9b-abliterated-journalist-GGUF",
-        "filename": "model-q4_k_m.gguf",
-        "quantization": "Q4_K_M",
+    "gemma31b": {
+        # Served via the official Ollama Gemma-4 31B QAT tag → GOOSE_MODEL
+        # "gemma4:31b-it-qat" (repo:quantization). No HF GGUF download / no
+        # thinking mode / no stop-token workaround.
+        "name": "gemma4-31b",
+        "repo": "gemma4",
+        "filename": "",
+        "quantization": "31b-it-qat",
         "vision": False,
-        "enable_thinking": True,
-        "label": "Qwen 3.5 9B Journalist · runs on your machine, $0/mo",
+        "enable_thinking": False,
+        "label": "Gemma 4 31B · recommended · runs on your machine, $0/mo",
     },
     "qwen27b": {
         "name": "qwen3.6-27b-abliterated-journalist",
@@ -123,12 +126,8 @@ def validate_choices(d):
     if not d.get("firecrawlKey"):
         errors.append({"field": "firecrawl_key", "message": "FIRECRAWL_API_KEY is required — every web-capable recipe depends on it. Get a key at firecrawl.dev."})
     if not d.get("localOnly"):
-        if not d.get("fireworks") and not d.get("together"):
-            errors.append({"field": "fireworks_key", "message": "Cloud-first needs at least one provider — enable Fireworks or Together, or switch to Local-first."})
-        if d.get("fireworks") and not d.get("fireworksKey"):
-            errors.append({"field": "fireworks_key", "message": "FIREWORKS_API_KEY is required while Fireworks is your provider."})
-        if d.get("together") and not d.get("togetherKey"):
-            errors.append({"field": "together_key", "message": "TOGETHER_API_KEY is required while Together is your provider."})
+        if not d.get("fireworksKey"):
+            errors.append({"field": "fireworks_key", "message": "Cloud-first runs on Fireworks (GLM-5.2, ZDR) — FIREWORKS_API_KEY is required, or switch to Local-first."})
     if d.get("scoutpost") and not d.get("scoutpostKey"):
         errors.append({"field": "scoutpost_api_key", "message": "SCOUTPOST_API_KEY is required while Scoutpost is enabled — add a key or untick the plugin."})
     if d.get("spotlight") and not str(d.get("spotlightVaultPath") or "").strip():
@@ -160,14 +159,10 @@ def validate_keys(d, skip=False):
         checks.append(("firecrawl_key", "FIRECRAWL_API_KEY", True,
                        "https://api.firecrawl.dev/v1/team/credit-usage",
                        {"Authorization": "Bearer " + d["firecrawlKey"]}))
-    if not d.get("localOnly") and d.get("fireworks") and d.get("fireworksKey"):
+    if not d.get("localOnly") and d.get("fireworksKey"):
         checks.append(("fireworks_key", "FIREWORKS_API_KEY", True,
                        "https://api.fireworks.ai/inference/v1/models",
                        {"Authorization": "Bearer " + d["fireworksKey"]}))
-    if not d.get("localOnly") and d.get("together") and d.get("togetherKey"):
-        checks.append(("together_key", "TOGETHER_API_KEY", True,
-                       "https://api.together.xyz/v1/models",
-                       {"Authorization": "Bearer " + d["togetherKey"]}))
     if d.get("scoutpost") and d.get("scoutpostKey"):
         checks.append(("scoutpost_api_key", "SCOUTPOST_API_KEY", False,
                        "https://www.scoutpost.ai/api/v1/scouts",
@@ -207,7 +202,7 @@ def build_env_lines(d):
         f"MYCROFT_LOCAL_ONLY={b01(d['localOnly'])}",
     ]
     if d["localOnly"]:
-        model = LOCAL_MODELS.get(d.get("localModel") or "qwen9b", LOCAL_MODELS["qwen9b"])
+        model = LOCAL_MODELS.get(d.get("localModel") or "gemma31b", LOCAL_MODELS["gemma31b"])
         lines += [
             "GOOSE_PROVIDER=local",
             "GOOSE_MODEL=" + model["repo"] + ":" + model["quantization"],
@@ -218,13 +213,10 @@ def build_env_lines(d):
             "MYCROFT_LOCAL_MODEL_VISION=" + b01(model["vision"]),
             "MYCROFT_LOCAL_MODEL_THINKING=" + b01(model["enable_thinking"]),
         ]
-    elif d.get("fireworks"):
-        lines += ["GOOSE_PROVIDER=fireworks-qwen36plus",
-                  "GOOSE_MODEL=accounts/fireworks/models/qwen3p6-plus"]
-    elif d.get("together"):
-        lines += ["GOOSE_PROVIDER=together-qwen",
-                  "GOOSE_MODEL=Qwen/Qwen2.5-72B-Instruct-Turbo"]
-    for key, name in [("fireworksKey", "FIREWORKS_API_KEY"), ("togetherKey", "TOGETHER_API_KEY"),
+    else:
+        lines += ["GOOSE_PROVIDER=fireworks-glm52",
+                  "GOOSE_MODEL=accounts/fireworks/models/glm-5p2"]
+    for key, name in [("fireworksKey", "FIREWORKS_API_KEY"),
                       ("firecrawlKey", "FIRECRAWL_API_KEY"), ("apifyToken", "APIFY_API_TOKEN"),
                       ("agentmailKey", "AGENTMAIL_API_KEY")]:
         if d.get(key):
@@ -251,10 +243,8 @@ def build_setup_config(d):
     required = []
     if d.get("firecrawlKey"):
         required.append("FIRECRAWL_API_KEY")
-    if not d["localOnly"] and d.get("fireworks"):
+    if not d["localOnly"]:
         required.append("FIREWORKS_API_KEY")
-    if not d["localOnly"] and d.get("together"):
-        required.append("TOGETHER_API_KEY")
     if d.get("scoutpost"):
         required.append("SCOUTPOST_API_KEY")
     if d.get("spotlight") and d.get("osintNavigatorKey"):
@@ -263,7 +253,7 @@ def build_setup_config(d):
         "# Mycroft setup choices — generated by the local configurator (no secrets)",
         f"SOVEREIGNTY={shlex.quote(d['sovereignty'])}",
         f"LOCAL_ONLY={b01(d['localOnly'])}",
-        f"LOCAL_MODEL={shlex.quote(d.get('localModel') or 'qwen9b')}",
+        f"LOCAL_MODEL={shlex.quote(d.get('localModel') or 'gemma31b')}",
         f'VAULT_PATH="{expand_home_for_shell(d["vault"])}"',
         f'SPOTLIGHT_VAULT_INPUT="{expand_home_for_shell(d.get("spotlightVaultPath") or "~/Documents/Spotlight")}"',
         f"INSTALL_GOOSE={b01(d.get('installGoose'))}",
@@ -271,8 +261,7 @@ def build_setup_config(d):
         f"INSTALL_FIRECRAWL={b01(d.get('installFirecrawl'))}",
         f"ENABLE_SPOTLIGHT={b01(d.get('spotlight'))}",
         f"ENABLE_SCOUTPOST={b01(d.get('scoutpost'))}",
-        f"ENABLE_FIREWORKS={b01(not d['localOnly'] and d.get('fireworks'))}",
-        f"ENABLE_TOGETHER={b01(not d['localOnly'] and d.get('together'))}",
+        f"ENABLE_FIREWORKS={b01(not d['localOnly'])}",
         f"ENABLE_FT={b01(d.get('ftEnabled'))}",
         f"ENABLE_AGENTMAIL={b01(d.get('agentmailEnabled') or d.get('agentmailKey'))}",
         f"ENABLE_APIFY={b01(d.get('apifyEnabled') or d.get('apifyToken'))}",
@@ -431,14 +420,10 @@ def esc(s):
 
 def build_getting_started(d):
     if d["localOnly"]:
-        model = LOCAL_MODELS.get(d.get("localModel") or "qwen9b", LOCAL_MODELS["qwen9b"])
+        model = LOCAL_MODELS.get(d.get("localModel") or "gemma31b", LOCAL_MODELS["gemma31b"])
         provider_label = model["label"]
-    elif d.get("fireworks"):
-        provider_label = "Fireworks AI · Qwen 3.6 Plus (ZDR cloud)"
-    elif d.get("together"):
-        provider_label = "Together AI · Qwen 2.5-72B Turbo (ZDR cloud)"
     else:
-        provider_label = "No provider configured"
+        provider_label = "Fireworks AI · GLM-5.2 (ZDR cloud)"
 
     optional = []
     if d.get("ftEnabled"):
@@ -527,7 +512,7 @@ def normalize(payload):
     return {
         "sovereignty": sovereignty,
         "localOnly": sovereignty == "local",
-        "localModel": s("localModel") or "qwen9b",
+        "localModel": s("localModel") or "gemma31b",
         # No silent defaults here: an emptied path must fail validation,
         # not quietly install somewhere the user didn't choose.
         "vault": s("vault"),
@@ -539,12 +524,10 @@ def normalize(payload):
         "agentmailEnabled": b("agentmailEnabled"),
         "apifyEnabled": b("apifyEnabled"),
         "fireworks": b("fireworks"),
-        "together": b("together"),
         "spotlight": b("spotlight"),
         "scoutpost": b("scoutpost"),
         "spotDevBrowser": b("spotDevBrowser"),
         "fireworksKey": s("fireworksKey"),
-        "togetherKey": s("togetherKey"),
         "firecrawlKey": s("firecrawlKey"),
         "apifyToken": s("apifyToken"),
         "agentmailKey": s("agentmailKey"),

@@ -495,7 +495,6 @@ configure_goose_persistent_defaults() {
   set_goose_config_key GOOSE_MOIM_MESSAGE_FILE "$MYCROFT_SOUL_FILE"
 
   store_goose_secret FIREWORKS_API_KEY "${FIREWORKS_API_KEY:-}"
-  store_goose_secret TOGETHER_API_KEY "${TOGETHER_API_KEY:-}"
   store_goose_secret FIRECRAWL_API_KEY "${FIRECRAWL_API_KEY:-}"
   store_goose_secret SCOUTPOST_API_KEY "${SCOUTPOST_API_KEY:-}"
   store_goose_secret OSINT_NAV_API_KEY "${OSINT_NAV_API_KEY:-}"
@@ -994,15 +993,16 @@ seed_spotlight_vault
 configure_qmd
 
 mkdir -p "$PROVIDERS_DST"
-# Clean up obsolete custom providers (pre-2026-05 installer copied these; we now use Goose's built-in Local Inference)
-rm -f "$PROVIDERS_DST/local-llama-server.json" "$PROVIDERS_DST/local-mlx.json"
+# Clean up obsolete custom providers: pre-2026-05 installers copied local-*
+# shims (we now use Goose's built-in Local Inference); the Qwen/Together/
+# OpenRouter cloud providers were retired for the single ZDR Fireworks GLM-5.2
+# frontier, so drop any stale copies an upgrader still has.
+rm -f "$PROVIDERS_DST/local-llama-server.json" "$PROVIDERS_DST/local-mlx.json" \
+      "$PROVIDERS_DST/fireworks-qwen36plus.json" "$PROVIDERS_DST/together-qwen.json" \
+      "$PROVIDERS_DST/openrouter-fallback.json"
 if [ "$ENABLE_FIREWORKS" = "1" ]; then
-  cp "$MYCROFT_DIR/providers/fireworks-qwen36plus.json" "$PROVIDERS_DST/"
-  ok "Fireworks"
-fi
-if [ "$ENABLE_TOGETHER" = "1" ]; then
-  cp "$MYCROFT_DIR/providers/together-qwen.json" "$PROVIDERS_DST/"
-  ok "Together"
+  cp "$MYCROFT_DIR/providers/fireworks-glm52.json" "$PROVIDERS_DST/"
+  ok "Fireworks — GLM-5.2 (ZDR)"
 fi
 install_skill_registry
 write_goose_instructions

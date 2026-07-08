@@ -1,0 +1,16 @@
+{
+  "name": "fireworks-glm52",
+  "engine": "openai",
+  "display_name": "Fireworks — GLM-5.2 (ZDR)",
+  "description": "Fireworks AI serving GLM-5.2 — open-weight flagship by Z.ai, run on Fireworks' own US infrastructure (NOT routed to Z.AI), Zero Data Retention by default for open models. 1M-token context. Top ZDR-hosted model on our OSINT benchmark. Sole cloud frontier.",
+  "api_key_env": "FIREWORKS_API_KEY",
+  "base_url": "https://api.fireworks.ai/inference/v1/chat/completions",
+  "models": [
+    {
+      "name": "accounts/fireworks/models/glm-5p2",
+      "context_limit": 1000000
+    }
+  ],
+  "supports_streaming": true,
+  "requires_auth": true
+}

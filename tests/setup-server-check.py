@@ -24,13 +24,13 @@ sys.path.insert(0, os.path.join(ROOT, "install"))
 import setup_server as srv  # noqa: E402
 
 BASE = {
-    "sovereignty": "cloud", "localModel": "qwen9b",
+    "sovereignty": "cloud", "localModel": "gemma31b",
     "vault": "~/Documents/Mycroft", "spotlightVaultPath": "~/Documents/Spotlight",
     "installGoose": True, "installObsidian": True, "installFirecrawl": True,
     "ftEnabled": True, "agentmailEnabled": False, "apifyEnabled": False,
-    "fireworks": True, "together": False, "spotlight": True, "scoutpost": True,
+    "fireworks": True, "spotlight": True, "scoutpost": True,
     "spotDevBrowser": True,
-    "fireworksKey": "fw-test", "togetherKey": "", "firecrawlKey": "fc-test",
+    "fireworksKey": "fw-test", "firecrawlKey": "fc-test",
     "apifyToken": "", "agentmailKey": "", "scoutpostKey": "scout-test",
     "osintNavigatorKey": "ont-test", "junkipediaKey": "",
 }
@@ -44,7 +44,6 @@ class UnitChecks(unittest.TestCase):
         cases = [
             ({"firecrawlKey": ""}, "firecrawl_key"),
             ({"fireworksKey": ""}, "fireworks_key"),
-            ({"fireworks": False, "together": False}, "fireworks_key"),
             ({"scoutpostKey": ""}, "scoutpost_api_key"),
             ({"vault": " "}, "vault_path"),
             ({"spotlightVaultPath": ""}, "spotlight_vault_path"),
@@ -53,7 +52,7 @@ class UnitChecks(unittest.TestCase):
             errs = srv.validate_choices(srv.normalize({**BASE, **overrides}))
             self.assertTrue(any(e["field"] == field for e in errs), field)
         # local mode needs no provider keys
-        local = srv.normalize({**BASE, "sovereignty": "local", "fireworksKey": "", "togetherKey": ""})
+        local = srv.normalize({**BASE, "sovereignty": "local", "fireworksKey": ""})
         self.assertEqual(srv.validate_choices(local), [])
         # disabled scoutpost needs no key
         off = srv.normalize({**BASE, "scoutpost": False, "scoutpostKey": ""})
@@ -81,7 +80,8 @@ class UnitChecks(unittest.TestCase):
     def test_env_lines(self):
         env = srv.build_env_lines(srv.normalize(BASE))
         self.assertIn('MYCROFT_VAULT_PATH="$HOME/Documents/Mycroft"', env)
-        self.assertIn("GOOSE_PROVIDER=fireworks-qwen36plus", env)
+        self.assertIn("GOOSE_PROVIDER=fireworks-glm52", env)
+        self.assertIn("GOOSE_MODEL=accounts/fireworks/models/glm-5p2", env)
         self.assertIn("FIRECRAWL_API_KEY=fc-test", env)
         self.assertIn("OSINT_NAV_API_KEY=ont-test", env)
         self.assertIn("SPOTLIGHT_MONITORING_BACKEND=scoutpost", env)
