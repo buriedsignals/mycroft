@@ -48,7 +48,7 @@ Required fields:
 {
   "id": "E1",
   "source_url": "https://example.org/report",
-  "acquisition_method": "firecrawl|browser|manual|api|vault",
+  "acquisition_method": "crawl4ai|searxng|firecrawl|browser|manual|api|vault",
   "accessed_at": "2026-05-18T12:00:00Z",
   "raw_path": "sources/raw/example-report.md",
   "sha256": "64 lowercase hex chars",
@@ -230,7 +230,7 @@ review.
    - move it from `integration/sift-c2pa/` into a supported script location,
    - install it through setup,
    - add doctor coverage,
-   - add unit tests with a fake Firecrawl binary.
+   - add unit tests with a fake fetch backend (crawl4ai/searxng, or firecrawl).
 
 3. Add validators:
    - schema validation,
@@ -292,7 +292,7 @@ The two items are linked via a generic `linked_evidence_ids: ["E1", ...]`
 array on either item. This shape generalises beyond search→scrape — it also
 covers scrape+screenshot pairs, scrape+web-archive pairs, and multiple scrapes
 of the same source taken at different times. The `acquisition_method` field
-(`firecrawl`, `browser`, `search`, `archive`, etc.) encodes the kind; the
+(`crawl4ai`, `searxng`, `firecrawl`, `browser`, `archive`, etc.) encodes the kind; the
 array encodes the relationship.
 
 Search snippets alone cap confidence at `low` per the cap table; a full-text

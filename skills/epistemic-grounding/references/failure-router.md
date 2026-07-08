@@ -27,7 +27,7 @@ For Mycroft and Spotlight, the critical family is **Grounding & Evidence Integri
 | Reliable sources conflict | Disputed grounding | Preserve both evidence trails | Mark disputed |
 | Claim depends on future event | Not checkable yet | Convert to monitoring recommendation | Do not verify |
 | Evidence exists but archive failed | Chain-of-custody gap | Try archive hierarchy or local archival | Cap medium unless local copy is strong |
-| Output came from local fine-tuned model only (URL, citation, statute) | Model hallucination | Re-fetch via firecrawl or qmd before quoting | Cap low until verified |
+| Output came from local fine-tuned model only (URL, citation, statute) | Model hallucination | Re-fetch via mycroft-fetch or qmd before quoting | Cap low until verified |
 
 ## Misrepair Risks
 
@@ -38,7 +38,7 @@ Avoid these common bad fixes:
 - Rewriting a claim to sound cautious while keeping unsupported elements.
 - Hiding uncertainty in `confidence_rationale` instead of encoding it in `grounding` (fact-check profile) or in the `confidence:` tag (default profile).
 - Letting a fact-check verdict override the claim-to-evidence mismatch.
-- Trusting a model-generated URL because it "sounds right" instead of running it through firecrawl.
+- Trusting a model-generated URL because it "sounds right" instead of running it through mycroft-fetch.
 
 ## Escalation
 

@@ -4,6 +4,31 @@ All notable changes to this project will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-07-08 — Sovereign web stack (SearXNG search + Crawl4AI scrape; Firecrawl demoted)
+
+### Changed
+- **Search → SearXNG, scrape → Crawl4AI**, both sovereign (local, no API key, no
+  vendor account). Firecrawl is demoted to an **optional fallback**, reached only when
+  `FIRECRAWL_API_KEY` is set and a sovereign tool can't do the job; a pure-sovereign
+  install (no key) is fully supported. New tools `tools/searxng-search.py`,
+  `tools/scrape.py`, `tools/sitemap.py` (replaces `firecrawl map`); PDFs via
+  `pdftotext`. The source-acquisition recipes are re-backed on these (filenames keep
+  the `firecrawl-` prefix for now).
+- **`mycroft-fetch`** (chain-of-custody fetch/search) defaults to Crawl4AI/SearXNG and
+  records the real `acquisition_method` (`crawl4ai`/`searxng`/`firecrawl`); the
+  `docs/grounding-provenance-spec.md` enum is updated to match.
+- The `firecrawl` skill is renamed **`web-acquisition`** and reframed around the
+  sovereign tools; `web-acquisition` and `fact-check` no longer require
+  `FIRECRAWL_API_KEY`.
+- **Installer provisions the sovereign stack** (`scripts/provision-sovereign.sh`:
+  Crawl4AI + `crawl4ai-setup`, poppler, a local SearXNG Docker service, opt-in Tor),
+  and `mycroft update` now runs the same provisioner — existing installs gain the
+  backends on update, not just on a fresh install.
+- **`mycroft-update` / `mycroft-doctor` are repo scripts, symlinked** (not static
+  copies), so updates deliver new updater/doctor logic without a reinstall; the doctor
+  gained soft checks for Crawl4AI / pdftotext / SearXNG, and the `SOUL.md` copy is
+  symlink-safe.
+
 ## 2026-07-06 — Amditis journalism skills + engine-driven skill distribution
 
 - **5 new skills** adapted from [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism)

@@ -38,7 +38,7 @@ See [`docs/plugin-authoring.md`](docs/plugin-authoring.md) for the full pattern 
 ## Recipe style
 
 - Instructions must reference the journalism posture (SIFT, attribution, no fabrication) — not re-declare it.
-- Prefer explicit CLI invocations (`firecrawl scrape`, `hf download`) over model-chosen shell. Reduces variance across frontier vs local models.
+- Prefer explicit CLI invocations (`mycroft-fetch scrape <url>`, `hf download`) over model-chosen shell. Reduces variance across frontier vs local models.
 - Cite every user-facing claim in the prompt's output format.
 - Keep recipes under 150 lines where possible. Long recipes mean the work should be a plugin.
 

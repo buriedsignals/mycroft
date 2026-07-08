@@ -169,6 +169,11 @@ Mycroft is designed for privacy-sensitive reporting:
 
 - ZDR providers are the default cloud posture.
 - Local inference is available for sovereign workflows.
+- **Web search and scrape are sovereign by default** — a local SearXNG (search)
+  and Crawl4AI (scrape) run with no API key or vendor account; Firecrawl is only an
+  optional fallback when `FIRECRAWL_API_KEY` is set. An opt-in `--tor` fetch can
+  route scraping through Tor so a target of investigation never sees the operator's
+  IP. The installer provisions this stack, and `mycroft update` keeps it current.
 - Vaults, schedules, generated instructions, and fallback script secrets live on
   the user's machine.
 - API keys are stored locally through Goose or Mycroft config files, not in the
@@ -195,13 +200,13 @@ provider posture.
 - `vault-sync`
 - `qmd`
 
-**Source acquisition and parsing**
+**Source acquisition and parsing** — sovereign by default (Crawl4AI scrape, SearXNG search, `pdftotext`, `sitemap.py`); Firecrawl is only an optional fallback when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
 
-- `firecrawl-scrape`
-- `firecrawl-change-track`
-- `firecrawl-pdf`
-- `firecrawl-batch`
-- `firecrawl-map`
+- `firecrawl-scrape` — scrape a URL to markdown (Crawl4AI)
+- `firecrawl-change-track` — snapshot + diff a page across runs
+- `firecrawl-pdf` — extract a civic PDF (pdftotext)
+- `firecrawl-batch` — scrape many URLs
+- `firecrawl-map` — enumerate a domain's URL space (sitemap.py)
 - `dev-browser`
 - `liteparse`
 

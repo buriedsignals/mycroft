@@ -71,13 +71,13 @@ Use these caps even if the claim sounds plausible:
 | Single primary source, no contradiction search yet | medium |
 | Direct primary source plus independent corroboration | high |
 | Credible unresolved contradiction | low or disputed |
-| Output came from a local LLM hallucination-prone for URLs (e.g. fine-tuned Qwen) without firecrawl verification | low |
+| Output came from a local LLM hallucination-prone for URLs (e.g. fine-tuned Qwen) without fetch verification | low |
 
 Never upgrade a claim beyond the weakest material element. If the amount is directly supported but the date is inferred, the whole claim is only partially grounded.
 
 ## Mycroft-specific notes
 
-- **Local-model output is a lead, not authority.** Mycroft's default model (fine-tuned Qwen3.5-9B per `SOUL.md`) hallucinates URLs, citations, statute IDs, and database paths. Any such atom in a model response is `confidence: low, unsourced` until verified via `firecrawl scrape` or `qmd` lookup. The fine-tune teaches style and domain vocabulary, not citation accuracy.
+- **Local-model output is a lead, not authority.** Mycroft's default model (fine-tuned Qwen3.5-9B per `SOUL.md`) hallucinates URLs, citations, statute IDs, and database paths. Any such atom in a model response is `confidence: low, unsourced` until verified via `mycroft-fetch` (Crawl4AI/SearXNG) or a `qmd` lookup. The fine-tune teaches style and domain vocabulary, not citation accuracy.
 - **`unverified` ≠ `false`** (from `SOUL.md`). Evidence-absent is not the same as evidence-contradicts. When grounding is missing, name the gap rather than rewrite the claim into something the evidence supports.
 - **Apply this skill at ingestion time, not just at fact-check time.** A note filed to the vault with a `confidence: high` tag becomes a citation source for future answers. Inflated confidence at ingest is load-bearing for downstream errors.
 
@@ -97,6 +97,6 @@ When a claim feels wrong, do not patch the wording first. Diagnose the grounding
 - Evidence depends on OCR/layout extraction: verify against the original document or image.
 - Evidence chains through another citation: trace to the origin.
 - Evidence conflicts with another reliable source: mark disputed and preserve both trails.
-- Evidence comes only from a fine-tuned local model: re-fetch via firecrawl before raising confidence.
+- Evidence comes only from a fine-tuned local model: re-fetch via `mycroft-fetch` before raising confidence.
 
 Read `references/failure-router.md` for deeper failure classes. Read `references/grounding-theory.md` when designing or revising grounding policy.
