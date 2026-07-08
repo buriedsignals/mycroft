@@ -30,6 +30,11 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 SUBMIT_TIMEOUT_SECONDS = 30 * 60
 
+# Public Supabase anon key for hosted Scoutpost (functions/v1). Not a secret — it is
+# baked into the engine binary and the SPA; sent as the `apikey:` header alongside the
+# cj_ bearer token, which the Edge Functions front door requires.
+SCOUTPOST_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4"
+
 
 def detect_platform():
     """mac | linux | windows-wsl — the page preselects matching path defaults."""
@@ -165,8 +170,9 @@ def validate_keys(d, skip=False):
                        {"Authorization": "Bearer " + d["fireworksKey"]}))
     if d.get("scoutpost") and d.get("scoutpostKey"):
         checks.append(("scoutpost_api_key", "SCOUTPOST_API_KEY", False,
-                       "https://www.scoutpost.ai/api/v1/scouts",
-                       {"Authorization": "Bearer " + d["scoutpostKey"]}))
+                       "https://scoutpost.ai/functions/v1/scouts",
+                       {"Authorization": "Bearer " + d["scoutpostKey"],
+                        "apikey": SCOUTPOST_ANON_KEY}))
     for field, name, strict, url, headers in checks:
         result = probe(url, headers)
         if result == "rejected" and strict:
@@ -223,7 +229,8 @@ def build_env_lines(d):
             lines.append(f"{name}={shlex.quote(d[key])}")
     if d.get("scoutpost") and d.get("scoutpostKey"):
         lines.append("SCOUTPOST_API_KEY=" + shlex.quote(d["scoutpostKey"]))
-        lines.append("SCOUTPOST_API_BASE=https://www.scoutpost.ai/api/v1")
+        lines.append("SCOUTPOST_API_BASE=https://scoutpost.ai/functions/v1")
+        lines.append("SCOUTPOST_SUPABASE_ANON_KEY=" + shlex.quote(SCOUTPOST_ANON_KEY))
     if d.get("spotlight"):
         lines.append('SPOTLIGHT_DIR="$MYCROFT_PLUGINS_DIR/spotlight"')
         lines.append(f'SPOTLIGHT_VAULT_PATH="{spotlight_vault}"')
@@ -308,7 +315,7 @@ def build_skill_registry(d):
             entry["status"] = SKILL_STATUS[sid]
         skills.append(entry)
     if d.get("scoutpost"):
-        skills.append({"id": "scoutpost", "path": "~/.config/goose/mycroft/skills/scoutpost/SKILL.md", "source": "mycroft-profile", "enabled": True, "product_skill_url": "https://scoutpost.ai/skills/scoutpost.md"})
+        skills.append({"id": "scoutpost", "path": "~/.agents/skills/mycroft/scoutpost/SKILL.md", "source": "mycroft-repo", "enabled": True, "product_skill_url": "https://scoutpost.ai/skills/scoutpost.md"})
     if d.get("spotlight"):
         skills += [
             {"id": "spotlight", "path": "~/.local/share/goose/mycroft/plugins/spotlight/skills/spotlight/SKILL.md", "source": "spotlight", "enabled": True},

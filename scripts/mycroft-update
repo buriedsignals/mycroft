@@ -172,7 +172,7 @@ PROFILE_SPOTLIGHT_EOF
 ## Scoutpost Installed Context
 
 Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
-Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
+Prefer the scout CLI if installed, otherwise the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE. Do not use MCP.
 Never print the API key.
 PROFILE_SCOUTPOST_EOF
     fi
