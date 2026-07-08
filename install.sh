@@ -31,6 +31,15 @@ MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
+# Sovereign stack (U5): SearXNG search + Crawl4AI scrape run with zero API
+# cost on the normal path; Firecrawl is an optional escape hatch. SearXNG serves the
+# JSON API on this port; the Mycroft tools default to the same URL (SEARXNG_URL).
+SEARXNG_PORT="${SEARXNG_PORT:-8899}"
+SEARXNG_URL_VALUE="http://localhost:$SEARXNG_PORT"
+SEARXNG_CONTAINER="mycroft-searxng"
+SEARXNG_IMAGE="${SEARXNG_IMAGE:-searxng/searxng:latest}"
+SEARXNG_SETTINGS="$MYCROFT_PROFILE_DIR/searxng/settings.yml"
+
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
 else SHELL_RC="$HOME/.zshrc"; touch "$SHELL_RC"
@@ -91,10 +100,108 @@ install_obsidian() {
 }
 
 install_firecrawl() {
-  [ "$INSTALL_FIRECRAWL" = "1" ] || return 0
-  if have firecrawl; then ok "firecrawl present"; return 0; fi
+  # Firecrawl is the OPTIONAL escape hatch (KTD4/KTD6): scrape fallback for hard
+  # anti-bot targets + optional search-union. Present = escape hatch enabled;
+  # absent = pure-sovereign. Not on the default search/scrape path.
+  [ "$INSTALL_FIRECRAWL" = "1" ] || { ok "firecrawl skipped (pure-sovereign mode)"; return 0; }
+  if have firecrawl; then ok "firecrawl present (optional fallback)"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
-  if have npm; then npm install -g firecrawl-cli && ok "firecrawl"; else warn "npm missing; install firecrawl-cli manually."; fi
+  if have npm; then npm install -g firecrawl-cli && ok "firecrawl (optional fallback)"; else warn "npm missing; install firecrawl-cli manually."; fi
+}
+
+ensure_uv() {
+  if have uv; then return 0; fi
+  if have brew; then brew install uv >/dev/null 2>&1 && have uv && return 0; fi
+  curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
+  export PATH="$HOME/.local/bin:$PATH"
+  have uv
+}
+
+install_crawl4ai() {
+  # Sovereign scrape default (KTD5). scrape.py/mycroft-fetch prefer the installed
+  # `crwl`; without it they cold-start via `uvx --from crawl4ai`, so this is a
+  # best-effort speedup + browser-runtime provisioning, never a hard failure.
+  [ "$INSTALL_CRAWL4AI" = "1" ] || return 0
+  if have crwl; then
+    ok "crawl4ai (crwl) present"
+  elif ensure_uv; then
+    uv tool install crawl4ai >/dev/null 2>&1 && ok "crawl4ai installed (uv tool)" \
+      || warn "crawl4ai install failed; scrape will cold-start via uvx (or fall back to firecrawl)"
+  else
+    warn "uv unavailable; crawl4ai not installed. Scrape cold-starts via uvx if present."
+  fi
+  # Playwright chromium runtime crawl4ai renders with. crawl4ai-setup is a console
+  # script `uv tool install crawl4ai` places on PATH.
+  if have crawl4ai-setup; then
+    crawl4ai-setup >/dev/null 2>&1 && ok "crawl4ai browser runtime" \
+      || warn "crawl4ai-setup failed; run 'crawl4ai-setup' manually if scraping fails"
+  elif have crwl; then
+    warn "crawl4ai-setup not on PATH; run it once to install the Playwright browser."
+  fi
+}
+
+install_poppler() {
+  # pdftotext backs scrape.py --pdf and the civic-PDF recipe (replaces firecrawl-pdf).
+  if have pdftotext; then ok "pdftotext present"; return 0; fi
+  if [ "$(uname -s)" = "Darwin" ]; then
+    ensure_brew && brew install poppler >/dev/null 2>&1 && ok "poppler (pdftotext)" \
+      || warn "install poppler manually: brew install poppler"
+  else
+    warn "install poppler-utils via your package manager for PDF text extraction (pdftotext)"
+  fi
+}
+
+install_searxng() {
+  # Sovereign search default (U5a). Runs a local SearXNG JSON endpoint on
+  # $SEARXNG_PORT; the Mycroft search tools point at $SEARXNG_URL_VALUE. Needs
+  # Docker — best-effort: absent Docker degrades to the firecrawl search fallback
+  # (if a key is present) rather than aborting the install.
+  [ "$INSTALL_SEARXNG" = "1" ] || return 0
+  if ! have docker; then
+    warn "Docker not found — SearXNG (sovereign search) not provisioned. Install Docker, then re-run; or point SEARXNG_URL at an existing instance. Search falls back to Firecrawl if a key is set."
+    return 0
+  fi
+  mkdir -p "$(dirname "$SEARXNG_SETTINGS")"
+  if [ ! -f "$SEARXNG_SETTINGS" ]; then
+    local secret
+    secret="$(head -c 32 /dev/urandom 2>/dev/null | od -An -tx1 | tr -d ' \n')"
+    [ -n "$secret" ] || secret="mycroft_local_$$"
+    cat > "$SEARXNG_SETTINGS" <<SXEOF
+use_default_settings: true
+server:
+  secret_key: "$secret"
+  limiter: false
+  image_proxy: false
+search:
+  formats:
+    - html
+    - json
+SXEOF
+  fi
+  if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^$SEARXNG_CONTAINER$"; then
+    docker start "$SEARXNG_CONTAINER" >/dev/null 2>&1 && ok "SearXNG on $SEARXNG_URL_VALUE" \
+      || warn "SearXNG container present but failed to start; check 'docker logs $SEARXNG_CONTAINER'"
+  elif docker run -d --name "$SEARXNG_CONTAINER" --restart unless-stopped \
+        -p "$SEARXNG_PORT:8080" \
+        -v "$SEARXNG_SETTINGS:/etc/searxng/settings.yml:ro" \
+        "$SEARXNG_IMAGE" >/dev/null 2>&1; then
+    ok "SearXNG on $SEARXNG_URL_VALUE"
+  else
+    warn "SearXNG container failed to start; check Docker and re-run."
+  fi
+}
+
+install_tor() {
+  # Opt-in opsec (U7): the --tor fetch routes Crawl4AI through the local Tor SOCKS
+  # proxy (9050). Off by default; enabled when the operator opts in.
+  [ "$INSTALL_TOR" = "1" ] || return 0
+  if have tor; then ok "tor present (SOCKS 9050)"; return 0; fi
+  if [ "$(uname -s)" = "Darwin" ]; then
+    ensure_brew && brew install tor >/dev/null 2>&1 && ok "tor (SOCKS 9050)" \
+      || warn "install tor manually: brew install tor"
+  else
+    warn "install tor via your package manager for the opt-in --tor fetch (SOCKS 9050)"
+  fi
 }
 
 ensure_qmd() {
@@ -970,6 +1077,14 @@ set -a
 . "$MYCROFT_SETUP_CONFIG"
 set +a
 
+# Sovereign stack defaults (U5): SearXNG search + Crawl4AI scrape install by
+# default; Tor is opt-in opsec (off); Firecrawl is the optional escape hatch
+# (off unless the configurator/env asks for it → absence = pure-sovereign).
+INSTALL_CRAWL4AI="${INSTALL_CRAWL4AI:-1}"
+INSTALL_SEARXNG="${INSTALL_SEARXNG:-1}"
+INSTALL_TOR="${INSTALL_TOR:-0}"
+INSTALL_FIRECRAWL="${INSTALL_FIRECRAWL:-0}"
+
 SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
 if [ "$SPOTLIGHT_VAULT_PATH" = "$VAULT_PATH" ]; then
   SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"
@@ -984,6 +1099,11 @@ if [ "${HAS_JUNKIPEDIA:-0}" = "1" ]; then JUNKIPEDIA_JSON=true; else JUNKIPEDIA_
 mkdir -p "$VAULT_PATH" && ok "Mycroft vault $VAULT_PATH"
 ensure_goose
 install_obsidian
+# Sovereign stack first (default path), then the optional Firecrawl escape hatch.
+install_crawl4ai
+install_poppler
+install_searxng
+install_tor
 install_firecrawl
 ensure_qmd
 install_mycroft_cli
@@ -1012,6 +1132,11 @@ if [ ! -f "$MYCROFT_ENV" ]; then
   exit 1
 fi
 chmod 600 "$MYCROFT_ENV"
+# Point the sovereign search tools at the provisioned SearXNG (the shell rc block
+# and goose profile source this env). Tools default to the same URL if absent.
+if ! grep -q '^SEARXNG_URL=' "$MYCROFT_ENV" 2>/dev/null; then
+  printf 'SEARXNG_URL="%s"\n' "$SEARXNG_URL_VALUE" >> "$MYCROFT_ENV"
+fi
 ok "Mycroft environment $MYCROFT_ENV"
 install_local_model
 configure_goose_persistent_defaults
@@ -1130,6 +1255,7 @@ export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
 fail=0
 ok_check() { printf "OK    %s\n" "$*"; }
 bad_check() { printf "FAIL  %s\n" "$*"; fail=1; }
+warn_check() { printf "WARN  %s\n" "$*"; }
 check_path() {
   if [ -e "$1" ]; then ok_check "$2"; else bad_check "$2 missing: $1"; fi
 }
@@ -1200,6 +1326,16 @@ esac
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
 if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
 if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
+# Sovereign stack (soft checks — Crawl4AI has a uvx cold-start, SearXNG a Firecrawl
+# fallback, so a missing one warns rather than failing the doctor / triggering rollback).
+if command -v crwl >/dev/null 2>&1; then ok_check "crawl4ai (crwl)"; else warn_check "crawl4ai (crwl) not on PATH — scrape cold-starts via uvx"; fi
+if command -v pdftotext >/dev/null 2>&1; then ok_check "pdftotext (PDF extract)"; else warn_check "pdftotext missing — PDF extraction unavailable"; fi
+SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
+if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
+  ok_check "SearXNG reachable ($SEARXNG_URL_CHECK)"
+else
+  warn_check "SearXNG not reachable at $SEARXNG_URL_CHECK — start it (docker start mycroft-searxng) or set SEARXNG_URL"
+fi
 if command -v mycroft-safe >/dev/null 2>&1; then
   if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then
     ok_check "mycroft-safe CLI"
