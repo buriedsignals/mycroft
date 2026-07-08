@@ -31,14 +31,13 @@ MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
-# Sovereign stack (U5): SearXNG search + Crawl4AI scrape run with zero API
-# cost on the normal path; Firecrawl is an optional escape hatch. SearXNG serves the
-# JSON API on this port; the Mycroft tools default to the same URL (SEARXNG_URL).
+# Sovereign stack: SearXNG search + Crawl4AI scrape run with zero API cost on the
+# normal path; Firecrawl is an optional escape hatch. SearXNG serves its JSON API on
+# this port; the Mycroft tools + provisioner default to the same URL (SEARXNG_URL).
+# Container name / image / settings-path are the provisioner's concern (identical
+# defaults there) — install.sh only needs the port, to write SEARXNG_URL.
 SEARXNG_PORT="${SEARXNG_PORT:-8899}"
 SEARXNG_URL_VALUE="http://localhost:$SEARXNG_PORT"
-SEARXNG_CONTAINER="mycroft-searxng"
-SEARXNG_IMAGE="${SEARXNG_IMAGE:-searxng/searxng:latest}"
-SEARXNG_SETTINGS="$MYCROFT_PROFILE_DIR/searxng/settings.yml"
 
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
@@ -100,20 +99,15 @@ install_obsidian() {
 }
 
 install_firecrawl() {
-  # Firecrawl is the OPTIONAL escape hatch (KTD4/KTD6): scrape fallback for hard
-  # anti-bot targets + optional search-union. Present = escape hatch enabled;
-  # absent = pure-sovereign. Not on the default search/scrape path.
+  # Firecrawl is the OPTIONAL escape hatch: scrape fallback for hard anti-bot targets
+  # + optional search-union. Present = escape hatch enabled; absent = pure-sovereign.
+  # Not on the default search/scrape path.
   [ "$INSTALL_FIRECRAWL" = "1" ] || { ok "firecrawl skipped (pure-sovereign mode)"; return 0; }
   if have firecrawl; then ok "firecrawl present (optional fallback)"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
   if have npm; then npm install -g firecrawl-cli && ok "firecrawl (optional fallback)"; else warn "npm missing; install firecrawl-cli manually."; fi
 }
 
-# Sovereign-stack provisioning (Crawl4AI + poppler + SearXNG + opt-in Tor) lives in
-# scripts/provision-sovereign.sh — a shared idempotent script that install.sh AND
-# mycroft-update both run, so an existing install gains the backends on update, not
-# just on a fresh install. install_firecrawl (above) stays inline: it is the
-# optional escape hatch, a separate concern from the sovereign default.
 ensure_qmd() {
   if have qmd; then ok "QMD CLI present"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
@@ -263,6 +257,22 @@ install_mycroft_cli() {
   else
     warn "mycroft-repair missing from $MYCROFT_DIR/scripts"
   fi
+  # doctor + update are repo scripts symlinked here too, so `mycroft update` (a symlink)
+  # delivers new wrapper/doctor logic on git ff — no reinstall for updater fixes.
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-doctor" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-doctor" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft-doctor"
+    ok "mycroft-doctor CLI"
+  else
+    warn "mycroft-doctor missing from $MYCROFT_DIR/scripts"
+  fi
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-update" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-update" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"
+    ok "mycroft-update CLI"
+  else
+    warn "mycroft-update missing from $MYCROFT_DIR/scripts"
+  fi
 }
 
 install_skill_registry() {
@@ -389,6 +399,7 @@ GOOSE_SCOUTPOST_EOF
 sync_mycroft_profile() {
   mkdir -p "$MYCROFT_PROFILE_DIR"
   if [ -f "$MYCROFT_DIR/instructions/mycroft-soul.md" ]; then
+    rm -f "$MYCROFT_SOUL_FILE"  # replace a stale symlink so cp can't hit "identical"
     cp "$MYCROFT_DIR/instructions/mycroft-soul.md" "$MYCROFT_SOUL_FILE"
   else
     cat > "$MYCROFT_SOUL_FILE" <<'SOUL_EOF'
@@ -1051,7 +1062,7 @@ set -a
 . "$MYCROFT_SETUP_CONFIG"
 set +a
 
-# Sovereign stack defaults (U5): SearXNG search + Crawl4AI scrape install by
+# Sovereign stack defaults: SearXNG search + Crawl4AI scrape install by
 # default; Tor is opt-in opsec (off); Firecrawl is the optional escape hatch
 # (off unless the configurator/env asks for it → absence = pure-sovereign).
 INSTALL_CRAWL4AI="${INSTALL_CRAWL4AI:-1}"
@@ -1075,10 +1086,11 @@ ensure_goose
 install_obsidian
 # Sovereign stack first (default path) via the shared idempotent provisioner —
 # the same script mycroft-update runs, so updates provision the backends too.
+# Container/image/settings are left to the provisioner's own (identical) defaults;
+# only the values install.sh needs elsewhere (port) or that key the settings path
+# (profile dir) are forwarded.
 INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_TOR="$INSTALL_TOR" \
-  SEARXNG_PORT="$SEARXNG_PORT" SEARXNG_CONTAINER="$SEARXNG_CONTAINER" \
-  SEARXNG_IMAGE="$SEARXNG_IMAGE" SEARXNG_SETTINGS="$SEARXNG_SETTINGS" \
-  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
+  SEARXNG_PORT="$SEARXNG_PORT" MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
   bash "$MYCROFT_DIR/scripts/provision-sovereign.sh" || true
 # ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
@@ -1226,327 +1238,7 @@ write_scheduled_recipes
 install_goose_schedules
 
 mkdir -p "$HOME/.local/bin" "$XDG_DATA_HOME/mycroft"
-cat > "$HOME/.local/bin/mycroft-doctor" <<'DOCTOR_EOF'
-#!/usr/bin/env bash
-set -u
-export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
-fail=0
-ok_check() { printf "OK    %s\n" "$*"; }
-bad_check() { printf "FAIL  %s\n" "$*"; fail=1; }
-warn_check() { printf "WARN  %s\n" "$*"; }
-check_path() {
-  if [ -e "$1" ]; then ok_check "$2"; else bad_check "$2 missing: $1"; fi
-}
 
-GOOSE_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/goose"
-XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-MYCROFT_PROFILE_DIR="${MYCROFT_PROFILE_DIR:-$GOOSE_CONFIG/mycroft}"
-MYCROFT_DATA_DIR="${MYCROFT_DATA_DIR:-$XDG_DATA_HOME/goose/mycroft}"
-MYCROFT_DIR="${MYCROFT_DIR:-$MYCROFT_DATA_DIR/source}"
-MYCROFT_ENV="$MYCROFT_PROFILE_DIR/.env"
-MYCROFT_CONFIG="${MYCROFT_CONFIG:-$MYCROFT_PROFILE_DIR/mycroft-config.json}"
-MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"
-MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
-MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
-PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
-RECIPE_PATH="$MYCROFT_DIR/recipes"
-REQUIRED_ENV=""
-if [ -f "$MYCROFT_PROFILE_DIR/setup-config.env" ]; then
-  REQUIRED_ENV="$(. "$MYCROFT_PROFILE_DIR/setup-config.env" 2>/dev/null; printf '%s' "${REQUIRED_DOCTOR_ENV:-}")"
-fi
-
-check_path "$MYCROFT_DIR/.git" "Mycroft repo"
-check_path "$MYCROFT_PROFILE_DIR" "Mycroft Goose profile"
-check_path "$MYCROFT_CONFIG" "Mycroft config"
-check_path "$MYCROFT_SKILL_REGISTRY" "Mycroft skill registry"
-check_path "$MYCROFT_GOOSE_INSTRUCTIONS" "Mycroft Goose instructions"
-check_path "$MYCROFT_SOUL_FILE" "Mycroft soul"
-check_path "$MYCROFT_DIR/skills/knowledge-primitives/SKILL.md" "knowledge-primitives skill"
-check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
-check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
-check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
-check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
-check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
-check_path "$HOME/.local/bin/mycroft-fetch" "mycroft-fetch command"
-check_path "$MYCROFT_DIR/scripts/mycroft_safe.py" "mycroft_safe.py source"
-check_path "$HOME/.local/bin/mycroft-safe" "mycroft-safe command"
-check_path "$MYCROFT_DIR/skills/shell-safety/SKILL.md" "shell-safety skill"
-check_path "$MYCROFT_DIR/skills/epistemic-grounding/SKILL.md" "epistemic-grounding skill"
-check_path "$RECIPE_PATH" "Mycroft recipes"
-check_path "$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml" "scheduled morning brief recipe"
-check_path "$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml" "scheduled vault audit recipe"
-check_path "$GOOSE_CONFIG" "Goose config dir"
-check_path "$PROVIDERS_DST" "Goose custom providers dir"
-check_path "$GOOSE_CONFIG/config.yaml" "Goose config file"
-check_path "$GOOSE_CONFIG/.goosehints" "Goose hints"
-check_path "$MYCROFT_ENV" "Mycroft env"
-
-if [ -f "$MYCROFT_ENV" ]; then
-  set -a
-  . "$MYCROFT_ENV"
-  set +a
-  for name in $REQUIRED_ENV; do
-    if [ -n "${!name:-}" ]; then ok_check "$name present"; else bad_check "$name missing or empty"; fi
-  done
-fi
-
-if [ -f "$GOOSE_CONFIG/config.yaml" ]; then
-  if grep -q '^GOOSE_PROVIDER:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose provider persisted"; else bad_check "GOOSE_PROVIDER missing from Goose config"; fi
-  if grep -q '^GOOSE_MODEL:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose model persisted"; else bad_check "GOOSE_MODEL missing from Goose config"; fi
-  if grep -q '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose Mycroft soul persisted"; else bad_check "GOOSE_MOIM_MESSAGE_FILE missing from Goose config"; fi
-fi
-
-case ":${GOOSE_RECIPE_PATH:-}:" in
-  *":$RECIPE_PATH:"*) ok_check "GOOSE_RECIPE_PATH includes $RECIPE_PATH" ;;
-  *) bad_check "GOOSE_RECIPE_PATH missing $RECIPE_PATH" ;;
-esac
-
-if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
-if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
-if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
-# Sovereign stack (soft checks — Crawl4AI has a uvx cold-start, SearXNG a Firecrawl
-# fallback, so a missing one warns rather than failing the doctor / triggering rollback).
-if command -v crwl >/dev/null 2>&1; then ok_check "crawl4ai (crwl)"; else warn_check "crawl4ai (crwl) not on PATH — scrape cold-starts via uvx"; fi
-if command -v pdftotext >/dev/null 2>&1; then ok_check "pdftotext (PDF extract)"; else warn_check "pdftotext missing — PDF extraction unavailable"; fi
-SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
-if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
-  ok_check "SearXNG reachable ($SEARXNG_URL_CHECK)"
-else
-  warn_check "SearXNG not reachable at $SEARXNG_URL_CHECK — start it (docker start mycroft-searxng) or set SEARXNG_URL"
-fi
-if command -v mycroft-safe >/dev/null 2>&1; then
-  if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then
-    ok_check "mycroft-safe CLI"
-  else
-    bad_check "mycroft-safe CLI present but validator failed"
-  fi
-else
-  bad_check "mycroft-safe CLI missing from PATH"
-fi
-if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
-  ok_check "Spotlight plugin"
-  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
-  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/skills/ingest/SKILL.md" "Spotlight ingest skill"
-fi
-
-if [ "$fail" -eq 0 ]; then
-  printf "\nMycroft doctor: OK\n"
-else
-  printf "\nMycroft doctor: failed\n"
-fi
-exit "$fail"
-DOCTOR_EOF
-chmod +x "$HOME/.local/bin/mycroft-doctor"
-
-cat > "$HOME/.local/bin/mycroft-update" <<'UPDATE_EOF'
-#!/usr/bin/env bash
-set -euo pipefail
-mode="${1:-scheduled}"
-XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
-XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"
-MYCROFT_PROFILE_DIR="$GOOSE_CONFIG/mycroft"
-MYCROFT_DATA_DIR="$XDG_DATA_HOME/goose/mycroft"
-MYCROFT_SOURCE_DIR="$MYCROFT_DATA_DIR/source"
-MYCROFT_PLUGINS_DIR="$MYCROFT_DATA_DIR/plugins"
-log_dir="$MYCROFT_DATA_DIR/logs"
-mkdir -p "$log_dir"
-log="$log_dir/update.log"
-exec >>"$log" 2>&1
-echo ""
-date
-echo "mode: $mode"
-
-repo_rev() {
-  local dir="$1"
-  [ -d "$dir/.git" ] || return 0
-  (cd "$dir" && git rev-parse HEAD)
-}
-
-rollback_repo() {
-  local dir="$1" name="$2" rev="$3"
-  [ -n "$rev" ] || return 0
-  [ -d "$dir/.git" ] || return 0
-  echo "Rolling back $name to $rev"
-  (cd "$dir" && git reset --hard "$rev")
-}
-
-update_repo_ff_only() {
-  local dir="$1" name="$2" branch="main"
-  [ -d "$dir/.git" ] || return 0
-  echo "== $name =="
-  (
-    cd "$dir"
-    if ! git diff --quiet || ! git diff --cached --quiet; then
-      echo "$name has local uncommitted changes; skipping automatic update."
-      return 0
-    fi
-    before="$(git rev-parse HEAD)"
-    git fetch origin "$branch"
-    if git merge-base --is-ancestor HEAD "origin/$branch"; then
-      git merge --ff-only "origin/$branch"
-      after="$(git rev-parse HEAD)"
-      echo "$name $before -> $after"
-    else
-      echo "$name has local commits or divergent history; skipping automatic update."
-    fi
-  )
-}
-
-# Re-place skills per the engine placement contract: new ids in the vendored
-# skills.manifest gain canonical links under ~/.agents/skills/mycroft/ (where
-# Goose discovers them); content changes need no re-link at all. Stale ids
-# linger until the installer re-runs — additions are the update-critical case.
-replace_skills() {
-  local canon="$HOME/.agents/skills/mycroft" sid
-  [ -s "$MYCROFT_SOURCE_DIR/skills.manifest" ] || return 0
-  mkdir -p "$canon"
-  while IFS= read -r sid; do
-    { [ -n "$sid" ] && [ -d "$MYCROFT_SOURCE_DIR/skills/$sid" ]; } || continue
-    ln -sfn "$MYCROFT_SOURCE_DIR/skills/$sid" "$canon/$sid"
-  done < "$MYCROFT_SOURCE_DIR/skills.manifest"
-  echo "skills re-placed from skills.manifest"
-}
-
-refresh_profile() {
-  mkdir -p "$MYCROFT_PROFILE_DIR"
-  mkdir -p "$HOME/.local/bin"
-  case ":$PATH:" in
-    *":$HOME/.local/bin:"*) ;;
-    *) export PATH="$HOME/.local/bin:$PATH" ;;
-  esac
-  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" ]; then
-    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" || true
-    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
-  fi
-  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" ]; then
-    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" || true
-    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"
-  fi
-  if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
-    mkdir -p "$GOOSE_CONFIG/custom_providers"
-    for src in "$MYCROFT_SOURCE_DIR"/providers/*.json; do
-      [ -f "$src" ] || continue
-      name="$(basename "$src")"
-      if [ -f "$GOOSE_CONFIG/custom_providers/$name" ]; then
-        cp "$src" "$GOOSE_CONFIG/custom_providers/$name"
-      fi
-    done
-  fi
-  if [ -f "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" ]; then
-    cp "$MYCROFT_SOURCE_DIR/instructions/mycroft-soul.md" "$MYCROFT_PROFILE_DIR/SOUL.md"
-  fi
-  MYCROFT_DIR="$MYCROFT_SOURCE_DIR"
-  MYCROFT_CONFIG="$MYCROFT_PROFILE_DIR/mycroft-config.json"
-  MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
-  GOOSE_RECIPE_PATH="$MYCROFT_SOURCE_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
-  export MYCROFT_PROFILE_DIR MYCROFT_DATA_DIR MYCROFT_SOURCE_DIR MYCROFT_DIR MYCROFT_CONFIG MYCROFT_GENERATED_RECIPES GOOSE_RECIPE_PATH
-  if [ -f "$MYCROFT_PROFILE_DIR/.env" ]; then
-    set -a
-    . "$MYCROFT_PROFILE_DIR/.env"
-    set +a
-  fi
-  if [ -f "$MYCROFT_SOURCE_DIR/instructions/journalism.md" ]; then
-    cat "$MYCROFT_SOURCE_DIR/instructions/journalism.md" > "$MYCROFT_PROFILE_DIR/goose-mycroft.md"
-    cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_EOF
-
-## Mycroft Installed Context
-
-- Mycroft Goose profile: $MYCROFT_PROFILE_DIR
-- Mycroft source: $MYCROFT_SOURCE_DIR
-- Mycroft plugins: $MYCROFT_PLUGINS_DIR
-- Mycroft durable knowledge vault: ${MYCROFT_VAULT_PATH:-}
-- Mycroft recipes: $MYCROFT_SOURCE_DIR/recipes:$MYCROFT_PROFILE_DIR/generated-recipes
-- Mycroft persistent soul file: $MYCROFT_PROFILE_DIR/SOUL.md
-
-Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
-Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
-
-## Getting Started Route
-
-When the user is new after install, asks how to start, or the vault contains only scaffold/example files, do not stop at "nothing found." Explain that Mycroft needs reporting context or source material, then offer:
-
-1. Set up my beat.
-2. Add to my knowledge base.
-3. Create my morning brief.
-4. Investigate a lead.
-5. Set up scouts.
-6. Show me a demo.
-
-Prefer "Add to my knowledge base" when the user has links, files, newsletters, pasted notes, PDFs, or folders. Offer vault cleanup or an audit only when the user says they already have an existing note collection.
-
-Use $MYCROFT_SOURCE_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_SOURCE_DIR/recipes/morning-brief-preflight.yaml only when the user specifically chooses the morning brief path.
-PROFILE_EOF
-    if [ -n "${SPOTLIGHT_DIR:-}" ] || [ -d "$MYCROFT_PLUGINS_DIR/spotlight" ]; then
-      SPOTLIGHT_DIR="${SPOTLIGHT_DIR:-$MYCROFT_PLUGINS_DIR/spotlight}"
-      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_SPOTLIGHT_EOF
-
-## Spotlight Installed Context
-
-- Spotlight repo: $SPOTLIGHT_DIR
-- Spotlight vault: ${SPOTLIGHT_VAULT_PATH:-}
-- Spotlight cases root: ${SPOTLIGHT_VAULT_PATH:-}/cases
-- Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
-- Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
-- Mycroft ingest target for Spotlight findings: ${SPOTLIGHT_INGEST_TARGET:-}
-
-Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
-Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
-For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
-
-- $SPOTLIGHT_DIR/AGENTS.md
-- $SPOTLIGHT_DIR/agents/fact-checker.md
-- $SPOTLIGHT_DIR/skills/spotlight/SKILL.md
-
-Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
-PROFILE_SPOTLIGHT_EOF
-    fi
-    if [ -n "${SCOUTPOST_API_KEY:-}" ] || [ "${SPOTLIGHT_MONITORING_BACKEND:-}" = "scoutpost" ]; then
-      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_SCOUTPOST_EOF'
-
-## Scoutpost Installed Context
-
-Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
-Prefer the scout CLI if installed, otherwise the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE. Do not use MCP.
-Never print the API key.
-PROFILE_SCOUTPOST_EOF
-    fi
-    cp "$MYCROFT_PROFILE_DIR/goose-mycroft.md" "$GOOSE_CONFIG/.goosehints"
-  fi
-}
-
-mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
-spotlight_before="$(repo_rev "$MYCROFT_PLUGINS_DIR/spotlight" || true)"
-
-update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
-update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
-replace_skills || true
-refresh_profile
-
-# Provision/refresh the sovereign stack (Crawl4AI + poppler + SearXNG) from the
-# just-updated source so an existing install gains the backends the new sovereign
-# recipes need — not just the recipe changes. Idempotent + best-effort (a down
-# Docker or missing tool warns, never fails the update). Tor stays opt-in.
-if [ -f "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" ]; then
-  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
-    bash "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" || true
-fi
-
-if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
-  if "$HOME/.local/bin/mycroft-doctor"; then
-    echo "doctor passed"
-  else
-    echo "doctor failed after update; rolling back app checkouts"
-    rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
-    rollback_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" "$spotlight_before"
-    refresh_profile
-    exit 1
-  fi
-fi
-
-echo "update complete"
-UPDATE_EOF
-chmod +x "$HOME/.local/bin/mycroft-update"
 
 if [ "$(uname -s)" = "Darwin" ]; then
   legacy_plist="$HOME/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist"

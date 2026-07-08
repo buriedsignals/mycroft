@@ -38,9 +38,8 @@ excludes 'ENV_EOF'
 # CLI + skills
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"'
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"'
-includes 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"'
-includes '"shell-safety skill"'
-includes '"epistemic-grounding skill"'
+includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft-doctor"'
+includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"'
 
 # Tooling installs
 includes 'brew install --cask block-goose'
@@ -62,12 +61,23 @@ includes 'install_local_model'
 includes 'register_local_model_in_goose'
 includes '$XDG_DATA_HOME/goose/models'
 
-# Updater
+# Updater cron/timer (the updater logic itself now lives in scripts/mycroft-update)
 includes 'git fetch origin main'
 includes 'git merge --ff-only origin/main'
-includes 'doctor failed after update; rolling back app checkouts'
 includes 'mycroft-update.timer'
 includes '15 10 * * 1'
+
+# CLI wrappers are repo scripts (symlinked, self-updating), so lint + contract-check
+# them directly rather than as heredocs inside install.sh.
+bash -n scripts/mycroft-doctor || note "scripts/mycroft-doctor does not parse"
+bash -n scripts/mycroft-update || note "scripts/mycroft-update does not parse"
+wincludes() { grep -qF -- "$2" "$1" || note "missing in $1: $2"; }
+wincludes scripts/mycroft-doctor 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"'
+wincludes scripts/mycroft-doctor '"shell-safety skill"'
+wincludes scripts/mycroft-doctor '"epistemic-grounding skill"'
+wincludes scripts/mycroft-update 'doctor failed after update; rolling back app checkouts'
+wincludes scripts/mycroft-update 'provision-sovereign.sh'
+wincludes scripts/mycroft-update 'git merge --ff-only'
 
 # Getting-started guide written by configurator, opened at the end
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'
