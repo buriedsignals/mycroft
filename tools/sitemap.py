@@ -20,6 +20,7 @@ import re
 import sys
 import urllib.parse
 import urllib.request
+from collections import deque
 
 UA = {"User-Agent": "mycroft-sitemap/1.0"}
 LOC = re.compile(r"<loc>\s*([^<\s]+)\s*</loc>", re.I)
@@ -59,12 +60,12 @@ def crawl_sitemaps(domain: str, limit: int, match: str | None) -> list[str]:
     host = _norm_domain(domain)
     base = "https://" + host
     reg = _registrable(host)
-    queue = _sitemaps_from_robots(base) or [base + "/sitemap.xml"]
+    queue = deque(_sitemaps_from_robots(base) or [base + "/sitemap.xml"])
     seen_maps: set[str] = set()
     urls: list[str] = []
     seen_urls: set[str] = set()
     while queue and len(urls) < limit:
-        sm = queue.pop(0)
+        sm = queue.popleft()
         if sm in seen_maps:
             continue
         seen_maps.add(sm)

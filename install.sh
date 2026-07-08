@@ -31,14 +31,13 @@ MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
-# Sovereign stack (U5): SearXNG search + Crawl4AI scrape run with zero API
-# cost on the normal path; Firecrawl is an optional escape hatch. SearXNG serves the
-# JSON API on this port; the Mycroft tools default to the same URL (SEARXNG_URL).
+# Sovereign stack: SearXNG search + Crawl4AI scrape run with zero API cost on the
+# normal path; Firecrawl is an optional escape hatch. SearXNG serves its JSON API on
+# this port; the Mycroft tools + provisioner default to the same URL (SEARXNG_URL).
+# Container name / image / settings-path are the provisioner's concern (identical
+# defaults there) — install.sh only needs the port, to write SEARXNG_URL.
 SEARXNG_PORT="${SEARXNG_PORT:-8899}"
 SEARXNG_URL_VALUE="http://localhost:$SEARXNG_PORT"
-SEARXNG_CONTAINER="mycroft-searxng"
-SEARXNG_IMAGE="${SEARXNG_IMAGE:-searxng/searxng:latest}"
-SEARXNG_SETTINGS="$MYCROFT_PROFILE_DIR/searxng/settings.yml"
 
 if   [ -f "$HOME/.zshrc" ];  then SHELL_RC="$HOME/.zshrc"
 elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
@@ -100,20 +99,15 @@ install_obsidian() {
 }
 
 install_firecrawl() {
-  # Firecrawl is the OPTIONAL escape hatch (KTD4/KTD6): scrape fallback for hard
-  # anti-bot targets + optional search-union. Present = escape hatch enabled;
-  # absent = pure-sovereign. Not on the default search/scrape path.
+  # Firecrawl is the OPTIONAL escape hatch: scrape fallback for hard anti-bot targets
+  # + optional search-union. Present = escape hatch enabled; absent = pure-sovereign.
+  # Not on the default search/scrape path.
   [ "$INSTALL_FIRECRAWL" = "1" ] || { ok "firecrawl skipped (pure-sovereign mode)"; return 0; }
   if have firecrawl; then ok "firecrawl present (optional fallback)"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
   if have npm; then npm install -g firecrawl-cli && ok "firecrawl (optional fallback)"; else warn "npm missing; install firecrawl-cli manually."; fi
 }
 
-# Sovereign-stack provisioning (Crawl4AI + poppler + SearXNG + opt-in Tor) lives in
-# scripts/provision-sovereign.sh — a shared idempotent script that install.sh AND
-# mycroft-update both run, so an existing install gains the backends on update, not
-# just on a fresh install. install_firecrawl (above) stays inline: it is the
-# optional escape hatch, a separate concern from the sovereign default.
 ensure_qmd() {
   if have qmd; then ok "QMD CLI present"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
@@ -198,6 +192,22 @@ install_mycroft_cli() {
     ok "mycroft-repair CLI"
   else
     warn "mycroft-repair missing from $MYCROFT_DIR/scripts"
+  fi
+  # doctor + update are repo scripts symlinked here too, so `mycroft update` (a symlink)
+  # delivers new wrapper/doctor logic on git ff — no reinstall for updater fixes.
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-doctor" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-doctor" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft-doctor"
+    ok "mycroft-doctor CLI"
+  else
+    warn "mycroft-doctor missing from $MYCROFT_DIR/scripts"
+  fi
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-update" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-update" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"
+    ok "mycroft-update CLI"
+  else
+    warn "mycroft-update missing from $MYCROFT_DIR/scripts"
   fi
 }
 
@@ -988,7 +998,7 @@ set -a
 . "$MYCROFT_SETUP_CONFIG"
 set +a
 
-# Sovereign stack defaults (U5): SearXNG search + Crawl4AI scrape install by
+# Sovereign stack defaults: SearXNG search + Crawl4AI scrape install by
 # default; Tor is opt-in opsec (off); Firecrawl is the optional escape hatch
 # (off unless the configurator/env asks for it → absence = pure-sovereign).
 INSTALL_CRAWL4AI="${INSTALL_CRAWL4AI:-1}"
@@ -1012,10 +1022,11 @@ ensure_goose
 install_obsidian
 # Sovereign stack first (default path) via the shared idempotent provisioner —
 # the same script mycroft-update runs, so updates provision the backends too.
+# Container/image/settings are left to the provisioner's own (identical) defaults;
+# only the values install.sh needs elsewhere (port) or that key the settings path
+# (profile dir) are forwarded.
 INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_TOR="$INSTALL_TOR" \
-  SEARXNG_PORT="$SEARXNG_PORT" SEARXNG_CONTAINER="$SEARXNG_CONTAINER" \
-  SEARXNG_IMAGE="$SEARXNG_IMAGE" SEARXNG_SETTINGS="$SEARXNG_SETTINGS" \
-  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
+  SEARXNG_PORT="$SEARXNG_PORT" MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
   bash "$MYCROFT_DIR/scripts/provision-sovereign.sh" || true
 # ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
@@ -1162,12 +1173,6 @@ write_scheduled_recipes
 install_goose_schedules
 
 mkdir -p "$HOME/.local/bin" "$XDG_DATA_HOME/mycroft"
-# CLI wrappers are repo scripts (symlinked like mycroft-fetch) so `mycroft update`
-# delivers new wrapper/doctor logic on git ff — no reinstall for updater fixes.
-ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft-doctor"
-ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"
-chmod +x "$MYCROFT_DIR/scripts/mycroft-doctor" "$MYCROFT_DIR/scripts/mycroft-update" 2>/dev/null || true
-ok "mycroft-doctor + mycroft-update CLIs"
 
 
 if [ "$(uname -s)" = "Darwin" ]; then

@@ -5,6 +5,9 @@ Firecrawl fallback.
 The command stores fetched content plus acquisition metadata as Mycroft evidence
 items. It deliberately records provenance; it does not certify that a claim is
 true.
+
+Mirrored copy: integration/sift-c2pa/mycroft-fetch carries the same sovereign
+provider helpers with a leaner demo schema — keep the two in sync manually.
 """
 
 from __future__ import annotations
@@ -21,6 +24,8 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+FETCH_TIMEOUT = 90  # seconds; bound the headless-browser fetch so a hung crwl can't stall a recipe
 
 
 def now_iso() -> str:
@@ -86,9 +91,11 @@ def run_crawl4ai_scrape(url: str) -> tuple[str, int, list[str]]:
     base = ["crwl"] if shutil.which("crwl") else ["uvx", "--from", "crawl4ai", "crwl"]
     command = base + ["crawl", url, "-o", "markdown"]
     try:
-        r = subprocess.run(command, capture_output=True, text=True, check=False)
+        r = subprocess.run(command, capture_output=True, text=True, check=False, timeout=FETCH_TIMEOUT)
     except FileNotFoundError:
         return "crawl4ai CLI not found", 127, command
+    except subprocess.TimeoutExpired:
+        return f"crawl4ai timed out after {FETCH_TIMEOUT}s", 3, command
     if r.returncode != 0 or not r.stdout.strip():
         return (r.stderr or "crawl4ai returned empty"), (r.returncode or 3), command
     return r.stdout, 0, command
@@ -142,6 +149,7 @@ def create_evidence_record(
     output_path: Path | None = None,
 ) -> dict[str, Any]:
     content_bytes = content.encode("utf-8")
+    content_sha256 = sha256_bytes(content_bytes)
     evidence_id = f"E-{uuid.uuid4().hex[:12]}"
     prov_id = f"prov-{uuid.uuid4().hex[:12]}"
     out_dir = provenance_dir()
@@ -159,8 +167,8 @@ def create_evidence_record(
         "accessed_at": accessed_at,
         "access_timestamp": accessed_at,
         "raw_path": str(artifact_path),
-        "sha256": sha256_bytes(content_bytes),
-        "content_hash": f"sha256:{sha256_bytes(content_bytes)}",
+        "sha256": content_sha256,
+        "content_hash": f"sha256:{content_sha256}",
         "content_length": len(content_bytes),
         "content_type": "text/markdown" if fmt == "markdown" else "text/html" if fmt == "html" else "application/json",
         "format": fmt,
@@ -211,9 +219,9 @@ def print_result(record: dict[str, Any], content: str, human: bool) -> None:
 
 def cmd_scrape(args: argparse.Namespace) -> int:
     # Sovereign default: Crawl4AI. Firecrawl is the optional escape hatch, used only
-    # when Crawl4AI fails AND the firecrawl CLI is present (KTD4/KTD6). acquisition_method
-    # records the tool that actually acquired the evidence — chain of custody must not
-    # lie about provenance, so we track which rung of the ladder produced the content.
+    # when Crawl4AI fails AND the firecrawl CLI is present. acquisition_method records
+    # the tool that actually acquired the evidence — chain of custody must not lie about
+    # provenance, so we track which rung of the ladder produced the content.
     content, exit_code, command = run_crawl4ai_scrape(args.url)
     method = "crawl4ai"
     if exit_code != 0 and shutil.which("firecrawl"):

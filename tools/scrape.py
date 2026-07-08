@@ -7,8 +7,8 @@
 
 Sovereign default: Crawl4AI (open-source, no API key) via `uvx --from crawl4ai
 crwl`. On a Crawl4AI failure the optional Firecrawl escape hatch is used *only*
-if the `firecrawl` CLI is present (KTD4/KTD6 in tools/GOING_LOCAL.md). Local PDFs
-go through pdftotext. The ladder is Crawl4AI -> (optional) Firecrawl.
+if the `firecrawl` CLI is present. Local PDFs go through pdftotext. The ladder is
+Crawl4AI -> (optional) Firecrawl.
 
 Exit 0 on success; 3 on a fetch/parse failure with the error on stderr.
 """
@@ -19,7 +19,7 @@ import shutil
 import subprocess
 import sys
 
-CRAWL4AI_TIMEOUT = 90
+FETCH_TIMEOUT = 90  # seconds; shared budget for the crawl4ai and firecrawl subprocesses
 
 
 def _crwl_cmd(url: str) -> list[str]:
@@ -33,7 +33,7 @@ def _crwl_cmd(url: str) -> list[str]:
 def crawl4ai(url: str, fmt: str) -> str:
     # crawl4ai's clean output is markdown; html/links are not first-class in the
     # CLI, so we always request markdown (the recipe default).
-    proc = subprocess.run(_crwl_cmd(url), capture_output=True, text=True, timeout=CRAWL4AI_TIMEOUT)
+    proc = subprocess.run(_crwl_cmd(url), capture_output=True, text=True, timeout=FETCH_TIMEOUT)
     if proc.returncode != 0 or not proc.stdout.strip():
         raise RuntimeError(proc.stderr.strip()[:400] or "crawl4ai returned empty")
     return proc.stdout
@@ -42,7 +42,7 @@ def crawl4ai(url: str, fmt: str) -> str:
 def firecrawl(url: str, fmt: str) -> str:
     proc = subprocess.run(
         ["firecrawl", "scrape", url, "--format", fmt],
-        capture_output=True, text=True, timeout=CRAWL4AI_TIMEOUT,
+        capture_output=True, text=True, timeout=FETCH_TIMEOUT,
     )
     if proc.returncode != 0:
         raise RuntimeError(proc.stderr.strip()[:400] or "firecrawl non-zero exit")

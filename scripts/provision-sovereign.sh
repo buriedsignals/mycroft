@@ -40,7 +40,7 @@ ensure_uv() {
 }
 
 provision_crawl4ai() {
-  # Sovereign scrape default (KTD5). scrape.py/mycroft-fetch prefer the installed
+  # Sovereign scrape default. scrape.py/mycroft-fetch prefer the installed
   # `crwl`; without it they cold-start via `uvx --from crawl4ai`. Installing it is a
   # best-effort speedup + browser-runtime provisioning, never a hard failure.
   [ "$INSTALL_CRAWL4AI" = "1" ] || return 0
@@ -74,7 +74,7 @@ provision_poppler() {
 }
 
 provision_searxng() {
-  # Sovereign search default (U5a). Runs a local SearXNG JSON endpoint on
+  # Sovereign search default. Runs a local SearXNG JSON endpoint on
   # $SEARXNG_PORT; the Mycroft search tools point at $SEARXNG_URL_VALUE. Needs
   # Docker — best-effort: absent Docker degrades to the Firecrawl search fallback
   # (if a key is present) rather than aborting.
@@ -116,7 +116,7 @@ SXEOF
 }
 
 provision_tor() {
-  # Opt-in opsec (U7): the --tor fetch routes Crawl4AI through the local Tor SOCKS
+  # Opt-in opsec: the --tor fetch routes Crawl4AI through the local Tor SOCKS
   # proxy (9050). Off by default; enabled when the operator opts in.
   [ "$INSTALL_TOR" = "1" ] || return 0
   if have tor; then ok "tor present (SOCKS 9050)"; return 0; fi

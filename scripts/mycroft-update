@@ -74,21 +74,15 @@ refresh_profile() {
     *":$HOME/.local/bin:"*) ;;
     *) export PATH="$HOME/.local/bin:$PATH" ;;
   esac
-  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" ]; then
-    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" || true
-    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"
-  fi
-  if [ -f "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" ]; then
-    chmod +x "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" || true
-    ln -sf "$MYCROFT_SOURCE_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"
-  fi
-  # Re-link the updater + doctor to their repo scripts (self-heal): converts an old
-  # static-copy wrapper into a symlink, so from here on `mycroft update` always runs
-  # the current repo version — no reinstall needed for future updater/doctor fixes.
-  for _cli in mycroft-update mycroft-doctor; do
-    if [ -f "$MYCROFT_SOURCE_DIR/scripts/$_cli" ]; then
-      chmod +x "$MYCROFT_SOURCE_DIR/scripts/$_cli" || true
-      ln -sf "$MYCROFT_SOURCE_DIR/scripts/$_cli" "$HOME/.local/bin/$_cli"
+  # (Re)link every CLI wrapper to its repo script (source:command, differ only for
+  # mycroft-safe). Symlinks follow git ff, so this installs new wrappers AND self-heals
+  # an old static-copy wrapper — no reinstall needed for future updater/doctor fixes.
+  for pair in mycroft-fetch:mycroft-fetch mycroft_safe.py:mycroft-safe \
+              mycroft-update:mycroft-update mycroft-doctor:mycroft-doctor; do
+    src="${pair%%:*}"; name="${pair##*:}"
+    if [ -f "$MYCROFT_SOURCE_DIR/scripts/$src" ]; then
+      chmod +x "$MYCROFT_SOURCE_DIR/scripts/$src" || true
+      ln -sf "$MYCROFT_SOURCE_DIR/scripts/$src" "$HOME/.local/bin/$name"
     fi
   done
   if [ -d "$MYCROFT_SOURCE_DIR/providers" ]; then
