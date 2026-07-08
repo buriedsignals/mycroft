@@ -109,101 +109,11 @@ install_firecrawl() {
   if have npm; then npm install -g firecrawl-cli && ok "firecrawl (optional fallback)"; else warn "npm missing; install firecrawl-cli manually."; fi
 }
 
-ensure_uv() {
-  if have uv; then return 0; fi
-  if have brew; then brew install uv >/dev/null 2>&1 && have uv && return 0; fi
-  curl -LsSf https://astral.sh/uv/install.sh | sh >/dev/null 2>&1 || true
-  export PATH="$HOME/.local/bin:$PATH"
-  have uv
-}
-
-install_crawl4ai() {
-  # Sovereign scrape default (KTD5). scrape.py/mycroft-fetch prefer the installed
-  # `crwl`; without it they cold-start via `uvx --from crawl4ai`, so this is a
-  # best-effort speedup + browser-runtime provisioning, never a hard failure.
-  [ "$INSTALL_CRAWL4AI" = "1" ] || return 0
-  if have crwl; then
-    ok "crawl4ai (crwl) present"
-  elif ensure_uv; then
-    uv tool install crawl4ai >/dev/null 2>&1 && ok "crawl4ai installed (uv tool)" \
-      || warn "crawl4ai install failed; scrape will cold-start via uvx (or fall back to firecrawl)"
-  else
-    warn "uv unavailable; crawl4ai not installed. Scrape cold-starts via uvx if present."
-  fi
-  # Playwright chromium runtime crawl4ai renders with. crawl4ai-setup is a console
-  # script `uv tool install crawl4ai` places on PATH.
-  if have crawl4ai-setup; then
-    crawl4ai-setup >/dev/null 2>&1 && ok "crawl4ai browser runtime" \
-      || warn "crawl4ai-setup failed; run 'crawl4ai-setup' manually if scraping fails"
-  elif have crwl; then
-    warn "crawl4ai-setup not on PATH; run it once to install the Playwright browser."
-  fi
-}
-
-install_poppler() {
-  # pdftotext backs scrape.py --pdf and the civic-PDF recipe (replaces firecrawl-pdf).
-  if have pdftotext; then ok "pdftotext present"; return 0; fi
-  if [ "$(uname -s)" = "Darwin" ]; then
-    ensure_brew && brew install poppler >/dev/null 2>&1 && ok "poppler (pdftotext)" \
-      || warn "install poppler manually: brew install poppler"
-  else
-    warn "install poppler-utils via your package manager for PDF text extraction (pdftotext)"
-  fi
-}
-
-install_searxng() {
-  # Sovereign search default (U5a). Runs a local SearXNG JSON endpoint on
-  # $SEARXNG_PORT; the Mycroft search tools point at $SEARXNG_URL_VALUE. Needs
-  # Docker — best-effort: absent Docker degrades to the firecrawl search fallback
-  # (if a key is present) rather than aborting the install.
-  [ "$INSTALL_SEARXNG" = "1" ] || return 0
-  if ! have docker; then
-    warn "Docker not found — SearXNG (sovereign search) not provisioned. Install Docker, then re-run; or point SEARXNG_URL at an existing instance. Search falls back to Firecrawl if a key is set."
-    return 0
-  fi
-  mkdir -p "$(dirname "$SEARXNG_SETTINGS")"
-  if [ ! -f "$SEARXNG_SETTINGS" ]; then
-    local secret
-    secret="$(head -c 32 /dev/urandom 2>/dev/null | od -An -tx1 | tr -d ' \n')"
-    [ -n "$secret" ] || secret="mycroft_local_$$"
-    cat > "$SEARXNG_SETTINGS" <<SXEOF
-use_default_settings: true
-server:
-  secret_key: "$secret"
-  limiter: false
-  image_proxy: false
-search:
-  formats:
-    - html
-    - json
-SXEOF
-  fi
-  if docker ps -a --format '{{.Names}}' 2>/dev/null | grep -q "^$SEARXNG_CONTAINER$"; then
-    docker start "$SEARXNG_CONTAINER" >/dev/null 2>&1 && ok "SearXNG on $SEARXNG_URL_VALUE" \
-      || warn "SearXNG container present but failed to start; check 'docker logs $SEARXNG_CONTAINER'"
-  elif docker run -d --name "$SEARXNG_CONTAINER" --restart unless-stopped \
-        -p "$SEARXNG_PORT:8080" \
-        -v "$SEARXNG_SETTINGS:/etc/searxng/settings.yml:ro" \
-        "$SEARXNG_IMAGE" >/dev/null 2>&1; then
-    ok "SearXNG on $SEARXNG_URL_VALUE"
-  else
-    warn "SearXNG container failed to start; check Docker and re-run."
-  fi
-}
-
-install_tor() {
-  # Opt-in opsec (U7): the --tor fetch routes Crawl4AI through the local Tor SOCKS
-  # proxy (9050). Off by default; enabled when the operator opts in.
-  [ "$INSTALL_TOR" = "1" ] || return 0
-  if have tor; then ok "tor present (SOCKS 9050)"; return 0; fi
-  if [ "$(uname -s)" = "Darwin" ]; then
-    ensure_brew && brew install tor >/dev/null 2>&1 && ok "tor (SOCKS 9050)" \
-      || warn "install tor manually: brew install tor"
-  else
-    warn "install tor via your package manager for the opt-in --tor fetch (SOCKS 9050)"
-  fi
-}
-
+# Sovereign-stack provisioning (Crawl4AI + poppler + SearXNG + opt-in Tor) lives in
+# scripts/provision-sovereign.sh — a shared idempotent script that install.sh AND
+# mycroft-update both run, so an existing install gains the backends on update, not
+# just on a fresh install. install_firecrawl (above) stays inline: it is the
+# optional escape hatch, a separate concern from the sovereign default.
 ensure_qmd() {
   if have qmd; then ok "QMD CLI present"; return 0; fi
   if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
@@ -1099,11 +1009,14 @@ if [ "${HAS_JUNKIPEDIA:-0}" = "1" ]; then JUNKIPEDIA_JSON=true; else JUNKIPEDIA_
 mkdir -p "$VAULT_PATH" && ok "Mycroft vault $VAULT_PATH"
 ensure_goose
 install_obsidian
-# Sovereign stack first (default path), then the optional Firecrawl escape hatch.
-install_crawl4ai
-install_poppler
-install_searxng
-install_tor
+# Sovereign stack first (default path) via the shared idempotent provisioner —
+# the same script mycroft-update runs, so updates provision the backends too.
+INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_TOR="$INSTALL_TOR" \
+  SEARXNG_PORT="$SEARXNG_PORT" SEARXNG_CONTAINER="$SEARXNG_CONTAINER" \
+  SEARXNG_IMAGE="$SEARXNG_IMAGE" SEARXNG_SETTINGS="$SEARXNG_SETTINGS" \
+  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
+  bash "$MYCROFT_DIR/scripts/provision-sovereign.sh" || true
+# ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
 ensure_qmd
 install_mycroft_cli
@@ -1544,6 +1457,15 @@ update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
 update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
 replace_skills || true
 refresh_profile
+
+# Provision/refresh the sovereign stack (Crawl4AI + poppler + SearXNG) from the
+# just-updated source so an existing install gains the backends the new sovereign
+# recipes need — not just the recipe changes. Idempotent + best-effort (a down
+# Docker or missing tool warns, never fails the update). Tor stays opt-in.
+if [ -f "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" ]; then
+  MYCROFT_PROFILE_DIR="$MYCROFT_PROFILE_DIR" \
+    bash "$MYCROFT_SOURCE_DIR/scripts/provision-sovereign.sh" || true
+fi
 
 if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
   if "$HOME/.local/bin/mycroft-doctor"; then
