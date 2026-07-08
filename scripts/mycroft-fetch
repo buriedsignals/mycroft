@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Provenance-capturing wrapper around the Firecrawl CLI.
+"""Provenance-capturing web fetch/search — sovereign (Crawl4AI + SearXNG),
+Firecrawl fallback.
 
 The command stores fetched content plus acquisition metadata as Mycroft evidence
 items. It deliberately records provenance; it does not certify that a claim is
@@ -12,6 +13,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -57,6 +59,68 @@ def run_firecrawl(args: list[str]) -> tuple[str, int]:
     if result.returncode != 0:
         return result.stderr or result.stdout, result.returncode
     return result.stdout, 0
+
+
+def get_scraper_version(method: str) -> str:
+    if method == "crawl4ai":
+        # `crwl` has no --version flag (it is aliased to the crawl subcommand), so read
+        # the installed version from `uv tool list` — the canonical source, since the
+        # installer provisions crawl4ai via `uv tool install crawl4ai`.
+        try:
+            r = subprocess.run(["uv", "tool", "list"], capture_output=True, text=True, check=False)
+            for line in r.stdout.splitlines():
+                if line.strip().startswith("crawl4ai"):
+                    parts = line.split()
+                    return "crawl4ai " + parts[1] if len(parts) > 1 else "crawl4ai"
+        except FileNotFoundError:
+            pass
+        return "crawl4ai"
+    if method == "firecrawl":
+        return get_firecrawl_version()
+    if method == "searxng":
+        return "searxng@" + os.environ.get("SEARXNG_URL", "http://localhost:8899")
+    return "unknown"
+
+
+def run_crawl4ai_scrape(url: str) -> tuple[str, int, list[str]]:
+    base = ["crwl"] if shutil.which("crwl") else ["uvx", "--from", "crawl4ai", "crwl"]
+    command = base + ["crawl", url, "-o", "markdown"]
+    try:
+        r = subprocess.run(command, capture_output=True, text=True, check=False)
+    except FileNotFoundError:
+        return "crawl4ai CLI not found", 127, command
+    if r.returncode != 0 or not r.stdout.strip():
+        return (r.stderr or "crawl4ai returned empty"), (r.returncode or 3), command
+    return r.stdout, 0, command
+
+
+def run_searxng_search(query: str, limit: int) -> tuple[str, int, list[str]]:
+    import urllib.parse
+    import urllib.request
+    base = os.environ.get("SEARXNG_URL", "http://localhost:8899").rstrip("/")
+    command = ["searxng", base, query]
+    hits: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    try:
+        for page in range(1, 4):
+            u = base + "/search?" + urllib.parse.urlencode({"q": query, "format": "json", "pageno": page})
+            data = json.loads(urllib.request.urlopen(
+                urllib.request.Request(u, headers={"User-Agent": "mycroft-fetch/1.0"}), timeout=30).read())
+            results = data.get("results") or []
+            if not results:
+                break
+            for r in results:
+                url_ = r.get("url")
+                if not url_ or url_ in seen:
+                    continue
+                seen.add(url_)
+                hits.append({"url": url_, "title": r.get("title", ""),
+                             "snippet": (r.get("content") or "")[:300], "date": r.get("publishedDate")})
+                if len(hits) >= limit:
+                    return json.dumps(hits, indent=2), 0, command
+    except Exception as exc:  # noqa: BLE001 - SearXNG unreachable
+        return f"SearXNG unreachable at {base}: {exc}", 3, command
+    return json.dumps(hits, indent=2), 0, command
 
 
 def extension_for_format(fmt: str) -> str:
@@ -109,7 +173,7 @@ def create_evidence_record(
             "fallback_required": False,
             "confidence_effect": "none",
         },
-        "firecrawl_version": get_firecrawl_version(),
+        "scraper_version": get_scraper_version(acquisition_method),
         "command": " ".join(command),
     }
 
@@ -126,7 +190,7 @@ def create_evidence_record(
         "content_length": record["content_length"],
         "format": fmt,
         "command": record["command"],
-        "firecrawl_version": record["firecrawl_version"],
+        "scraper_version": record["scraper_version"],
     }
     atomic_write(legacy_meta_path, (json.dumps(legacy_record, indent=2) + "\n").encode("utf-8"))
     return record
@@ -146,16 +210,25 @@ def print_result(record: dict[str, Any], content: str, human: bool) -> None:
 
 
 def cmd_scrape(args: argparse.Namespace) -> int:
-    command = ["firecrawl", "scrape", args.url, "--format", args.format]
-    content, exit_code = run_firecrawl(["scrape", args.url, "--format", args.format])
+    # Sovereign default: Crawl4AI. Firecrawl is the optional escape hatch, used only
+    # when Crawl4AI fails AND the firecrawl CLI is present (KTD4/KTD6). acquisition_method
+    # records the tool that actually acquired the evidence — chain of custody must not
+    # lie about provenance, so we track which rung of the ladder produced the content.
+    content, exit_code, command = run_crawl4ai_scrape(args.url)
+    method = "crawl4ai"
+    if exit_code != 0 and shutil.which("firecrawl"):
+        print(f"[crawl4ai failed] falling back to firecrawl:\n{content}", file=sys.stderr)
+        content, exit_code = run_firecrawl(["scrape", args.url, "--format", args.format])
+        command = ["firecrawl", "scrape", args.url, "--format", args.format]
+        method = "firecrawl"
     if exit_code != 0:
-        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        print(f"Error: scrape failed\n{content}", file=sys.stderr)
         return exit_code
     record = create_evidence_record(
         source_url=args.url,
         content=content,
         fmt=args.format,
-        acquisition_method="firecrawl",
+        acquisition_method=method,
         query_or_task=f"Scrape {args.url}",
         command=command,
         output_path=Path(args.output).expanduser() if args.output else None,
@@ -165,16 +238,23 @@ def cmd_scrape(args: argparse.Namespace) -> int:
 
 
 def cmd_search(args: argparse.Namespace) -> int:
-    command = ["firecrawl", "search", args.query, "--limit", str(args.limit)]
-    content, exit_code = run_firecrawl(["search", args.query, "--limit", str(args.limit)])
+    # Sovereign default: SearXNG. Firecrawl fallback only if SearXNG is unreachable
+    # and the firecrawl CLI is present. acquisition_method records the real provider.
+    content, exit_code, command = run_searxng_search(args.query, args.limit)
+    method = "searxng"
+    if exit_code != 0 and shutil.which("firecrawl"):
+        print(f"[searxng failed] falling back to firecrawl:\n{content}", file=sys.stderr)
+        content, exit_code = run_firecrawl(["search", args.query, "--limit", str(args.limit)])
+        command = ["firecrawl", "search", args.query, "--limit", str(args.limit)]
+        method = "firecrawl"
     if exit_code != 0:
-        print(f"Error: firecrawl failed\n{content}", file=sys.stderr)
+        print(f"Error: search failed\n{content}", file=sys.stderr)
         return exit_code
     record = create_evidence_record(
         source_url=f"search:{args.query}",
         content=content,
         fmt="json",
-        acquisition_method="firecrawl",
+        acquisition_method=method,
         query_or_task=f"Search: {args.query}",
         command=command,
         output_path=Path(args.output).expanduser() if args.output else None,
