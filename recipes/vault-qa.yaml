@@ -4,7 +4,7 @@ description: "Answer a journalist's question grounded in their vault and live we
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, attribution, SIFT, no fabrication) as the session's system context.
-  Answer from the journalist's vault first; supplement with live web via the `firecrawl` CLI when the vault is incomplete.
+  Answer from the journalist's vault first; supplement with live web via the sovereign search/scrape tools when the vault is incomplete.
   Every factual claim must have a citation. If neither vault nor web has it, say "not found in available sources".
 
 parameters:
@@ -26,7 +26,7 @@ parameters:
 extensions:
   - type: builtin
     name: developer
-    description: "Shell + file access — used to grep/read vault files and invoke the firecrawl CLI"
+    description: "Shell + file access — used to grep/read vault files and invoke the search/scrape tools"
 
 prompt: |
   Question: {{ question }}
@@ -38,10 +38,10 @@ prompt: |
      - `rg -l "..." {{ vault_path }}` to find candidate notes
      - Read the most relevant ones in full (not summaries — you need direct quotes for citations)
 
-  2. If vault coverage is incomplete, use the firecrawl CLI for live web:
-     - `firecrawl search "query"` for discovery (returns JSON; parse and pick relevant URLs)
-     - `firecrawl scrape <url>` for specific pages (returns markdown)
-     - Never use WebFetch, curl, or any other browser tool — firecrawl only.
+  2. If vault coverage is incomplete, use the sovereign search/scrape tools for live web:
+     - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "query"` for discovery (returns JSON; parse and pick relevant URLs)
+     - `python3 "$MYCROFT_DIR/tools/scrape.py" <url>` for specific pages (returns markdown)
+     - Never use WebFetch or curl for pages — use the sovereign search/scrape tools only.
 
   3. Synthesize an answer:
      - Lead with the answer in 1-3 sentences.

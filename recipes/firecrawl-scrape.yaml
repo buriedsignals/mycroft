@@ -1,9 +1,9 @@
 version: "1.0.0"
-title: "Firecrawl — scrape"
-description: "Scrape a single URL to clean markdown via the firecrawl CLI. Preferred primitive for fetching a known page."
+title: "Scrape — fetch a page"
+description: "Scrape a single URL to clean markdown via the Crawl4AI-backed scrape tool. Preferred primitive for fetching a known page."
 
 instructions: |
-  Use the firecrawl CLI directly. Never WebFetch, curl, or any other browser tool.
+  Use the Crawl4AI-backed scrape tool. Never WebFetch, curl, or any other browser tool.
 
 parameters:
   - key: url
@@ -24,8 +24,8 @@ extensions:
 prompt: |
   Scrape {{ url }} and return {{ format }}.
 
-  Run: `firecrawl scrape {{ url }} --format {{ format }}`
+  Run: `python3 "$MYCROFT_DIR/tools/scrape.py" {{ url }} --format {{ format }}`
 
   Output verbatim — do NOT summarize unless asked. The caller can request summary separately.
 
-  If firecrawl errors (paywall, 403, timeout), report the error clearly with the command that failed.
+  If the scrape tool errors (paywall, 403, timeout), report the error clearly with the command that failed.

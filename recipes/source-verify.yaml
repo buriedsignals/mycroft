@@ -20,7 +20,7 @@ extensions:
 prompt: |
   Investigate and assess this source for journalistic use: **{{ source }}**
 
-  Apply SIFT rigorously; each step uses firecrawl for web evidence.
+  Apply SIFT rigorously; each step uses the sovereign search/scrape tools for web evidence.
 
   **1. Stop** — note first impressions without accepting them.
 
@@ -29,7 +29,7 @@ prompt: |
   - Funding / business model (advertising, paywall, grants, state-backed, PR arm)
   - Editorial track record: major corrections, retractions, known misattributions
   - Political / ideological orientation if evident (cite evidence, not vibes)
-  - `firecrawl search "<source> owner"`, `firecrawl search "<source> funding"`, `firecrawl search "<source> retraction"`
+  - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<source> owner"`, `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<source> funding"`, `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<source> retraction"`
 
   **3. Find better coverage**:
   - Find 2-3 independent outlets covering the same beats as {{ source }}.
@@ -68,7 +68,7 @@ prompt: |
   **Rules**:
   - Do not conclude from vibes. Every qualitative judgement needs a cited fact.
   - If evidence is thin, say so — "insufficient public evidence to assess X".
-  - Never use WebFetch/curl — firecrawl only.
+  - Never use WebFetch/curl for pages — use the sovereign search/scrape tools only.
 
 activities:
   - "Verify {{ source }} as a journalism source"

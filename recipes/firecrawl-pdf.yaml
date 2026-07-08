@@ -1,9 +1,9 @@
 version: "1.0.0"
-title: "Firecrawl — PDF / civic docs"
+title: "PDF / civic docs"
 description: "Fast-mode PDF extraction for civic documents — court filings, council packets, government reports. Handles large PDFs (200+ pages)."
 
 instructions: |
-  Use firecrawl with Fire-PDF fast mode for efficient PDF handling.
+  Download the PDF and extract text with pdftotext.
 
 parameters:
   - key: url
@@ -25,7 +25,8 @@ prompt: |
 
   Run:
   ```sh
-  firecrawl scrape {{ url }} --parsers pdf-fast --format markdown
+  PDF="${TMPDIR:-/tmp}/mycroft-pdf-$$.pdf"
+  curl -fsSL "{{ url }}" -o "$PDF" && python3 "$MYCROFT_DIR/tools/scrape.py" "$PDF" --pdf; rm -f "$PDF"
   ```
 
   {% if extract_query %}

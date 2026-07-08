@@ -24,7 +24,7 @@ prompt: |
   Summarize the newsletter at: {{ source }}
 
   **Fetch**:
-  - If source is a URL: `firecrawl scrape {{ source }}` — markdown output.
+  - If source is a URL: `python3 "$MYCROFT_DIR/tools/scrape.py" {{ source }}` — markdown output.
   - If source is an AgentMail message ID: `curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" https://api.agentmail.to/v1/messages/{{ source }}`
   - If source is `paste`: use the inline_text parameter:
     ```

@@ -80,7 +80,7 @@ Use `grep` / file listing to discover content; don't assume paths.
 
 - Citations inline, not footnoted (unless draft prep).
 - Markdown tables for per-claim verdicts.
-- Code blocks for shell invocations (e.g., `firecrawl search "..."`).
+- Code blocks for shell invocations (e.g., `python3 "$MYCROFT_DIR/tools/searxng-search.py" "..."`).
 - Plain prose for synthesis; keep paragraphs short.
 
 ## When you are uncertain

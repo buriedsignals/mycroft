@@ -1,9 +1,9 @@
 version: "1.0.0"
-title: "Firecrawl — map domain"
+title: "Map domain"
 description: "Discover all accessible URLs on a domain. Useful when investigating a site's full coverage of a topic or scoping a scrape."
 
 instructions: |
-  Use firecrawl map to enumerate URLs on a domain. Do not recursively scrape from the map — use separate recipes for that.
+  Use the sitemap tool (robots.txt/sitemap.xml) to enumerate URLs on a domain. Do not recursively scrape from the map — use separate recipes for that.
 
 parameters:
   - key: domain
@@ -13,7 +13,7 @@ parameters:
   - key: search
     input_type: string
     requirement: optional
-    description: "Filter URLs by keyword (firecrawl's built-in filter)"
+    description: "Filter URLs by substring"
     default: ""
 
 extensions:
@@ -25,7 +25,7 @@ prompt: |
 
   Run:
   ```sh
-  {% if search %}firecrawl map {{ domain }} --search "{{ search }}"{% else %}firecrawl map {{ domain }}{% endif %}
+  {% if search %}python3 "$MYCROFT_DIR/tools/sitemap.py" {{ domain }} --match "{{ search }}"{% else %}python3 "$MYCROFT_DIR/tools/sitemap.py" {{ domain }}{% endif %}
   ```
 
   Return the discovered URL list organised by apparent category (if URL structure makes it obvious: `/news/`, `/about/`, `/docs/`, etc.).

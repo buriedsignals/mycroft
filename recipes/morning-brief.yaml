@@ -61,7 +61,7 @@ prompt: |
      - For each, read the diff of content (most recent N lines or first H1 + first paragraph) to see what changed.
 
   4. **Live web supplement** (only if beat is explicit):
-     - `firecrawl search "<beat> news past 24h"` — optional 1-2 queries max to catch overnight breaking news.
+     - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<beat> news past 24h"` — optional 1-2 queries max to catch overnight breaking news.
      - NEVER use WebFetch, curl for pages, or apify-rag.
 
   **Synthesize**:
@@ -88,7 +88,7 @@ prompt: |
   - ft: [status, count]
   - AgentMail: [status, count]
   - Vault ({{ vault_path }}): [status, count]
-  - Web (firecrawl): [if queried, list queries]
+  - Web (SearXNG): [if queried, list queries]
   ```
 
   **Write to vault** using obsidian CLI (requires Obsidian app running):

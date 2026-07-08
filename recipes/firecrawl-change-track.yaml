@@ -1,9 +1,9 @@
 version: "1.0.0"
-title: "Firecrawl — change tracking"
+title: "Change tracking"
 description: "Scrape a URL with a per-investigation tag so later runs produce a diff. Useful for manually monitoring a page across sessions."
 
 instructions: |
-  Use firecrawl's changeTracking mode to record hashes + diffs across runs.
+  Snapshot the page each run and diff against the last snapshot to record changes.
 
 parameters:
   - key: url
@@ -24,12 +24,16 @@ prompt: |
 
   Run:
   ```sh
-  firecrawl scrape {{ url }} --formats "markdown,changeTracking" --change-tracking-modes "git-diff,json" --change-tracking-tag "{{ tag }}"
+  SNAP="$HOME/.mycroft/track/{{ tag }}.md"
+  mkdir -p "$(dirname "$SNAP")"
+  python3 "$MYCROFT_DIR/tools/scrape.py" {{ url }} > "$SNAP.new"
+  if [ -f "$SNAP" ]; then diff -u "$SNAP" "$SNAP.new" && echo "(no change since last snapshot)"; else echo "baseline established — no prior snapshot to compare"; fi
+  mv "$SNAP.new" "$SNAP"
   ```
 
-  Return the scraped content plus the `changeTracking` block. Highlight:
+  Return the scraped content plus the diff. Highlight:
   - Was anything new?
   - What specifically changed (git-diff output)?
-  - Structured field changes (JSON-diff output), if applicable.
+  - (diff -u shows added/removed lines; empty diff means unchanged.)
 
   If this is the first run for this tag, note "baseline established — no prior snapshot to compare".
