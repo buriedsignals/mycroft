@@ -120,6 +120,70 @@ ensure_qmd() {
   if have npm; then npm install -g @tobilu/qmd && ok "QMD CLI"; else warn "npm missing; install QMD manually with: npm install -g @tobilu/qmd"; fi
 }
 
+# --- Scoutpost CLI (scout) ---------------------------------------------------
+# `scout` on PATH via npm, pinned to the vendored catalog.json (native-binary-via-
+# npm, like firecrawl/qmd). CLI branch = macOS/Linux/WSL2 with npm; a host without
+# npm/scout falls back to the REST API (SCOUTPOST_API_KEY + SCOUTPOST_API_BASE). The
+# public Supabase anon key is baked (identical to the engine's constant) — it is not
+# a per-user secret, so there is no form field to collect it.
+SCOUTPOST_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4"
+
+# Read the scoutpost-cli pin from the vendored catalog.json. New logic — no other
+# installer idiom reads catalog.json; python3 is a hard prerequisite of this script.
+scout_cli_pin() {
+  local catalog="$MYCROFT_DIR/catalog/catalog.json"
+  [ -f "$catalog" ] || return 0
+  python3 - "$catalog" <<'PIN_PY' 2>/dev/null
+import json, sys
+try:
+    print(json.load(open(sys.argv[1])).get("dependencies", {}).get("scoutpost-cli", ""))
+except Exception:
+    pass
+PIN_PY
+}
+
+install_scout_cli() {
+  [ "$ENABLE_SCOUTPOST" = "1" ] || return 0
+  if have scout; then ok "scout CLI present"; return 0; fi
+  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
+  if ! have npm; then
+    warn "npm missing; Scoutpost will use the REST API. To enable the scout CLI later: npm install -g scoutpost-cli"
+    return 0
+  fi
+  local pin; pin="$(scout_cli_pin)"
+  if [ -n "$pin" ]; then
+    npm install -g "scoutpost-cli@$pin" && ok "scout CLI ($pin)" || warn "scout CLI install failed; Scoutpost will use the REST API."
+  else
+    npm install -g scoutpost-cli && ok "scout CLI (unpinned — no catalog pin found)" || warn "scout CLI install failed; Scoutpost will use the REST API."
+  fi
+}
+
+# Write ~/.scoutpost/config.json for the scout CLI (functions/v1 + baked public anon
+# key + cj_ api_key), 0600, via a direct write with xtrace disabled so the key never
+# enters a trace — never `scout config set` (that puts the key in argv). CLI branch
+# only; the REST branch reads SCOUTPOST_API_KEY from the profile .env.
+write_scout_config() {
+  [ "$ENABLE_SCOUTPOST" = "1" ] || return 0
+  have scout || return 0
+  [ -n "${SCOUTPOST_API_KEY:-}" ] || { warn "Scoutpost enabled but no API key found; skipping scout config."; return 0; }
+  local cfg="$HOME/.scoutpost/config.json" oldumask xtrace=0
+  mkdir -p "$HOME/.scoutpost"; chmod 700 "$HOME/.scoutpost" 2>/dev/null || true
+  case "$-" in *x*) xtrace=1; set +x;; esac
+  oldumask="$(umask)"; umask 077
+  cat > "$cfg" <<SCOUT_CFG_EOF
+{
+  "api_url": "https://scoutpost.ai/functions/v1",
+  "supabase_anon_key": "$SCOUTPOST_ANON_KEY",
+  "api_key": "$SCOUTPOST_API_KEY"
+}
+SCOUT_CFG_EOF
+  chmod 600 "$cfg"
+  umask "$oldumask"
+  [ "$xtrace" = 1 ] && set -x
+  ok "scout config (~/.scoutpost/config.json)"
+}
+# -----------------------------------------------------------------------------
+
 configure_qmd() {
   if ! have qmd; then warn "QMD CLI missing; vault search and Spotlight query-vault will be unavailable until qmd is installed."; return 0; fi
   qmd collection add "$VAULT_PATH" --name mycroft >/dev/null 2>&1 || true
@@ -203,10 +267,9 @@ install_mycroft_cli() {
 
 install_skill_registry() {
   mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR" "$MYCROFT_SKILLS_DIR"
-  if [ "$ENABLE_SCOUTPOST" = "1" ] && have curl; then
-    mkdir -p "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost"
-    curl -fsSL https://scoutpost.ai/skills/scoutpost.md -o "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost/SKILL.md" || cp "$MYCROFT_SKILLS_DIR/scoutpost/SKILL.md" "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost/SKILL.md" || warn "Using bundled Scoutpost skill; hosted product skill could not be fetched."
-  fi
+  # Scoutpost ships the authored, CLI/API-only skill from the repo (skills/scoutpost),
+  # placed by the manifest loop below. No hosted-skill fetch — the hosted product skill
+  # names MCP as a surface, and Mycroft is CLI-or-API only.
   if [ ! -f "$MYCROFT_SKILL_REGISTRY" ]; then
     warn "Missing $MYCROFT_SKILL_REGISTRY — the configurator did not finish; re-run the installer."
     exit 1
@@ -232,9 +295,6 @@ install_skill_registry() {
       [ -d "$skill_dir" ] || continue
       ln -sfn "$skill_dir" "$HOME/.agents/skills/mycroft/$(basename "$skill_dir")"
     done
-  fi
-  if [ "$ENABLE_SCOUTPOST" = "1" ] && [ -d "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost" ]; then
-    ln -sfn "$MYCROFT_PROFILE_SKILLS_DIR/scoutpost" "$HOME/.agents/skills/mycroft/scoutpost"
   fi
   ok "Mycroft skill registry"
 }
@@ -318,7 +378,7 @@ GOOSE_SPOTLIGHT_EOF
 ## Scoutpost Installed Context
 
 Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
-Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
+Prefer the scout CLI if installed, otherwise the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE. Do not use MCP.
 Never print the API key.
 GOOSE_SCOUTPOST_EOF
   fi
@@ -515,6 +575,10 @@ configure_goose_persistent_defaults() {
   store_goose_secret FIRECRAWL_API_KEY "${FIRECRAWL_API_KEY:-}"
   store_goose_secret SCOUTPOST_API_KEY "${SCOUTPOST_API_KEY:-}"
   store_goose_secret OSINT_NAV_API_KEY "${OSINT_NAV_API_KEY:-}"
+
+  # Scoutpost CLI config (if `scout` is installed): ~/.scoutpost/config.json from the
+  # just-sourced key. REST-only hosts skip this and use SCOUTPOST_API_KEY from .env.
+  write_scout_config
 
   ok "Goose default provider config"
 }
@@ -1019,6 +1083,7 @@ INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_
 # ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
 ensure_qmd
+install_scout_cli
 install_mycroft_cli
 sync_mycroft_profile
 seed_mycroft_vault
@@ -1442,7 +1507,7 @@ PROFILE_SPOTLIGHT_EOF
 ## Scoutpost Installed Context
 
 Scoutpost is enabled. Use the installed Scoutpost skill from the Mycroft skill registry.
-Prefer MCP if configured, then the scout CLI if installed, then the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE.
+Prefer the scout CLI if installed, otherwise the hosted API with SCOUTPOST_API_KEY and SCOUTPOST_API_BASE. Do not use MCP.
 Never print the API key.
 PROFILE_SCOUTPOST_EOF
     fi

@@ -1,34 +1,35 @@
 ---
 name: scoutpost
-description: Hosted Scoutpost API integration for scouts, monitoring requests, and beat signals.
+description: Scoutpost integration for scouts, monitoring, and beat signals via the scout CLI or REST API.
 ---
 
 # Scoutpost
 
-Use this skill when Scoutpost was enabled in Mycroft setup.
+Use this skill when Scoutpost was enabled in Mycroft setup. Scoutpost is a monitoring platform for journalists: scheduled scouts watch pages, beats, social profiles, and councils, and extract source-linked information units.
+
+## Surfaces (in order)
+
+Mycroft talks to Scoutpost over **two** surfaces — never MCP:
+
+1. **`scout` CLI** — if the `scout` binary is on `$PATH`, prefer it. Commands stay visible in the transcript. Its config lives at `~/.scoutpost/config.json`.
+2. **REST API** — if `scout` is not installed (for example a host with no CLI build), call the hosted API directly.
+
+If neither is available, explain what is missing and offer to configure it.
 
 ## Configuration
 
-Read:
+- **CLI:** `~/.scoutpost/config.json` (`api_url`, `supabase_anon_key`, `api_key`) is written by the installer. Run `scout` directly; never print the key.
+- **REST:** read `SCOUTPOST_API_KEY` from Goose's secret store or the fallback `~/.config/goose/mycroft/.env`. Call `https://scoutpost.ai/functions/v1`. Send the key as `Authorization: Bearer cj_…` **and** the public anon key as the `apikey:` header — the Edge Functions front door rejects bare bearer tokens.
 
-- `SCOUTPOST_API_KEY` from Goose's secret store or fallback `~/.config/goose/mycroft/.env`
-- `SCOUTPOST_API_BASE`, default `https://www.scoutpost.ai/api/v1`
+## Usage semantics
 
-The product skill source is:
+The canonical, product-maintained guide — scout types, verification policy, credit rules — is the hosted product skill:
 
 ```text
 https://scoutpost.ai/skills/scoutpost.md
 ```
 
-If the installed skill differs from the hosted product skill, prefer the hosted product skill when available.
-
-## Capability Order
-
-1. Use a Goose-compatible Scoutpost MCP server if it is installed and configured.
-2. Use a `scout` CLI if present.
-3. Use the hosted API directly with the configured API key.
-
-If none are available, explain what is missing and offer to configure it.
+Read it for how to operate scouts correctly. This file governs only *which surfaces* Mycroft uses (CLI or REST — not MCP).
 
 ## Use Cases
 
@@ -41,4 +42,6 @@ If none are available, explain what is missing and offer to configure it.
 
 - Never print the API key.
 - Do not send confidential source identities unless the user explicitly approves.
+- Confirm before creating or running anything that spends credits.
+- Treat unverified units as leads, not publishable facts; always include source URLs when summarizing.
 - Store durable scout findings in Mycroft, not Spotlight, unless they are part of an active case.
