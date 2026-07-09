@@ -1,4 +1,22 @@
+<div align="center">
+
 # Mycroft
+
+### Goose extension pack for investigative journalists
+
+**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 16 skills, 27 recipes, open-weight and local-capable, ZDR cloud optional.**
+
+[Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![16 Skills](https://img.shields.io/badge/skills-16-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![27 Recipes](https://img.shields.io/badge/recipes-27-ff6d00?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/recipes)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
+
+[![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
+
+Built by [**Buried Signals**](https://buriedsignals.com/) • [tom@buriedsignals.com](mailto:tom@buriedsignals.com)
+
+</div>
+
+---
 
 Mycroft is a Goose extension pack for newsroom memory, recurring editorial
 workflows, source-grounded fact-checking, and handoffs between monitoring,
@@ -245,6 +263,25 @@ when a lead needs active investigation. Use Scoutpost when something should be
 monitored over time.
 
 ## Acknowledgements
+
+Mycroft stands on open work — community-maintained open-source projects and
+open methods. A sincere thank-you to every project below — the pack would not
+exist without them. *(Listing does not imply affiliation or endorsement.)*
+
+| Category | Projects we're grateful to |
+|----------|----------------------------|
+| **Agent runtime** | [Goose](https://github.com/block/goose) (Block, Apache-2.0 — the open-source runtime Mycroft is built on) |
+| **Journalism skills & methods** | [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism) (Joe Amditis, MIT) · [SIFT](https://hapgood.us/2019/06/19/sift-the-four-moves/) (Mike Caulfield) |
+| **Sovereign search & scraping** | [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) · [Crawl4AI](https://github.com/unclecode/crawl4ai) (unclecode, Apache-2.0) · [Playwright](https://playwright.dev/) (browser automation) · [Poppler](https://poppler.freedesktop.org/) (`pdftotext` — PDF extraction) · [Tor](https://www.torproject.org/) (opt-in anonymous scraping) |
+| **Local inference** | [llama.cpp](https://github.com/ggml-org/llama.cpp) (ggml, MIT) |
+| **Media & metadata** | [ExifTool](https://exiftool.org/) (Phil Harvey — powers photo-metadata) |
+| **Knowledge vault** | [Obsidian](https://obsidian.md/) (the vault app) · [QMD](https://www.npmjs.com/package/@tobilu/qmd) (tobilu — local vault search) |
+| **Provenance** | [C2PA](https://c2pa.org/) (content-provenance standard behind SIFT manifests) |
+
+> Built something here we should credit, or want a listing changed or removed?
+> Open an issue or PR — we'll fix it fast.
+
+### Vendored skills
 
 Five of Mycroft's journalism skills — `foia-requests`, `interview-prep`,
 `story-pitch`, `photo-metadata`, and `ai-writing-detox` — are adapted from
