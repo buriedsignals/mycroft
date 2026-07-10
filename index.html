@@ -1444,12 +1444,30 @@ button.day-card:focus-visible {
   outline-offset: 4px;
 }
 .card__more {
+  display: inline-block;
   color: var(--oxide);
   white-space: nowrap;
-  transition: color var(--dur-2) var(--ease);
+  transition: color var(--dur-2) var(--ease), transform 0.35s var(--ease);
 }
 button.day-card:hover .card__more {
   color: var(--oxide-active);
+  transform: translateX(5px);
+}
+
+/* hover · pick the page up off the desk (armed after the fall-in settles) */
+.day-card.is-settled {
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.5s var(--ease);
+  transition-delay: 0ms;
+}
+button.day-card.is-settled:hover,
+button.day-card.is-settled:focus-visible {
+  transform: translate3d(var(--offset, 0), -12px, 0) rotate(0deg) scale(1.015);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 46px 80px -32px rgba(19, 16, 19, 0.26),
+    0 14px 28px -18px rgba(19, 16, 19, 0.16);
 }
 
 /* skill dialogs · same paper as the cards */
@@ -1552,6 +1570,22 @@ button.day-card:hover .card__more {
 .skill-dialog__list li::before {
   content: "· ";
   color: var(--oxide);
+}
+.skill-dialog__credit {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-4);
+}
+.skill-dialog__credit a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.skill-dialog__credit a:hover {
+  color: var(--oxide-active);
+  border-bottom-color: var(--oxide-active);
 }
 .skill-dialog__links {
   margin: 0;
@@ -2901,10 +2935,10 @@ html.js .is-in .tw__in {
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ recipe · morning-brief</p>
         <h3 class="skill-dialog__title" id="dlg-brief-title">The morning brief<em>.</em></h3>
-        <p class="skill-dialog__body">One command in Goose. Mycroft pulls your X bookmarks, your AgentMail inbox, and overnight coverage of your beats, ranks the lot by editorial value, and writes a cited digest into your vault — every item traceable to its source.</p>
+        <p class="skill-dialog__body">Overnight, stories pile up. When you sit down, one command builds the brief: Mycroft reads the posts you bookmarked, the newsletters in your inbox, and what happened on your beats while you slept. It picks the eight items most worth your time — ranked by news value, not volume — and files a short, readable digest into your notes. Every line says where it came from, so checking a claim is one click, not a hunt.</p>
         <ul class="skill-dialog__list" role="list">
-          <li>Ranked by editorial value, not recency</li>
-          <li>Every claim carries its citation</li>
+          <li>Ranked by what matters to your beat, not what's loudest</li>
+          <li>Every item links back to its source</li>
           <li>Optional: read aloud while you make the coffee</li>
         </ul>
         <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/blob/main/recipes/morning-brief.yaml" target="_blank" rel="noreferrer">the recipe file →</a></p>
@@ -2916,12 +2950,13 @@ html.js .is-in .tw__in {
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · foia-requests</p>
         <h3 class="skill-dialog__title" id="dlg-foia-title">Records requests<em>.</em></h3>
-        <p class="skill-dialog__body">Adapted from Joe Amditis's journalism skills. Mycroft drafts the request in the agency's own terms, keeps a tracker note in your vault with filing dates and statutory deadlines, and has the appeal language ready when the clock runs out.</p>
+        <p class="skill-dialog__body">Public-records requests are won on paperwork. Tell Mycroft what you're after and it drafts the letter — addressed to the right agency, citing the right statute, phrased so there's nothing to reject on a technicality. It keeps a tracker note beside it, so the filing date and the agency's legal deadline don't have to live in your head. And when an agency goes quiet or says no, the follow-up and the appeal are already written.</p>
         <ul class="skill-dialog__list" role="list">
-          <li>Request drafted for the right agency and statute</li>
-          <li>Deadlines tracked in the vault</li>
-          <li>Appeals and follow-ups, pre-written</li>
+          <li>The letter, drafted in the agency's own terms</li>
+          <li>Filing dates and legal deadlines, tracked in your notes</li>
+          <li>Appeals and follow-ups, ready when the clock runs out</li>
         </ul>
+        <p class="skill-dialog__credit">Skill adapted from <a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">claude-skills-journalism</a> by Joe Amditis · Center for Cooperative Media · MIT</p>
         <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/foia-requests" target="_blank" rel="noreferrer">the skill file →</a></p>
       </div>
     </dialog>
@@ -2931,11 +2966,11 @@ html.js .is-in .tw__in {
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · fact-check</p>
         <h3 class="skill-dialog__title" id="dlg-verify-title">The fact-check<em>.</em></h3>
-        <p class="skill-dialog__body">Paste a draft or a claim. Mycroft runs Mike Caulfield's SIFT method per claim — stop, investigate the source, find better coverage, trace to the original — and returns one of four verdicts with the evidence attached. Deep cases escalate to Spotlight.</p>
+        <p class="skill-dialog__body">Paste a draft, a quote, or a claim doing the rounds. Mycroft splits it into individual claims and checks each one the way a verification desk would, using SIFT — the method Mike Caulfield teaches fact-checkers: stop, check who's behind the source, look for better coverage, trace everything back to its original context. Each claim comes back with a verdict and the evidence behind it. When something needs more than a desk check, the case hands off to Spotlight, the investigation tool.</p>
         <ul class="skill-dialog__list" role="list">
-          <li>Verified · unverified · contradicted · mischaracterized</li>
-          <li>Every verdict grounded in a cited source</li>
-          <li>Optional C2PA-signed manifest of the check</li>
+          <li>Four honest verdicts: verified · unverified · contradicted · mischaracterized</li>
+          <li>Every verdict links to the evidence behind it</li>
+          <li>Optional: a tamper-evident record of the check (C2PA)</li>
         </ul>
         <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/fact-check" target="_blank" rel="noreferrer">the skill file →</a></p>
       </div>
@@ -2946,12 +2981,13 @@ html.js .is-in .tw__in {
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · interview-prep</p>
         <h3 class="skill-dialog__title" id="dlg-interview-title">Interview prep<em>.</em></h3>
-        <p class="skill-dialog__body">Adapted from Joe Amditis's journalism skills. Give it a name and a story angle: Mycroft assembles a background dossier from your vault and the open web, proposes question frameworks for the interview you're actually doing, and keeps the attribution ground rules straight.</p>
+        <p class="skill-dialog__body">Give it a name and your story angle. Mycroft gathers what your own notes already hold on the person, adds fresh research from the open web, and hands you a one-page dossier. It then drafts question frames to fit the conversation you're actually having — an accountability sit-down reads differently from an expert explainer — and keeps the ground rules straight before you hit record.</p>
         <ul class="skill-dialog__list" role="list">
-          <li>Dossier from vault notes + fresh research</li>
-          <li>Question frames per interview type</li>
+          <li>A dossier from your notes plus fresh research</li>
+          <li>Question frames matched to the interview type</li>
           <li>On record, on background, off — kept explicit</li>
         </ul>
+        <p class="skill-dialog__credit">Skill adapted from <a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">claude-skills-journalism</a> by Joe Amditis · Center for Cooperative Media · MIT</p>
         <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/interview-prep" target="_blank" rel="noreferrer">the skill file →</a></p>
       </div>
     </dialog>
@@ -2962,15 +2998,14 @@ html.js .is-in .tw__in {
         <p class="skill-dialog__kicker">§ skills · obsidian + knowledge-primitives</p>
         <h3 class="skill-dialog__title" id="dlg-vault-title">The vault<em>.</em></h3>
         <div class="skill-dialog__media" hidden>
-          <!-- drop assets/vault-graph.mp4 into the repo and this appears automatically -->
-          <video controls muted playsinline preload="metadata" src="assets/vault-graph.mp4"></video>
+          <video controls muted loop playsinline preload="metadata" src="assets/vault-graph.mp4"></video>
           <p class="skill-dialog__cap">The vault graph in Obsidian — every source, claim, and brief a node.</p>
         </div>
-        <p class="skill-dialog__body">The vault is the point. Everything Mycroft produces — briefs, source records, claims, findings, handoffs — lands as plain markdown in an Obsidian vault on your disk. Notes wiki-link into a graph: sources connect to stories, claims to evidence. QMD searches it locally. No database, no cloud, nothing leaves the machine.</p>
+        <p class="skill-dialog__body">The vault is the point. Everything Mycroft produces — briefs, source records, claims, findings — is saved as ordinary text notes in Obsidian, a free note-taking app, on your own computer. Notes link to each other the way reporting actually connects: this source gave that quote, that claim rests on this document. Over weeks it grows into the graph you see above — your beat, mapped. Nothing syncs anywhere unless you decide it should, and if you stop using Mycroft tomorrow, the notes still open in any text editor.</p>
         <ul class="skill-dialog__list" role="list">
-          <li>Plain markdown files — readable in anything, forever</li>
-          <li>Wiki-linked: sources ↔ claims ↔ stories</li>
-          <li>Searchable offline with QMD · yours to grep, sync, or archive</li>
+          <li>Plain text files — readable in anything, forever</li>
+          <li>Notes link sources ↔ claims ↔ stories</li>
+          <li>Search it offline · grep it, sync it, archive it — it's yours</li>
         </ul>
         <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/knowledge-primitives" target="_blank" rel="noreferrer">the vault structure →</a></p>
       </div>
@@ -8319,7 +8354,11 @@ export {
   document.querySelectorAll('[data-dialog]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var dlg = document.getElementById(btn.dataset.dialog);
-      if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+      if (dlg && typeof dlg.showModal === 'function') {
+        dlg.showModal();
+        var v = dlg.querySelector('video');
+        if (v) v.play().catch(function () {});
+      }
     });
   });
   document.querySelectorAll('dialog.skill-dialog').forEach(function (dlg) {
@@ -8327,6 +8366,16 @@ export {
     if (close) close.addEventListener('click', function () { dlg.close(); });
     dlg.addEventListener('click', function (e) {
       if (e.target === dlg) dlg.close();
+    });
+    dlg.addEventListener('close', function () {
+      var v = dlg.querySelector('video');
+      if (v) v.pause();
+    });
+  });
+  /* arm the hover lift only after each card's fall-in transition settles */
+  document.querySelectorAll('.day-card').forEach(function (card) {
+    card.addEventListener('transitionend', function (e) {
+      if (e.propertyName === 'transform') card.classList.add('is-settled');
     });
   });
   /* the vault clip appears only once assets/vault-graph.mp4 exists */
