@@ -51,6 +51,9 @@ class UnitChecks(unittest.TestCase):
         for overrides, field in cases:
             errs = srv.validate_choices(srv.normalize({**BASE, **overrides}))
             self.assertTrue(any(e["field"] == field for e in errs), field)
+        # Sovereign Crawl4AI + SearXNG needs no Firecrawl account.
+        keyless = srv.normalize({**BASE, "installFirecrawl": False, "firecrawlKey": ""})
+        self.assertEqual(srv.validate_choices(keyless), [])
         # local mode needs no provider keys
         local = srv.normalize({**BASE, "sovereignty": "local", "fireworksKey": ""})
         self.assertEqual(srv.validate_choices(local), [])
@@ -176,6 +179,8 @@ class ServerChecks(unittest.TestCase):
         self.assertNotIn("__PLATFORM__", self.page)
         self.assertIn("spotDevBrowser", self.page)
         self.assertIn("OSINT_NAV_API_KEY", self.page)
+        self.assertIn("Optional fallback", self.page)
+        self.assertNotIn('id="installFirecrawl" checked', self.page)
 
         # 2. bad token is rejected on both POST endpoints
         for path in ("/submit", "/pick-folder"):
@@ -183,14 +188,15 @@ class ServerChecks(unittest.TestCase):
                 self.post(path, {**BASE, "token": "wrong"})
             self.assertEqual(ctx.exception.code, 403)
 
-        # 3. structural validation blocks with field errors
+        # 3. structural validation still blocks genuinely required fields
         with self.assertRaises(urllib.error.HTTPError) as ctx:
-            self.post("/submit", {**BASE, "token": self.token, "firecrawlKey": ""})
+            self.post("/submit", {**BASE, "token": self.token, "vault": ""})
         body = json.loads(ctx.exception.read())
-        self.assertTrue(any(e["field"] == "firecrawl_key" for e in body["errors"]))
+        self.assertTrue(any(e["field"] == "vault_path" for e in body["errors"]))
 
-        # 4. good submit writes all four artifacts and exits 0
-        resp = self.post("/submit", {**BASE, "token": self.token})
+        # 4. keyless sovereign submit writes all four artifacts and exits 0
+        resp = self.post("/submit", {**BASE, "token": self.token,
+                                     "installFirecrawl": False, "firecrawlKey": ""})
         self.assertTrue(resp["ok"])
         self.assertEqual(self.proc.wait(timeout=10), 0)
         for name, mode in [(".env", 0o600), ("setup-config.env", 0o600),

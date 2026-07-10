@@ -1,0 +1,61 @@
+{
+  "schema_version": "mycroft-template/v1",
+  "output_schema": "mycroft-config/v2",
+  "document": {
+    "schema_version": "mycroft-config/v2",
+    "product": "mycroft",
+    "paths": {
+      "profile": {"$input": "paths.profile"},
+      "data": {"$input": "paths.data"},
+      "source": {"$input": "paths.source"},
+      "plugins": {"$input": "paths.plugins"}
+    },
+    "goose": {
+      "config_dir": {"$input": "goose.config_dir"},
+      "custom_providers_dir": {"$input": "goose.custom_providers_dir"},
+      "hints_file": {"$input": "goose.hints_file"},
+      "recipe_path": {"$input": "goose.recipe_path"},
+      "instructions_file": {"$input": "goose.instructions_file"},
+      "soul_file": {"$input": "goose.soul_file"},
+      "generated_recipes": {"$input": "goose.generated_recipes"},
+      "schedules": {
+        "morning_brief": {"$input": "goose.schedules.morning_brief"},
+        "vault_audit": {"$input": "goose.schedules.vault_audit"}
+      }
+    },
+    "provider": {
+      "id": {"$input": "provider.id"},
+      "model": {"$input": "provider.model"}
+    },
+    "skills": {
+      "registry": {"$input": "skills.registry"},
+      "directory": {"$input": "skills.directory"}
+    },
+    "vaults": {
+      "mycroft": {"$input": "vaults.mycroft"},
+      "spotlight": {"$input": "vaults.spotlight"},
+      "spotlight_ingest_target": {"$input": "vaults.spotlight_ingest_target"}
+    },
+    "acquisition": {
+      "search": {"$input": "acquisition.search"},
+      "scrape": {"$input": "acquisition.scrape"},
+      "firecrawl": {"$input": "acquisition.firecrawl"}
+    },
+    "sovereignty": {
+      "local_only": {"$input": "sovereignty.local_only"},
+      "local_model": {"$input": "sovereignty.local_model"}
+    },
+    "plugins": {
+      "spotlight": {
+        "enabled": {"$input": "plugins.spotlight.enabled"},
+        "path": {"$input": "plugins.spotlight.path"},
+        "inherits_mycroft_sovereignty": true
+      },
+      "scoutpost": {
+        "enabled": {"$input": "plugins.scoutpost.enabled"},
+        "mode": "hosted",
+        "api_base": "https://www.scoutpost.ai/api/v1"
+      }
+    }
+  }
+}

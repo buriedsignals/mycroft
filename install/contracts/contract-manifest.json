@@ -1,0 +1,16 @@
+{
+  "schema_version": "mycroft-install-contract/v1",
+  "choice_schema": "mycroft-install/v2",
+  "config_schema": "mycroft-config/v2",
+  "template_schema": "mycroft-template/v1",
+  "files": [
+    {"path": "install-choices.schema.json", "sha256": "6598792ed211841270a93b18a16b7d701c7954830ffc7da8f82c634041a5d3a6"},
+    {"path": "mycroft-config.schema.json", "sha256": "7ac49fa206b408f8be2ac62ac99c982d00af22657fed9b8cbfd3909777810ec2"},
+    {"path": "mycroft-config.template.json", "sha256": "02ff86cc93126dabd64dba62af6c2e2a6ab1569ca97321393ad14b3d860419d8"},
+    {"path": "validation-profile.md", "sha256": "e0e2a126f3cf9118dbb63acb924a0a0884eb925356f242a68c978f31559121fd"},
+    {"path": "testdata/default.inputs.json", "sha256": "f07ec0a43c393c78c13c3515880d43f2cfe5b33fe0d8b2142f1574c100896c11"},
+    {"path": "testdata/default.expected.json", "sha256": "b16c4866938162eeef0bfbc36fddf3714ca57727d0cbb1e30d085d769ebf49d8"},
+    {"path": "testdata/firecrawl-fallback.inputs.json", "sha256": "144e9bc44b4062c6fbda5d0480890c44446980852f6519d3b4deb6919e122ba2"},
+    {"path": "testdata/firecrawl-fallback.expected.json", "sha256": "a01b1ab66e61198b02285675cd8c904e4a03c43c8e7c4e0b7293a391c029c02a"}
+  ]
+}

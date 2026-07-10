@@ -168,9 +168,9 @@
     </div>
   </div>
 
-  <p class="num">03 — Required</p>
-  <h2>Three <em>pieces.</em></h2>
-  <p class="sec-lead"><strong>All three are required.</strong> Leave the auto-install boxes ticked to let the installer handle them, or untick and install manually.</p>
+  <p class="num">03 — Core setup</p>
+  <h2>Two essentials. <em>One escape hatch.</em></h2>
+  <p class="sec-lead"><strong>Goose and Obsidian are required.</strong> Sovereign web research runs through local SearXNG and Crawl4AI; Firecrawl is an optional fallback for hard anti-bot targets.</p>
   <div class="grid-3">
     <div class="item">
       <div class="item__head"><span class="item__title">Goose<em>.</em></span><span class="badge req">required</span></div>
@@ -186,12 +186,12 @@
       </div>
     </div>
     <div class="item">
-      <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge req">required</span></div>
-      <p class="item__lede">Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</p>
-      <label class="check"><input type="checkbox" id="installFirecrawl" checked> Auto-install</label>
+      <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge">Optional fallback</span></div>
+      <p class="item__lede">An API-backed escape hatch when a target blocks the local Crawl4AI path. Normal search and scraping need no cloud key.</p>
+      <label class="check"><input type="checkbox" id="installFirecrawl"> Install optional CLI</label>
       <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
       <div>
-        <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
+        <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY <span class="opt">— optional</span></label>
         <input class="fld" type="password" id="firecrawl_key" placeholder="fc-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
     </div>

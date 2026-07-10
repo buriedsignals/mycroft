@@ -128,8 +128,8 @@ def validate_choices(d):
     errors = []
     if not str(d.get("vault") or "").strip():
         errors.append({"field": "vault_path", "message": "Vault path is required — Mycroft has nowhere to keep your knowledge without it."})
-    if not d.get("firecrawlKey"):
-        errors.append({"field": "firecrawl_key", "message": "FIRECRAWL_API_KEY is required — every web-capable recipe depends on it. Get a key at firecrawl.dev."})
+    if d.get("installFirecrawl") and not d.get("firecrawlKey"):
+        errors.append({"field": "firecrawl_key", "message": "A FIRECRAWL_API_KEY is required only when the optional Firecrawl fallback is selected."})
     if not d.get("localOnly"):
         if not d.get("fireworksKey"):
             errors.append({"field": "fireworks_key", "message": "Cloud-first runs on Fireworks (GLM-5.2, ZDR) — FIREWORKS_API_KEY is required, or switch to Local-first."})

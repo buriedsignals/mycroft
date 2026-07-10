@@ -42,9 +42,16 @@ includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"'
 
 # Tooling installs
+includes '. "$PREFLIGHT_HELPER"'
+includes 'mycroft_prepare_npm_prefix || exit 1'
+includes 'mycroft_preflight_linux_build_tools || exit 1'
 includes 'brew install --cask block-goose'
-includes 'npm install -g @tobilu/qmd'
+includes 'npm install -g "firecrawl-cli@$pin"'
+includes 'npm install -g "@tobilu/qmd@$pin"'
 includes 'qmd collection add "$VAULT_PATH" --name mycroft'
+includes 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"'
+includes 'GOOSE_RECIPE_PATH="$GOOSE_RECIPE_PATH_VALUE" "$HOME/.local/bin/mycroft-doctor"'
+includes 'Mycroft doctor failed; setup is incomplete and the installer is exiting non-zero.'
 
 # Goose configuration + schedules
 includes 'configure_goose_persistent_defaults'

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mycroft.buriedsignals.com/schemas/install-choices-v2.json",
+  "title": "Mycroft normalized install choices",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "runtime",
+    "provider",
+    "vault_path",
+    "install_obsidian",
+    "enable_schedules",
+    "integrations",
+    "acquisition"
+  ],
+  "properties": {
+    "schema_version": {"const": "mycroft-install/v2"},
+    "runtime": {"const": "goose"},
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "model"],
+      "properties": {
+        "id": {
+          "enum": ["fireworks-glm52", "other-subscription", "local-9b", "local-27b"]
+        },
+        "model": {"type": ["string", "null"]}
+      }
+    },
+    "vault_path": {"type": "string", "minLength": 1, "maxLength": 4096},
+    "install_obsidian": {"type": "boolean"},
+    "enable_schedules": {"type": "boolean"},
+    "integrations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spotlight", "scoutpost"],
+      "properties": {
+        "spotlight": {"type": "boolean"},
+        "scoutpost": {"type": "boolean"}
+      }
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["search", "scrape", "firecrawl"],
+      "properties": {
+        "search": {"const": "searxng"},
+        "scrape": {"const": "crawl4ai"},
+        "firecrawl": {"enum": ["disabled", "fallback"]}
+      }
+    }
+  }
+}

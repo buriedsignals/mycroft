@@ -93,6 +93,11 @@
     { "id": "integrations", "name": "Integrations", "audience": ["researcher"], "entitlement": "spotlight.core",
       "path": "skills/integrations", "requires_keys": [], "version": "2.0.0", "products": ["spotlight"],
       "runtimes": ["spotlight"], "content_repo": "buriedsignals/spotlight", "kind": "portable" },
+    { "id": "technical-investigation", "name": "Technical investigation", "audience": ["journalist", "researcher"], "entitlement": "spotlight.core",
+      "path": "skills/technical-investigation", "requires_keys": [], "version": "1.0.0", "products": ["spotlight"],
+      "runtimes": ["spotlight"], "content_repo": "buriedsignals/spotlight", "kind": "portable",
+      "upstream": { "repo": "7onez/cti-expert", "ref": "f9ecc9b0258caff78d26c0b779d1687f4431749f",
+        "path": "techniques", "license": "MIT with Ethical Use Addendum", "author": "Hieu Ngo / chongluadao.vn" } },
     { "id": "foia-requests", "name": "FOIA requests", "audience": ["journalist"], "entitlement": "mycroft.core",
       "path": "skills/foia-requests", "requires_keys": [], "version": "1.2.0", "products": ["mycroft"],
       "runtimes": ["goose"], "content_repo": "buriedsignals/mycroft", "kind": "portable",
@@ -120,5 +125,5 @@
         "path": "journalism-core/skills/ai-writing-detox", "license": "MIT", "author": "Joe Amditis" } }
   ],
   "artifacts": [],
-  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
+  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "crawl4ai": "0.9.0", "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
 }

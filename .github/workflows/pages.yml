@@ -38,6 +38,10 @@ jobs:
           "
       - name: Validate installer script
         run: bash tests/install-sh-check.sh
+      - name: Validate fresh-machine preflight
+        run: bash tests/install-preflight-check.sh
+      - name: Validate doctor backend gates
+        run: bash tests/doctor-backends-check.sh
       - name: Validate configurator server
         run: python3 tests/setup-server-check.py
       - name: Validate grounding/provenance tooling
