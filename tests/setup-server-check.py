@@ -114,7 +114,7 @@ class UnitChecks(unittest.TestCase):
         reg = srv.build_skill_registry(srv.normalize(BASE))
         ids = {s["id"] for s in reg["skills"]}
         for expected in ["knowledge-primitives", "qmd", "obsidian", "obsidian-ingest",
-                         "fact-check", "mycroft-maintenance", "firecrawl", "scoutpost",
+                         "fact-check", "mycroft-maintenance", "web-acquisition", "scoutpost",
                          "spotlight", "spotlight-ingest", "spotlight-monitoring",
                          "spotlight-integrations"]:
             self.assertIn(expected, ids)
