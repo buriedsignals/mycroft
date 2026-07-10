@@ -1425,6 +1425,150 @@ a.card-int:hover {
   outline-offset: 4px;
 }
 
+/* cards as dialog triggers */
+button.day-card {
+  appearance: none;
+  display: block;
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+}
+button.day-card:hover .card__title,
+button.day-card:focus-visible .card__title {
+  color: var(--oxide-active);
+}
+button.day-card:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 4px;
+}
+.card__more {
+  color: var(--oxide);
+  white-space: nowrap;
+  transition: color var(--dur-2) var(--ease);
+}
+button.day-card:hover .card__more {
+  color: var(--oxide-active);
+}
+
+/* skill dialogs · same paper as the cards */
+.skill-dialog {
+  border: 1px solid var(--rule);
+  border-radius: var(--rad-sm);
+  background: #fbf6e8;
+  color: var(--ink);
+  padding: 0;
+  width: min(640px, calc(100vw - 40px));
+  box-shadow: 0 40px 80px -40px rgba(19, 16, 19, 0.35);
+}
+.skill-dialog::backdrop {
+  background: rgba(19, 16, 19, 0.45);
+  backdrop-filter: blur(3px);
+}
+.skill-dialog__inner {
+  position: relative;
+  padding: clamp(28px, 4vw, 44px);
+}
+.skill-dialog__close {
+  appearance: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: none;
+  color: var(--ink-dim);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease);
+}
+.skill-dialog__close:hover,
+.skill-dialog__close:focus-visible {
+  color: var(--oxide-active);
+  border-color: var(--oxide);
+}
+.skill-dialog__kicker {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-4);
+}
+.skill-dialog__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 800;
+  font-size: clamp(26px, 3vw, 40px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--sp-5);
+}
+.skill-dialog__title em {
+  color: var(--oxide);
+  font-style: normal;
+}
+.skill-dialog__media {
+  margin: 0 0 var(--sp-5);
+}
+.skill-dialog__media video {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: var(--rad-sm);
+}
+.skill-dialog__cap {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.04em;
+  color: var(--ink-dim);
+  margin: var(--sp-2) 0 0;
+}
+.skill-dialog__body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  margin: 0 0 var(--sp-5);
+}
+.skill-dialog__list {
+  list-style: none;
+  margin: 0 0 var(--sp-5);
+  padding: var(--sp-4) 0 0;
+  border-top: var(--hairline-dashed);
+  display: grid;
+  gap: var(--sp-2);
+}
+.skill-dialog__list li {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: var(--ink-dim);
+}
+.skill-dialog__list li::before {
+  content: "· ";
+  color: var(--oxide);
+}
+.skill-dialog__links {
+  margin: 0;
+}
+.skill-dialog__links a {
+  font-family: var(--mono);
+  font-size: var(--cap-md);
+  letter-spacing: 0.06em;
+  color: var(--oxide);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+}
+.skill-dialog__links a:hover {
+  color: var(--oxide-active);
+  border-bottom-color: var(--oxide-active);
+}
+
 .card__kicker {
   display: flex;
   justify-content: space-between;
@@ -2682,7 +2826,7 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">02</span> What it does</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">An example day.<br><em>Not a feature list.</em></h2>
+      <h2 class="display display--section">07:00 to <em>deadline.</em></h2>
       <p class="lead">A morning brief, a fast verification pass, then deeper source work. Mycroft is a workflow layer for the rhythm of a reporting day, not three boxed-off tricks.</p>
     </div>
 
@@ -2695,38 +2839,142 @@ html.js .is-in .tw__in {
         <aside class="day-time">
           <span class="day-time__hour">07</span><span class="day-time__ampm">am</span>
         </aside>
-        <div class="day-card">
+        <button class="day-card" type="button" data-dialog="dlg-brief">
           <p class="card__kicker"><span>§ Brief · <strong>Scoutpost</strong></span></p>
           <h3 class="card__title">Your morning brief, <em>before coffee.</em></h3>
           <p class="card__body">A digest in your vault: 8 items ranked by editorial value — bookmarks, AgentMail, overnight web. Every claim cited.</p>
-          <p class="card__foot">8 items · cited · written to vault</p>
-        </div>
+          <p class="card__foot">8 items · cited · written to vault <span class="card__more">→ how it works</span></p>
+        </button>
       </article>
 
       <article class="day-frame" style="--tilt:1.3deg; --offset:3vw; --delay: 80ms">
         <aside class="day-time">
-          <span class="day-time__hour">10</span><span class="day-time__ampm">am</span>
+          <span class="day-time__hour">09</span><span class="day-time__ampm">am</span>
         </aside>
-        <div class="day-card">
-          <p class="card__kicker"><span>§ Verify · <strong>Spotlight</strong></span></p>
-          <h3 class="card__title">Your fact-check, <em>in minutes.</em></h3>
-          <p class="card__body">Per-claim verdicts via SIFT — verified, unverified, contradicted, mischaracterized.</p>
-          <p class="card__foot">sift · per-claim · 4 verdicts</p>
-        </div>
+        <button class="day-card" type="button" data-dialog="dlg-foia">
+          <p class="card__kicker"><span>§ Request · <strong>FOIA</strong></span></p>
+          <h3 class="card__title">Your records request, <em>drafted.</em></h3>
+          <p class="card__body">A public-records request written for the right agency — tracked from filing to deadline, with appeal language ready.</p>
+          <p class="card__foot">drafted · tracked · appealable <span class="card__more">→ how it works</span></p>
+        </button>
       </article>
 
       <article class="day-frame" style="--tilt:-0.9deg; --offset:-2vw; --delay: 160ms">
         <aside class="day-time">
+          <span class="day-time__hour">10</span><span class="day-time__ampm">am</span>
+        </aside>
+        <button class="day-card" type="button" data-dialog="dlg-verify">
+          <p class="card__kicker"><span>§ Verify · <strong>SIFT</strong></span></p>
+          <h3 class="card__title">Your fact-check, <em>in minutes.</em></h3>
+          <p class="card__body">Per-claim verdicts via SIFT — verified, unverified, contradicted, mischaracterized.</p>
+          <p class="card__foot">sift · per-claim · 4 verdicts <span class="card__more">→ how it works</span></p>
+        </button>
+      </article>
+
+      <article class="day-frame" style="--tilt:1.1deg; --offset:2.5vw; --delay: 240ms">
+        <aside class="day-time">
+          <span class="day-time__hour">12</span><span class="day-time__ampm">pm</span>
+        </aside>
+        <button class="day-card" type="button" data-dialog="dlg-interview">
+          <p class="card__kicker"><span>§ Prep · <strong>Interviews</strong></span></p>
+          <h3 class="card__title">Your interview, <em>prepped.</em></h3>
+          <p class="card__body">A background dossier, question frames, and attribution ground rules — built from your vault before you dial.</p>
+          <p class="card__foot">dossier · questions · attribution <span class="card__more">→ how it works</span></p>
+        </button>
+      </article>
+
+      <article class="day-frame" style="--tilt:-1.2deg; --offset:-2.5vw; --delay: 320ms">
+        <aside class="day-time">
           <span class="day-time__hour">02</span><span class="day-time__ampm">pm</span>
         </aside>
-        <a class="day-card day-card--link" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
-          <p class="card__kicker"><span>§ Investigate · <strong>with Spotlight</strong></span></p>
-          <h3 class="card__title">Your sources, <em>kept private.</em></h3>
-          <p class="card__body">Multi-phase OSINT, adversarial fact-checking, evidence grounding. Local-first. Yours.</p>
-          <p class="card__foot">osint · local-first · grounded</p>
-        </a>
+        <button class="day-card" type="button" data-dialog="dlg-vault">
+          <p class="card__kicker"><span>§ Vault · <strong>Obsidian</strong></span></p>
+          <h3 class="card__title">Your research, <em>stored locally.</em></h3>
+          <p class="card__body">Everything above lands in one place: an Obsidian vault on your disk. Sources, claims, briefs — plain markdown, linked into a graph you own.</p>
+          <p class="card__foot">markdown · linked · yours <span class="card__more">→ see the vault</span></p>
+        </button>
       </article>
     </div>
+
+    <dialog class="skill-dialog" id="dlg-brief" aria-labelledby="dlg-brief-title">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ recipe · morning-brief</p>
+        <h3 class="skill-dialog__title" id="dlg-brief-title">The morning brief<em>.</em></h3>
+        <p class="skill-dialog__body">One command in Goose. Mycroft pulls your X bookmarks, your AgentMail inbox, and overnight coverage of your beats, ranks the lot by editorial value, and writes a cited digest into your vault — every item traceable to its source.</p>
+        <ul class="skill-dialog__list" role="list">
+          <li>Ranked by editorial value, not recency</li>
+          <li>Every claim carries its citation</li>
+          <li>Optional: read aloud while you make the coffee</li>
+        </ul>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/blob/main/recipes/morning-brief.yaml" target="_blank" rel="noreferrer">the recipe file →</a></p>
+      </div>
+    </dialog>
+
+    <dialog class="skill-dialog" id="dlg-foia" aria-labelledby="dlg-foia-title">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ skill · foia-requests</p>
+        <h3 class="skill-dialog__title" id="dlg-foia-title">Records requests<em>.</em></h3>
+        <p class="skill-dialog__body">Adapted from Joe Amditis's journalism skills. Mycroft drafts the request in the agency's own terms, keeps a tracker note in your vault with filing dates and statutory deadlines, and has the appeal language ready when the clock runs out.</p>
+        <ul class="skill-dialog__list" role="list">
+          <li>Request drafted for the right agency and statute</li>
+          <li>Deadlines tracked in the vault</li>
+          <li>Appeals and follow-ups, pre-written</li>
+        </ul>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/foia-requests" target="_blank" rel="noreferrer">the skill file →</a></p>
+      </div>
+    </dialog>
+
+    <dialog class="skill-dialog" id="dlg-verify" aria-labelledby="dlg-verify-title">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ skill · fact-check</p>
+        <h3 class="skill-dialog__title" id="dlg-verify-title">The fact-check<em>.</em></h3>
+        <p class="skill-dialog__body">Paste a draft or a claim. Mycroft runs Mike Caulfield's SIFT method per claim — stop, investigate the source, find better coverage, trace to the original — and returns one of four verdicts with the evidence attached. Deep cases escalate to Spotlight.</p>
+        <ul class="skill-dialog__list" role="list">
+          <li>Verified · unverified · contradicted · mischaracterized</li>
+          <li>Every verdict grounded in a cited source</li>
+          <li>Optional C2PA-signed manifest of the check</li>
+        </ul>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/fact-check" target="_blank" rel="noreferrer">the skill file →</a></p>
+      </div>
+    </dialog>
+
+    <dialog class="skill-dialog" id="dlg-interview" aria-labelledby="dlg-interview-title">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ skill · interview-prep</p>
+        <h3 class="skill-dialog__title" id="dlg-interview-title">Interview prep<em>.</em></h3>
+        <p class="skill-dialog__body">Adapted from Joe Amditis's journalism skills. Give it a name and a story angle: Mycroft assembles a background dossier from your vault and the open web, proposes question frameworks for the interview you're actually doing, and keeps the attribution ground rules straight.</p>
+        <ul class="skill-dialog__list" role="list">
+          <li>Dossier from vault notes + fresh research</li>
+          <li>Question frames per interview type</li>
+          <li>On record, on background, off — kept explicit</li>
+        </ul>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/interview-prep" target="_blank" rel="noreferrer">the skill file →</a></p>
+      </div>
+    </dialog>
+
+    <dialog class="skill-dialog" id="dlg-vault" aria-labelledby="dlg-vault-title">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ skills · obsidian + knowledge-primitives</p>
+        <h3 class="skill-dialog__title" id="dlg-vault-title">The vault<em>.</em></h3>
+        <div class="skill-dialog__media" hidden>
+          <!-- drop assets/vault-graph.mp4 into the repo and this appears automatically -->
+          <video controls muted playsinline preload="metadata" src="assets/vault-graph.mp4"></video>
+          <p class="skill-dialog__cap">The vault graph in Obsidian — every source, claim, and brief a node.</p>
+        </div>
+        <p class="skill-dialog__body">The vault is the point. Everything Mycroft produces — briefs, source records, claims, findings, handoffs — lands as plain markdown in an Obsidian vault on your disk. Notes wiki-link into a graph: sources connect to stories, claims to evidence. QMD searches it locally. No database, no cloud, nothing leaves the machine.</p>
+        <ul class="skill-dialog__list" role="list">
+          <li>Plain markdown files — readable in anything, forever</li>
+          <li>Wiki-linked: sources ↔ claims ↔ stories</li>
+          <li>Searchable offline with QMD · yours to grep, sync, or archive</li>
+        </ul>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/knowledge-primitives" target="_blank" rel="noreferrer">the vault structure →</a></p>
+      </div>
+    </dialog>
 
   </section>
 
@@ -3008,7 +3256,7 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">06</span> From the team</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">A membership.<br>A <em>consultancy.</em></h2>
+      <h2 class="display display--section">Beyond the <em>tool.</em></h2>
       <p class="lead">Mycroft is the open tool. I help newsrooms go further.</p>
     </div>
 
@@ -8062,6 +8310,32 @@ export {
       submit.textContent = 'Send';
     }
   });
+}());
+</script>
+
+<script>
+/* day-card skill dialogs */
+(function () {
+  document.querySelectorAll('[data-dialog]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var dlg = document.getElementById(btn.dataset.dialog);
+      if (dlg && typeof dlg.showModal === 'function') dlg.showModal();
+    });
+  });
+  document.querySelectorAll('dialog.skill-dialog').forEach(function (dlg) {
+    var close = dlg.querySelector('[data-close]');
+    if (close) close.addEventListener('click', function () { dlg.close(); });
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) dlg.close();
+    });
+  });
+  /* the vault clip appears only once assets/vault-graph.mp4 exists */
+  var vid = document.querySelector('#dlg-vault video');
+  if (vid) {
+    vid.addEventListener('loadedmetadata', function () {
+      vid.closest('.skill-dialog__media').hidden = false;
+    }, { once: true });
+  }
 }());
 </script>
 </body>
