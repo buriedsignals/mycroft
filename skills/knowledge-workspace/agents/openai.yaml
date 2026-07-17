@@ -1,0 +1,4 @@
+interface:
+  display_name: "Knowledge Workspace"
+  short_description: "Search and write durable knowledge safely"
+  default_prompt: "Use the configured Knowledge Workspace Port to search, read, link, and journal durable knowledge without silent write fallback."

@@ -12,7 +12,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Mycroft vault path."
-    default: "~/Documents/Mycroft"
+    default: "~/Documents/OpenKnowledge"
   - key: vault_name
     input_type: string
     requirement: optional
@@ -50,7 +50,7 @@ prompt: |
   - For "Set up my beat", ask for beat, geography, must-watch entities, priority sources, ignored topics, and source-handling rules. Write or update `{{ vault_path }}/context/beat-notes.md`.
   - For "Add to my knowledge base", ask for links, files, pasted notes, or a folder path. Preserve raw material under `sources/raw/` when possible, create durable notes under `wiki/`, append `_log.md`, and update `_index.md`.
   - For "Create my morning brief", continue with the morning brief preflight questions and write the monitoring profile to `{{ morning_brief_config_path }}` and `{{ vault_path }}/context/morning-brief.md`.
-  - For "Investigate a lead", ask for the lead, jurisdiction, sensitivity level, known sources, and what the user wants to prove or disprove. If Spotlight is installed and the lead needs active OSINT casework, suggest using Spotlight and create a case plan there; otherwise create a Mycroft story pitch and source plan.
+  - For "Investigate a lead", ask for the lead, jurisdiction, sensitivity level, known sources, and what the user wants to prove or disprove. If Spotlight is installed and the lead needs active OSINT casework, follow `recipes/spotlight-handoff.yaml`: show the exact brief, require explicit approval, then launch the Engine-owned `bsig spotlight run` entry point. Never create a case directory directly or put active case material in OpenKnowledge. Otherwise create a Mycroft story pitch and source plan.
   - For "Set up scouts", ask what should be monitored, how often it matters, and what changes should trigger attention. Use Scoutpost if installed; otherwise create a scout plan in `{{ vault_path }}/context/scouts.md`.
   - For "Show me a demo", create a clearly marked fake demo under `{{ vault_path }}/stories/pitches/demo-story-pitch.md`, `{{ vault_path }}/wiki/entities/demo-acme-corp.md`, and `{{ vault_path }}/wiki/sources/demo-source.md`. Keep every demo note tagged `demo` and `example`.
 

@@ -1,0 +1,48 @@
+version: "1.0.0"
+title: "Spotlight investigation handoff"
+description: "Read an existing Spotlight case or prepare and explicitly launch a new Spotlight investigation without mixing case state into durable knowledge."
+
+instructions: |
+  Load the Mycroft journalism instructions and the knowledge-workspace skill.
+  Active Spotlight cases use the direct, read-only case adapter. Durable approved findings use the spotlight_verified logical space. Do not query active cases through OpenKnowledge.
+
+parameters:
+  - key: request
+    input_type: string
+    requirement: required
+    description: "A case slug to inspect, or the lead/question for a proposed investigation."
+  - key: action
+    input_type: string
+    requirement: required
+    description: "Either read_case or start_investigation."
+  - key: cases_root
+    input_type: string
+    requirement: optional
+    description: "Configured Spotlight case workspace root; normally supplied by Engine configuration."
+    default: ""
+
+extensions:
+  - type: builtin
+    name: developer
+    description: "Read-only case-file access and the Engine-owned Spotlight launch command."
+
+prompt: |
+  Action: {{ action }}
+  Request: {{ request }}
+  Cases root override: {{ cases_root }}
+
+  For `read_case`:
+  1. Resolve the configured Spotlight case root, then the case slug beneath it. Reject traversal and symlink escapes.
+  2. Read structured case artifacts directly and read-only. Prefer summary, findings, fact-check, and ingestion receipts.
+  3. Cite results as `case:<slug>/<relative-path>`. Do not index, copy, or write case content through OpenKnowledge.
+
+  For `start_investigation`:
+  1. Ask only for missing scope, jurisdiction, sensitivity, known sources, and the question to prove or disprove.
+  2. Draft the exact Spotlight brief and show it to the journalist.
+  3. Do not launch until the journalist explicitly approves that brief.
+  4. Run `bsig spotlight doctor`. If healthy, launch via `bsig spotlight run` and hand the approved brief to the configured harness. Never create a case directory directly.
+  5. If Spotlight is unavailable, keep the proposal as a Mycroft story/source plan and state that no investigation started.
+
+activities:
+  - "Inspect an active Spotlight case"
+  - "Turn this lead into a Spotlight investigation"

@@ -4,6 +4,7 @@ description: "Answer a journalist's question grounded in their vault and live we
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, attribution, SIFT, no fabrication) as the session's system context.
+  Load the knowledge-workspace skill and use OpenKnowledge as the primary vault interface.
   Answer from the journalist's vault first; supplement with live web via the sovereign search/scrape tools when the vault is incomplete.
   Every factual claim must have a citation. If neither vault nor web has it, say "not found in available sources".
 
@@ -16,7 +17,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Absolute or ~-expanded path to the journalist's vault root"
-    default: "~/Documents/Mycroft"
+    default: "~/Documents/OpenKnowledge"
   - key: entity
     input_type: string
     requirement: optional
@@ -27,6 +28,10 @@ extensions:
   - type: builtin
     name: developer
     description: "Shell + file access — used to grep/read vault files and invoke the search/scrape tools"
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args: ["--cwd", "{{ vault_path }}", "mcp"]
 
 prompt: |
   Question: {{ question }}
@@ -34,9 +39,8 @@ prompt: |
 
   Steps:
 
-  1. Search the vault for relevant content:
-     - `rg -l "..." {{ vault_path }}` to find candidate notes
-     - Read the most relevant ones in full (not summaries — you need direct quotes for citations)
+  1. Search the `mycroft/` namespace with OpenKnowledge `search`, then read the most relevant notes exactly with `exec` (not summaries — you need direct quotes for citations).
+     - If OpenKnowledge reports unavailable or unready, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
 
   2. If vault coverage is incomplete, use the sovereign search/scrape tools for live web:
      - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "query"` for discovery (returns JSON; parse and pick relevant URLs)

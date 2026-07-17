@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://mycroft.buriedsignals.com/schemas/install-choices-v2.json",
+  "$id": "https://mycroft.buriedsignals.com/schemas/install-choices-v3.json",
   "title": "Mycroft normalized install choices",
   "type": "object",
   "additionalProperties": false,
@@ -8,14 +8,13 @@
     "schema_version",
     "runtime",
     "provider",
-    "vault_path",
-    "install_obsidian",
+    "knowledge",
     "enable_schedules",
     "integrations",
     "acquisition"
   ],
   "properties": {
-    "schema_version": {"const": "mycroft-install/v2"},
+    "schema_version": {"const": "mycroft-install/v3"},
     "runtime": {"const": "goose"},
     "provider": {
       "type": "object",
@@ -28,8 +27,35 @@
         "model": {"type": ["string", "null"]}
       }
     },
-    "vault_path": {"type": "string", "minLength": 1, "maxLength": 4096},
-    "install_obsidian": {"type": "boolean"},
+    "knowledge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "workspace_path", "project_mode", "sync", "semantic_search", "legacy_read"],
+      "properties": {
+        "backend": {"enum": ["openknowledge", "markdown", "obsidian_legacy"]},
+        "workspace_path": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "project_mode": {"enum": ["existing", "create"]},
+        "sync": {"enum": ["local_only", "private_git"]},
+        "semantic_search": {
+          "type": "object", "additionalProperties": false,
+          "required": ["enabled", "provider_mode", "base_url", "model", "dimensions", "allow_external_fallback"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "provider_mode": {"enum": ["local_device", "newsroom_internal", "external_opt_in"]},
+            "base_url": {"type": "string"},
+            "model": {"type": "string"},
+            "model_digest": {"type": ["string", "null"]},
+            "dimensions": {"type": "integer", "minimum": 1},
+            "allow_external_fallback": {"const": false}
+          }
+        },
+        "legacy_read": {
+          "type": "object", "additionalProperties": false,
+          "required": ["enabled", "routes"],
+          "properties": {"enabled": {"type": "boolean"}, "routes": {"type": "array", "items": {"type": "string"}}}
+        }
+      }
+    },
     "enable_schedules": {"type": "boolean"},
     "integrations": {
       "type": "object",

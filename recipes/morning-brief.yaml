@@ -3,22 +3,17 @@ title: "Morning brief"
 description: "Daily digest pulled from the morning-brief monitoring profile, X bookmarks (ft), AgentMail inbox, and recent vault changes. Writes a dated note into the Mycroft vault."
 
 instructions: |
-  Load the Mycroft journalism instructions as session context.
+  Load the Mycroft journalism instructions and knowledge-workspace skill as session context.
   Aggregate overnight inputs. Rank by editorial relevance to the journalist's beat and monitoring profile.
   Cite every item. No fabrication.
-  Write the result to {{ vault_path }}/stories/drafts/morning-brief-YYYY-MM-DD.md via the obsidian CLI or direct file write.
+  Write the result through OpenKnowledge into logical space `mycroft` at `mycroft/stories/drafts/morning-brief-YYYY-MM-DD.md`.
 
 parameters:
   - key: vault_path
     input_type: string
     requirement: required
     description: "Absolute path to your primary vault (intelligence or knowledge)"
-    default: "~/Documents/intelligence"
-  - key: vault_name
-    input_type: string
-    requirement: required
-    description: "Obsidian vault name (used by `obsidian vault=<name>`). E.g. 'intelligence', 'knowledge'."
-    default: "Mycroft"
+    default: "~/Documents/OpenKnowledge"
   - key: beat
     input_type: string
     requirement: optional
@@ -33,6 +28,10 @@ parameters:
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args: ["--cwd", "{{ vault_path }}", "mcp"]
     description: "Shell + file access for CLI invocations and vault writes"
 
 prompt: |
@@ -91,14 +90,7 @@ prompt: |
   - Web (SearXNG): [if queried, list queries]
   ```
 
-  **Write to vault** using obsidian CLI (requires Obsidian app running):
-
-  ```sh
-  obsidian vault="{{ vault_name }}" create path="stories/drafts/morning-brief-$(date +%F).md" content="<escaped markdown here>"
-  ```
-
-  If obsidian CLI is missing or Obsidian is not running, fall back to writing the file directly:
-  `{{ vault_path }}/stories/drafts/morning-brief-$(date +%F).md`.
+  **Write to the Knowledge Workspace** with OpenKnowledge `write` at `mycroft/stories/drafts/morning-brief-YYYY-MM-DD.md`, logical space `mycroft`, and an idempotency key derived from the local date. Read the note back and verify its path and citations. If the write fails, report the durable outbox state; never fall back to Obsidian or a direct file write.
 
   **Rules**:
   - Do not fabricate facts, quotes, or links.

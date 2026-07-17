@@ -1,18 +1,22 @@
 version: "1.0.0"
-title: "Vault sync"
-description: "Write findings from the current Goose session into the Obsidian vault — investigation notes, entity files, source records — with proper frontmatter and wiki-links."
+title: "Knowledge sync"
+description: "Journal findings from the current Goose session into the configured Knowledge Workspace with proper frontmatter and links."
 
 instructions: |
-  Load the Mycroft journalism instructions.
-  Use the obsidian CLI (requires Obsidian app running) for all writes.
-  Vault conventions: investigations/{project}/, shared/entities/, shared/sources/, shared/methodology/.
+  Load the Mycroft journalism instructions and knowledge-workspace skill.
+  Use OpenKnowledge for writes. Never silently fall back to Obsidian or direct files.
 
 parameters:
-  - key: vault_name
+  - key: vault_path
     input_type: string
     requirement: required
-    description: "Target vault name: intelligence | knowledge | buried-signals"
-    default: "intelligence"
+    description: "OpenKnowledge project root"
+    default: "~/Documents/OpenKnowledge"
+  - key: logical_space
+    input_type: string
+    requirement: required
+    description: "Declared destination: knowledge | company | mycroft | spotlight_verified"
+    default: "mycroft"
   - key: project
     input_type: string
     requirement: optional
@@ -26,19 +30,23 @@ parameters:
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args: ["--cwd", "{{ vault_path }}", "mcp"]
 
 prompt: |
-  Sync these findings into the vault `{{ vault_name }}`:
+  Sync these findings into logical space `{{ logical_space }}` in `{{ vault_path }}`:
 
   ```
   {{ findings }}
   ```
 
   **Step 1 — Structure the findings** into:
-  - **Entities**: people, organizations, places (one note per entity under `shared/entities/`)
-  - **Sources**: documents, URLs, interviews (one note per source under `shared/sources/`)
-  - **Methodology**: techniques used, one note per technique under `shared/methodology/` (only if novel)
-  - **Project notes**: if {{ project }} is set, per-project notes under `investigations/{{ project }}/`
+  - **Entities**: people, organizations, places (one note per entity under `mycroft/shared/entities/`)
+  - **Sources**: documents, URLs, interviews (one note per source under `mycroft/shared/sources/`)
+  - **Methodology**: techniques used, one note per technique under `mycroft/shared/methodology/` (only if novel)
+  - **Project notes**: if {{ project }} is set, per-project notes under `mycroft/investigations/{{ project }}/`
 
   **Step 2 — For each note**:
 
@@ -58,14 +66,9 @@ prompt: |
 
   Body: concise. Wiki-links to related entities via `[[entity-name]]`. Evidence citations inline.
 
-  **Step 3 — Write via obsidian CLI**:
+  **Step 3 — Write through OpenKnowledge**:
 
-  For each note:
-  ```sh
-  obsidian vault="{{ vault_name }}" create path="<path>/<slug>.md" content="<frontmatter + body>"
-  ```
-
-  If the note exists, use `obsidian append` with a dated section instead of overwriting.
+  Require request and idempotency IDs, `{{ logical_space }}`, actor, classification, and summary. Use `write` for new documents and bounded `edit` with expected-version checks for existing documents. Read every result back and verify links before reporting success.
 
   **Step 4 — Report back**:
   - List every file created / updated.
@@ -73,10 +76,10 @@ prompt: |
 
   **Rules**:
   - Do not write to `consulting/` or `journals/` vaults — those are off-limits unless explicitly targeted.
-  - Require Obsidian app to be running; if CLI fails, report clearly and write to a fallback dir ({{ vault_name }}-pending/) that the user can import later.
+  - If OpenKnowledge fails, leave the write in the durable outbox and report it. Do not write elsewhere.
   - Never fabricate entity details. If a fact is missing, leave the field blank rather than guessing.
 
 activities:
-  - "Sync these findings to the {{ vault_name }} vault"
+  - "Sync these findings to the {{ logical_space }} knowledge space"
   - "Write these entities and sources into investigations/{{ project }}/"
-  - "Update the shared/entities for {{ entity_name }}"
+  - "Update a durable entity record"
