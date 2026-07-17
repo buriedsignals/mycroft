@@ -2019,6 +2019,114 @@ button.day-card.is-settled:focus-visible {
 .signup__submit {
   flex: 0 0 auto;
 }
+.signup__newsletter-options {
+  display: grid;
+  gap: var(--sp-2);
+}
+.signup__newsletter-heading {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.signup__newsletter-toggle {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-align: left;
+}
+.signup__newsletter-toggle[aria-pressed="true"] {
+  border-color: var(--oxide);
+  background: rgba(74, 115, 99, 0.1);
+  color: var(--oxide-active);
+}
+.signup__newsletter-toggle:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 2px;
+}
+.signup__newsletter-check {
+  display: inline-grid;
+  width: 13px;
+  height: 13px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 9px;
+  line-height: 1;
+}
+.signup__newsletter-copy {
+  display: grid;
+  gap: 4px;
+}
+.signup__newsletter-title {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.signup__newsletter-description {
+  color: var(--ink-dim);
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0;
+  line-height: 1.45;
+}
+.indicator-lab-summary {
+  display: grid;
+  gap: var(--sp-3);
+}
+.indicator-lab-link {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 8px;
+  width: auto;
+  max-width: 100%;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink-soft);
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
+}
+.indicator-lab-link:hover {
+  border-color: var(--oxide);
+  color: var(--oxide-active);
+}
+.indicator-lab-link .btn__arr {
+  transition: transform var(--dur-2) var(--ease);
+}
+.indicator-lab-link:hover .btn__arr {
+  transform: translateX(4px);
+}
+.signup__newsletter-block {
+  display: grid;
+  gap: var(--sp-3);
+  padding-top: var(--sp-5);
+  border-top: var(--hairline);
+}
+.signup__proof {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0;
+}
 .signup__error,
 .signup__success {
   font-family: var(--mono);
@@ -3297,42 +3405,47 @@ html.js .is-in .tw__in {
 
     <div class="equation equation--studio" data-cascade>
       <div class="term term--studio" style="--delay: 0ms">
-        <span class="term__pre">↳ may 2026</span>
-        <h3 class="term__name">Membership<em class="term__dot">.</em></h3>
+        <span class="term__pre">↳ launching September 2026</span>
+        <h3 class="term__name">Indicator Lab<em class="term__dot">.</em></h3>
         <span class="term__rule"></span>
 
         <div class="term__body">
-          <p class="term__sub"><em>Investigations with AI. The tools to run your own.</em></p>
+          <div class="indicator-lab-summary">
+            <p class="term__sub"><em>Indicator Lab combines the Buried Signals tool suite with a monthly investigation debrief, a practical Case Note, and office hours every two weeks.</em></p>
+            <a class="indicator-lab-link" href="https://buriedsignals.com/join">Explore Indicator Lab <span class="btn__arr" aria-hidden="true">→</span></a>
+          </div>
 
-          <ul class="srv-list" role="list">
-            <li class="srv">
-              <h4 class="srv__title">Remote workshops</h4>
-              <p class="srv__desc">Live, hands-on training sessions.</p>
-              <p class="srv__meta">Online · practical</p>
-            </li>
-            <li class="srv">
-              <h4 class="srv__title">Cloud extensions</h4>
-              <p class="srv__desc">Expanded tool access and priority features.</p>
-              <p class="srv__meta">OSINT Navigator · Scoutpost · Data Navigator</p>
-            </li>
-            <li class="srv">
-              <h4 class="srv__title">Methods library</h4>
-              <p class="srv__desc">Investigation methods and AI techniques, in depth.</p>
-              <p class="srv__meta">OSINT · verification · production</p>
-            </li>
-          </ul>
-
-          <p class="signup__error hidden" id="mycroft-newsletter-error" role="alert"></p>
-          <p class="signup__success hidden" id="mycroft-newsletter-success">
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
-            </svg>
-            <span>You're in. I'll ping you at launch.</span>
-          </p>
-          <form class="signup" id="mycroft-newsletter-form">
-            <input class="signup__input" type="email" id="mycroft-newsletter-email" placeholder="mycroft@getsherlocked.co.uk" autocomplete="email" aria-label="Email" required>
-            <button class="btn btn--solid btn--setup signup__submit" type="submit" id="mycroft-newsletter-submit">Subscribe</button>
-          </form>
+          <div class="signup__newsletter-block">
+            <p class="signup__error hidden" id="mycroft-newsletter-error" role="alert"></p>
+            <p class="signup__success hidden" id="mycroft-newsletter-success" role="status">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+              </svg>
+              <span id="mycroft-newsletter-success-message">You're subscribed.</span>
+            </p>
+            <p class="signup__newsletter-heading">Newsletters</p>
+            <div class="signup__newsletter-options" id="mycroft-newsletter-options" aria-label="Newsletter choices">
+              <button class="signup__newsletter-toggle" type="button" data-newsletter="buried_signals" aria-pressed="true">
+                <span class="signup__newsletter-check" aria-hidden="true">✓</span>
+                <span class="signup__newsletter-copy">
+                  <span class="signup__newsletter-title">Buried Signals</span>
+                  <span class="signup__newsletter-description">Monthly dispatches on investigations and the changing practice of journalism with AI in the loop.</span>
+                </span>
+              </button>
+              <button class="signup__newsletter-toggle" type="button" data-newsletter="indicator_media" aria-pressed="true">
+                <span class="signup__newsletter-check" aria-hidden="true">✓</span>
+                <span class="signup__newsletter-copy">
+                  <span class="signup__newsletter-title">Indicator Briefing</span>
+                  <span class="signup__newsletter-description">Weekly news, research, OSINT tools, and techniques for investigating digital deception.</span>
+                </span>
+              </button>
+            </div>
+            <p class="signup__proof" id="mycroft-newsletter-proof">1,000+ journalists already reading.</p>
+            <form class="signup" id="mycroft-newsletter-form">
+              <input class="signup__input" type="email" id="mycroft-newsletter-email" placeholder="mycroft@getsherlocked.co.uk" autocomplete="email" aria-label="Email" required>
+              <button class="btn btn--solid btn--setup signup__submit" type="submit" id="mycroft-newsletter-submit">Subscribe</button>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -8212,14 +8325,39 @@ export {
   const submitBtn = document.getElementById('mycroft-newsletter-submit');
   const errorEl = document.getElementById('mycroft-newsletter-error');
   const successEl = document.getElementById('mycroft-newsletter-success');
-  if (!form || !emailInput || !submitBtn || !errorEl || !successEl) return;
+  const successMessage = document.getElementById('mycroft-newsletter-success-message');
+  const optionsEl = document.getElementById('mycroft-newsletter-options');
+  const proofEl = document.getElementById('mycroft-newsletter-proof');
+  const newsletterToggles = Array.from(document.querySelectorAll('#mycroft-newsletter-options [data-newsletter]'));
+  if (!form || !emailInput || !submitBtn || !errorEl || !successEl || !successMessage || !optionsEl || !proofEl || !newsletterToggles.length) return;
 
   const NEWSLETTER_ENDPOINT = 'https://navigator.indicator.media/api/newsletter/subscribe';
+  const newsletterLabels = {
+    buried_signals: 'Buried Signals',
+    indicator_media: 'Indicator Briefing'
+  };
+
+  function selectedNewsletters() {
+    return newsletterToggles
+      .filter((toggle) => toggle.getAttribute('aria-pressed') === 'true')
+      .map((toggle) => toggle.dataset.newsletter);
+  }
+
+  newsletterToggles.forEach((toggle) => {
+    toggle.addEventListener('click', () => {
+      const isSelected = toggle.getAttribute('aria-pressed') === 'true';
+      if (isSelected && selectedNewsletters().length === 1) return;
+
+      toggle.setAttribute('aria-pressed', String(!isSelected));
+      toggle.querySelector('.signup__newsletter-check').textContent = isSelected ? '' : '✓';
+    });
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const value = emailInput.value.trim();
-    if (!value) return;
+    const newsletters = selectedNewsletters();
+    if (!value || !newsletters.length) return;
 
     submitBtn.disabled = true;
     emailInput.disabled = true;
@@ -8230,13 +8368,18 @@ export {
       const res = await fetch(NEWSLETTER_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: value, newsletters: ['buried_signals'] })
+        body: JSON.stringify({ email: value, newsletters })
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         throw new Error(data.error || data.detail || 'Something went wrong. Please try again.');
       }
       form.classList.add('hidden');
+      optionsEl.hidden = true;
+      proofEl.hidden = true;
+      successMessage.textContent = newsletters.length === 2
+        ? "You're subscribed to both newsletters."
+        : `You're subscribed to ${newsletterLabels[newsletters[0]]}.`;
       successEl.classList.remove('hidden');
     } catch (error) {
       errorEl.textContent = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
