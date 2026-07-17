@@ -16,6 +16,46 @@ echo ""
 date
 echo "mode: $mode"
 
+SCOUTPOST_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4"
+
+scout_cli_pin() {
+  python3 - "$MYCROFT_SOURCE_DIR/catalog/catalog.json" <<'PY' 2>/dev/null || true
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+if path.is_file():
+    print((json.loads(path.read_text()).get("dependencies") or {}).get("scoutpost-cli", ""))
+PY
+}
+
+refresh_scoutpost() {
+  [ -n "${SCOUTPOST_API_KEY:-}" ] || return 0
+  if ! command -v scout >/dev/null 2>&1; then
+    if command -v npm >/dev/null 2>&1; then
+      pin="$(scout_cli_pin)"
+      if [ -n "$pin" ]; then
+        npm install -g "scoutpost-cli@$pin" || echo "scout CLI install failed; retaining REST fallback"
+      else
+        echo "signed catalog has no scoutpost-cli pin; retaining REST fallback"
+      fi
+    else
+      echo "npm missing; retaining Scoutpost REST fallback"
+    fi
+  fi
+  command -v scout >/dev/null 2>&1 || return 0
+  mkdir -p "$HOME/.scoutpost"; chmod 700 "$HOME/.scoutpost" 2>/dev/null || true
+  oldumask="$(umask)"; umask 077
+  cat > "$HOME/.scoutpost/config.json" <<SCOUT_CFG_EOF
+{
+  "api_url": "https://scoutpost.ai/functions/v1",
+  "supabase_anon_key": "$SCOUTPOST_ANON_KEY",
+  "api_key": "$SCOUTPOST_API_KEY"
+}
+SCOUT_CFG_EOF
+  chmod 600 "$HOME/.scoutpost/config.json"
+  umask "$oldumask"
+  echo "scout CLI/config refreshed"
+}
+
 repo_rev() {
   local dir="$1"
   [ -d "$dir/.git" ] || return 0
@@ -187,6 +227,7 @@ update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
 update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
 replace_skills || true
 refresh_profile
+refresh_scoutpost
 
 # Provision/refresh the sovereign stack (Crawl4AI + poppler + SearXNG) from the
 # just-updated source so an existing install gains the backends the new sovereign

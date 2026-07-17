@@ -1228,7 +1228,7 @@ if [ "$ENABLE_SPOTLIGHT" = "1" ]; then
     "dev_browser": {"enabled": $DEVBROWSER_JSON, "status": "unknown", "source": "mycroft-setup"},
     "unpaywall": {"enabled": false, "status": "unknown", "source": "mycroft-setup"},
     "rlm": {"enabled": false, "mode": "off", "model": null, "prefilter": false, "hybrid": false, "evidence_boundary": "lead-only; never verified or publishable"},
-    "scoutpost": {"enabled": $SCOUTPOST_JSON, "status": "unknown", "source": "mycroft-setup", "api_base": "https://www.scoutpost.ai/api/v1"}
+    "scoutpost": {"enabled": $SCOUTPOST_JSON, "status": "unknown", "source": "mycroft-setup", "api_base": "https://scoutpost.ai/functions/v1", "mode": "cli_or_api"}
   },
   "created_at": "$NOW_UTC",
   "last_used": "$NOW_UTC"
@@ -1280,7 +1280,7 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
   },
   "plugins": {
     "spotlight": {"enabled": $SPOTLIGHT_JSON, "path": "$SPOTLIGHT_DIR", "inherits_mycroft_sovereignty": true},
-    "scoutpost": {"enabled": $SCOUTPOST_JSON, "mode": "hosted", "api_base": "https://www.scoutpost.ai/api/v1"}
+    "scoutpost": {"enabled": $SCOUTPOST_JSON, "mode": "cli_or_api", "api_base": "https://scoutpost.ai/functions/v1"}
   }
 }
 CONFIG_EOF

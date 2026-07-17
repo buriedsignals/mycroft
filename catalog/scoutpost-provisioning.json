@@ -1,0 +1,8 @@
+{
+  "schema_version": "scoutpost-provisioning/v1",
+  "api_url": "https://scoutpost.ai/functions/v1",
+  "supabase_anon_key": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4",
+  "api_key_id": "SCOUTPOST_API_KEY",
+  "config_mode": "0600",
+  "surface": "cli_or_api"
+}

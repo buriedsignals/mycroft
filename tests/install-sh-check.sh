@@ -85,6 +85,22 @@ wincludes scripts/mycroft-doctor '"epistemic-grounding skill"'
 wincludes scripts/mycroft-update 'doctor failed after update; rolling back app checkouts'
 wincludes scripts/mycroft-update 'provision-sovereign.sh'
 wincludes scripts/mycroft-update 'git merge --ff-only'
+wincludes scripts/mycroft-update 'npm install -g "scoutpost-cli@$pin"'
+wincludes scripts/mycroft-update '"api_url": "https://scoutpost.ai/functions/v1"'
+
+# Both installer paths are checked against the engine-published canonical
+# provisioning descriptor, so URL/key/surface drift is a test failure.
+python3 - <<'PY' || fail=1
+import json, pathlib
+descriptor = json.loads(pathlib.Path("catalog/scoutpost-provisioning.json").read_text())
+for script_name in ("install.sh", "scripts/mycroft-update"):
+    script = pathlib.Path(script_name).read_text()
+    for value in (descriptor["api_url"], descriptor["supabase_anon_key"], descriptor["api_key_id"]):
+        if value not in script:
+            raise SystemExit(f"{script_name} drifted from Scoutpost provisioning descriptor: missing {value}")
+if descriptor["surface"] != "cli_or_api":
+    raise SystemExit("unexpected Scoutpost provisioning surface")
+PY
 
 # Getting-started guide written by configurator, opened at the end
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'
