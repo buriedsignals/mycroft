@@ -3,7 +3,7 @@ title: "Vault audit"
 description: "Scheduled audit of the Mycroft vault for stale notes, missing frontmatter, orphaned sources, weak claims, and Spotlight handoffs that should be promoted."
 
 instructions: |
-  Load the Mycroft journalism instructions and knowledge-primitives skill.
+  Load the Mycroft journalism instructions, knowledge-primitives skill, and knowledge-workspace skill.
   Audit the vault. Do not rewrite the user's notes unless the task explicitly says to fix; by default, write a dated audit report.
 
 parameters:
@@ -11,7 +11,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Mycroft vault path."
-    default: "~/Documents/Mycroft"
+    default: "~/Documents/OpenKnowledge"
   - key: spotlight_vault_path
     input_type: string
     requirement: optional
@@ -27,11 +27,15 @@ extensions:
   - type: builtin
     name: developer
     description: "Shell + file access for reading the vault and writing the audit report."
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args: ["--cwd", "{{ vault_path }}", "mcp"]
 
 prompt: |
   Run a Mycroft vault audit.
 
-  Read markdown files under `{{ vault_path }}`. Skip `.obsidian/`, `.trash/`, and binary files.
+  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads under `mycroft/`. Skip `.obsidian/`, `.trash/`, and binary files.
 
   Check:
 

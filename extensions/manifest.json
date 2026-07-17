@@ -33,11 +33,18 @@
       "used_by": ["morning-brief", "ft-preflight"]
     },
     {
-      "name": "obsidian-cli",
+      "name": "openknowledge",
       "required": true,
-      "install": "brew install --cask obsidian (ships obsidian-cli; toggle on in Settings → General → Advanced)",
+      "install": "Installed and configured by the Buried Signals Engine from the signed dependency catalog",
       "env": [],
-      "used_by": ["morning-brief", "vault-sync"]
+      "used_by": ["morning-brief", "vault-sync", "vault-qa", "vault-audit"]
+    },
+    {
+      "name": "obsidian-cli",
+      "required": false,
+      "install": "Legacy upgrade adapter only; not installed for new Engine-managed profiles",
+      "env": [],
+      "used_by": ["obsidian_legacy"]
     },
     {
       "name": "dev-browser",

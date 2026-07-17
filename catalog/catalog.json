@@ -13,6 +13,10 @@
       "install_contract": { "schema_version": "spotlight-install-contract/v1", "source_commit": "d4925c93ed3dd3227f1233f97d9f295385cd24fa", "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "writer_mode": "engine_v2", "choice_schema": {"type":"object"}, "config_schema": {"type":"object"}, "template": {"document":{}} } }
   },
   "skills": [
+    { "id": "navigator", "name": "Navigator", "audience": ["journalist", "researcher"], "entitlement": "navigator.core",
+      "path": "app/static/navigator-skill.md", "requires_keys": [], "version": "0.1.0", "products": ["mycroft", "spotlight"],
+      "runtimes": ["any"], "content_repo": "navigator-cli", "kind": "portable",
+      "package": {"distribution":"navigator-cli", "path":"app/static/navigator-skill.md", "sha256":"5935aa6fbe622444881e76acd21f0357c68cbfec5f0fde0d051f098c09e72a37"} },
     { "id": "copywriting", "name": "Copywriting", "audience": ["journalist"], "entitlement": "mycroft.core",
       "path": "skills/copywriting", "requires_keys": [], "version": "0.2.1", "products": ["mycroft"],
       "runtimes": ["goose"], "content_repo": "buriedsignals/mycroft", "kind": "portable" },
@@ -24,6 +28,9 @@
       "runtimes": ["goose"], "content_repo": "buriedsignals/mycroft", "kind": "portable" },
     { "id": "knowledge-primitives", "name": "Knowledge primitives", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
       "path": "skills/knowledge-primitives", "requires_keys": [], "version": "0.2.2", "products": ["mycroft"],
+      "runtimes": ["goose"], "content_repo": "buriedsignals/mycroft", "kind": "portable" },
+    { "id": "knowledge-workspace", "name": "Knowledge Workspace", "audience": ["journalist", "researcher"], "entitlement": "mycroft.core",
+      "path": "skills/knowledge-workspace", "requires_keys": [], "version": "0.1.0", "products": ["mycroft"],
       "runtimes": ["goose"], "content_repo": "buriedsignals/mycroft", "kind": "portable" },
     { "id": "mycroft-maintenance", "name": "Mycroft maintenance", "audience": ["journalist"], "entitlement": "mycroft.core",
       "path": "skills/mycroft-maintenance", "requires_keys": [], "version": "0.2.1", "products": ["mycroft"],
@@ -161,5 +168,5 @@
     {"id":"spotlight-gemma4-12b","display":"Gemma 4 12B — Spotlight tuned","tier":"local-12b","backend":"llamacpp","artifact_id":"spotlight-gemma4-12b-q4km","filename":"gemma-4-12b-spotlight-orchestrator-Q4_K_M.gguf","products":["spotlight"],"min_ram_gb":24,"context_tokens":40960,"recommendation":"advanced"},
     {"id":"gemma4-e4b-sidecar","display":"Gemma 4 E4B RLM sidecar","tier":"local-e4b","backend":"llamacpp","artifact_id":"gemma4-e4b-q4km","filename":"gemma-4-E4B-it-Q4_K_M.gguf","products":["spotlight"],"min_ram_gb":8,"context_tokens":24576,"recommendation":"advanced","sidecar":true}
   ],
-  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "@flue/cli": "1.0.0-beta.9", "crawl4ai": "0.9.0", "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
+  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "@inkeep/open-knowledge": "0.32.0", "@flue/cli": "1.0.0-beta.9", "crawl4ai": "0.9.0", "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
 }

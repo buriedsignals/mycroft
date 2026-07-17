@@ -36,7 +36,7 @@ Read it for how to operate scouts correctly. This file governs only *which surfa
 - Create scout requests from Spotlight monitoring recommendations.
 - Query hosted beat-monitoring output.
 - Turn recurring watch questions into Scoutpost scouts.
-- Feed relevant scout results into Mycroft via `obsidian-ingest`.
+- Feed relevant scout results through `knowledge-workspace` into logical space `mycroft`.
 
 ## Safety
 

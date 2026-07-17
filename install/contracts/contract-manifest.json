@@ -1,10 +1,10 @@
 {
   "schema_version": "mycroft-install-contract/v1",
-  "choice_schema": "mycroft-install/v2",
+  "choice_schema": "mycroft-install/v3",
   "config_schema": "mycroft-config/v2",
   "template_schema": "mycroft-template/v1",
   "files": [
-    {"path": "install-choices.schema.json", "sha256": "6598792ed211841270a93b18a16b7d701c7954830ffc7da8f82c634041a5d3a6"},
+    {"path": "install-choices.schema.json", "sha256": "38d9bff2f81d31f9f8bd12ce21e3f17ddd38ccb91511dc6223e7b823b3d277dc"},
     {"path": "mycroft-config.schema.json", "sha256": "7ac49fa206b408f8be2ac62ac99c982d00af22657fed9b8cbfd3909777810ec2"},
     {"path": "mycroft-config.template.json", "sha256": "02ff86cc93126dabd64dba62af6c2e2a6ab1569ca97321393ad14b3d860419d8"},
     {"path": "validation-profile.md", "sha256": "e0e2a126f3cf9118dbb63acb924a0a0884eb925356f242a68c978f31559121fd"},

@@ -955,12 +955,19 @@ parameters: []
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args:
+      - --cwd
+      - $VAULT_PATH
+      - mcp
 
 prompt: |
   Run the Mycroft morning brief using these configured paths:
 
   - Mycroft vault: $VAULT_PATH
-  - Obsidian vault name: Mycroft
+  - Knowledge logical space: mycroft
   - Monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
 
   If the monitoring profile does not exist yet, continue with context/beat-notes.md and tell the user to run the Morning brief preflight recipe.
@@ -984,6 +991,13 @@ parameters: []
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args:
+      - --cwd
+      - $VAULT_PATH
+      - mcp
 
 prompt: |
   Run the Mycroft vault audit using these configured paths:

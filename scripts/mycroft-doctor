@@ -33,8 +33,7 @@ check_path "$MYCROFT_SKILL_REGISTRY" "Mycroft skill registry"
 check_path "$MYCROFT_GOOSE_INSTRUCTIONS" "Mycroft Goose instructions"
 check_path "$MYCROFT_SOUL_FILE" "Mycroft soul"
 check_path "$MYCROFT_DIR/skills/knowledge-primitives/SKILL.md" "knowledge-primitives skill"
-check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
-check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
+check_path "$MYCROFT_DIR/skills/knowledge-workspace/SKILL.md" "Knowledge Workspace skill"
 check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
 check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
 check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
@@ -73,7 +72,7 @@ case ":${GOOSE_RECIPE_PATH:-}:" in
 esac
 
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
-if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
+if command -v ok >/dev/null 2>&1; then ok_check "OpenKnowledge CLI"; else bad_check "OpenKnowledge CLI missing"; fi
 if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
 # Core acquisition checks. A missing preferred backend is allowed only when a
 # configured fallback actually exists; zero search or scrape paths is a failed
