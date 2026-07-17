@@ -22,13 +22,19 @@ import shlex
 import string
 import subprocess
 import sys
+import tempfile
 import threading
 import urllib.error
 import urllib.request
+import urllib.parse
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
+from engine_bridge import EngineBridge, EngineUnavailable
+
 SUBMIT_TIMEOUT_SECONDS = 30 * 60
+
+PICKER_PROMPTS = {"vault_path": "Choose your Mycroft vault folder", "spotlight_vault_path": "Choose your Spotlight vault folder"}
 
 # Public Supabase anon key for hosted Scoutpost (functions/v1). Not a secret — it is
 # baked into the engine binary and the SPA; sent as the `apikey:` header alongside the
@@ -566,6 +572,12 @@ def main():
     page = page.replace("__PLATFORM__", detect_platform())
     done = threading.Event()
     result = {"written": False}
+    try:
+        engine_bridge = EngineBridge("mycroft")
+        engine_descriptor = engine_bridge.descriptor()
+    except (EngineUnavailable, RuntimeError, KeyError):
+        engine_bridge = None
+        engine_descriptor = None
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -581,13 +593,20 @@ def main():
             self.wfile.write(data)
 
         def do_GET(self):
-            if self.path == "/" or self.path.startswith("/?"):
+            parsed = urllib.parse.urlsplit(self.path)
+            query = urllib.parse.parse_qs(parsed.query)
+            if query.get("t", [""])[0] != token:
+                self._send(403, "forbidden — open the exact URL printed in the terminal", "text/plain")
+                return
+            if parsed.path == "/":
                 self._send(200, page, "text/html")
+            elif parsed.path == "/engine-descriptor" and engine_descriptor is not None:
+                self._send(200, json.dumps(engine_descriptor))
             else:
                 self._send(404, "not found", "text/plain")
 
         def do_POST(self):
-            if self.path not in ("/submit", "/pick-folder"):
+            if self.path not in ("/submit", "/pick-folder", "/engine-submit"):
                 self._send(404, "not found", "text/plain")
                 return
             try:
@@ -600,9 +619,33 @@ def main():
                 self._send(403, json.dumps({"errors": [{"field": "", "message": "Bad token — reload the page from the terminal URL."}]}))
                 return
             if self.path == "/pick-folder":
-                path, error = pick_folder_natively(str(payload.get("prompt") or "Choose a folder"))
+                path, error = pick_folder_natively(PICKER_PROMPTS.get(str(payload.get("field") or ""), "Choose a folder"))
                 self._send(200, json.dumps({"path": path, "error": error}))
                 return
+            if self.path == "/engine-submit":
+                if engine_bridge is None:
+                    self._send(409, json.dumps({"errors":[{"field":"","message":"A compatible Engine descriptor is unavailable; reload to use the legacy installer."}]})); return
+                try:
+                    response = engine_bridge.submit(payload.get("request") or {}, payload.get("secrets") or {})
+                    marker = os.path.join(args.profile_dir, "engine-plan.ready")
+                    os.makedirs(args.profile_dir, mode=0o700, exist_ok=True)
+                    fd, tmp = tempfile.mkstemp(prefix=".engine-plan.", dir=args.profile_dir)
+                    try:
+                        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                            json.dump(response["plan"], handle)
+                            handle.flush()
+                            os.fsync(handle.fileno())
+                        os.chmod(tmp, 0o600)
+                        os.replace(tmp, marker)
+                    except Exception:
+                        try: os.unlink(tmp)
+                        except FileNotFoundError: pass
+                        raise
+                except Exception as e:
+                    self._send(400, json.dumps({"errors":[{"field":"","message":str(e)}]})); return
+                result["written"] = True
+                self._send(200, json.dumps(response))
+                threading.Timer(0.5, done.set).start(); return
             d = normalize(payload)
             errors = validate_choices(d)
             warnings = []
@@ -623,8 +666,8 @@ def main():
 
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     url = f"http://127.0.0.1:{server.server_address[1]}/?t={token}"
-    print(f"  Configurator: {url}")
-    print("  Waiting for you to finish in the browser (Ctrl-C to abort)...")
+    print(f"  Configurator: {url}", flush=True)
+    print("  Waiting for you to finish in the browser (Ctrl-C to abort)...", flush=True)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     if not args.no_browser:

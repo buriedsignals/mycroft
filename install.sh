@@ -1076,6 +1076,10 @@ say "Opening the Mycroft configurator in your browser"
 echo "  Your choices and API keys go to a local server on 127.0.0.1 only and are"
 echo "  written to $MYCROFT_PROFILE_DIR — nothing is uploaded anywhere."
 python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"
+if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then
+  printf '✓ Engine wrote a sealed Mycroft plan. Review and apply the plan path shown in the browser with: bsig apply <plan-path>\n'
+  exit 0
+fi
 if [ ! -f "$MYCROFT_SETUP_CONFIG" ]; then
   warn "Configuration was not completed; re-run the installer to try again."
   exit 1
