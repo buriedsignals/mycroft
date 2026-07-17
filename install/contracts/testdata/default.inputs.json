@@ -1,0 +1,10 @@
+{
+  "paths": {"profile": "/home/reporter/.config/goose/mycroft", "data": "/home/reporter/.local/share/goose/mycroft", "source": "/home/reporter/.local/share/goose/mycroft/source", "plugins": "/home/reporter/.local/share/goose/mycroft/plugins"},
+  "goose": {"config_dir": "/home/reporter/.config/goose", "custom_providers_dir": "/home/reporter/.config/goose/custom_providers", "hints_file": "/home/reporter/.config/goose/.goosehints", "recipe_path": "/home/reporter/.local/share/goose/mycroft/source/recipes:/home/reporter/.config/goose/mycroft/generated-recipes", "instructions_file": "/home/reporter/.local/share/goose/mycroft/source/instructions/journalism.md", "soul_file": "/home/reporter/.config/goose/mycroft/SOUL.md", "generated_recipes": "/home/reporter/.config/goose/mycroft/generated-recipes", "schedules": {"morning_brief": "mycroft-morning-brief", "vault_audit": "mycroft-vault-audit"}},
+  "provider": {"id": "fireworks-glm52", "model": "accounts/fireworks/models/glm-5p2"},
+  "skills": {"registry": "/home/reporter/.config/goose/mycroft/skill-registry.json", "directory": "/home/reporter/.agents/skills/mycroft"},
+  "vaults": {"mycroft": "/home/reporter/Documents/Mycroft", "spotlight": null, "spotlight_ingest_target": null},
+  "acquisition": {"search": "searxng", "scrape": "crawl4ai", "firecrawl": "disabled"},
+  "sovereignty": {"local_only": false, "local_model": null},
+  "plugins": {"spotlight": {"enabled": false, "path": null}, "scoutpost": {"enabled": false}}
+}

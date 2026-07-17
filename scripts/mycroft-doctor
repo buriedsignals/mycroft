@@ -33,8 +33,7 @@ check_path "$MYCROFT_SKILL_REGISTRY" "Mycroft skill registry"
 check_path "$MYCROFT_GOOSE_INSTRUCTIONS" "Mycroft Goose instructions"
 check_path "$MYCROFT_SOUL_FILE" "Mycroft soul"
 check_path "$MYCROFT_DIR/skills/knowledge-primitives/SKILL.md" "knowledge-primitives skill"
-check_path "$MYCROFT_DIR/skills/qmd/SKILL.md" "QMD skill"
-check_path "$MYCROFT_DIR/skills/obsidian-ingest/SKILL.md" "obsidian-ingest skill"
+check_path "$MYCROFT_DIR/skills/knowledge-workspace/SKILL.md" "Knowledge Workspace skill"
 check_path "$MYCROFT_DIR/skills/fact-check/SKILL.md" "fact-check skill"
 check_path "$MYCROFT_DIR/skills/copywriting/SKILL.md" "copywriting skill"
 check_path "$MYCROFT_DIR/scripts/mycroft-fetch" "mycroft-fetch source"
@@ -73,17 +72,34 @@ case ":${GOOSE_RECIPE_PATH:-}:" in
 esac
 
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
-if command -v qmd >/dev/null 2>&1; then ok_check "QMD CLI"; else bad_check "QMD CLI missing"; fi
+if command -v ok >/dev/null 2>&1; then ok_check "OpenKnowledge CLI"; else bad_check "OpenKnowledge CLI missing"; fi
 if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
-# Sovereign stack (soft checks — Crawl4AI has a uvx cold-start, SearXNG a Firecrawl
-# fallback, so a missing one warns rather than failing the doctor / triggering rollback).
-if command -v crwl >/dev/null 2>&1; then ok_check "crawl4ai (crwl)"; else warn_check "crawl4ai (crwl) not on PATH — scrape cold-starts via uvx"; fi
+# Core acquisition checks. A missing preferred backend is allowed only when a
+# configured fallback actually exists; zero search or scrape paths is a failed
+# install, not a warning.
+FIRECRAWL_READY=0
+if command -v firecrawl >/dev/null 2>&1 && [ -n "${FIRECRAWL_API_KEY:-}" ] && \
+   firecrawl --version >/dev/null 2>&1; then
+  FIRECRAWL_READY=1
+fi
+
+if command -v crwl >/dev/null 2>&1; then
+  ok_check "scrape backend available (Crawl4AI)"
+elif command -v uvx >/dev/null 2>&1; then
+  ok_check "scrape backend available (Crawl4AI via uvx cold-start)"
+elif [ "$FIRECRAWL_READY" -eq 1 ]; then
+  ok_check "scrape backend available (Firecrawl fallback)"
+else
+  bad_check "scrape backend unavailable — install Crawl4AI/uvx or configure the Firecrawl CLI and key"
+fi
 if command -v pdftotext >/dev/null 2>&1; then ok_check "pdftotext (PDF extract)"; else warn_check "pdftotext missing — PDF extraction unavailable"; fi
 SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
 if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
-  ok_check "SearXNG reachable ($SEARXNG_URL_CHECK)"
+  ok_check "search backend available (SearXNG at $SEARXNG_URL_CHECK)"
+elif [ "$FIRECRAWL_READY" -eq 1 ]; then
+  ok_check "search backend available (Firecrawl fallback)"
 else
-  warn_check "SearXNG not reachable at $SEARXNG_URL_CHECK — start it (docker start mycroft-searxng) or set SEARXNG_URL"
+  bad_check "search backend unavailable — start SearXNG at $SEARXNG_URL_CHECK or configure the Firecrawl CLI and key"
 fi
 if command -v mycroft-safe >/dev/null 2>&1; then
   if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then

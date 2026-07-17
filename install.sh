@@ -10,6 +10,8 @@
 set -euo pipefail
 
 TODAY="$(date +%F)"
+MYCROFT_OS="${MYCROFT_OS:-$(uname -s)}"
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
@@ -50,14 +52,7 @@ ok()   { printf "  \033[1;32m+\033[0m %s\n" "$*"; }
 warn() { printf "  \033[1;33m!\033[0m %s\n" "$*"; }
 
 ensure_brew() {
-  if have brew; then return 0; fi
-  if [ "$(uname -s)" != "Darwin" ]; then return 1; fi
-  say "Homebrew is needed for macOS app installs. Install it now? [Y/n]"
-  read -r ans || ans="Y"
-  if [[ "$ans" =~ ^[Nn] ]]; then return 1; fi
-  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  [ -x /opt/homebrew/bin/brew ] && eval "$(/opt/homebrew/bin/brew shellenv)"
-  [ -x /usr/local/bin/brew ] && eval "$(/usr/local/bin/brew shellenv)"
+  mycroft_ensure_brew
 }
 
 ensure_git() {
@@ -75,7 +70,8 @@ ensure_goose() {
   [ "$INSTALL_GOOSE" = "1" ] || return 0
   if [ "$(uname -s)" = "Darwin" ]; then
     if [ ! -d "/Applications/Goose.app" ] && [ ! -d "/Applications/block-goose.app" ] && [ ! -d "$HOME/Applications/Goose.app" ] && [ ! -d "$HOME/Applications/block-goose.app" ]; then
-      ensure_brew && brew install --cask block-goose && ok "Goose Desktop"
+      ensure_brew || { warn "Goose requires Homebrew on macOS; setup stopped before making a partial install."; exit 1; }
+      brew install --cask block-goose && ok "Goose Desktop"
     else ok "Goose Desktop present"; fi
   fi
   if ! have goose; then
@@ -88,7 +84,10 @@ install_obsidian() {
   [ "$INSTALL_OBSIDIAN" = "1" ] || return 0
   if [ "$(uname -s)" = "Darwin" ]; then
     if [ -d "/Applications/Obsidian.app" ] || [ -d "$HOME/Applications/Obsidian.app" ]; then ok "Obsidian present"
-    else ensure_brew && brew install --cask obsidian && ok "Obsidian"; fi
+    else
+      ensure_brew || { warn "Obsidian requires Homebrew on macOS; setup stopped before making a partial install."; exit 1; }
+      brew install --cask obsidian && ok "Obsidian"
+    fi
     if ! have obsidian; then
       warn "Open Obsidian, then enable Settings -> General -> Advanced -> Command Line Interface."
       open -a Obsidian 2>/dev/null || true
@@ -104,14 +103,34 @@ install_firecrawl() {
   # Not on the default search/scrape path.
   [ "$INSTALL_FIRECRAWL" = "1" ] || { ok "firecrawl skipped (pure-sovereign mode)"; return 0; }
   if have firecrawl; then ok "firecrawl present (optional fallback)"; return 0; fi
-  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
-  if have npm; then npm install -g firecrawl-cli && ok "firecrawl (optional fallback)"; else warn "npm missing; install firecrawl-cli manually."; fi
+  if ! have npm && [ "$MYCROFT_OS" = "Darwin" ]; then
+    ensure_brew || { warn "Node.js requires Homebrew on macOS."; exit 1; }
+    brew install node
+  fi
+  if have npm; then
+    local pin
+    pin="$(mycroft_catalog_dependency_pin "$MYCROFT_DIR/catalog/catalog.json" firecrawl-cli)"
+    [ -n "$pin" ] || { warn "Signed catalog has no firecrawl-cli pin; refusing an unpinned install."; exit 1; }
+    npm install -g "firecrawl-cli@$pin" && ok "firecrawl $pin (optional fallback)"
+  else
+    warn "npm missing; install firecrawl-cli manually."
+  fi
 }
 
 ensure_qmd() {
   if have qmd; then ok "QMD CLI present"; return 0; fi
-  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
-  if have npm; then npm install -g @tobilu/qmd && ok "QMD CLI"; else warn "npm missing; install QMD manually with: npm install -g @tobilu/qmd"; fi
+  if ! have npm && [ "$MYCROFT_OS" = "Darwin" ]; then
+    ensure_brew || { warn "Node.js requires Homebrew on macOS."; exit 1; }
+    brew install node
+  fi
+  if have npm; then
+    local pin
+    pin="$(mycroft_catalog_dependency_pin "$MYCROFT_DIR/catalog/catalog.json" @tobilu/qmd)"
+    [ -n "$pin" ] || { warn "Signed catalog has no @tobilu/qmd pin; refusing an unpinned install."; exit 1; }
+    npm install -g "@tobilu/qmd@$pin" && ok "QMD CLI $pin"
+  else
+    warn "npm missing; install QMD manually from the signed catalog pin."
+  fi
 }
 
 # --- Scoutpost CLI (scout) ---------------------------------------------------
@@ -125,21 +144,16 @@ SCOUTPOST_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSI
 # Read the scoutpost-cli pin from the vendored catalog.json. New logic — no other
 # installer idiom reads catalog.json; python3 is a hard prerequisite of this script.
 scout_cli_pin() {
-  local catalog="$MYCROFT_DIR/catalog/catalog.json"
-  [ -f "$catalog" ] || return 0
-  python3 - "$catalog" <<'PIN_PY' 2>/dev/null
-import json, sys
-try:
-    print(json.load(open(sys.argv[1])).get("dependencies", {}).get("scoutpost-cli", ""))
-except Exception:
-    pass
-PIN_PY
+  mycroft_catalog_dependency_pin "$MYCROFT_DIR/catalog/catalog.json" scoutpost-cli
 }
 
 install_scout_cli() {
   [ "$ENABLE_SCOUTPOST" = "1" ] || return 0
   if have scout; then ok "scout CLI present"; return 0; fi
-  if ! have npm && [ "$(uname -s)" = "Darwin" ]; then ensure_brew && brew install node; fi
+  if ! have npm && [ "$MYCROFT_OS" = "Darwin" ]; then
+    ensure_brew || { warn "Node.js requires Homebrew on macOS."; exit 1; }
+    brew install node
+  fi
   if ! have npm; then
     warn "npm missing; Scoutpost will use the REST API. To enable the scout CLI later: npm install -g scoutpost-cli"
     return 0
@@ -941,12 +955,19 @@ parameters: []
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args:
+      - --cwd
+      - $VAULT_PATH
+      - mcp
 
 prompt: |
   Run the Mycroft morning brief using these configured paths:
 
   - Mycroft vault: $VAULT_PATH
-  - Obsidian vault name: Mycroft
+  - Knowledge logical space: mycroft
   - Monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
 
   If the monitoring profile does not exist yet, continue with context/beat-notes.md and tell the user to run the Morning brief preflight recipe.
@@ -970,6 +991,13 @@ parameters: []
 extensions:
   - type: builtin
     name: developer
+  - type: stdio
+    name: openknowledge
+    cmd: ok
+    args:
+      - --cwd
+      - $VAULT_PATH
+      - mcp
 
 prompt: |
   Run the Mycroft vault audit using these configured paths:
@@ -1044,6 +1072,14 @@ warn_legacy_layout
 ensure_git
 install_or_update_mycroft
 
+PREFLIGHT_HELPER="$MYCROFT_DIR/scripts/install-preflight.sh"
+if [ ! -f "$PREFLIGHT_HELPER" ]; then
+  warn "Installer preflight helper missing: $PREFLIGHT_HELPER"
+  exit 1
+fi
+# shellcheck source=scripts/install-preflight.sh
+. "$PREFLIGHT_HELPER"
+
 # ── Configure: local page in your browser; keys stay on 127.0.0.1 ──
 MYCROFT_SETUP_CONFIG="$MYCROFT_PROFILE_DIR/setup-config.env"
 if ! have python3; then
@@ -1054,6 +1090,10 @@ say "Opening the Mycroft configurator in your browser"
 echo "  Your choices and API keys go to a local server on 127.0.0.1 only and are"
 echo "  written to $MYCROFT_PROFILE_DIR — nothing is uploaded anywhere."
 python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"
+if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then
+  printf '✓ Engine wrote a sealed Mycroft plan. Review and apply the plan path shown in the browser with: bsig apply <plan-path>\n'
+  exit 0
+fi
 if [ ! -f "$MYCROFT_SETUP_CONFIG" ]; then
   warn "Configuration was not completed; re-run the installer to try again."
   exit 1
@@ -1069,6 +1109,18 @@ INSTALL_CRAWL4AI="${INSTALL_CRAWL4AI:-1}"
 INSTALL_SEARXNG="${INSTALL_SEARXNG:-1}"
 INSTALL_TOR="${INSTALL_TOR:-0}"
 INSTALL_FIRECRAWL="${INSTALL_FIRECRAWL:-0}"
+
+# QMD is a core capability and installs native modules. Fix a root-owned npm
+# prefix before the first global package write, and reject the incomplete Linux
+# toolchain once with the complete dependency command instead of failing several
+# minutes into npm's build.
+if ! have qmd || [ "$INSTALL_FIRECRAWL" = "1" ] || [ "$ENABLE_SCOUTPOST" = "1" ] || \
+   { [ "$ENABLE_SPOTLIGHT" = "1" ] && [ "${SPOT_DEVBROWSER:-1}" = "1" ]; }; then
+  mycroft_prepare_npm_prefix || exit 1
+fi
+if ! have qmd; then
+  mycroft_preflight_linux_build_tools || exit 1
+fi
 
 SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
 if [ "$SPOTLIGHT_VAULT_PATH" = "$VAULT_PATH" ]; then
@@ -1293,7 +1345,7 @@ else
 fi
 {
   printf '\n%s\n' "$MARKER_START"
-  printf 'export PATH="$HOME/.local/bin:$PATH"\n'
+  printf 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"\n'
   printf 'export MYCROFT_DIR="%s"\n' "$MYCROFT_DIR"
   printf 'export MYCROFT_PROFILE_DIR="%s"\n' "$MYCROFT_PROFILE_DIR"
   printf 'export MYCROFT_DATA_DIR="%s"\n' "$MYCROFT_DATA_DIR"
@@ -1310,6 +1362,14 @@ fi
   printf '%s\n' "$MARKER_END"
 } >> "$tmp_rc"
 mv "$tmp_rc" "$SHELL_RC"
+
+say "Verifying Mycroft installation"
+if GOOSE_RECIPE_PATH="$GOOSE_RECIPE_PATH_VALUE" "$HOME/.local/bin/mycroft-doctor"; then
+  ok "Mycroft doctor passed"
+else
+  warn "Mycroft doctor failed; setup is incomplete and the installer is exiting non-zero."
+  exit 1
+fi
 
 GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"
 if [ -f "$GETTING_STARTED" ]; then

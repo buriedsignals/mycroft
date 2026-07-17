@@ -18,10 +18,12 @@ import time
 import unittest
 import urllib.error
 import urllib.request
+from unittest import mock
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "install"))
 import setup_server as srv  # noqa: E402
+import engine_bridge as engine  # noqa: E402
 
 BASE = {
     "sovereignty": "cloud", "localModel": "gemma31b",
@@ -38,6 +40,27 @@ SECRETS = ["fw-test", "fc-test", "scout-test", "ont-test"]
 
 
 class UnitChecks(unittest.TestCase):
+    def test_engine_bridge_keeps_secret_values_off_argv(self):
+        bridge = engine.EngineBridge.__new__(engine.EngineBridge)
+        bridge.product = "mycroft"
+        bridge.binary = "/fake/bsig"
+        replies = iter([
+            {"event": "result", "data": {"normalized": {"required_secret_ids": ["OPENCODE_API_KEY"]}}},
+            {"event": "result", "data": {"keys": []}},
+            {"event": "result", "data": {}},
+            {"event": "result", "data": {"plan_path": "/tmp/plan.json"}},
+        ])
+        calls = []
+        def fake_run(argv, **kwargs):
+            calls.append((argv, kwargs.get("input")))
+            event = next(replies)
+            return subprocess.CompletedProcess(argv, 0, (json.dumps(event) + "\n").encode(), b"")
+        with mock.patch.object(engine.subprocess, "run", side_effect=fake_run):
+            result = bridge.submit({"schema_version": "bsig-configure/v1"}, {"OPENCODE_API_KEY": "newsroom-secret"})
+        self.assertTrue(result["ok"])
+        self.assertTrue(any(argv[-3:] == ["keys", "set", "OPENCODE_API_KEY"] and body == b"newsroom-secret" for argv, body in calls))
+        self.assertFalse(any("newsroom-secret" in " ".join(argv) for argv, _ in calls))
+
     def test_structural_validation(self):
         d = srv.normalize(BASE)
         self.assertEqual(srv.validate_choices(d), [])
@@ -51,6 +74,9 @@ class UnitChecks(unittest.TestCase):
         for overrides, field in cases:
             errs = srv.validate_choices(srv.normalize({**BASE, **overrides}))
             self.assertTrue(any(e["field"] == field for e in errs), field)
+        # Sovereign Crawl4AI + SearXNG needs no Firecrawl account.
+        keyless = srv.normalize({**BASE, "installFirecrawl": False, "firecrawlKey": ""})
+        self.assertEqual(srv.validate_choices(keyless), [])
         # local mode needs no provider keys
         local = srv.normalize({**BASE, "sovereignty": "local", "fireworksKey": ""})
         self.assertEqual(srv.validate_choices(local), [])
@@ -147,20 +173,32 @@ class ServerChecks(unittest.TestCase):
              "--profile-dir", cls.tmp, "--repo-dir", ROOT,
              "--port", str(cls.PORT), "--no-browser", "--skip-key-validation"],
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        cls.token = None
+        deadline = time.time() + 10
+        while time.time() < deadline:
+            line = cls.proc.stdout.readline()
+            if not line:
+                break
+            match = re.search(r"http://127\.0\.0\.1:(\d+)/\?t=([A-Za-z0-9_-]+)", line)
+            if match:
+                cls.PORT = int(match.group(1)); cls.token = match.group(2); break
+        if not cls.token:
+            raise RuntimeError("configurator never printed its token URL")
         deadline = time.time() + 10
         while time.time() < deadline:
             try:
-                cls.page = urllib.request.urlopen(f"http://127.0.0.1:{cls.PORT}/", timeout=2).read().decode()
+                cls.page = urllib.request.urlopen(f"http://127.0.0.1:{cls.PORT}/?t={cls.token}", timeout=2).read().decode()
                 break
             except Exception:
                 time.sleep(0.2)
         else:
             raise RuntimeError("server did not start")
-        cls.token = re.search(r'const TOKEN = "([^"]+)"', cls.page).group(1)
 
     @classmethod
     def tearDownClass(cls):
         cls.proc.terminate()
+        cls.proc.wait(timeout=5)
+        cls.proc.stdout.close()
 
     def post(self, path, payload):
         req = urllib.request.Request(
@@ -176,6 +214,8 @@ class ServerChecks(unittest.TestCase):
         self.assertNotIn("__PLATFORM__", self.page)
         self.assertIn("spotDevBrowser", self.page)
         self.assertIn("OSINT_NAV_API_KEY", self.page)
+        self.assertIn("Optional fallback", self.page)
+        self.assertNotIn('id="installFirecrawl" checked', self.page)
 
         # 2. bad token is rejected on both POST endpoints
         for path in ("/submit", "/pick-folder"):
@@ -183,14 +223,15 @@ class ServerChecks(unittest.TestCase):
                 self.post(path, {**BASE, "token": "wrong"})
             self.assertEqual(ctx.exception.code, 403)
 
-        # 3. structural validation blocks with field errors
+        # 3. structural validation still blocks genuinely required fields
         with self.assertRaises(urllib.error.HTTPError) as ctx:
-            self.post("/submit", {**BASE, "token": self.token, "firecrawlKey": ""})
+            self.post("/submit", {**BASE, "token": self.token, "vault": ""})
         body = json.loads(ctx.exception.read())
-        self.assertTrue(any(e["field"] == "firecrawl_key" for e in body["errors"]))
+        self.assertTrue(any(e["field"] == "vault_path" for e in body["errors"]))
 
-        # 4. good submit writes all four artifacts and exits 0
-        resp = self.post("/submit", {**BASE, "token": self.token})
+        # 4. keyless sovereign submit writes all four artifacts and exits 0
+        resp = self.post("/submit", {**BASE, "token": self.token,
+                                     "installFirecrawl": False, "firecrawlKey": ""})
         self.assertTrue(resp["ok"])
         self.assertEqual(self.proc.wait(timeout=10), 0)
         for name, mode in [(".env", 0o600), ("setup-config.env", 0o600),
@@ -198,7 +239,8 @@ class ServerChecks(unittest.TestCase):
             path = os.path.join(self.tmp, name)
             self.assertTrue(os.path.exists(path), name)
             self.assertEqual(os.stat(path).st_mode & 0o777, mode, name)
-        guide = open(os.path.join(self.tmp, "getting-started.html")).read()
+        with open(os.path.join(self.tmp, "getting-started.html"), encoding="utf-8") as handle:
+            guide = handle.read()
         for secret in SECRETS:
             self.assertNotIn(secret, guide)
 

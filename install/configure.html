@@ -168,9 +168,9 @@
     </div>
   </div>
 
-  <p class="num">03 — Required</p>
-  <h2>Three <em>pieces.</em></h2>
-  <p class="sec-lead"><strong>All three are required.</strong> Leave the auto-install boxes ticked to let the installer handle them, or untick and install manually.</p>
+  <p class="num">03 — Core setup</p>
+  <h2>Two essentials. <em>One escape hatch.</em></h2>
+  <p class="sec-lead"><strong>Goose and Obsidian are required.</strong> Sovereign web research runs through local SearXNG and Crawl4AI; Firecrawl is an optional fallback for hard anti-bot targets.</p>
   <div class="grid-3">
     <div class="item">
       <div class="item__head"><span class="item__title">Goose<em>.</em></span><span class="badge req">required</span></div>
@@ -186,12 +186,12 @@
       </div>
     </div>
     <div class="item">
-      <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge req">required</span></div>
-      <p class="item__lede">Powers every web-capable recipe. The only permitted web-fetch tool in Mycroft.</p>
-      <label class="check"><input type="checkbox" id="installFirecrawl" checked> Auto-install</label>
+      <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge">Optional fallback</span></div>
+      <p class="item__lede">An API-backed escape hatch when a target blocks the local Crawl4AI path. Normal search and scraping need no cloud key.</p>
+      <label class="check"><input type="checkbox" id="installFirecrawl"> Install optional CLI</label>
       <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
       <div>
-        <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY</label>
+        <label class="field-label" for="firecrawl_key">FIRECRAWL_API_KEY <span class="opt">— optional</span></label>
         <input class="fld" type="password" id="firecrawl_key" placeholder="fc-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
       </div>
     </div>
@@ -465,6 +465,128 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
     btn.textContent = 'Save & continue install →';
   }
 });
+</script>
+<script>
+/* Engine-v2 enhancement: signed Engine choices replace legacy managed choices when available. */
+(async function activateEngineConfigurator() {
+  let descriptor;
+  try {
+    const response = await fetch('/engine-descriptor?t=' + encodeURIComponent(TOKEN), {cache: 'no-store'});
+    if (!response.ok) return;
+    descriptor = await response.json();
+  } catch (_) { return; }
+
+  const form = document.getElementById('form');
+  form.replaceChildren();
+  const intro = document.createElement('div');
+  intro.className = 'callout';
+  intro.innerHTML = '<strong>Engine-managed configuration</strong><p>Provider, model, privacy, and local-runtime choices come from the signed Engine catalog. Saving creates a sealed plan for review; it does not silently install or change an existing model.</p>';
+  const fieldsRoot = document.createElement('div');
+  const secretsRoot = document.createElement('div');
+  const status = document.createElement('div');
+  status.style.marginTop = '18px';
+  const submit = document.createElement('button');
+  submit.type = 'button'; submit.textContent = 'Create reviewable install plan →';
+  submit.style.marginTop = '24px';
+  form.append(intro, fieldsRoot, secretsRoot, status, submit);
+
+  const controls = new Map(), values = {};
+  for (const field of descriptor.fields) values[field.id] = field.default;
+  const active = field => (field.conditions || []).every(c => values[c.field] === c.equals);
+  const selected = field => (field.options || []).find(o => o.id === values[field.id]);
+
+  function renderSecrets() {
+    const prior = {};
+    secretsRoot.querySelectorAll('input[data-secret]').forEach(i => prior[i.dataset.secret] = i.value);
+    const ids = new Set(descriptor.required_secret_ids || []);
+    for (const field of descriptor.fields) {
+      if (!active(field) || field.kind !== 'choice') continue;
+      for (const id of (selected(field)?.secret_ids || [])) ids.add(id);
+    }
+    secretsRoot.replaceChildren();
+    if (!ids.size) return;
+    const heading = document.createElement('h3'); heading.textContent = 'Credentials';
+    secretsRoot.appendChild(heading);
+    for (const id of [...ids].sort()) {
+      const label = document.createElement('label'); label.className = 'field-label';
+      label.textContent = id + ' (leave blank to reuse Keychain)';
+      const input = document.createElement('input'); input.type = 'password';
+      input.autocomplete = 'off'; input.dataset.secret = id; input.value = prior[id] || '';
+      secretsRoot.append(label, input);
+    }
+  }
+  function refresh() {
+    const modelField = descriptor.fields.find(f => f.id === 'cloud_model');
+    const modelControl = controls.get('cloud_model');
+    if (modelField && modelControl && active(modelField)) {
+      const available = (modelField.options || []).filter(option => (option.routes || []).some(route =>
+        route.provider_id === values.provider && (!(route.adapters || []).length || route.adapters.includes(values.runtime))));
+      for (const item of modelControl.input.options) {
+        const allowed = available.some(option => option.id === item.value);
+        item.hidden = !allowed; item.disabled = !allowed;
+      }
+      if (!available.some(option => option.id === values.cloud_model)) {
+        values.cloud_model = (available.find(option => option.recommendation === 'default') || available[0] || {}).id || '';
+        modelControl.input.value = values.cloud_model;
+      }
+    }
+    for (const field of descriptor.fields) {
+      const control = controls.get(field.id);
+      control.row.hidden = !active(field);
+      const option = selected(field);
+      control.privacy.textContent = option?.privacy
+        ? option.privacy.tier.replace('-', ' ') + ' — ' + option.privacy.disclosure
+        : (option?.description || '');
+    }
+    renderSecrets();
+  }
+
+  for (const field of descriptor.fields) {
+    const row = document.createElement('section'); row.style.marginTop = '26px';
+    const label = document.createElement('label'); label.className = 'field-label'; label.textContent = field.label;
+    let input;
+    if (field.kind === 'choice') {
+      input = document.createElement('select');
+      for (const option of field.options || []) {
+        const item = document.createElement('option'); item.value = option.id; item.textContent = option.label;
+        input.appendChild(item);
+      }
+      input.value = values[field.id] ?? '';
+    } else if (field.kind === 'toggle') {
+      input = document.createElement('input'); input.type = 'checkbox'; input.checked = Boolean(values[field.id]);
+    } else {
+      input = document.createElement('input'); input.type = field.kind === 'email' ? 'email' : 'text';
+      input.value = values[field.id] ?? '';
+    }
+    const privacy = document.createElement('p'); privacy.className = 'hint';
+    input.addEventListener('change', () => {
+      values[field.id] = field.kind === 'toggle' ? input.checked : input.value; refresh();
+    });
+    row.append(label, input, privacy); fieldsRoot.appendChild(row); controls.set(field.id, {row, input, privacy});
+  }
+  refresh();
+
+  submit.addEventListener('click', async () => {
+    submit.disabled = true; status.textContent = 'Validating with Engine…';
+    const activeValues = {};
+    for (const field of descriptor.fields) if (active(field)) activeValues[field.id] = values[field.id];
+    const secretValues = {};
+    secretsRoot.querySelectorAll('input[data-secret]').forEach(i => { if (i.value) secretValues[i.dataset.secret] = i.value; });
+    const request = {schema_version: descriptor.schema_version, product: descriptor.product,
+      descriptor_digest: descriptor.descriptor_digest, values: activeValues};
+    try {
+      const response = await fetch('/engine-submit', {method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({token:TOKEN, request, secrets:secretValues})});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.errors?.[0]?.message || 'Engine rejected the configuration.');
+      const path = String(data.plan?.plan_path || 'the Engine plans directory').replace(/[&<>]/g, '');
+      status.innerHTML = '<strong>Plan created.</strong> Review <code>' + path + '</code>, then run <code>bsig apply &quot;' + path + '&quot;</code>.';
+      submit.textContent = 'Plan ready';
+    } catch (error) {
+      status.textContent = error.message; submit.disabled = false;
+    }
+  });
+})();
 </script>
 </body>
 </html>

@@ -19,7 +19,7 @@ Mycroft acquires web sources **sovereign by default** — no API key, no vendor 
 - Search for source material.
 - Scrape known URLs into Markdown.
 - Preserve raw web text under `sources/raw/`.
-- Feed cleaned extracts into `obsidian-ingest`.
+- Feed cleaned extracts into the `knowledge-workspace` write flow with an explicit `logical_space` and idempotency key.
 
 ## Rules
 

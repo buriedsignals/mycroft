@@ -1,0 +1,12 @@
+{
+  "acquisition": {"firecrawl": "disabled", "scrape": "crawl4ai", "search": "searxng"},
+  "goose": {"config_dir": "/home/reporter/.config/goose", "custom_providers_dir": "/home/reporter/.config/goose/custom_providers", "generated_recipes": "/home/reporter/.config/goose/mycroft/generated-recipes", "hints_file": "/home/reporter/.config/goose/.goosehints", "instructions_file": "/home/reporter/.local/share/goose/mycroft/source/instructions/journalism.md", "recipe_path": "/home/reporter/.local/share/goose/mycroft/source/recipes:/home/reporter/.config/goose/mycroft/generated-recipes", "schedules": {"morning_brief": "mycroft-morning-brief", "vault_audit": "mycroft-vault-audit"}, "soul_file": "/home/reporter/.config/goose/mycroft/SOUL.md"},
+  "paths": {"data": "/home/reporter/.local/share/goose/mycroft", "plugins": "/home/reporter/.local/share/goose/mycroft/plugins", "profile": "/home/reporter/.config/goose/mycroft", "source": "/home/reporter/.local/share/goose/mycroft/source"},
+  "plugins": {"scoutpost": {"api_base": "https://www.scoutpost.ai/api/v1", "enabled": false, "mode": "hosted"}, "spotlight": {"enabled": false, "inherits_mycroft_sovereignty": true, "path": null}},
+  "product": "mycroft",
+  "provider": {"id": "fireworks-glm52", "model": "accounts/fireworks/models/glm-5p2"},
+  "schema_version": "mycroft-config/v2",
+  "skills": {"directory": "/home/reporter/.agents/skills/mycroft", "registry": "/home/reporter/.config/goose/mycroft/skill-registry.json"},
+  "sovereignty": {"local_model": null, "local_only": false},
+  "vaults": {"mycroft": "/home/reporter/Documents/Mycroft", "spotlight": null, "spotlight_ingest_target": null}
+}

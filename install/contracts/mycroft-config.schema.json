@@ -1,0 +1,140 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mycroft.buriedsignals.com/schemas/mycroft-config-v2.json",
+  "title": "Mycroft runtime configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "product",
+    "paths",
+    "goose",
+    "provider",
+    "skills",
+    "vaults",
+    "acquisition",
+    "sovereignty",
+    "plugins"
+  ],
+  "properties": {
+    "schema_version": {"const": "mycroft-config/v2"},
+    "product": {"const": "mycroft"},
+    "paths": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile", "data", "source", "plugins"],
+      "properties": {
+        "profile": {"type": "string"},
+        "data": {"type": "string"},
+        "source": {"type": "string"},
+        "plugins": {"type": "string"}
+      }
+    },
+    "goose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "config_dir",
+        "custom_providers_dir",
+        "hints_file",
+        "recipe_path",
+        "instructions_file",
+        "soul_file",
+        "generated_recipes",
+        "schedules"
+      ],
+      "properties": {
+        "config_dir": {"type": "string"},
+        "custom_providers_dir": {"type": "string"},
+        "hints_file": {"type": "string"},
+        "recipe_path": {"type": "string"},
+        "instructions_file": {"type": "string"},
+        "soul_file": {"type": "string"},
+        "generated_recipes": {"type": "string"},
+        "schedules": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["morning_brief", "vault_audit"],
+          "properties": {
+            "morning_brief": {"type": ["string", "null"]},
+            "vault_audit": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "model"],
+      "properties": {
+        "id": {"type": "string"},
+        "model": {"type": ["string", "null"]}
+      }
+    },
+    "skills": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry", "directory"],
+      "properties": {
+        "registry": {"type": "string"},
+        "directory": {"type": "string"}
+      }
+    },
+    "vaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mycroft", "spotlight", "spotlight_ingest_target"],
+      "properties": {
+        "mycroft": {"type": "string"},
+        "spotlight": {"type": ["string", "null"]},
+        "spotlight_ingest_target": {"type": ["string", "null"]}
+      }
+    },
+    "acquisition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["search", "scrape", "firecrawl"],
+      "properties": {
+        "search": {"const": "searxng"},
+        "scrape": {"const": "crawl4ai"},
+        "firecrawl": {"enum": ["disabled", "fallback"]}
+      }
+    },
+    "sovereignty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_only", "local_model"],
+      "properties": {
+        "local_only": {"type": "boolean"},
+        "local_model": {"type": ["string", "null"]}
+      }
+    },
+    "plugins": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spotlight", "scoutpost"],
+      "properties": {
+        "spotlight": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "path", "inherits_mycroft_sovereignty"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "path": {"type": ["string", "null"]},
+            "inherits_mycroft_sovereignty": {"const": true}
+          }
+        },
+        "scoutpost": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enabled", "mode", "api_base"],
+          "properties": {
+            "enabled": {"type": "boolean"},
+            "mode": {"const": "hosted"},
+            "api_base": {"const": "https://www.scoutpost.ai/api/v1"}
+          }
+        }
+      }
+    }
+  }
+}
