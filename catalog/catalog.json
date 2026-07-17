@@ -1,9 +1,16 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
+  "release_sequence": 2,
+  "released_at": "2026-07-17T12:00:00Z",
   "products": {
-    "mycroft": { "version": "0.2.2", "repo": "buriedsignals/mycroft", "ref": "v0.2.2", "entitlement": "mycroft.core" },
-    "spotlight": { "version": "2.0.2", "repo": "buriedsignals/spotlight", "ref": "v2.0.2", "entitlement": "spotlight.core" }
+    "mycroft": { "version": "0.3.0", "repo": "buriedsignals/mycroft", "ref": "f8c3a7c04562a06be6a49bf9eb5d4b9e4e826d4c", "entitlement": "mycroft.core",
+      "install_contract": { "schema_version": "mycroft-install-contract/v1", "source_commit": "f8c3a7c04562a06be6a49bf9eb5d4b9e4e826d4c", "digest": "f5dbe1eb62902b3be530df4f1ce11154fb53ced945c76c72e82eeed764012972", "writer_mode": "engine_v2",
+        "choice_schema": {"type":"object"}, "config_schema": {"type":"object"},
+        "template": {"schema_version":"mycroft-template/v1","output_schema":"mycroft-config/v2","document":{"schema_version":"mycroft-config/v2","product":"mycroft","paths":{"profile":{"$input":"paths.profile"},"data":{"$input":"paths.data"},"source":{"$input":"paths.source"},"plugins":{"$input":"paths.plugins"}},"goose":{"config_dir":{"$input":"goose.config_dir"},"custom_providers_dir":{"$input":"goose.custom_providers_dir"},"hints_file":{"$input":"goose.hints_file"},"recipe_path":{"$input":"goose.recipe_path"},"instructions_file":{"$input":"goose.instructions_file"},"soul_file":{"$input":"goose.soul_file"},"generated_recipes":{"$input":"goose.generated_recipes"},"schedules":{"morning_brief":{"$input":"goose.schedules.morning_brief"},"vault_audit":{"$input":"goose.schedules.vault_audit"}}},"provider":{"id":{"$input":"provider.id"},"model":{"$input":"provider.model"}},"skills":{"registry":{"$input":"skills.registry"},"directory":{"$input":"skills.directory"}},"vaults":{"mycroft":{"$input":"vaults.mycroft"},"spotlight":{"$input":"vaults.spotlight"},"spotlight_ingest_target":{"$input":"vaults.spotlight_ingest_target"}},"acquisition":{"search":{"$input":"acquisition.search"},"scrape":{"$input":"acquisition.scrape"},"firecrawl":{"$input":"acquisition.firecrawl"}},"sovereignty":{"local_only":{"$input":"sovereignty.local_only"},"local_model":{"$input":"sovereignty.local_model"}},"plugins":{"spotlight":{"enabled":{"$input":"plugins.spotlight.enabled"},"path":{"$input":"plugins.spotlight.path"},"inherits_mycroft_sovereignty":true},"scoutpost":{"enabled":{"$input":"plugins.scoutpost.enabled"},"mode":"hosted","api_base":"https://www.scoutpost.ai/api/v1"}}}}
+      } },
+    "spotlight": { "version": "2.1.0", "repo": "buriedsignals/spotlight", "ref": "d4925c93ed3dd3227f1233f97d9f295385cd24fa", "entitlement": "spotlight.core",
+      "install_contract": { "schema_version": "spotlight-install-contract/v1", "source_commit": "d4925c93ed3dd3227f1233f97d9f295385cd24fa", "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a", "writer_mode": "engine_v2", "choice_schema": {"type":"object"}, "config_schema": {"type":"object"}, "template": {"document":{}} } }
   },
   "skills": [
     { "id": "copywriting", "name": "Copywriting", "audience": ["journalist"], "entitlement": "mycroft.core",
@@ -124,6 +131,35 @@
       "upstream": { "repo": "jamditis/claude-skills-journalism", "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
         "path": "journalism-core/skills/ai-writing-detox", "license": "MIT", "author": "Joe Amditis" } }
   ],
-  "artifacts": [],
-  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "crawl4ai": "0.9.0", "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
+  "providers": [
+    {"id":"opencode-go","display":"OpenCode Go","base_url":"https://opencode.ai/zen/go/v1","api":"openai-chat","secret_id":"OPENCODE_API_KEY","products":["mycroft","spotlight"],"adapters":["goose","pi"],"privacy":{"tier":"confidential-cloud","enforcement":"provider-stated","disclosure":"Prompts leave this device. OpenCode states zero retention and no training; service metadata and networked tools remain outside this inference claim.","source_url":"https://opencode.ai/docs/go/","verified_at":"2026-07-17"}},
+    {"id":"openrouter","display":"OpenRouter","base_url":"https://openrouter.ai/api/v1","api":"openai-chat","secret_id":"OPENROUTER_API_KEY","products":["mycroft","spotlight"],"adapters":["pi"],"privacy":{"tier":"confidential-cloud","enforcement":"request-enforced","disclosure":"Prompts leave this device. Engine forces ZDR-only inference routing per request; operational metadata and other networked tools are not covered.","source_url":"https://openrouter.ai/docs/guides/features/zdr","verified_at":"2026-07-17"},"request_body":{"provider":{"zdr":true}}},
+    {"id":"fireworks","display":"Fireworks AI","base_url":"https://api.fireworks.ai/inference/v1","api":"openai-chat","secret_id":"FIREWORKS_API_KEY","products":["mycroft","spotlight"],"adapters":["goose","pi"],"privacy":{"tier":"confidential-cloud","enforcement":"provider-stated","disclosure":"Prompts leave this device. Fireworks states open-model prompts and generations are not persisted without opt-in; service metadata remains.","source_url":"https://docs.fireworks.ai/guides/security_compliance/data_handling","verified_at":"2026-07-17"}}
+  ],
+  "cloud_models": [
+    {"id":"glm-5.2","display":"GLM-5.2","products":["mycroft","spotlight"],"recommendation":"default","routes":[
+      {"provider_id":"opencode-go","remote_id":"glm-5.2","adapters":["goose","pi"],"pricing":{"currency":"USD","unit":"per_million_tokens","input":1.40,"output":4.40,"cached_read":0.26,"snapshot_date":"2026-07-17","source_url":"https://opencode.ai/docs/go/"}},
+      {"provider_id":"openrouter","remote_id":"z-ai/glm-5.2","adapters":["pi"],"pricing":{"currency":"USD","unit":"per_million_tokens","input":1.40,"output":4.40,"cached_read":0,"snapshot_date":"2026-07-17","source_url":"https://openrouter.ai/models"}},
+      {"provider_id":"fireworks","remote_id":"accounts/fireworks/models/glm-5p2","adapters":["goose","pi"],"pricing":{"currency":"USD","unit":"per_million_tokens","input":1.40,"output":4.40,"cached_read":0,"snapshot_date":"2026-07-17","source_url":"https://fireworks.ai/pricing"}}
+    ]},
+    {"id":"deepseek-v4-flash","display":"DeepSeek V4 Flash","products":["mycroft","spotlight"],"recommendation":"candidate","routes":[
+      {"provider_id":"opencode-go","remote_id":"deepseek-v4-flash","adapters":["goose","pi"],"pricing":{"currency":"USD","unit":"per_million_tokens","input":0.14,"output":0.28,"cached_read":0.0028,"snapshot_date":"2026-07-17","source_url":"https://opencode.ai/docs/go/"}}
+    ]},
+    {"id":"deepseek-v4-pro","display":"DeepSeek V4 Pro","products":["mycroft","spotlight"],"recommendation":"advanced","routes":[
+      {"provider_id":"opencode-go","remote_id":"deepseek-v4-pro","adapters":["goose","pi"],"pricing":{"currency":"USD","unit":"per_million_tokens","input":1.74,"output":3.48,"cached_read":0.0145,"snapshot_date":"2026-07-17","source_url":"https://opencode.ai/docs/go/"}}
+    ]}
+  ],
+  "artifacts": [
+    {"id":"gemma4-26b-a4b-q4km","url":"https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/c462057f7ed65ccdb7f7e0778fae67894d425d92/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf","sha256":"34c746b1d50ab813e29cd46c4796e3f43c741901a582f93a67b55b9fc9687b35"},
+    {"id":"gemma4-31b-q4km","url":"https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/12e99a2f1ca91c69897aba2472bc16db674b3cb1/gemma-4-31B-it-Q4_K_M.gguf","sha256":"9fdf3dc8b0384830b4402d151388c140bd8eb2abf8d60588d8224231198254a1"},
+    {"id":"spotlight-gemma4-12b-q4km","url":"https://huggingface.co/tomvaillant/gemma4-12b-spotlight-orchestrator-v5-GGUF/resolve/e7cd5ba3f0702974f89bf03e58582873de6d75b4/gemma-4-12b-spotlight-orchestrator-Q4_K_M.gguf","sha256":"ac7082f922f16b87bc3ac17a0b661060375a61553ab82ebbce917036d82e4560"},
+    {"id":"gemma4-e4b-q4km","url":"https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/0720adb23527c2cd5ea01d1db067cd960327fdac/gemma-4-E4B-it-Q4_K_M.gguf","sha256":"519b9793ed6ce0ff530f1b7c96e848e08e49e7af4d57bb97f76215963a54146d"}
+  ],
+  "models": [
+    {"id":"gemma4-26b-a4b","display":"Gemma 4 26B-A4B MoE","tier":"local-26b","backend":"llamacpp","artifact_id":"gemma4-26b-a4b-q4km","filename":"gemma-4-26B-A4B-it-UD-Q4_K_M.gguf","products":["mycroft","spotlight"],"min_ram_gb":32,"context_tokens":40960,"recommendation":"default"},
+    {"id":"gemma4-31b","display":"Gemma 4 31B","tier":"local-31b","backend":"llamacpp","artifact_id":"gemma4-31b-q4km","filename":"gemma-4-31B-it-Q4_K_M.gguf","products":["mycroft","spotlight"],"min_ram_gb":48,"context_tokens":40960,"recommendation":"advanced"},
+    {"id":"spotlight-gemma4-12b","display":"Gemma 4 12B — Spotlight tuned","tier":"local-12b","backend":"llamacpp","artifact_id":"spotlight-gemma4-12b-q4km","filename":"gemma-4-12b-spotlight-orchestrator-Q4_K_M.gguf","products":["spotlight"],"min_ram_gb":24,"context_tokens":40960,"recommendation":"advanced"},
+    {"id":"gemma4-e4b-sidecar","display":"Gemma 4 E4B RLM sidecar","tier":"local-e4b","backend":"llamacpp","artifact_id":"gemma4-e4b-q4km","filename":"gemma-4-E4B-it-Q4_K_M.gguf","products":["spotlight"],"min_ram_gb":8,"context_tokens":24576,"recommendation":"advanced","sidecar":true}
+  ],
+  "dependencies": { "firecrawl-cli": "1.9.8", "@tobilu/qmd": "2.5.3", "@flue/cli": "1.0.0-beta.9", "crawl4ai": "0.9.0", "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e", "navigator-cli": "0.1.0", "scoutpost-cli": "0.1.7" }
 }
