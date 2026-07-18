@@ -2,13 +2,13 @@
 
 No provider/model catalog or normalization lives here. Engine describes and
 validates the form, Keychain receives secret values over stdin, and Engine
-writes the reviewable sealed plan. The legacy configurator remains a fallback
-only when a compatible `bsig` is not installed.
+writes the reviewable sealed plan. There is no legacy writer fallback.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from typing import Any
@@ -21,7 +21,7 @@ class EngineUnavailable(RuntimeError):
 class EngineBridge:
     def __init__(self, product: str):
         self.product = product
-        self.binary = shutil.which("bsig")
+        self.binary = os.environ.get("BSIG_BINARY") or shutil.which("bsig")
         if not self.binary:
             raise EngineUnavailable("bsig is not installed")
 
@@ -30,6 +30,8 @@ class EngineBridge:
             result = subprocess.run([self.binary, *args], input=stdin, capture_output=True, timeout=timeout, check=False)
         except subprocess.TimeoutExpired as error:
             raise EngineUnavailable("Engine did not resolve its signed catalog in time") from error
+        except OSError as error:
+            raise EngineUnavailable("Engine could not be started") from error
         events = []
         for line in result.stdout.decode("utf-8", "replace").splitlines():
             try:

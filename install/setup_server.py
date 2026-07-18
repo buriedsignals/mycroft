@@ -575,9 +575,9 @@ def main():
     try:
         engine_bridge = EngineBridge("mycroft")
         engine_descriptor = engine_bridge.descriptor()
-    except (EngineUnavailable, RuntimeError, KeyError):
-        engine_bridge = None
-        engine_descriptor = None
+    except (EngineUnavailable, RuntimeError, KeyError) as error:
+        print(f"A compatible Buried Signals Engine is required: {error}", file=sys.stderr)
+        return 1
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):
@@ -606,7 +606,10 @@ def main():
                 self._send(404, "not found", "text/plain")
 
         def do_POST(self):
-            if self.path not in ("/submit", "/pick-folder", "/engine-submit"):
+            if self.path == "/submit":
+                self._send(410, json.dumps({"errors":[{"field":"","message":"The legacy writer is retired; submit through Engine."}]}))
+                return
+            if self.path not in ("/pick-folder", "/engine-submit"):
                 self._send(404, "not found", "text/plain")
                 return
             try:
@@ -623,8 +626,6 @@ def main():
                 self._send(200, json.dumps({"path": path, "error": error}))
                 return
             if self.path == "/engine-submit":
-                if engine_bridge is None:
-                    self._send(409, json.dumps({"errors":[{"field":"","message":"A compatible Engine descriptor is unavailable; reload to use the legacy installer."}]})); return
                 try:
                     response = engine_bridge.submit(payload.get("request") or {}, payload.get("secrets") or {})
                     marker = os.path.join(args.profile_dir, "engine-plan.ready")
