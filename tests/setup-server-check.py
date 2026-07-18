@@ -40,6 +40,23 @@ SECRETS = ["fw-test", "fc-test", "scout-test", "ont-test"]
 
 
 class UnitChecks(unittest.TestCase):
+    def test_engine_bridge_returns_the_exact_binary_used_for_planning(self):
+        bridge = engine.EngineBridge.__new__(engine.EngineBridge)
+        bridge.product = "mycroft"
+        bridge.binary = "/fake/bsig"
+        replies = iter([
+            {"event": "result", "data": {"normalized": {"required_secret_ids": []}}},
+            {"event": "result", "data": {"keys": []}},
+            {"event": "result", "data": {"plan_path": "/tmp/plan.json"}},
+        ])
+        def fake_run(argv, **kwargs):
+            event = next(replies)
+            return subprocess.CompletedProcess(argv, 0, (json.dumps(event) + "\n").encode(), b"")
+        with mock.patch.object(engine.subprocess, "run", side_effect=fake_run):
+            result = bridge.submit({"schema_version": "bsig-configure/v1"}, {})
+        self.assertEqual(result["engine_binary"], "/fake/bsig")
+        self.assertEqual(result["plan"]["plan_path"], "/tmp/plan.json")
+
     def test_engine_bridge_keeps_secret_values_off_argv(self):
         bridge = engine.EngineBridge.__new__(engine.EngineBridge)
         bridge.product = "mycroft"
@@ -260,6 +277,20 @@ print(json.dumps({"event": "result", "data": data}))
         with open(marker, encoding="utf-8") as handle:
             self.assertEqual(json.load(handle)["plan_path"], "/tmp/mycroft-install.json")
         self.assertEqual(set(os.listdir(self.tmp)), {"bsig", "engine-plan.ready"})
+
+
+class FreshInstallGuardChecks(unittest.TestCase):
+    def test_engine_required_never_exposes_legacy_submit_when_engine_is_missing(self):
+        with tempfile.TemporaryDirectory() as profile:
+            env = dict(os.environ)
+            env.pop("BSIG_BIN", None)
+            env["PATH"] = profile
+            result = subprocess.run(
+                [sys.executable, os.path.join(ROOT, "install", "setup_server.py"),
+                 "--profile-dir", profile, "--repo-dir", ROOT, "--no-browser", "--engine-required"],
+                capture_output=True, text=True, timeout=10, env=env)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("activated Buried Signals Engine is required", result.stderr)
 
 
 if __name__ == "__main__":

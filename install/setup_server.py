@@ -558,6 +558,10 @@ def main():
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--skip-key-validation", action="store_true",
                         help="Skip live provider key checks (tests, offline installs)")
+    parser.add_argument("--engine-required", action="store_true",
+                        help="Refuse instead of falling back to the retired legacy writer")
+    parser.add_argument("--legacy-only", action="store_true",
+                        help="Use the compatibility writer for an identified legacy install")
     args = parser.parse_args()
 
     page_path = os.path.join(args.repo_dir, "install", "configure.html")
@@ -572,12 +576,16 @@ def main():
     page = page.replace("__PLATFORM__", detect_platform())
     done = threading.Event()
     result = {"written": False}
-    try:
-        engine_bridge = EngineBridge("mycroft")
-        engine_descriptor = engine_bridge.descriptor()
-    except (EngineUnavailable, RuntimeError, KeyError) as error:
-        print(f"A compatible Buried Signals Engine is required: {error}", file=sys.stderr)
-        return 1
+    engine_bridge = None
+    engine_descriptor = None
+    if not args.legacy_only:
+        try:
+            engine_bridge = EngineBridge("mycroft")
+            engine_descriptor = engine_bridge.descriptor()
+        except (EngineUnavailable, RuntimeError, KeyError) as error:
+            if args.engine_required:
+                print(f"  A compatible, activated Buried Signals Engine is required for a new Mycroft install: {error}. Install Indicator Labs or the signed bsig release, then re-run this installer.", file=sys.stderr)
+                return 2
 
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_):

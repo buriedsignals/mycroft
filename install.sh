@@ -33,6 +33,127 @@ MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
+# The Obsidian/QMD writer is a compatibility path for people who already have
+# its explicit state. It is never a fresh-install fallback: new installations
+# use the Engine's OpenKnowledge contract exclusively.
+MYCROFT_LEGACY_UPDATE=0
+for legacy_marker in "$MYCROFT_ENV" "$MYCROFT_PROFILE_DIR/setup-config.env" \
+  "$MYCROFT_SKILL_REGISTRY" "$HOME/.mycroft"; do
+  if [ -e "$legacy_marker" ]; then
+    MYCROFT_LEGACY_UPDATE=1
+    break
+  fi
+done
+
+find_engine() {
+  if [ -n "${BSIG_BIN:-}" ] && [ -x "$BSIG_BIN" ]; then return 0; fi
+  if have bsig; then BSIG_BIN="$(command -v bsig)"; return 0; fi
+  for candidate in \
+    "/Applications/Indicator Labs.app/Contents/Resources/bsig" \
+    "$HOME/Applications/Indicator Labs.app/Contents/Resources/bsig"; do
+    if [ -x "$candidate" ]; then BSIG_BIN="$candidate"; return 0; fi
+  done
+  return 1
+}
+
+# Fresh web installs bootstrap only a standalone Engine archive signed by the
+# same Minisign key embedded in Engine. GitHub's release JSON selects a version
+# and URL; it is never trusted for integrity. Existing legacy installations do
+# not enter this function.
+bootstrap_engine() {
+  find_engine && return 0
+  if ! have python3 || ! have curl; then
+    warn "A fresh OpenKnowledge install needs python3 and curl to bootstrap the signed Buried Signals Engine. Install them, then re-run."
+    return 1
+  fi
+  if ! have minisign; then
+    if [ "$(uname -s)" = "Darwin" ] && have brew; then
+      brew install minisign || true
+    fi
+  fi
+  if ! have minisign; then
+    warn "A fresh OpenKnowledge install verifies Engine with Minisign. Install minisign (Homebrew: brew install minisign), then re-run."
+    return 1
+  fi
+
+  local os arch platform release_file tag archive_url signature_url tmp root extracted
+  case "$(uname -s)" in
+    Darwin) os=darwin ;;
+    Linux) os=linux ;;
+    *) warn "No signed Engine archive is published for $(uname -s). Use the Indicator Labs app or install bsig manually."; return 1 ;;
+  esac
+  case "$(uname -m)" in
+    arm64|aarch64) arch=arm64 ;;
+    x86_64|amd64) arch=amd64 ;;
+    *) warn "No signed Engine archive is published for $(uname -m). Use the Indicator Labs app or install bsig manually."; return 1 ;;
+  esac
+  platform="$os-$arch"
+  tmp="$(mktemp -d)"
+  release_file="$tmp/release.json"
+  if ! curl -fsSL https://api.github.com/repos/buriedsignals/engine/releases/latest -o "$release_file"; then
+    rm -rf "$tmp"
+    warn "Could not retrieve a signed Buried Signals Engine release. Install Indicator Labs or retry later."
+    return 1
+  fi
+  if ! python3 - "$platform" "$release_file" > "$tmp/release-selection" <<'PY'
+import json, re, sys
+platform = sys.argv[1]
+with open(sys.argv[2], encoding="utf-8") as handle:
+    release = json.load(handle)
+tag = str(release.get("tag_name", ""))
+name = f"bsig-{platform}.tar.gz"
+if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?", tag):
+    raise SystemExit("release has no valid semver tag")
+assets = {str(a.get("name", "")): str(a.get("browser_download_url", "")) for a in release.get("assets", [])}
+for required in (name, name + ".minisig"):
+    url = assets.get(required, "")
+    if not url.startswith("https://github.com/buriedsignals/engine/releases/download/"):
+        raise SystemExit("release is missing a signed platform archive")
+print(tag)
+print(assets[name])
+print(assets[name + ".minisig"])
+PY
+  then
+    rm -rf "$tmp"
+    warn "The latest Engine release has no complete signed $platform archive. Install Indicator Labs or retry after the release completes."
+    return 1
+  fi
+  tag="$(sed -n '1p' "$tmp/release-selection")"
+  archive_url="$(sed -n '2p' "$tmp/release-selection")"
+  signature_url="$(sed -n '3p' "$tmp/release-selection")"
+  if [ -z "$tag" ] || [ -z "$archive_url" ] || [ -z "$signature_url" ] || [ -n "$(sed -n '4p' "$tmp/release-selection")" ]; then
+    rm -rf "$tmp"
+    warn "The latest Engine release has no complete signed $platform archive. Install Indicator Labs or retry after the release completes."
+    return 1
+  fi
+  archive="$tmp/engine.tar.gz"
+  if ! curl -fsSL "$archive_url" -o "$archive" || ! curl -fsSL "$signature_url" -o "$archive.minisig"; then
+    rm -rf "$tmp"
+    warn "Could not download the signed Engine archive."
+    return 1
+  fi
+  if ! minisign -Vm "$archive" -P 'RWRVGhTzAGx7pqB8NEMCPW8uMr10Koa3wSoIH9OCqoCkL4GUqhQcwtU6' >/dev/null; then
+    rm -rf "$tmp"
+    warn "The Engine archive signature did not verify; nothing was installed."
+    return 1
+  fi
+  extracted="bsig-$platform/bsig"
+  if ! tar -tzf "$archive" | grep -qx "$extracted"; then
+    rm -rf "$tmp"
+    warn "The verified Engine archive has an unexpected layout; nothing was installed."
+    return 1
+  fi
+  tar -xzf "$archive" -C "$tmp"
+  root="$HOME/.local/share/buriedsignals/engine/${tag#v}"
+  mkdir -p "$root" "$HOME/.local/bin"
+  install -m 755 "$tmp/$extracted" "$root/bsig"
+  ln -sfn "$root/bsig" "$HOME/.local/bin/bsig"
+  rm -rf "$tmp"
+  BSIG_BIN="$root/bsig"
+  export BSIG_BIN
+  ok "Buried Signals Engine $tag (signed standalone)"
+}
+
 # Sovereign stack: SearXNG search + Crawl4AI scrape run with zero API cost on the
 # normal path; Firecrawl is an optional escape hatch. SearXNG serves its JSON API on
 # this port; the Mycroft tools + provisioner default to the same URL (SEARXNG_URL).
@@ -1069,6 +1190,11 @@ open_goose_start() {
 say "Mycroft installer"
 mkdir -p "$GOOSE_CONFIG" "$PROVIDERS_DST" "$MYCROFT_PROFILE_DIR" "$MYCROFT_DATA_DIR" "$PLUGINS_DIR"
 warn_legacy_layout
+if [ "$MYCROFT_LEGACY_UPDATE" = "0" ] && ! bootstrap_engine; then
+  warn "New Mycroft installs use OpenKnowledge through the signed Buried Signals Engine. The legacy Obsidian/QMD installer was not started."
+  exit 1
+fi
+if [ -n "${BSIG_BIN:-}" ]; then export BSIG_BIN; fi
 ensure_git
 install_or_update_mycroft
 
@@ -1095,16 +1221,44 @@ fi
 say "Opening the Mycroft configurator in your browser"
 echo "  Your choices and API keys go to a local server on 127.0.0.1 only and are"
 echo "  written to $MYCROFT_PROFILE_DIR — nothing is uploaded anywhere."
-ENGINE_PLAN_MARKER="$MYCROFT_PROFILE_DIR/engine-plan.ready"
-rm -f "$ENGINE_PLAN_MARKER"
-python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"
-if [ -f "$ENGINE_PLAN_MARKER" ]; then
-  printf '✓ Engine wrote a sealed Mycroft plan. Review and apply the plan path shown in the browser with: bsig apply <plan-path>\n'
+SETUP_MODE=(--engine-required)
+if [ "$MYCROFT_LEGACY_UPDATE" = "1" ]; then SETUP_MODE=(--legacy-only); fi
+python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR" "${SETUP_MODE[@]}"
+if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then
+  ENGINE_PLAN_PATH="$(python3 - "$MYCROFT_PROFILE_DIR/engine-plan.ready" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    marker = json.load(handle)
+path = marker.get("plan", {}).get("plan_path", "")
+if not isinstance(path, str) or not path:
+    raise SystemExit("engine plan marker has no plan_path")
+print(path)
+PY
+)"
+  ENGINE_BINARY="$(python3 - "$MYCROFT_PROFILE_DIR/engine-plan.ready" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as handle:
+    marker = json.load(handle)
+binary = marker.get("engine_binary", "")
+if not isinstance(binary, str) or not binary:
+    raise SystemExit("engine plan marker has no engine_binary")
+print(binary)
+PY
+)"
+  [ -x "$ENGINE_BINARY" ] || { warn "The Engine binary recorded by setup is unavailable: $ENGINE_BINARY"; exit 1; }
+  say "Applying your OpenKnowledge Mycroft plan"
+  "$ENGINE_BINARY" apply "$ENGINE_PLAN_PATH"
+  "$ENGINE_BINARY" welcome mycroft
   exit 0
 fi
-warn "Engine did not produce a sealed plan; no legacy Obsidian/QMD fallback was applied."
-warn "Run 'bsig auth login' if Navigator is enabled, then re-run the installer."
-exit 1
+if [ "$MYCROFT_LEGACY_UPDATE" = "0" ]; then
+  warn "The Engine setup did not return a sealed plan; refusing to run the legacy Obsidian/QMD writer."
+  exit 1
+fi
+if [ ! -f "$MYCROFT_SETUP_CONFIG" ]; then
+  warn "Configuration was not completed; re-run the installer to try again."
+  exit 1
+fi
 set -a
 . "$MYCROFT_SETUP_CONFIG"
 set +a
