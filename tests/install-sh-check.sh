@@ -31,8 +31,10 @@ includes 'GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIP
 includes 'python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"'
 includes 'MYCROFT_SETUP_CONFIG="$MYCROFT_PROFILE_DIR/setup-config.env"'
 includes 'if ! have bsig; then'
-includes 'if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then'
+includes 'rm -f "$ENGINE_PLAN_MARKER"'
+includes 'if [ -f "$ENGINE_PLAN_MARKER" ]; then'
 includes 'no legacy Obsidian/QMD fallback was applied'
+excludes 'reload to use the legacy installer'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'

@@ -168,11 +168,30 @@ class ServerChecks(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.mkdtemp()
+        cls.fake_bsig = os.path.join(cls.tmp, "bsig")
+        with open(cls.fake_bsig, "w", encoding="utf-8") as handle:
+            handle.write("""#!/usr/bin/env python3
+import json, sys
+args = sys.argv[1:]
+if args[:2] == ["configure", "describe"]:
+    data = {"descriptor": {"schema_version": "bsig-configure-descriptor/v1", "product": "mycroft", "fields": []}}
+elif args[:2] == ["configure", "validate"]:
+    json.load(sys.stdin); data = {"normalized": {"required_secret_ids": []}}
+elif args[:2] == ["keys", "list"]:
+    data = {"keys": []}
+elif args[:2] == ["configure", "plan"]:
+    json.load(sys.stdin); data = {"plan_path": "/tmp/mycroft-install.json"}
+else:
+    sys.exit(4)
+print(json.dumps({"event": "result", "data": data}))
+""")
+        os.chmod(cls.fake_bsig, 0o755)
+        env = {**os.environ, "BSIG_BINARY": cls.fake_bsig}
         cls.proc = subprocess.Popen(
             [sys.executable, os.path.join(ROOT, "install", "setup_server.py"),
              "--profile-dir", cls.tmp, "--repo-dir", ROOT,
              "--port", str(cls.PORT), "--no-browser", "--skip-key-validation"],
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=env)
         cls.token = None
         deadline = time.time() + 10
         while time.time() < deadline:
@@ -217,32 +236,30 @@ class ServerChecks(unittest.TestCase):
         self.assertIn("Optional fallback", self.page)
         self.assertNotIn('id="installFirecrawl" checked', self.page)
 
-        # 2. bad token is rejected on both POST endpoints
-        for path in ("/submit", "/pick-folder"):
+        # 2. bad token is rejected on both active POST endpoints
+        for path in ("/engine-submit", "/pick-folder"):
             with self.assertRaises(urllib.error.HTTPError) as ctx:
                 self.post(path, {**BASE, "token": "wrong"})
             self.assertEqual(ctx.exception.code, 403)
 
-        # 3. structural validation still blocks genuinely required fields
+        # 3. the legacy writer endpoint is retired
         with self.assertRaises(urllib.error.HTTPError) as ctx:
             self.post("/submit", {**BASE, "token": self.token, "vault": ""})
-        body = json.loads(ctx.exception.read())
-        self.assertTrue(any(e["field"] == "vault_path" for e in body["errors"]))
+        self.assertEqual(ctx.exception.code, 410)
 
-        # 4. keyless sovereign submit writes all four artifacts and exits 0
-        resp = self.post("/submit", {**BASE, "token": self.token,
-                                     "installFirecrawl": False, "firecrawlKey": ""})
+        # 4. Engine submit writes only the sealed-plan marker and exits 0
+        resp = self.post("/engine-submit", {
+            "token": self.token,
+            "request": {"schema_version": "bsig-configure/v1"},
+            "secrets": {},
+        })
         self.assertTrue(resp["ok"])
         self.assertEqual(self.proc.wait(timeout=10), 0)
-        for name, mode in [(".env", 0o600), ("setup-config.env", 0o600),
-                           ("skill-registry.json", 0o644), ("getting-started.html", 0o644)]:
-            path = os.path.join(self.tmp, name)
-            self.assertTrue(os.path.exists(path), name)
-            self.assertEqual(os.stat(path).st_mode & 0o777, mode, name)
-        with open(os.path.join(self.tmp, "getting-started.html"), encoding="utf-8") as handle:
-            guide = handle.read()
-        for secret in SECRETS:
-            self.assertNotIn(secret, guide)
+        marker = os.path.join(self.tmp, "engine-plan.ready")
+        self.assertEqual(os.stat(marker).st_mode & 0o777, 0o600)
+        with open(marker, encoding="utf-8") as handle:
+            self.assertEqual(json.load(handle)["plan_path"], "/tmp/mycroft-install.json")
+        self.assertEqual(set(os.listdir(self.tmp)), {"bsig", "engine-plan.ready"})
 
 
 if __name__ == "__main__":
