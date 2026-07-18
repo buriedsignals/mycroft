@@ -30,7 +30,9 @@ includes 'GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIP
 # Configurator phase: bootstrap fetches repo, local server collects config
 includes 'python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"'
 includes 'MYCROFT_SETUP_CONFIG="$MYCROFT_PROFILE_DIR/setup-config.env"'
-includes '. "$MYCROFT_SETUP_CONFIG"'
+includes 'if ! have bsig; then'
+includes 'if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then'
+includes 'no legacy Obsidian/QMD fallback was applied'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'

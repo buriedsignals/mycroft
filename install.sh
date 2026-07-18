@@ -1072,6 +1072,12 @@ warn_legacy_layout
 ensure_git
 install_or_update_mycroft
 
+if ! have bsig; then
+  warn "Buried Signals Engine (bsig) is required for the public OpenKnowledge installer."
+  warn "Install/open the Indicator Labs desktop app, or install the signed bsig standalone release, then re-run Mycroft."
+  exit 1
+fi
+
 PREFLIGHT_HELPER="$MYCROFT_DIR/scripts/install-preflight.sh"
 if [ ! -f "$PREFLIGHT_HELPER" ]; then
   warn "Installer preflight helper missing: $PREFLIGHT_HELPER"
@@ -1094,10 +1100,9 @@ if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then
   printf '✓ Engine wrote a sealed Mycroft plan. Review and apply the plan path shown in the browser with: bsig apply <plan-path>\n'
   exit 0
 fi
-if [ ! -f "$MYCROFT_SETUP_CONFIG" ]; then
-  warn "Configuration was not completed; re-run the installer to try again."
-  exit 1
-fi
+warn "Engine did not produce a sealed plan; no legacy Obsidian/QMD fallback was applied."
+warn "Run 'bsig auth login' if Navigator is enabled, then re-run the installer."
+exit 1
 set -a
 . "$MYCROFT_SETUP_CONFIG"
 set +a

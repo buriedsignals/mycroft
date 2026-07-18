@@ -28,7 +28,7 @@ that can run with ZDR cloud models or local inference.
 
 ## What Mycroft Does
 
-- Maintains an Obsidian-compatible journalism vault for sources, notes, methods,
+- Maintains an OpenKnowledge journalism workspace for sources, notes, methods,
   story material, and handoffs.
 - Ingests links, PDFs, newsletters, pasted notes, documents, and folders into
   structured local knowledge.
@@ -47,7 +47,7 @@ that can run with ZDR cloud models or local inference.
 |---|---|---|
 | Start | First-run menu for beats, knowledge ingest, morning brief, scouts, lead investigation, or demo flow. | `start` |
 | Vault Q&A | Answers questions over local newsroom memory and live sources with citations. | `vault-qa` |
-| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured vault material. | `vault-sync`, `obsidian-ingest`, `newsletter-summarize` |
+| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured knowledge. | `vault-sync`, `newsletter-summarize` |
 | Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
 | Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
 | Morning brief | Builds a recurring digest from configured beats, watchlists, AgentMail, bookmarks, and recent vault changes. | `morning-brief` |
@@ -119,8 +119,8 @@ exports/
 _schema/
 ```
 
-QMD indexes both vaults when Spotlight is enabled, so agents can search prior
-work without flattening casework into published knowledge.
+OpenKnowledge indexes both workspaces when Spotlight is enabled, so agents can
+search prior work without flattening casework into published knowledge.
 
 ## Install
 
@@ -131,10 +131,9 @@ curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
 ```
 
 One static, reviewable script ([`install.sh`](install.sh)) for every install.
-It surfaces exactly the skills listed in [`skills.manifest`](skills.manifest) — the
-engine-resolved set for the Goose runtime (`bsig skills resolve`; the engine catalog is the
-source of truth) — into `~/.agents/skills/mycroft/`. Regenerate the manifest when the catalog
-changes. The script also fetches this repo, then opens a local configurator page in the browser —
+Engine resolves each selected skill once into `~/.ok/skills/<name>` and projects
+the flat name into Goose's discovery directory. The script also fetches this
+repo, then opens a local configurator page in the browser —
 served from `127.0.0.1` by `install/setup_server.py`. Sovereignty preference,
 provider keys, plugins, and vault paths (with a native folder picker) are all
 collected there; keys are verified live with each provider and written straight
@@ -145,8 +144,8 @@ Prefer a file? The hosted setup page offers a ZIP whose `install.command`
 fetches and runs the same canonical script. When the install finishes, open a
 new terminal so shell configuration changes take effect.
 
-The installer configures Goose, provider files, recipe discovery, vault paths,
-QMD indexing, Mycroft instructions, updater recipes, scheduled workflows, and
+The installer configures Goose, OpenKnowledge, provider files, recipe discovery,
+workspace paths, Mycroft instructions, updater recipes, scheduled workflows, and
 the first-run menu. Architecture details live in
 [docs/architecture.md](docs/architecture.md).
 
@@ -178,7 +177,7 @@ cp ~/.local/share/goose/mycroft/source/instructions/mycroft-soul.md ~/.config/go
 cp ~/.local/share/goose/mycroft/source/instructions/journalism.md ~/.config/goose/.goosehints
 ```
 
-Use the guided installer for normal use; it also handles QMD, schedules, updater
+Use the guided installer for normal use; it also handles OpenKnowledge search, schedules, updater
 state, generated instructions, and first-run files.
 
 ## Privacy And Providers
@@ -276,7 +275,7 @@ exist without them. *(Listing does not imply affiliation or endorsement.)*
 | **Local inference** | [llama.cpp](https://github.com/ggml-org/llama.cpp) (ggml, MIT) |
 | **Media & metadata** | [ExifTool](https://exiftool.org/) (Phil Harvey — powers photo-metadata) |
 | **Voice** | [Whisper](https://github.com/openai/whisper) (MIT — open-weight local dictation) · [Edge TTS](https://github.com/rany2/edge-tts) (rany2, LGPL-3.0 — spoken briefings) |
-| **Knowledge vault** | [Obsidian](https://obsidian.md/) (the vault app) · [QMD](https://www.npmjs.com/package/@tobilu/qmd) (tobilu — local vault search) |
+| **Knowledge workspace** | [OpenKnowledge](https://github.com/inkeep/open-knowledge) (local knowledge app, CLI, search, and agent workspace) |
 | **Provenance** | [C2PA](https://c2pa.org/) (content-provenance standard behind SIFT manifests) |
 
 > Built something here we should credit, or want a listing changed or removed?
