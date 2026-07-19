@@ -2,7 +2,8 @@
 
 No provider/model catalog or normalization lives here. Engine describes and
 validates the form, Keychain receives secret values over stdin, and Engine
-writes the reviewable sealed plan. There is no legacy writer fallback.
+writes the reviewable sealed plan. New installs require this bridge; callers
+may explicitly select the legacy compatibility writer only for existing state.
 """
 
 from __future__ import annotations
@@ -21,7 +22,8 @@ class EngineUnavailable(RuntimeError):
 class EngineBridge:
     def __init__(self, product: str):
         self.product = product
-        self.binary = os.environ.get("BSIG_BINARY") or shutil.which("bsig")
+        configured = os.environ.get("BSIG_BIN") or os.environ.get("BSIG_BINARY", "")
+        self.binary = configured if configured and os.path.isfile(configured) and os.access(configured, os.X_OK) else shutil.which("bsig")
         if not self.binary:
             raise EngineUnavailable("bsig is not installed")
 
@@ -67,4 +69,5 @@ class EngineBridge:
         if missing:
             raise RuntimeError("Missing required credential(s): " + ", ".join(missing))
         planned = self._run("configure", "plan", self.product, stdin=body)
-        return {"ok": True, "plan": planned.get("data", {}), "required_secret_ids": required}
+        return {"ok": True, "plan": planned.get("data", {}), "engine_binary": self.binary,
+                "required_secret_ids": required}

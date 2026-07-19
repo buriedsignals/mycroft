@@ -30,11 +30,18 @@ includes 'GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIP
 # Configurator phase: bootstrap fetches repo, local server collects config
 includes 'python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"'
 includes 'MYCROFT_SETUP_CONFIG="$MYCROFT_PROFILE_DIR/setup-config.env"'
-includes 'if ! have bsig; then'
-includes 'rm -f "$ENGINE_PLAN_MARKER"'
-includes 'if [ -f "$ENGINE_PLAN_MARKER" ]; then'
-includes 'no legacy Obsidian/QMD fallback was applied'
-excludes 'reload to use the legacy installer'
+includes '. "$MYCROFT_SETUP_CONFIG"'
+# Fresh installs are Engine/OpenKnowledge-only. The compatibility writer is
+# selected only from pre-existing legacy state and never as a fallback.
+includes 'MYCROFT_LEGACY_UPDATE=0'
+includes 'bootstrap_engine()'
+includes "minisign -Vm \"\$archive\" -P 'RWRVGhTzAGx7pqB8NEMCPW8uMr10Koa3wSoIH9OCqoCkL4GUqhQcwtU6'"
+includes 'SETUP_MODE=(--engine-required)'
+includes 'SETUP_MODE=(--legacy-only)'
+includes 'The legacy Obsidian/QMD installer was not started.'
+includes 'refusing to run the legacy Obsidian/QMD writer'
+includes '"$ENGINE_BINARY" apply "$ENGINE_PLAN_PATH"'
+includes '"$ENGINE_BINARY" welcome mycroft'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
