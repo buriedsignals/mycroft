@@ -1,19 +1,19 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-18T10:15:00Z",
-  "release_sequence": 3,
+  "released_at": "2026-07-19T01:40:00Z",
+  "release_sequence": 4,
   "products": {
     "mycroft": {
       "version": "0.3.0",
       "repo": "buriedsignals/mycroft",
-      "ref": "1c17147a6dbaf9c520b8e8a4aa959af3fe73b276",
+      "ref": "d0532df0e7bd5803423dc743a4398a8855d92a51",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "1c17147a6dbaf9c520b8e8a4aa959af3fe73b276",
+        "source_commit": "d0532df0e7bd5803423dc743a4398a8855d92a51",
         "digest": "e1e0bccb34a8b28a0d046fb88d474c21afc937f05b19db5ccd6b2a88e45191ca",
-        "writer_mode": "legacy",
+        "writer_mode": "engine_v2",
         "choice_schema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
           "$id": "https://mycroft.buriedsignals.com/schemas/install-choices-v3.json",
@@ -592,13 +592,13 @@
     "spotlight": {
       "version": "2.1.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "91bc796e3f5f714be35f91f53908321b6a305735",
+      "ref": "ad5212ad78eec2bcedaad834376e495acc49367e",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "91bc796e3f5f714be35f91f53908321b6a305735",
+        "source_commit": "ad5212ad78eec2bcedaad834376e495acc49367e",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-        "writer_mode": "legacy",
+        "writer_mode": "engine_v2",
         "choice_schema": {
           "type": "object"
         },
@@ -1660,5 +1660,39 @@
       "sidecar": true
     }
   ],
-  "integrations": null
+  "integrations": null,
+  "engine_release": {
+    "version": "0.1.0",
+    "minimum_catalog_sequence": 4,
+    "artifacts": {
+      "darwin-amd64": {
+        "url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-darwin-amd64.tar.gz",
+        "sha256": "ee4fb870dd586400a3b6dad74ed1d09c772fc98f0d3ab4850947ba5ab62bf6f9",
+        "signature_url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-darwin-amd64.tar.gz.minisig",
+        "archive": "tar.gz",
+        "binary": "bsig"
+      },
+      "darwin-arm64": {
+        "url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-darwin-arm64.tar.gz",
+        "sha256": "ce74c52ee23659feb0cfcbb55982ceef65090ce543483a0d2a96e6708a881b09",
+        "signature_url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-darwin-arm64.tar.gz.minisig",
+        "archive": "tar.gz",
+        "binary": "bsig"
+      },
+      "linux-amd64": {
+        "url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-linux-amd64.tar.gz",
+        "sha256": "08e120ef9c0aae02366f8038c6fcac12019e3be8bbda00d247ead940c391debc",
+        "signature_url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-linux-amd64.tar.gz.minisig",
+        "archive": "tar.gz",
+        "binary": "bsig"
+      },
+      "linux-arm64": {
+        "url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-linux-arm64.tar.gz",
+        "sha256": "9e098d1bb4facf09bc0c75c93c4b52bee9c2b9462172e38110d92c7615836351",
+        "signature_url": "https://github.com/buriedsignals/engine/releases/download/v0.1.0/bsig-linux-arm64.tar.gz.minisig",
+        "archive": "tar.gz",
+        "binary": "bsig"
+      }
+    }
+  }
 }
