@@ -45,6 +45,8 @@ for legacy_marker in "$MYCROFT_ENV" "$MYCROFT_PROFILE_DIR/setup-config.env" \
   fi
 done
 
+NAVIGATOR_URL='https://navigator.indicator.media'
+
 find_engine() {
   if [ -n "${BSIG_BIN:-}" ] && [ -x "$BSIG_BIN" ]; then return 0; fi
   if have bsig; then BSIG_BIN="$(command -v bsig)"; return 0; fi
@@ -56,10 +58,54 @@ find_engine() {
   return 1
 }
 
-# Fresh web installs bootstrap only a standalone Engine archive signed by the
-# same Minisign key embedded in Engine. GitHub's release JSON selects a version
-# and URL; it is never trusted for integrity. Existing legacy installations do
-# not enter this function.
+# Navigator's existing magic-link flow issues a process-local credential, then
+# returns two short-lived private artifact grants. Minisign still authenticates
+# the bytes. Existing legacy installations do not enter this function.
+member_engine_urls() {
+  local platform="$1" email flow response status token
+  [ -r /dev/tty ] || { warn "A terminal is required to sign in as a member before downloading Engine."; return 1; }
+  printf 'Navigator member email: ' >/dev/tty
+  IFS= read -r email </dev/tty
+  [ -n "$email" ] || { warn "An email address is required to sign in."; return 1; }
+  flow="$(curl -fsS -X POST "$NAVIGATOR_URL/auth/cli/start" -H 'Content-Type: application/json' --data "$(python3 - "$email" <<'PY'
+import json, sys
+print(json.dumps({"email": sys.argv[1]}))
+PY
+)" 2>/dev/null)" || { warn "Could not start Navigator sign-in."; return 1; }
+  flow="$(python3 - "$flow" <<'PY'
+import json, sys
+value = json.loads(sys.argv[1]).get("flow_id", "")
+if not isinstance(value, str) or not value: raise SystemExit(1)
+print(value)
+PY
+)" || { warn "Navigator returned an invalid sign-in response."; return 1; }
+  printf 'Check your email, open the Navigator sign-in link, and confirm it. Waiting up to 15 minutes…\n' >/dev/tty
+  while :; do
+    response="$(curl -fsS "$NAVIGATOR_URL/auth/cli/poll/$flow" 2>/dev/null || true)"
+    status="$(python3 - "$response" <<'PY'
+import json, sys
+try: print(json.loads(sys.argv[1]).get("status", ""))
+except Exception: pass
+PY
+)"
+    case "$status" in
+      ready) break ;;
+      pending) sleep 3 ;;
+      *) warn "Navigator sign-in did not complete ($status). Re-run this installer to try again."; return 1 ;;
+    esac
+  done
+  token="$(python3 - "$response" <<'PY'
+import json, sys
+value = json.loads(sys.argv[1]).get("api_key", "")
+if not isinstance(value, str) or not value.startswith("on_"): raise SystemExit(1)
+print(value)
+PY
+)" || { warn "Navigator did not return an installation credential."; return 1; }
+  curl -fsS -H "Authorization: Bearer $token" "$NAVIGATOR_URL/api/artifacts/engine/$platform"
+}
+
+# Fresh web installs bootstrap only a member-authorized standalone Engine
+# archive signed by the same Minisign key embedded in Engine.
 bootstrap_engine() {
   find_engine && return 0
   if ! have python3 || ! have curl; then
@@ -90,32 +136,29 @@ bootstrap_engine() {
   platform="$os-$arch"
   tmp="$(mktemp -d)"
   release_file="$tmp/release.json"
-  if ! curl -fsSL https://api.github.com/repos/buriedsignals/engine/releases/latest -o "$release_file"; then
+  if ! member_engine_urls "$platform" > "$release_file"; then
     rm -rf "$tmp"
-    warn "Could not retrieve a signed Buried Signals Engine release. Install Indicator Labs or retry later."
     return 1
   fi
-  if ! python3 - "$platform" "$release_file" > "$tmp/release-selection" <<'PY'
+  if ! python3 - "$release_file" > "$tmp/release-selection" <<'PY'
 import json, re, sys
-platform = sys.argv[1]
-with open(sys.argv[2], encoding="utf-8") as handle:
+with open(sys.argv[1], encoding="utf-8") as handle:
     release = json.load(handle)
-tag = str(release.get("tag_name", ""))
-name = f"bsig-{platform}.tar.gz"
-if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?", tag):
-    raise SystemExit("release has no valid semver tag")
-assets = {str(a.get("name", "")): str(a.get("browser_download_url", "")) for a in release.get("assets", [])}
-for required in (name, name + ".minisig"):
-    url = assets.get(required, "")
-    if not url.startswith("https://github.com/buriedsignals/engine/releases/download/"):
-        raise SystemExit("release is missing a signed platform archive")
-print(tag)
-print(assets[name])
-print(assets[name + ".minisig"])
+version = str(release.get("version", ""))
+archive = str(release.get("archive_url", ""))
+signature = str(release.get("signature_url", ""))
+if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?", version):
+    raise SystemExit("release has no valid semver")
+for value in (archive, signature):
+    if not value.startswith("https://api.buriedsignals.com/v1/artifacts/download?grant="):
+        raise SystemExit("release is missing a member-authorized archive")
+print("v" + version)
+print(archive)
+print(signature)
 PY
   then
     rm -rf "$tmp"
-    warn "The latest Engine release has no complete signed $platform archive. Install Indicator Labs or retry after the release completes."
+    warn "No complete member-authorized $platform Engine archive is available."
     return 1
   fi
   tag="$(sed -n '1p' "$tmp/release-selection")"
