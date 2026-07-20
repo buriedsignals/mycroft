@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-20T15:54:14Z",
-  "release_sequence": 9,
+  "released_at": "2026-07-20T16:03:40Z",
+  "release_sequence": 10,
   "products": {
     "mycroft": {
       "version": "0.3.4",
@@ -590,13 +590,13 @@
       }
     },
     "spotlight": {
-      "version": "2.1.0",
+      "version": "2.1.1",
       "repo": "buriedsignals/spotlight",
-      "ref": "ad5212ad78eec2bcedaad834376e495acc49367e",
+      "ref": "30d169e6922d1a1a6acbf4c9c232e40df3d2dff5",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "ad5212ad78eec2bcedaad834376e495acc49367e",
+        "source_commit": "30d169e6922d1a1a6acbf4c9c232e40df3d2dff5",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
