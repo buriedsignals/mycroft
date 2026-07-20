@@ -1196,7 +1196,30 @@ a.card-int:hover {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-mute);
-  margin-bottom: 12px;
+  margin: 0;
+}
+.card-int__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.card-int__access {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in oklab, var(--press-green, #4A7363) 52%, var(--rule));
+  border-radius: var(--rad-pill);
+  background: color-mix(in oklab, var(--press-green, #4A7363) 9%, var(--vellum));
+  color: var(--press-green, #4A7363);
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 .card-int__title {
   font-family: var(--serif);
@@ -2951,7 +2974,7 @@ html.js .is-in .tw__in {
 
     <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
-        Old-school reporting.<br><em>New-school machinery.</em>
+        Old-school reporting.<br><em>New-school machinery</em>
       </h1>
 
       <p class="hero__line" data-reveal style="--delay: 220ms">— Open source · Local-first · No lock-in · No surveillance —</p>
@@ -2968,7 +2991,7 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">02</span> What it does</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">07:00 to <em>deadline.</em></h2>
+      <h2 class="display display--section">07:00 to <em>deadline</em></h2>
       <p class="lead">A morning brief, a fast verification pass, then deeper source work. Mycroft is a workflow layer for the rhythm of a reporting day, not three boxed-off tricks.</p>
     </div>
 
@@ -2983,7 +3006,7 @@ html.js .is-in .tw__in {
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-brief">
           <p class="card__kicker"><span>§ Brief · <strong>Scoutpost</strong></span></p>
-          <h3 class="card__title">Your morning brief, <em>before coffee.</em></h3>
+          <h3 class="card__title">Your morning brief, <em>before coffee</em></h3>
           <p class="card__body">A digest in your vault: 8 items ranked by editorial value — bookmarks, AgentMail, overnight web. Every claim cited.</p>
           <p class="card__foot">8 items · cited · written to vault <span class="card__more">→ how it works</span></p>
         </button>
@@ -2995,7 +3018,7 @@ html.js .is-in .tw__in {
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-foia">
           <p class="card__kicker"><span>§ Request · <strong>FOIA</strong></span></p>
-          <h3 class="card__title">Your records request, <em>drafted.</em></h3>
+          <h3 class="card__title">Your records request, <em>drafted</em></h3>
           <p class="card__body">A public-records request written for the right agency — tracked from filing to deadline, with appeal language ready.</p>
           <p class="card__foot">drafted · tracked · appealable <span class="card__more">→ how it works</span></p>
         </button>
@@ -3007,7 +3030,7 @@ html.js .is-in .tw__in {
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-verify">
           <p class="card__kicker"><span>§ Verify · <strong>SIFT</strong></span></p>
-          <h3 class="card__title">Your fact-check, <em>in minutes.</em></h3>
+          <h3 class="card__title">Your fact-check, <em>in minutes</em></h3>
           <p class="card__body">Per-claim verdicts via SIFT — verified, unverified, contradicted, mischaracterized.</p>
           <p class="card__foot">sift · per-claim · 4 verdicts <span class="card__more">→ how it works</span></p>
         </button>
@@ -3019,7 +3042,7 @@ html.js .is-in .tw__in {
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-interview">
           <p class="card__kicker"><span>§ Prep · <strong>Interviews</strong></span></p>
-          <h3 class="card__title">Your interview, <em>prepped.</em></h3>
+          <h3 class="card__title">Your interview, <em>prepped</em></h3>
           <p class="card__body">A background dossier, question frames, and attribution ground rules — built from your vault before you dial.</p>
           <p class="card__foot">dossier · questions · attribution <span class="card__more">→ how it works</span></p>
         </button>
@@ -3031,7 +3054,7 @@ html.js .is-in .tw__in {
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-vault">
           <p class="card__kicker"><span>§ Workspace · <strong>OpenKnowledge</strong></span></p>
-          <h3 class="card__title">Your research, <em>stored locally.</em></h3>
+          <h3 class="card__title">Your research, <em>stored locally</em></h3>
           <p class="card__body">Everything above lands in one local OpenKnowledge workspace. Sources, claims, briefs — searchable, linked, and yours.</p>
           <p class="card__foot">markdown · linked · yours <span class="card__more">→ see the vault</span></p>
         </button>
@@ -3042,7 +3065,7 @@ html.js .is-in .tw__in {
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ recipe · morning-brief</p>
-        <h3 class="skill-dialog__title" id="dlg-brief-title">The morning brief<em>.</em></h3>
+        <h3 class="skill-dialog__title" id="dlg-brief-title">The morning brief</h3>
         <p class="skill-dialog__body">Overnight, stories pile up. When you sit down, one command builds the brief: Mycroft reads the posts you bookmarked, the newsletters in your inbox, and what happened on your beats while you slept. It picks the eight items most worth your time — ranked by news value, not volume — and files a short, readable digest into your notes. Every line says where it came from, so checking a claim is one click, not a hunt.</p>
         <ul class="skill-dialog__list" role="list">
           <li>Ranked by what matters to your beat, not what's loudest</li>
@@ -3057,7 +3080,7 @@ html.js .is-in .tw__in {
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · foia-requests</p>
-        <h3 class="skill-dialog__title" id="dlg-foia-title">Records requests<em>.</em></h3>
+        <h3 class="skill-dialog__title" id="dlg-foia-title">Records requests</h3>
         <p class="skill-dialog__body">Public-records requests are won on paperwork. Tell Mycroft what you're after and it drafts the letter — addressed to the right agency, citing the right statute, phrased so there's nothing to reject on a technicality. It keeps a tracker note beside it, so the filing date and the agency's legal deadline don't have to live in your head. And when an agency goes quiet or says no, the follow-up and the appeal are already written.</p>
         <ul class="skill-dialog__list" role="list">
           <li>The letter, drafted in the agency's own terms</li>
@@ -3073,7 +3096,7 @@ html.js .is-in .tw__in {
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · fact-check</p>
-        <h3 class="skill-dialog__title" id="dlg-verify-title">The fact-check<em>.</em></h3>
+        <h3 class="skill-dialog__title" id="dlg-verify-title">The fact-check</h3>
         <p class="skill-dialog__body">Paste a draft, a quote, or a claim doing the rounds. Mycroft splits it into individual claims and checks each one the way a verification desk would, using SIFT — the method Mike Caulfield teaches fact-checkers: stop, check who's behind the source, look for better coverage, trace everything back to its original context. Each claim comes back with a verdict and the evidence behind it. When something needs more than a desk check, the case hands off to Spotlight, the investigation tool.</p>
         <ul class="skill-dialog__list" role="list">
           <li>Four honest verdicts: verified · unverified · contradicted · mischaracterized</li>
@@ -3088,7 +3111,7 @@ html.js .is-in .tw__in {
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · interview-prep</p>
-        <h3 class="skill-dialog__title" id="dlg-interview-title">Interview prep<em>.</em></h3>
+        <h3 class="skill-dialog__title" id="dlg-interview-title">Interview prep</h3>
         <p class="skill-dialog__body">Give it a name and your story angle. Mycroft gathers what your own notes already hold on the person, adds fresh research from the open web, and hands you a one-page dossier. It then drafts question frames to fit the conversation you're actually having — an accountability sit-down reads differently from an expert explainer — and keeps the ground rules straight before you hit record.</p>
         <ul class="skill-dialog__list" role="list">
           <li>A dossier from your notes plus fresh research</li>
@@ -3104,7 +3127,7 @@ html.js .is-in .tw__in {
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
         <p class="skill-dialog__kicker">§ skill · knowledge-workspace</p>
-        <h3 class="skill-dialog__title" id="dlg-vault-title">The vault<em>.</em></h3>
+        <h3 class="skill-dialog__title" id="dlg-vault-title">The vault</h3>
         <div class="skill-dialog__media" hidden>
           <video controls muted loop playsinline preload="metadata" src="assets/vault-graph.mp4"></video>
           <p class="skill-dialog__cap">The OpenKnowledge graph — every source, claim, and brief a node.</p>
@@ -3127,14 +3150,14 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Goose, Gemma,<br><em>OpenKnowledge.</em></h2>
+      <h2 class="display display--section">Goose, Gemma,<br><em>OpenKnowledge</em></h2>
       <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with Gemma 4 31B running fully local — open-weight, quantization-aware, no cloud required. It uses OpenKnowledge as the local workspace where briefs, sources, claims, and findings stay searchable and connected.</p>
     </div>
 
     <div class="equation" data-cascade>
       <div class="term" style="--delay: 0ms">
         <span class="term__pre">↳ runtime</span>
-        <h3 class="term__name"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose<em class="term__dot">.</em></a></h3>
+        <h3 class="term__name"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a></h3>
         <span class="term__rule"></span>
         <p class="term__role">the agent loop</p>
         <p class="term__spec">Block · MIT · open-source</p>
@@ -3144,7 +3167,7 @@ html.js .is-in .tw__in {
 
       <div class="term" style="--delay: 140ms">
         <span class="term__pre">↳ model</span>
-        <h3 class="term__name">Gemma 4<em class="term__dot">.</em></h3>
+        <h3 class="term__name">Gemma 4</h3>
         <span class="term__rule"></span>
         <p class="term__role">local · open-weight</p>
         <p class="term__spec">31B · QAT · GGUF</p>
@@ -3154,7 +3177,7 @@ html.js .is-in .tw__in {
 
       <div class="term" style="--delay: 280ms">
         <span class="term__pre">↳ workspace</span>
-        <h3 class="term__name"><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge<em class="term__dot">.</em></a></h3>
+        <h3 class="term__name"><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge</a></h3>
         <span class="term__rule"></span>
         <p class="term__role">your knowledge workspace</p>
         <p class="term__spec">local · searchable · portable</p>
@@ -3174,7 +3197,7 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">04</span> Privacy by default</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">A <em>threat model.</em><br>Met.</h2>
+      <h2 class="display display--section">A <em>threat model.</em><br>Met</h2>
       <p class="lead">Six commitments. Defaults, not options.</p>
     </div>
 
@@ -3235,19 +3258,22 @@ html.js .is-in .tw__in {
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
       <h2 class="display display--section">
-        Beat work,<br><em>wired in.</em>
+        Beat work,<br><em>wired in</em>
       </h2>
       <p class="lead">
         Goose hosts the runtime; Mycroft brings in the reporting tools.
         Scoutpost monitors the beat, public Spotlight investigates leads,
-        Navigator adds member research capabilities, and Splash follows in September.
+        Navigator adds Indicator member research capabilities, and Splash follows in September.
       </p>
     </div>
 
     <div class="cards-3" data-reveal style="--delay: 160ms">
       <a class="card-int" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">
-        <div class="card-int__kind">FREE · MONITORING</div>
-        <h3 class="card-int__title"><em>Scoutpost.</em></h3>
+        <div class="card-int__meta">
+          <span class="card-int__access">Free · Indicator members</span>
+          <span class="card-int__kind">Monitoring</span>
+        </div>
+        <h3 class="card-int__title"><em>Scoutpost</em></h3>
         <p class="card-int__body">
           Continuous awareness of your beat, including MuckRock sources on the
           free tier. Indicator membership is connected through Navigator.
@@ -3255,8 +3281,11 @@ html.js .is-in .tw__in {
       </a>
 
       <a class="card-int" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
-        <div class="card-int__kind">PUBLIC · INVESTIGATION</div>
-        <h3 class="card-int__title"><em>Spotlight.</em></h3>
+        <div class="card-int__meta">
+          <span class="card-int__access">Public</span>
+          <span class="card-int__kind">Investigation</span>
+        </div>
+        <h3 class="card-int__title"><em>Spotlight</em></h3>
         <p class="card-int__body">
           Deep-dive on a name, a company, a place. Spotlight runs
           structured discovery across your sources and the open web —
@@ -3265,8 +3294,11 @@ html.js .is-in .tw__in {
       </a>
 
       <a class="card-int" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">
-        <div class="card-int__kind">MEMBERS · PRO + LAB</div>
-        <h3 class="card-int__title"><em>Navigator.</em></h3>
+        <div class="card-int__meta">
+          <span class="card-int__access">Indicator members</span>
+          <span class="card-int__kind">OSINT · Data</span>
+        </div>
+        <h3 class="card-int__title"><em>Navigator</em></h3>
         <p class="card-int__body">
           Pro adds OSINT tool and method discovery. Lab includes that plus Data
           Navigator for structured public-record sources and queries.
@@ -3274,8 +3306,11 @@ html.js .is-in .tw__in {
       </a>
 
       <article class="card-int card-int--coming">
-        <div class="card-int__kind">COMING · SEPTEMBER 2026</div>
-        <h3 class="card-int__title"><em>Splash for Visual Journalism.</em></h3>
+        <div class="card-int__meta">
+          <span class="card-int__access">Coming September 2026</span>
+          <span class="card-int__kind">Visual journalism</span>
+        </div>
+        <h3 class="card-int__title"><em>Splash</em></h3>
         <p class="card-int__body">
           Forthcoming workflows for charts, maps, explainers, and
           publication-ready visual stories built from verified reporting.
@@ -3290,7 +3325,7 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">05</span> Install · five minutes</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">One command.<br>Then <em>the browser.</em></h2>
+      <h2 class="display display--section">One command.<br>Then <em>the browser</em></h2>
       <p class="lead">The same public script runs for everyone. Configuration and optional Navigator sign-in happen on a local page served from your machine.</p>
     </div>
 
@@ -3408,14 +3443,14 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">06</span> From the team</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Beyond the <em>tool.</em></h2>
+      <h2 class="display display--section">Beyond the <em>tool</em></h2>
       <p class="lead">Mycroft is the open tool. I help newsrooms go further.</p>
     </div>
 
     <div class="equation equation--studio" data-cascade>
       <div class="term term--studio" style="--delay: 0ms">
         <span class="term__pre">↳ launching September 2026</span>
-        <h3 class="term__name">Indicator Lab<em class="term__dot">.</em></h3>
+        <h3 class="term__name">Indicator Lab</h3>
         <span class="term__rule"></span>
 
         <div class="term__body">
@@ -3460,7 +3495,7 @@ html.js .is-in .tw__in {
 
       <div class="term term--studio" style="--delay: 140ms">
         <span class="term__pre">↳ on request</span>
-        <h3 class="term__name">Consulting<em class="term__dot">.</em></h3>
+        <h3 class="term__name">Consulting</h3>
         <span class="term__rule"></span>
 
         <div class="term__body">
@@ -3497,7 +3532,7 @@ html.js .is-in .tw__in {
   <!-- ────────── 07 · CLOSING ────────── -->
   <section class="sec sec--closing" id="closing" data-section="6">
     <p class="closing__tag" data-reveal>Manifesto</p>
-    <h2 class="display display--section" data-reveal style="--delay: 100ms">Bring the notebook.<br><em>Send the Goose.</em></h2>
+    <h2 class="display display--section" data-reveal style="--delay: 100ms">Bring the notebook.<br><em>Send the Goose</em></h2>
     <p class="closing__line" data-reveal style="--delay: 220ms">— Open source · Self-hostable · No lock-in · No surveillance —</p>
   </section>
 
