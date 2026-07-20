@@ -443,12 +443,16 @@ def build_getting_started(d):
         optional.append("AgentMail (newsletters + tips inbox)")
     if d.get("apifyEnabled") or d.get("apifyToken"):
         optional.append("Apify (social scraping)")
+    if d.get("navigatorConnected"):
+        optional.append("Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)")
+    else:
+        optional.append("Navigator skill (locked; no credential or CLI)")
 
     plugins = []
     if d.get("spotlight"):
         plugins.append("Spotlight (OSINT investigations)")
     if d.get("scoutpost"):
-        plugins.append("Scoutpost (hosted monitoring)")
+        plugins.append("Scoutpost (free monitoring tier, including MuckRock)")
 
     prompts = [
         ("Set up your beat", "Set up my beat. I cover [your beat] in [your region]."),

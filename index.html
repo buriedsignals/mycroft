@@ -1162,7 +1162,7 @@ main,
   color: #8a8172;
 }
 
-/* ── Integration cards (scoutpost · spotlight · coming) ────── */
+/* ── Integration cards (scoutpost · spotlight · navigator · splash) ── */
 .cards-3 {
   display: grid;
   gap: 24px;
@@ -1170,7 +1170,7 @@ main,
   margin-top: 36px;
 }
 @media (min-width: 980px) {
-  .cards-3 { grid-template-columns: repeat(3, 1fr); }
+  .cards-3 { grid-template-columns: repeat(2, 1fr); }
 }
 .card-int {
   display: block;
@@ -3194,22 +3194,22 @@ html.js .is-in .tw__in {
       <article class="stamp" style="--delay: 100ms; --tilt: 1.1deg">
         <span class="stamp__seal" style="--seal-tilt: 6deg"><span>Toggle</span></span>
         <h3 class="stamp__title">Local-first mode</h3>
-        <p class="stamp__body">One toggle. Inference on your machine via MLX or llama-server. Zero egress.</p>
-        <p class="stamp__foot">MLX · llama-server</p>
+        <p class="stamp__body">One toggle. Inference on your machine via Ollama or llama-server. Zero model-provider egress.</p>
+        <p class="stamp__foot">Ollama · llama-server</p>
       </article>
 
       <article class="stamp" style="--delay: 200ms; --tilt: -0.7deg">
         <span class="stamp__seal" style="--seal-tilt: -4deg"><span>Yours</span></span>
         <h3 class="stamp__title">Your keys, your machine</h3>
-        <p class="stamp__body">Setup runs in your browser. API keys embedded in the .command. No backend.</p>
-        <p class="stamp__foot">In-browser · No backend</p>
+        <p class="stamp__body">Setup is served from 127.0.0.1. Provider keys stay local; Navigator stores its revocable credential in the OS keychain.</p>
+        <p class="stamp__foot">Local configurator · OS keychain</p>
       </article>
 
       <article class="stamp" style="--delay: 300ms; --tilt: 1.6deg">
         <span class="stamp__seal" style="--seal-tilt: 9deg"><span>Only</span></span>
-        <h3 class="stamp__title">Firecrawl only</h3>
-        <p class="stamp__body">Web fetching is the most-abused surface. Mycroft uses Firecrawl exclusively.</p>
-        <p class="stamp__foot">Firecrawl · Single vendor</p>
+        <h3 class="stamp__title">Sovereign web by default</h3>
+        <p class="stamp__body">SearXNG search and Crawl4AI scraping work without an account. Firecrawl is an optional fallback.</p>
+        <p class="stamp__foot">SearXNG · Crawl4AI · optional Firecrawl</p>
       </article>
 
       <article class="stamp" style="--delay: 400ms; --tilt: -1.2deg">
@@ -3239,23 +3239,23 @@ html.js .is-in .tw__in {
       </h2>
       <p class="lead">
         Goose hosts the runtime; Mycroft brings in the reporting tools.
-        Scoutpost monitors the beat, Spotlight investigates leads, and the
-        next release adds public-data discovery and visual production.
+        Scoutpost monitors the beat, public Spotlight investigates leads,
+        Navigator adds member research capabilities, and Splash follows in September.
       </p>
     </div>
 
     <div class="cards-3" data-reveal style="--delay: 160ms">
       <a class="card-int" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">
-        <div class="card-int__kind">MONITORING</div>
+        <div class="card-int__kind">FREE · MONITORING</div>
         <h3 class="card-int__title"><em>Scoutpost.</em></h3>
         <p class="card-int__body">
-          Continuous awareness of your beat. Pulls feeds, flags signal,
-          drafts the morning brief — so you walk in with leads, not noise.
+          Continuous awareness of your beat, including MuckRock sources on the
+          free tier. Indicator membership is connected through Navigator.
         </p>
       </a>
 
       <a class="card-int" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
-        <div class="card-int__kind">INVESTIGATION</div>
+        <div class="card-int__kind">PUBLIC · INVESTIGATION</div>
         <h3 class="card-int__title"><em>Spotlight.</em></h3>
         <p class="card-int__body">
           Deep-dive on a name, a company, a place. Spotlight runs
@@ -3264,13 +3264,21 @@ html.js .is-in .tw__in {
         </p>
       </a>
 
-      <article class="card-int card-int--coming">
-        <div class="card-int__kind">COMING · AUGUST-SEPTEMBER 2026</div>
-        <h3 class="card-int__title"><em>Data Navigator</em> + <em>Atelier.</em></h3>
+      <a class="card-int" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">
+        <div class="card-int__kind">MEMBERS · PRO + LAB</div>
+        <h3 class="card-int__title"><em>Navigator.</em></h3>
         <p class="card-int__body">
-          Data Navigator — public-data discovery (registries, archives, leaks).
-          Atelier — visual production for the published piece.
-          Two more pieces shipping with the next release.
+          Pro adds OSINT tool and method discovery. Lab includes that plus Data
+          Navigator for structured public-record sources and queries.
+        </p>
+      </a>
+
+      <article class="card-int card-int--coming">
+        <div class="card-int__kind">COMING · SEPTEMBER 2026</div>
+        <h3 class="card-int__title"><em>Splash for Visual Journalism.</em></h3>
+        <p class="card-int__body">
+          Forthcoming workflows for charts, maps, explainers, and
+          publication-ready visual stories built from verified reporting.
         </p>
       </article>
     </div>
@@ -3282,8 +3290,8 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">05</span> Install · five minutes</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Form, script, run.<br>You're <em>working.</em></h2>
-      <p class="lead">No terminal-wrangling. The setup page generates a single script with your config baked in. One file, one run.</p>
+      <h2 class="display display--section">One command.<br>Then <em>the browser.</em></h2>
+      <p class="lead">The same public script runs for everyone. Configuration and optional Navigator sign-in happen on a local page served from your machine.</p>
     </div>
 
     <!-- Surface toggle: CLI terminal vs Desktop (Goose app) view -->
@@ -3302,21 +3310,21 @@ html.js .is-in .tw__in {
 
       <div class="terminal__body">
         <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">i.</span> Fill in the setup form — cloud or local · API keys · plugins. Everything stays in your browser.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">open</span> <span class="t-arg">https://mycroft.app/setup</span></p>
-          <p class="t-line t-line--out">your config never leaves the browser</p>
+          <p class="t-line t-line--cmt"><span class="t-rn">i.</span> Run the static public installer. It never downloads Indicator Labs or Engine.</p>
+          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">curl</span> <span class="t-flag">-fsSL</span> <span class="t-arg">https://mycroft.buriedsignals.com/install.sh</span> <span class="t-op">|</span> <span class="t-cmd">bash</span></p>
+          <p class="t-line t-line--out">public · signed channel · same script for everyone</p>
         </div>
 
         <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">ii.</span> Download <code>.command</code> — a bash script with your selections embedded. Review it.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">curl</span> <span class="t-flag">-O</span> <span class="t-arg">mycroft-setup.command</span></p>
-          <p class="t-line t-line--out">204 KB · plain text · nothing hidden</p>
+          <p class="t-line t-line--cmt"><span class="t-rn">ii.</span> A local configurator opens on 127.0.0.1. Choose the runtime, vault, integrations, and Navigator Connect or Skip.</p>
+          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">open</span> <span class="t-arg">http://127.0.0.1:&lt;local-port&gt;</span></p>
+          <p class="t-line t-line--out">keys stay local · skip keeps Navigator locked</p>
         </div>
 
         <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">iii.</span> Run it — double-click. The installer configures Goose + OpenKnowledge, clones the pack, and wires your shell.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">chmod</span> <span class="t-flag">+x</span> <span class="t-arg">./mycroft-setup.command</span> <span class="t-op">&amp;&amp;</span> <span class="t-arg">./mycroft-setup.command</span></p>
-          <p class="t-line t-line--out">configures goose + openknowledge · clones the pack · wires your shell</p>
+          <p class="t-line t-line--cmt"><span class="t-rn">iii.</span> The signed public bundle installs Mycroft, Goose, OpenKnowledge, and the unified Navigator skill.</p>
+          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">mycroft</span> <span class="t-arg">doctor</span></p>
+          <p class="t-line t-line--out">engine-free · cross-platform · update and uninstall receipts</p>
         </div>
 
         <div class="t-divider" aria-hidden="true"></div>
@@ -3332,7 +3340,7 @@ html.js .is-in .tw__in {
 
       <div class="terminal__foot">
         <a class="btn btn--solid btn--setup" href="setup.html">Set up</a>
-        <span class="terminal__meta">no terminal wrangling · one file · one run</span>
+        <span class="terminal__meta">public script · local configuration · signed bundle</span>
       </div>
     </div>
     </div><!-- /.surface--cli -->

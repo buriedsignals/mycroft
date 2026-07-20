@@ -169,16 +169,20 @@ class UnitChecks(unittest.TestCase):
     def test_getting_started(self):
         guide = srv.build_getting_started(srv.normalize(BASE))
         for needle in ["~/Documents/Mycroft", "Spotlight vault", "Fireworks",
-                       "START_HERE.md", "CLI: ON", "mycroft doctor"]:
+                       "START_HERE.md", "CLI: ON", "mycroft doctor",
+                       "Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)",
+                       "Scoutpost (free monitoring tier, including MuckRock)"]:
             self.assertIn(needle, guide)
         for secret in SECRETS:
             self.assertNotIn(secret, guide)
         local = srv.build_getting_started(srv.normalize({**BASE, "sovereignty": "local",
                                                          "spotlight": False, "scoutpost": False,
-                                                         "installObsidian": False}))
+                                                         "installObsidian": False,
+                                                         "navigatorConnected": False}))
         self.assertIn("Local-first", local)
         self.assertNotIn("Spotlight vault", local)
         self.assertNotIn("Two switches", local)
+        self.assertIn("Navigator skill (locked; no credential or CLI)", local)
 
 
 class ServerChecks(unittest.TestCase):
