@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+channel="$HOME/.local/share/buriedsignals/public-installer/mycroft"
+bootstrap="$channel/bootstrap.sh"
+if [ ! -f "$bootstrap" ]; then
+  echo "Mycroft uninstall receipt channel is missing; no files were removed." >&2
+  exit 1
+fi
+
+args=(--product mycroft --runtime goose --action uninstall)
+for arg in "$@"; do
+  case "$arg" in
+    --remove-data|--force|--dry-run) args+=("$arg") ;;
+    *) echo "usage: mycroft-uninstall [--remove-data] [--force] [--dry-run]" >&2; exit 2 ;;
+  esac
+done
+bash "$bootstrap" "${args[@]}"

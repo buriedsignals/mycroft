@@ -181,10 +181,21 @@ PROFILE_SCOUTPOST_EOF
 }
 
 mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
-spotlight_before="$(repo_rev "$MYCROFT_PLUGINS_DIR/spotlight" || true)"
-
-update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft source" || true
-update_repo_ff_only "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" || true
+public_channel="$HOME/.local/share/buriedsignals/public-installer/mycroft"
+[ -x "$public_channel/bootstrap.sh" ] || chmod +x "$public_channel/bootstrap.sh" 2>/dev/null || true
+if [ ! -f "$public_channel/bootstrap.sh" ]; then
+  echo "signed public update channel is missing; re-run https://mycroft.buriedsignals.com/install.sh once"
+  exit 1
+fi
+bash "$public_channel/bootstrap.sh" \
+  --product mycroft \
+  --release-base https://github.com/buriedsignals/mycroft/releases/latest/download \
+  --runtime goose \
+  --action update \
+  --no-handoff
+echo "Mycroft source updated from the latest signed public bundle"
+# A Mycroft-managed Spotlight plugin is not moved to an unsigned branch head.
+# Its separately signed product installer owns Spotlight release updates.
 replace_skills || true
 refresh_profile
 
@@ -203,10 +214,18 @@ if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
   else
     echo "doctor failed after update; rolling back app checkouts"
     rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
-    rollback_repo "$MYCROFT_PLUGINS_DIR/spotlight" "Spotlight" "$spotlight_before"
     refresh_profile
+    python3 "$public_channel/applicator.py" --action finalize \
+      --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
+      --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
+      --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json" || true
     exit 1
   fi
 fi
+
+python3 "$public_channel/applicator.py" --action finalize \
+  --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
+  --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
+  --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json"
 
 echo "update complete"

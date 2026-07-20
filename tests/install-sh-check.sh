@@ -37,6 +37,10 @@ includes 'navigator'
 excludes 'bootstrap_engine'
 excludes 'minisign -Vm'
 excludes '"$ENGINE_BINARY"'
+excludes 'BSIG_BIN'
+excludes 'buriedsignals/engine'
+excludes 'engine_bridge.py'
+includes 'public bootstrap digest did not verify'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
@@ -76,7 +80,6 @@ includes 'register_local_model_in_goose'
 includes '$XDG_DATA_HOME/goose/models'
 
 # Updater cron/timer (the updater logic itself now lives in scripts/mycroft-update)
-includes 'git fetch origin main'
 includes 'git merge --ff-only origin/main'
 includes 'mycroft-update.timer'
 includes '15 10 * * 1'
@@ -85,13 +88,15 @@ includes '15 10 * * 1'
 # them directly rather than as heredocs inside install.sh.
 bash -n scripts/mycroft-doctor || note "scripts/mycroft-doctor does not parse"
 bash -n scripts/mycroft-update || note "scripts/mycroft-update does not parse"
+bash -n scripts/mycroft-uninstall || note "scripts/mycroft-uninstall does not parse"
 wincludes() { grep -qF -- "$2" "$1" || note "missing in $1: $2"; }
 wincludes scripts/mycroft-doctor 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"'
 wincludes scripts/mycroft-doctor '"shell-safety skill"'
 wincludes scripts/mycroft-doctor '"epistemic-grounding skill"'
 wincludes scripts/mycroft-update 'doctor failed after update; rolling back app checkouts'
 wincludes scripts/mycroft-update 'provision-sovereign.sh'
-wincludes scripts/mycroft-update 'git merge --ff-only'
+wincludes scripts/mycroft-update 'latest signed public bundle'
+wincludes scripts/mycroft-update 'releases/latest/download'
 
 # Getting-started guide written by configurator, opened at the end
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'

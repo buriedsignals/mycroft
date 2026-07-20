@@ -9,6 +9,29 @@
 # only — nothing leaves this machine), phase 3 installs and verifies.
 set -euo pipefail
 
+PUBLIC_BUNDLE_PHASE=0
+if [ "${1:-}" = "--provision-from-public-bundle" ]; then
+  PUBLIC_BUNDLE_PHASE=1
+  shift
+fi
+
+if [ "$PUBLIC_BUNDLE_PHASE" = "0" ]; then
+  PUBLIC_RELEASE_BASE="https://github.com/buriedsignals/mycroft/releases/download/v0.3.0"
+  PUBLIC_BOOTSTRAP_SHA256="ebe0a8b707f4b891e2b9c87fe6b65da5e31f6a4140361faf0d99400c4f9a47a7"
+  command -v curl >/dev/null 2>&1 || { echo "Mycroft installer: curl is required" >&2; exit 1; }
+  command -v openssl >/dev/null 2>&1 || { echo "Mycroft installer: OpenSSL is required" >&2; exit 1; }
+  PUBLIC_BOOTSTRAP_TMP="$(mktemp "${TMPDIR:-/tmp}/mycroft-public-bootstrap.XXXXXX")"
+  trap 'rm -f "$PUBLIC_BOOTSTRAP_TMP"' EXIT HUP INT TERM
+  curl -fL --proto '=https' --tlsv1.2 "$PUBLIC_RELEASE_BASE/bootstrap.sh" -o "$PUBLIC_BOOTSTRAP_TMP"
+  PUBLIC_BOOTSTRAP_ACTUAL="$(openssl dgst -sha256 -r "$PUBLIC_BOOTSTRAP_TMP" | awk '{print $1}')"
+  [ "$PUBLIC_BOOTSTRAP_ACTUAL" = "$PUBLIC_BOOTSTRAP_SHA256" ] || {
+    echo "Mycroft installer: public bootstrap digest did not verify" >&2
+    exit 1
+  }
+  bash "$PUBLIC_BOOTSTRAP_TMP" --product mycroft --release-base "$PUBLIC_RELEASE_BASE" --runtime goose
+  exit $?
+fi
+
 TODAY="$(date +%F)"
 MYCROFT_OS="${MYCROFT_OS:-$(uname -s)}"
 export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
@@ -309,6 +332,11 @@ install_mycroft_cli() {
     ok "mycroft-update CLI"
   else
     warn "mycroft-update missing from $MYCROFT_DIR/scripts"
+  fi
+  if [ -f "$MYCROFT_DIR/scripts/mycroft-uninstall" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/mycroft-uninstall" || true
+    ln -sf "$MYCROFT_DIR/scripts/mycroft-uninstall" "$HOME/.local/bin/mycroft-uninstall"
+    ok "mycroft-uninstall CLI"
   fi
   if [ -f "$MYCROFT_DIR/scripts/navigator-connect" ]; then
     chmod +x "$MYCROFT_DIR/scripts/navigator-connect" || true
@@ -1097,7 +1125,12 @@ say "Mycroft installer"
 mkdir -p "$GOOSE_CONFIG" "$PROVIDERS_DST" "$MYCROFT_PROFILE_DIR" "$MYCROFT_DATA_DIR" "$PLUGINS_DIR"
 warn_legacy_layout
 ensure_git
-install_or_update_mycroft
+if [ "$PUBLIC_BUNDLE_PHASE" = "0" ]; then
+  install_or_update_mycroft
+elif [ ! -d "$MYCROFT_DIR/.git" ]; then
+  echo "Mycroft installer: the signed public bundle did not create the product checkout" >&2
+  exit 1
+fi
 
 PREFLIGHT_HELPER="$MYCROFT_DIR/scripts/install-preflight.sh"
 if [ ! -f "$PREFLIGHT_HELPER" ]; then
@@ -1379,6 +1412,7 @@ fi
   printf 'mycroft() {\n'
   printf '  case "${1:-}" in\n'
   printf '    update) "$HOME/.local/bin/mycroft-update" ;;\n'
+  printf '    uninstall) "$HOME/.local/bin/mycroft-uninstall" ;;\n'
   printf '    doctor) "$HOME/.local/bin/mycroft-doctor" ;;\n'
   printf '    *) goose recipe list ;;\n'
   printf '  esac\n'
