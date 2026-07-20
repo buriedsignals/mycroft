@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-20T18:37:31Z",
-  "release_sequence": 12,
+  "released_at": "2026-07-20T19:05:07Z",
+  "release_sequence": 13,
   "products": {
     "mycroft": {
       "version": "0.3.4",
@@ -590,7 +590,7 @@
       }
     },
     "spotlight": {
-      "version": "2.1.3",
+      "version": "2.1.4",
       "repo": "buriedsignals/spotlight",
       "ref": "01e46d957ba7c4fa761f4e67692df75c3cffc93c",
       "entitlement": "spotlight.core",
