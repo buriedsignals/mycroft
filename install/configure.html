@@ -255,9 +255,7 @@
         <button type="button" class="mini-btn" data-browse="spotlight_vault_path" data-prompt="Choose your Spotlight investigations vault folder">Browse…</button>
       </div>
       <p class="hint">Keep this separate from the Mycroft vault in the required section.</p>
-      <label class="field-label" for="osint_navigator_key">OSINT_NAV_API_KEY <span class="opt">— optional</span></label>
-      <p class="hint" style="margin:0 0 6px;">Live database of 10,000+ OSINT tools with AI-powered lookup. <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Get API key →</a></p>
-      <input class="fld" type="password" id="osint_navigator_key" placeholder="ont_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      <p class="hint" style="margin:0 0 6px;">Navigator is connected separately below. Credentials are stored by Navigator in the OS keychain and are never entered on this page.</p>
       <label class="check" style="margin-top:12px;"><input type="checkbox" id="spotDevBrowser" checked> dev-browser — sandboxed Playwright browser for portals, forms, JS-heavy pages, screenshots. No key; downloads Chromium (~300&nbsp;MB).</label>
       <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY <span class="opt">— optional</span></label>
       <input class="fld" type="password" id="junkipedia_key" placeholder="jk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
@@ -273,6 +271,20 @@
       <label class="field-label" for="scoutpost_api_key">SCOUTPOST_API_KEY</label>
       <input class="fld" type="password" id="scoutpost_api_key" placeholder="scout_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
     </div>
+  </div>
+
+  <p class="num">06 — Navigator</p>
+  <h2>Connect now, or <em>continue.</em></h2>
+  <div class="item" id="navigatorCard">
+    <div class="item__head"><span class="item__title">Navigator<em>.</em></span><span class="badge" id="navigatorBadge">Choose</span></div>
+    <p class="item__lede">The unified Navigator skill is installed either way. Pro members can connect OSINT tool discovery; Lab members also receive the Data Navigator tool. Continuing leaves the skill locked and does not affect Mycroft.</p>
+    <label class="field-label" for="navigator_email">Membership email</label>
+    <input class="fld" type="email" id="navigator_email" autocomplete="email" spellcheck="false" placeholder="you@example.com">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button type="button" class="mini-btn" id="navigatorConnect">Yes, authenticate</button>
+      <button type="button" class="mini-btn" id="navigatorSkip">Continue without Navigator</button>
+    </div>
+    <p class="hint" id="navigatorStatus" role="status">Choose one option before continuing.</p>
   </div>
 
   <div class="submit-bar">
@@ -416,7 +428,8 @@ function readForm() {
     apifyToken: v('apify_token'),
     agentmailKey: v('agentmail_key'),
     scoutpostKey: v('scoutpost_api_key'),
-    osintNavigatorKey: v('osint_navigator_key'),
+    osintNavigatorKey: '',
+    navigatorChoice,
     junkipediaKey: v('junkipedia_key'),
   };
 }
@@ -435,6 +448,73 @@ function showErrors(errors) {
   });
   if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
+
+let navigatorChoice = '';
+let navigatorFlow = '';
+let navigatorTimer = null;
+const navigatorStatus = document.getElementById('navigatorStatus');
+const navigatorBadge = document.getElementById('navigatorBadge');
+
+async function navigatorPost(path, extra = {}) {
+  const response = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({token:TOKEN, ...extra})});
+  const data = await response.json().catch(() => ({status:'failed', detail:'Unexpected local setup response.'}));
+  if (!response.ok) throw new Error(data.detail || data.errors?.[0]?.message || 'Navigator connection failed.');
+  return data;
+}
+function navigatorConnected(data) {
+  navigatorChoice = 'connect'; navigatorFlow = '';
+  navigatorBadge.textContent = data.tier === 'lab' ? 'Lab connected' : 'Pro connected';
+  navigatorStatus.textContent = data.tier === 'lab'
+    ? 'Connected: OSINT Navigator and the Data Navigator tool are available.'
+    : 'Connected: OSINT Navigator is available. Data Navigator requires Lab.';
+}
+async function pollNavigator() {
+  if (!navigatorFlow) return;
+  try {
+    const data = await navigatorPost('/navigator/poll', {flow_id:navigatorFlow});
+    if (data.status === 'pending') {
+      navigatorTimer = setTimeout(pollNavigator, 3000); return;
+    }
+    if (data.status === 'connected') { navigatorConnected(data); return; }
+    navigatorFlow = ''; navigatorChoice = '';
+    navigatorBadge.textContent = 'Not connected';
+    navigatorStatus.textContent = data.status === 'denied_tier'
+      ? 'This account has no Navigator member capability. You can continue without Navigator.'
+      : 'Navigator did not connect (' + String(data.status || 'failed') + '). Retry or continue without it.';
+  } catch (error) {
+    navigatorFlow = ''; navigatorChoice = ''; navigatorBadge.textContent = 'Offline';
+    navigatorStatus.textContent = error.message + ' You can continue without Navigator.';
+  }
+}
+document.getElementById('navigatorConnect').addEventListener('click', async () => {
+  const email = document.getElementById('navigator_email').value.trim();
+  if (!email) { navigatorStatus.textContent = 'Enter the email on your membership first.'; return; }
+  try {
+    const data = await navigatorPost('/navigator/start', {email});
+    if (data.status === 'oauth-required') {
+      navigatorChoice = 'connect'; navigatorBadge.textContent = 'OAuth available';
+      navigatorStatus.textContent = 'Connect the remote MCP endpoint in your desktop runtime: ' + data.mcp_url; return;
+    }
+    if (data.status !== 'pending') throw new Error(data.detail || 'No secure Navigator transport is available.');
+    navigatorFlow = data.flow_id; navigatorChoice = '';
+    navigatorBadge.textContent = 'Waiting';
+    navigatorStatus.textContent = 'Check your email and confirm the Navigator sign-in. This page will finish automatically.';
+    pollNavigator();
+  } catch (error) { navigatorBadge.textContent = 'Offline'; navigatorStatus.textContent = error.message; }
+});
+document.getElementById('navigatorSkip').addEventListener('click', async () => {
+  if (navigatorTimer) clearTimeout(navigatorTimer);
+  if (navigatorFlow) { try { await navigatorPost('/navigator/cancel', {flow_id:navigatorFlow}); } catch (_) {} }
+  navigatorFlow = ''; navigatorChoice = 'skip'; navigatorBadge.textContent = 'Skipped';
+  navigatorStatus.textContent = 'Mycroft will continue with the unified Navigator skill in locked mode.';
+});
+(async () => {
+  try {
+    const data = await navigatorPost('/navigator/status');
+    if (data.status === 'connected') navigatorConnected(data);
+  } catch (_) {}
+})();
 
 document.getElementById('submitBtn').addEventListener('click', async () => {
   const btn = document.getElementById('submitBtn');
@@ -467,7 +547,8 @@ document.getElementById('submitBtn').addEventListener('click', async () => {
 });
 </script>
 <script>
-/* Engine-v2 enhancement: signed Engine choices replace legacy managed choices when available. */
+/* Member Engine installs may still replace this form when explicitly launched
+   by Indicator Labs. The public website installer never exposes this route. */
 (async function activateEngineConfigurator() {
   let descriptor;
   try {

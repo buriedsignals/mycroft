@@ -34,9 +34,9 @@ BASE = {
     "spotDevBrowser": True,
     "fireworksKey": "fw-test", "firecrawlKey": "fc-test",
     "apifyToken": "", "agentmailKey": "", "scoutpostKey": "scout-test",
-    "osintNavigatorKey": "ont-test", "junkipediaKey": "",
+    "navigatorConnected": True, "junkipediaKey": "",
 }
-SECRETS = ["fw-test", "fc-test", "scout-test", "ont-test"]
+SECRETS = ["fw-test", "fc-test", "scout-test"]
 
 
 class UnitChecks(unittest.TestCase):
@@ -126,7 +126,7 @@ class UnitChecks(unittest.TestCase):
         self.assertIn("GOOSE_PROVIDER=fireworks-glm52", env)
         self.assertIn("GOOSE_MODEL=accounts/fireworks/models/glm-5p2", env)
         self.assertIn("FIRECRAWL_API_KEY=fc-test", env)
-        self.assertIn("OSINT_NAV_API_KEY=ont-test", env)
+        self.assertNotIn("OSINT_NAV_API_KEY", env)
         self.assertIn("SPOTLIGHT_MONITORING_BACKEND=scoutpost", env)
         self.assertNotIn("OSINT_NAVIGATOR", env)
         self.assertNotIn("BROWSERUSE", env)
@@ -147,8 +147,9 @@ class UnitChecks(unittest.TestCase):
         for needle in ["SOVEREIGNTY=cloud", "LOCAL_ONLY=0", "ENABLE_SPOTLIGHT=1",
                        "ENABLE_SCOUTPOST=1", "ENABLE_FIREWORKS=1", "SPOT_DEVBROWSER=1",
                        "HAS_OSINT_NAVIGATOR=1", "ENABLE_FT=1",
+                       "NAVIGATOR_CONNECTION=connected",
                        'VAULT_PATH="$HOME/Documents/Mycroft"',
-                       'REQUIRED_DOCTOR_ENV="FIRECRAWL_API_KEY FIREWORKS_API_KEY SCOUTPOST_API_KEY OSINT_NAV_API_KEY"']:
+                       'REQUIRED_DOCTOR_ENV="FIRECRAWL_API_KEY FIREWORKS_API_KEY SCOUTPOST_API_KEY"']:
             self.assertIn(needle, cfg)
         for secret in SECRETS:
             self.assertNotIn(secret, cfg)
@@ -158,6 +159,7 @@ class UnitChecks(unittest.TestCase):
         ids = {s["id"] for s in reg["skills"]}
         for expected in ["knowledge-primitives", "qmd", "obsidian", "obsidian-ingest",
                          "fact-check", "mycroft-maintenance", "web-acquisition", "scoutpost",
+                         "navigator",
                          "spotlight", "spotlight-ingest", "spotlight-monitoring",
                          "spotlight-integrations"]:
             self.assertIn(expected, ids)
@@ -249,7 +251,8 @@ print(json.dumps({"event": "result", "data": data}))
         self.assertNotIn("__SETUP_TOKEN__", self.page)
         self.assertNotIn("__PLATFORM__", self.page)
         self.assertIn("spotDevBrowser", self.page)
-        self.assertIn("OSINT_NAV_API_KEY", self.page)
+        self.assertIn("Yes, authenticate", self.page)
+        self.assertNotIn('id="nav_key"', self.page)
         self.assertIn("Optional fallback", self.page)
         self.assertNotIn('id="installFirecrawl" checked', self.page)
 
@@ -291,6 +294,58 @@ class FreshInstallGuardChecks(unittest.TestCase):
                 capture_output=True, text=True, timeout=10, env=env)
         self.assertEqual(result.returncode, 2)
         self.assertIn("activated Buried Signals Engine is required", result.stderr)
+
+
+class PublicWebsiteChecks(unittest.TestCase):
+    def test_skip_completes_without_engine_or_navigator_credential(self):
+        with tempfile.TemporaryDirectory() as profile:
+            proc = subprocess.Popen(
+                [sys.executable, os.path.join(ROOT, "install", "setup_server.py"),
+                 "--profile-dir", profile, "--repo-dir", ROOT, "--port", "0",
+                 "--no-browser", "--skip-key-validation", "--legacy-only"],
+                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+            )
+            try:
+                line = proc.stdout.readline()
+                match = re.search(r"http://127\.0\.0\.1:(\d+)/\?t=([A-Za-z0-9_-]+)", line)
+                self.assertIsNotNone(match, line)
+                port, token = int(match.group(1)), match.group(2)
+
+                bad_origin = urllib.request.Request(
+                    f"http://127.0.0.1:{port}/navigator/status",
+                    data=json.dumps({"token": token}).encode(),
+                    headers={"Content-Type": "application/json", "Origin": "https://evil.example"},
+                )
+                with self.assertRaises(urllib.error.HTTPError) as ctx:
+                    urllib.request.urlopen(bad_origin, timeout=5)
+                self.assertEqual(ctx.exception.code, 403)
+
+                payload = {**BASE, "token": token, "navigatorChoice": "skip",
+                           "navigatorConnected": False}
+                request = urllib.request.Request(
+                    f"http://127.0.0.1:{port}/submit",
+                    data=json.dumps(payload).encode(),
+                    headers={"Content-Type": "application/json",
+                             "Origin": f"http://127.0.0.1:{port}"},
+                )
+                response = json.loads(urllib.request.urlopen(request, timeout=15).read())
+                self.assertTrue(response["ok"])
+                self.assertEqual(proc.wait(timeout=10), 0)
+                with open(os.path.join(profile, "setup-config.env"), encoding="utf-8") as handle:
+                    config = handle.read()
+                self.assertIn("HAS_OSINT_NAVIGATOR=0", config)
+                self.assertIn("NAVIGATOR_CONNECTION=locked", config)
+                with open(os.path.join(profile, ".env"), encoding="utf-8") as handle:
+                    env = handle.read()
+                self.assertNotIn("OSINT_NAV_API_KEY", env)
+                with open(os.path.join(profile, "skill-registry.json"), encoding="utf-8") as handle:
+                    registry = json.load(handle)
+                self.assertIn("navigator", {item["id"] for item in registry["skills"]})
+            finally:
+                if proc.poll() is None:
+                    proc.terminate()
+                    proc.wait(timeout=5)
+                proc.stdout.close()
 
 
 if __name__ == "__main__":

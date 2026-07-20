@@ -27,21 +27,16 @@ includes 'MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"'
 includes 'MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"'
 includes 'GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"'
 
-# Configurator phase: bootstrap fetches repo, local server collects config
-includes 'python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR"'
+# Configurator phase: the public path uses the product writer directly.
+includes 'python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR" --legacy-only'
 includes 'MYCROFT_SETUP_CONFIG="$MYCROFT_PROFILE_DIR/setup-config.env"'
 includes '. "$MYCROFT_SETUP_CONFIG"'
-# Fresh installs are Engine/OpenKnowledge-only. The compatibility writer is
-# selected only from pre-existing legacy state and never as a fallback.
-includes 'MYCROFT_LEGACY_UPDATE=0'
-includes 'bootstrap_engine()'
-includes "minisign -Vm \"\$archive\" -P 'RWRVGhTzAGx7pqB8NEMCPW8uMr10Koa3wSoIH9OCqoCkL4GUqhQcwtU6'"
-includes 'SETUP_MODE=(--engine-required)'
-includes 'SETUP_MODE=(--legacy-only)'
-includes 'The legacy Obsidian/QMD installer was not started.'
-includes 'refusing to run the legacy Obsidian/QMD writer'
-includes '"$ENGINE_BINARY" apply "$ENGINE_PLAN_PATH"'
-includes '"$ENGINE_BINARY" welcome mycroft'
+includes 'ensure_openknowledge'
+includes 'npm install -g "@inkeep/open-knowledge@$pin"'
+includes 'navigator'
+excludes 'bootstrap_engine'
+excludes 'minisign -Vm'
+excludes '"$ENGINE_BINARY"'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
@@ -51,6 +46,7 @@ includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft_safe.py" "$HOME/.local/bin/mycroft-safe"'
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-doctor" "$HOME/.local/bin/mycroft-doctor"'
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-update" "$HOME/.local/bin/mycroft-update"'
+includes 'ln -sf "$MYCROFT_DIR/scripts/navigator-connect" "$HOME/.local/bin/mycroft-navigator"'
 
 # Tooling installs
 includes '. "$PREFLIGHT_HELPER"'
@@ -109,7 +105,7 @@ includes '"runtime": "goose"'
 includes '"search_library": "firecrawl"'
 includes '"case_workspace_root": "$SPOTLIGHT_VAULT_PATH/cases"'
 includes '"dev_browser": {"enabled": $DEVBROWSER_JSON'
-includes 'store_goose_secret OSINT_NAV_API_KEY'
+includes '[ -n "${OSINT_NAV_API_KEY:-}" ] && store_goose_secret OSINT_NAV_API_KEY'
 includes 'integrations/preflight.py'
 excludes 'handoff-to-mycroft'
 excludes 'BROWSERUSE'

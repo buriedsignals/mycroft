@@ -2871,7 +2871,7 @@ body.mode-local .cloud-only { display: none; }
         <h2 class="display display--section">Three steps, <em>one machine.</em></h2>
       </div>
       <p class="lead">
-        <strong>The installer is a single static script — the same for everyone.</strong> It never asks you to paste a key into a website: configuration happens on a local page served from your own machine.
+        <strong>The installer is public and is the same for everyone.</strong> It never asks you to paste a key into a hosted website: configuration and optional Navigator membership connection happen on a local page served from your own machine.
       </p>
     </div>
 
@@ -2879,7 +2879,7 @@ body.mode-local .cloud-only { display: none; }
       <div class="item">
         <p class="item__num"><em>01</em> Terminal</p>
         <div class="item__head"><span class="item__title">Run one <em>command.</em></span></div>
-        <p class="item__lede">Paste the install command below into Terminal. It fetches the Mycroft repo and the tools it needs — git, Goose, Obsidian, Firecrawl, QMD.</p>
+        <p class="item__lede">Paste the install command below into Terminal. It fetches the Mycroft repo and its public pinned tools directly; it does not download Indicator Labs or Engine.</p>
       </div>
       <div class="item">
         <p class="item__num"><em>02</em> Browser</p>
@@ -2901,14 +2901,14 @@ body.mode-local .cloud-only { display: none; }
         <p class="num"><span class="num__n">02</span> Before you start</p>
         <h2 class="display display--section">Have these <em>ready.</em></h2>
       </div>
-      <p class="lead"><strong>The configurator will ask for these keys.</strong> Grab them first and the whole install takes about five minutes. Everything optional can be added later by re-running the installer.</p>
+      <p class="lead"><strong>No membership is required.</strong> Bring only the provider keys for the options you select. Members may connect Navigator directly; everyone else can continue with its unified skill locked.</p>
     </div>
 
     <div class="grid-3" data-reveal style="--delay: 120ms">
-      <div class="item required">
+      <div class="item">
         <p class="item__num"><em>01</em> Web access</p>
-        <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge req">required</span></div>
-        <p class="item__lede">Powers every web-capable recipe — the only permitted web-fetch tool in Mycroft. Free tier available.</p>
+        <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge">optional fallback</span></div>
+        <p class="item__lede">A hosted fallback for hard anti-bot targets. Sovereign SearXNG and Crawl4AI work without an account.</p>
         <div class="item__body">
           <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
         </div>
@@ -2924,7 +2924,7 @@ body.mode-local .cloud-only { display: none; }
       <div class="item">
         <p class="item__num"><em>03</em> Optional</p>
         <div class="item__head"><span class="item__title">Extras<em>.</em></span><span class="badge">skippable</span></div>
-        <p class="item__lede"><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a> (beat monitoring) · <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a> (10,000+ tools) · <a href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Junkipedia</a> (misinformation tracking) · <a href="https://apify.com" target="_blank" rel="noreferrer">Apify</a> (social scraping) · <a href="https://agentmail.to" target="_blank" rel="noreferrer">AgentMail</a> (newsletter inbox)</p>
+        <p class="item__lede"><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a> (beat monitoring) · <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> (Pro: OSINT; Lab: OSINT plus the Data Navigator tool) · <a href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Junkipedia</a> · <a href="https://apify.com" target="_blank" rel="noreferrer">Apify</a> · <a href="https://agentmail.to" target="_blank" rel="noreferrer">AgentMail</a></p>
       </div>
     </div>
 

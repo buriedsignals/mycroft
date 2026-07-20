@@ -33,9 +33,8 @@ MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
-# The Obsidian/QMD writer is a compatibility path for people who already have
-# its explicit state. It is never a fresh-install fallback: new installations
-# use the Engine's OpenKnowledge contract exclusively.
+# Existing Obsidian/QMD state remains readable, while fresh installs also
+# provision the OpenKnowledge CLI used by the generated Goose recipes.
 MYCROFT_LEGACY_UPDATE=0
 for legacy_marker in "$MYCROFT_ENV" "$MYCROFT_PROFILE_DIR/setup-config.env" \
   "$MYCROFT_SKILL_REGISTRY" "$HOME/.mycroft"; do
@@ -44,158 +43,6 @@ for legacy_marker in "$MYCROFT_ENV" "$MYCROFT_PROFILE_DIR/setup-config.env" \
     break
   fi
 done
-
-NAVIGATOR_URL='https://navigator.indicator.media'
-
-find_engine() {
-  if [ -n "${BSIG_BIN:-}" ] && [ -x "$BSIG_BIN" ]; then return 0; fi
-  if have bsig; then BSIG_BIN="$(command -v bsig)"; return 0; fi
-  for candidate in \
-    "/Applications/Indicator Labs.app/Contents/Resources/bsig" \
-    "$HOME/Applications/Indicator Labs.app/Contents/Resources/bsig"; do
-    if [ -x "$candidate" ]; then BSIG_BIN="$candidate"; return 0; fi
-  done
-  return 1
-}
-
-# Navigator's existing magic-link flow issues a process-local credential, then
-# returns two short-lived private artifact grants. Minisign still authenticates
-# the bytes. Existing legacy installations do not enter this function.
-member_engine_urls() {
-  local platform="$1" email flow response status token
-  [ -r /dev/tty ] || { warn "A terminal is required to sign in as a member before downloading Engine."; return 1; }
-  printf 'Navigator member email: ' >/dev/tty
-  IFS= read -r email </dev/tty
-  [ -n "$email" ] || { warn "An email address is required to sign in."; return 1; }
-  flow="$(curl -fsS -X POST "$NAVIGATOR_URL/auth/cli/start" -H 'Content-Type: application/json' --data "$(python3 - "$email" <<'PY'
-import json, sys
-print(json.dumps({"email": sys.argv[1]}))
-PY
-)" 2>/dev/null)" || { warn "Could not start Navigator sign-in."; return 1; }
-  flow="$(python3 - "$flow" <<'PY'
-import json, sys
-value = json.loads(sys.argv[1]).get("flow_id", "")
-if not isinstance(value, str) or not value: raise SystemExit(1)
-print(value)
-PY
-)" || { warn "Navigator returned an invalid sign-in response."; return 1; }
-  printf 'Check your email, open the Navigator sign-in link, and confirm it. Waiting up to 15 minutes…\n' >/dev/tty
-  while :; do
-    response="$(curl -fsS "$NAVIGATOR_URL/auth/cli/poll/$flow" 2>/dev/null || true)"
-    status="$(python3 - "$response" <<'PY'
-import json, sys
-try: print(json.loads(sys.argv[1]).get("status", ""))
-except Exception: pass
-PY
-)"
-    case "$status" in
-      ready) break ;;
-      pending) sleep 3 ;;
-      *) warn "Navigator sign-in did not complete ($status). Re-run this installer to try again."; return 1 ;;
-    esac
-  done
-  token="$(python3 - "$response" <<'PY'
-import json, sys
-value = json.loads(sys.argv[1]).get("api_key", "")
-if not isinstance(value, str) or not value.startswith("on_"): raise SystemExit(1)
-print(value)
-PY
-)" || { warn "Navigator did not return an installation credential."; return 1; }
-  curl -fsS -H "Authorization: Bearer $token" "$NAVIGATOR_URL/api/artifacts/engine/$platform"
-}
-
-# Fresh web installs bootstrap only a member-authorized standalone Engine
-# archive signed by the same Minisign key embedded in Engine.
-bootstrap_engine() {
-  find_engine && return 0
-  if ! have python3 || ! have curl; then
-    warn "A fresh OpenKnowledge install needs python3 and curl to bootstrap the signed Buried Signals Engine. Install them, then re-run."
-    return 1
-  fi
-  if ! have minisign; then
-    if [ "$(uname -s)" = "Darwin" ] && have brew; then
-      brew install minisign || true
-    fi
-  fi
-  if ! have minisign; then
-    warn "A fresh OpenKnowledge install verifies Engine with Minisign. Install minisign (Homebrew: brew install minisign), then re-run."
-    return 1
-  fi
-
-  local os arch platform release_file tag archive_url signature_url tmp root extracted
-  case "$(uname -s)" in
-    Darwin) os=darwin ;;
-    Linux) os=linux ;;
-    *) warn "No signed Engine archive is published for $(uname -s). Use the Indicator Labs app or install bsig manually."; return 1 ;;
-  esac
-  case "$(uname -m)" in
-    arm64|aarch64) arch=arm64 ;;
-    x86_64|amd64) arch=amd64 ;;
-    *) warn "No signed Engine archive is published for $(uname -m). Use the Indicator Labs app or install bsig manually."; return 1 ;;
-  esac
-  platform="$os-$arch"
-  tmp="$(mktemp -d)"
-  release_file="$tmp/release.json"
-  if ! member_engine_urls "$platform" > "$release_file"; then
-    rm -rf "$tmp"
-    return 1
-  fi
-  if ! python3 - "$release_file" > "$tmp/release-selection" <<'PY'
-import json, re, sys
-with open(sys.argv[1], encoding="utf-8") as handle:
-    release = json.load(handle)
-version = str(release.get("version", ""))
-archive = str(release.get("archive_url", ""))
-signature = str(release.get("signature_url", ""))
-if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?", version):
-    raise SystemExit("release has no valid semver")
-for value in (archive, signature):
-    if not value.startswith("https://api.buriedsignals.com/v1/artifacts/download?grant="):
-        raise SystemExit("release is missing a member-authorized archive")
-print("v" + version)
-print(archive)
-print(signature)
-PY
-  then
-    rm -rf "$tmp"
-    warn "No complete member-authorized $platform Engine archive is available."
-    return 1
-  fi
-  tag="$(sed -n '1p' "$tmp/release-selection")"
-  archive_url="$(sed -n '2p' "$tmp/release-selection")"
-  signature_url="$(sed -n '3p' "$tmp/release-selection")"
-  if [ -z "$tag" ] || [ -z "$archive_url" ] || [ -z "$signature_url" ] || [ -n "$(sed -n '4p' "$tmp/release-selection")" ]; then
-    rm -rf "$tmp"
-    warn "The latest Engine release has no complete signed $platform archive. Install Indicator Labs or retry after the release completes."
-    return 1
-  fi
-  archive="$tmp/engine.tar.gz"
-  if ! curl -fsSL "$archive_url" -o "$archive" || ! curl -fsSL "$signature_url" -o "$archive.minisig"; then
-    rm -rf "$tmp"
-    warn "Could not download the signed Engine archive."
-    return 1
-  fi
-  if ! minisign -Vm "$archive" -P 'RWRVGhTzAGx7pqB8NEMCPW8uMr10Koa3wSoIH9OCqoCkL4GUqhQcwtU6' >/dev/null; then
-    rm -rf "$tmp"
-    warn "The Engine archive signature did not verify; nothing was installed."
-    return 1
-  fi
-  extracted="bsig-$platform/bsig"
-  if ! tar -tzf "$archive" | grep -qx "$extracted"; then
-    rm -rf "$tmp"
-    warn "The verified Engine archive has an unexpected layout; nothing was installed."
-    return 1
-  fi
-  tar -xzf "$archive" -C "$tmp"
-  root="$HOME/.local/share/buriedsignals/engine/${tag#v}"
-  mkdir -p "$root" "$HOME/.local/bin"
-  install -m 755 "$tmp/$extracted" "$root/bsig"
-  ln -sfn "$root/bsig" "$HOME/.local/bin/bsig"
-  rm -rf "$tmp"
-  BSIG_BIN="$root/bsig"
-  export BSIG_BIN
-  ok "Buried Signals Engine $tag (signed standalone)"
-}
 
 # Sovereign stack: SearXNG search + Crawl4AI scrape run with zero API cost on the
 # normal path; Firecrawl is an optional escape hatch. SearXNG serves its JSON API on
@@ -297,11 +144,23 @@ ensure_qmd() {
   fi
 }
 
+ensure_openknowledge() {
+  if have ok; then ok "OpenKnowledge CLI present"; return 0; fi
+  if ! have npm; then
+    warn "npm is required to install the OpenKnowledge CLI. Install Node.js and re-run."
+    exit 1
+  fi
+  local pin
+  pin="$(mycroft_catalog_dependency_pin "$MYCROFT_DIR/catalog/catalog.json" @inkeep/open-knowledge)"
+  [ -n "$pin" ] || { warn "Release catalog has no @inkeep/open-knowledge pin; refusing an unpinned install."; exit 1; }
+  npm install -g "@inkeep/open-knowledge@$pin" && ok "OpenKnowledge CLI $pin"
+}
+
 # --- Scoutpost CLI (scout) ---------------------------------------------------
 # `scout` on PATH via npm, pinned to the vendored catalog.json (native-binary-via-
 # npm, like firecrawl/qmd). CLI branch = macOS/Linux/WSL2 with npm; a host without
 # npm/scout falls back to the REST API (SCOUTPOST_API_KEY + SCOUTPOST_API_BASE). The
-# public Supabase anon key is baked (identical to the engine's constant) — it is not
+# Public Supabase anon key is baked into the Scoutpost clients — it is not
 # a per-user secret, so there is no form field to collect it.
 SCOUTPOST_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmbWR6aXBsdGljZm9ha2hyZnB0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MDYzMjIsImV4cCI6MjA4MzE4MjMyMn0.Liz22BqK2qfHBcIsIJxGTT4VvMzfBE_yRFraVrUPKq4"
 
@@ -451,6 +310,11 @@ install_mycroft_cli() {
   else
     warn "mycroft-update missing from $MYCROFT_DIR/scripts"
   fi
+  if [ -f "$MYCROFT_DIR/scripts/navigator-connect" ]; then
+    chmod +x "$MYCROFT_DIR/scripts/navigator-connect" || true
+    ln -sf "$MYCROFT_DIR/scripts/navigator-connect" "$HOME/.local/bin/mycroft-navigator"
+    ok "mycroft-navigator reconnect CLI"
+  fi
 }
 
 install_skill_registry() {
@@ -463,15 +327,14 @@ install_skill_registry() {
     exit 1
   fi
   # Surface skills where Goose discovers them: per-skill symlinks under
-  # ~/.agents/skills/mycroft/<skill> (engine-matching <root>/<product>/<skill>
-  # shape; Goose scans ~/.agents/skills recursively). Goose does not read the
+  # ~/.agents/skills/mycroft/<skill> (the shared <root>/<product>/<skill>
+  # shape). Goose scans ~/.agents/skills recursively and does not read the
   # skill registry's "directory" pointer, so without these links the curated
   # skills are off its discovery path.
   mkdir -p "$HOME/.agents/skills/mycroft"
   local _sid skill_dir
-  # Skill set = the engine-resolved manifest (generated by `bsig skills resolve`,
-  # vendored as skills.manifest). The engine catalog is the source of truth; this
-  # installs exactly the Goose-runtime-correct set. Falls back to the on-disk
+  # Skill set = the release-resolved manifest vendored as skills.manifest. This
+  # installs exactly the Goose-runtime-correct set and falls back to on-disk
   # skill dirs if the manifest is absent.
   if [ -s "$MYCROFT_DIR/skills.manifest" ]; then
     while IFS= read -r _sid; do
@@ -763,7 +626,7 @@ configure_goose_persistent_defaults() {
   store_goose_secret FIREWORKS_API_KEY "${FIREWORKS_API_KEY:-}"
   store_goose_secret FIRECRAWL_API_KEY "${FIRECRAWL_API_KEY:-}"
   store_goose_secret SCOUTPOST_API_KEY "${SCOUTPOST_API_KEY:-}"
-  store_goose_secret OSINT_NAV_API_KEY "${OSINT_NAV_API_KEY:-}"
+  [ -n "${OSINT_NAV_API_KEY:-}" ] && store_goose_secret OSINT_NAV_API_KEY "$OSINT_NAV_API_KEY"
 
   # Scoutpost CLI config (if `scout` is installed): ~/.scoutpost/config.json from the
   # just-sourced key. REST-only hosts skip this and use SCOUTPOST_API_KEY from .env.
@@ -1233,19 +1096,8 @@ open_goose_start() {
 say "Mycroft installer"
 mkdir -p "$GOOSE_CONFIG" "$PROVIDERS_DST" "$MYCROFT_PROFILE_DIR" "$MYCROFT_DATA_DIR" "$PLUGINS_DIR"
 warn_legacy_layout
-if [ "$MYCROFT_LEGACY_UPDATE" = "0" ] && ! bootstrap_engine; then
-  warn "New Mycroft installs use OpenKnowledge through the signed Buried Signals Engine. The legacy Obsidian/QMD installer was not started."
-  exit 1
-fi
-if [ -n "${BSIG_BIN:-}" ]; then export BSIG_BIN; fi
 ensure_git
 install_or_update_mycroft
-
-if ! have bsig; then
-  warn "Buried Signals Engine (bsig) is required for the public OpenKnowledge installer."
-  warn "Install/open the Indicator Labs desktop app, or install the signed bsig standalone release, then re-run Mycroft."
-  exit 1
-fi
 
 PREFLIGHT_HELPER="$MYCROFT_DIR/scripts/install-preflight.sh"
 if [ ! -f "$PREFLIGHT_HELPER" ]; then
@@ -1264,40 +1116,7 @@ fi
 say "Opening the Mycroft configurator in your browser"
 echo "  Your choices and API keys go to a local server on 127.0.0.1 only and are"
 echo "  written to $MYCROFT_PROFILE_DIR — nothing is uploaded anywhere."
-SETUP_MODE=(--engine-required)
-if [ "$MYCROFT_LEGACY_UPDATE" = "1" ]; then SETUP_MODE=(--legacy-only); fi
-python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR" "${SETUP_MODE[@]}"
-if [ -f "$MYCROFT_PROFILE_DIR/engine-plan.ready" ]; then
-  ENGINE_PLAN_PATH="$(python3 - "$MYCROFT_PROFILE_DIR/engine-plan.ready" <<'PY'
-import json, sys
-with open(sys.argv[1], encoding="utf-8") as handle:
-    marker = json.load(handle)
-path = marker.get("plan", {}).get("plan_path", "")
-if not isinstance(path, str) or not path:
-    raise SystemExit("engine plan marker has no plan_path")
-print(path)
-PY
-)"
-  ENGINE_BINARY="$(python3 - "$MYCROFT_PROFILE_DIR/engine-plan.ready" <<'PY'
-import json, sys
-with open(sys.argv[1], encoding="utf-8") as handle:
-    marker = json.load(handle)
-binary = marker.get("engine_binary", "")
-if not isinstance(binary, str) or not binary:
-    raise SystemExit("engine plan marker has no engine_binary")
-print(binary)
-PY
-)"
-  [ -x "$ENGINE_BINARY" ] || { warn "The Engine binary recorded by setup is unavailable: $ENGINE_BINARY"; exit 1; }
-  say "Applying your OpenKnowledge Mycroft plan"
-  "$ENGINE_BINARY" apply "$ENGINE_PLAN_PATH"
-  "$ENGINE_BINARY" welcome mycroft
-  exit 0
-fi
-if [ "$MYCROFT_LEGACY_UPDATE" = "0" ]; then
-  warn "The Engine setup did not return a sealed plan; refusing to run the legacy Obsidian/QMD writer."
-  exit 1
-fi
+python3 "$MYCROFT_DIR/install/setup_server.py" --profile-dir "$MYCROFT_PROFILE_DIR" --repo-dir "$MYCROFT_DIR" --legacy-only
 if [ ! -f "$MYCROFT_SETUP_CONFIG" ]; then
   warn "Configuration was not completed; re-run the installer to try again."
   exit 1
@@ -1351,6 +1170,7 @@ INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_
 # ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
 ensure_qmd
+ensure_openknowledge
 install_scout_cli
 install_mycroft_cli
 sync_mycroft_profile
