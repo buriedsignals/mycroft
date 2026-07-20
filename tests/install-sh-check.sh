@@ -92,6 +92,7 @@ includes '15 10 * * 1'
 bash -n scripts/mycroft-doctor || note "scripts/mycroft-doctor does not parse"
 bash -n scripts/mycroft-update || note "scripts/mycroft-update does not parse"
 bash -n scripts/mycroft-uninstall || note "scripts/mycroft-uninstall does not parse"
+[ -x scripts/mycroft-uninstall ] || note "scripts/mycroft-uninstall must be executable so install does not dirty the checkout"
 wincludes() { grep -qF -- "$2" "$1" || note "missing in $1: $2"; }
 wincludes scripts/mycroft-doctor 'export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"'
 wincludes scripts/mycroft-doctor '"shell-safety skill"'
