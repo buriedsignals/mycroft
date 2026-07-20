@@ -1,8 +1,8 @@
 # Mycroft
 
-> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (one cloud frontier: Fireworks serving GLM-5.2 in-house, never routed to the origin lab), and optional sovereign-mode local inference (Gemma 4 31B, or a fine-tuned Qwen) on Ollama or llama-server. Plugins for Spotlight (OSINT investigations), Scoutpost (beat monitoring), DataHound (open-data APIs), and Atelier (visual production) ship alongside.
+> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (one cloud frontier: Fireworks serving GLM-5.2 in-house, never routed to the origin lab), and optional sovereign-mode local inference (Gemma 4 31B, or a fine-tuned Qwen) on Ollama or llama-server. Public Spotlight and the Scoutpost monitoring skill ship alongside. The unified Navigator skill stays locked for anonymous installs, unlocks OSINT discovery for Pro, and adds Data Navigator for Lab. Splash for Visual Journalism is coming in September 2026.
 
-Mycroft is client-side-first: the setup page generates a bash install script with user API keys baked in locally. Keys never transit Buried Signals infrastructure. No backend, no telemetry, no surveillance.
+Mycroft is client-side-first: the public install script starts a local configurator on 127.0.0.1, then applies a signed public bundle. Provider keys stay on the machine, Navigator credentials use the OS keychain, and the installer never downloads Indicator Labs or Engine. No telemetry, no surveillance.
 
 ## Core docs
 
