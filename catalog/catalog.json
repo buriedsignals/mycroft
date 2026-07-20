@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-19T10:00:04Z",
-  "release_sequence": 5,
+  "released_at": "2026-07-20T14:06:11Z",
+  "release_sequence": 6,
   "products": {
     "mycroft": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "repo": "buriedsignals/mycroft",
-      "ref": "d0532df0e7bd5803423dc743a4398a8855d92a51",
+      "ref": "f1a58abcbe357f82a82cd1eb323728dba818b657",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "d0532df0e7bd5803423dc743a4398a8855d92a51",
+        "source_commit": "f1a58abcbe357f82a82cd1eb323728dba818b657",
         "digest": "e1e0bccb34a8b28a0d046fb88d474c21afc937f05b19db5ccd6b2a88e45191ca",
         "writer_mode": "engine_v2",
         "choice_schema": {
