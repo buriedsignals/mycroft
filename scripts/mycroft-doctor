@@ -61,8 +61,26 @@ if [ -f "$MYCROFT_ENV" ]; then
 fi
 
 if [ -f "$GOOSE_CONFIG/config.yaml" ]; then
-  if grep -q '^GOOSE_PROVIDER:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose provider persisted"; else bad_check "GOOSE_PROVIDER missing from Goose config"; fi
-  if grep -q '^GOOSE_MODEL:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose model persisted"; else bad_check "GOOSE_MODEL missing from Goose config"; fi
+  # Goose 1.43 migrates the legacy top-level GOOSE_PROVIDER/GOOSE_MODEL keys
+  # into active_provider plus providers.<id>.model on its first invocation.
+  # Both forms are valid persisted configuration.
+  if grep -q '^GOOSE_PROVIDER:' "$GOOSE_CONFIG/config.yaml" ||
+     grep -Eq '^active_provider:[[:space:]]*[^[:space:]]' "$GOOSE_CONFIG/config.yaml"; then
+    ok_check "Goose provider persisted"
+  else
+    bad_check "Goose provider missing from Goose config"
+  fi
+  if grep -q '^GOOSE_MODEL:' "$GOOSE_CONFIG/config.yaml" ||
+     awk '
+       /^providers:[[:space:]]*$/ { in_providers = 1; next }
+       in_providers && /^[^[:space:]]/ { in_providers = 0 }
+       in_providers && /^    model:[[:space:]]*[^[:space:]]/ { found = 1 }
+       END { exit(found ? 0 : 1) }
+     ' "$GOOSE_CONFIG/config.yaml"; then
+    ok_check "Goose model persisted"
+  else
+    bad_check "Goose model missing from Goose config"
+  fi
   if grep -q '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose Mycroft soul persisted"; else bad_check "GOOSE_MOIM_MESSAGE_FILE missing from Goose config"; fi
 fi
 
