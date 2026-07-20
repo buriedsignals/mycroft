@@ -35,6 +35,10 @@ fi
 TODAY="$(date +%F)"
 MYCROFT_OS="${MYCROFT_OS:-$(uname -s)}"
 export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
+# Website setup is already interactive in the loopback configurator. Keep
+# Goose's first-run telemetry question from introducing a second terminal
+# prompt; users can opt in later from Goose settings.
+export GOOSE_TELEMETRY_ENABLED="${GOOSE_TELEMETRY_ENABLED:-false}"
 
 XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"

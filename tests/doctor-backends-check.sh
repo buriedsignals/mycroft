@@ -16,6 +16,27 @@ grep -qF 'FAIL  scrape backend unavailable' "$tmp/none.out" \
 grep -qF 'FAIL  search backend unavailable' "$tmp/none.out" \
   || fail "doctor did not fail when every search backend was absent"
 
+mkdir -p "$tmp/home/.config/goose"
+cat > "$tmp/home/.config/goose/config.yaml" <<'GOOSE_CONFIG'
+GOOSE_RECIPE_PATH: /test/recipes
+GOOSE_MOIM_MESSAGE_FILE: /test/SOUL.md
+providers:
+  local:
+    enabled: true
+    model: gemma4:31b-it-qat
+    configured: true
+active_provider: local
+GOOSE_CONFIG
+
+HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" XDG_DATA_HOME="$tmp/home/.local/share" \
+  SEARXNG_URL="http://127.0.0.1:1" PATH="/usr/bin:/bin" \
+  bash scripts/mycroft-doctor >"$tmp/modern-goose.out" 2>&1 || true
+
+grep -qF 'OK    Goose provider persisted' "$tmp/modern-goose.out" \
+  || fail "doctor rejected Goose 1.43 active_provider config"
+grep -qF 'OK    Goose model persisted' "$tmp/modern-goose.out" \
+  || fail "doctor rejected Goose 1.43 nested provider model"
+
 cat > "$tmp/bin/firecrawl" <<'FIRECRAWL'
 #!/usr/bin/env bash
 [ "${1:-}" = "--version" ] && { echo 'firecrawl test'; exit 0; }
