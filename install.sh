@@ -80,7 +80,9 @@ elif [ -f "$HOME/.bashrc" ]; then SHELL_RC="$HOME/.bashrc"
 else SHELL_RC="$HOME/.zshrc"; touch "$SHELL_RC"
 fi
 
-have() { command -v "$1" >/dev/null 2>&1; }
+# Resolve external executables only. `command -v` also reports shell functions,
+# which made the `ok()` status logger masquerade as the OpenKnowledge `ok` CLI.
+have() { type -P "$1" >/dev/null 2>&1; }
 say()  { printf "\n\033[1;34m>\033[0m %s\n" "$*"; }
 ok()   { printf "  \033[1;32m+\033[0m %s\n" "$*"; }
 warn() { printf "  \033[1;33m!\033[0m %s\n" "$*"; }
