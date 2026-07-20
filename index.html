@@ -3030,9 +3030,9 @@ html.js .is-in .tw__in {
           <span class="day-time__hour">02</span><span class="day-time__ampm">pm</span>
         </aside>
         <button class="day-card" type="button" data-dialog="dlg-vault">
-          <p class="card__kicker"><span>§ Vault · <strong>Obsidian</strong></span></p>
+          <p class="card__kicker"><span>§ Workspace · <strong>OpenKnowledge</strong></span></p>
           <h3 class="card__title">Your research, <em>stored locally.</em></h3>
-          <p class="card__body">Everything above lands in one place: an Obsidian vault on your disk. Sources, claims, briefs — plain markdown, linked into a graph you own.</p>
+          <p class="card__body">Everything above lands in one local OpenKnowledge workspace. Sources, claims, briefs — searchable, linked, and yours.</p>
           <p class="card__foot">markdown · linked · yours <span class="card__more">→ see the vault</span></p>
         </button>
       </article>
@@ -3103,13 +3103,13 @@ html.js .is-in .tw__in {
     <dialog class="skill-dialog" id="dlg-vault" aria-labelledby="dlg-vault-title">
       <div class="skill-dialog__inner">
         <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ skills · obsidian + knowledge-primitives</p>
+        <p class="skill-dialog__kicker">§ skill · knowledge-workspace</p>
         <h3 class="skill-dialog__title" id="dlg-vault-title">The vault<em>.</em></h3>
         <div class="skill-dialog__media" hidden>
           <video controls muted loop playsinline preload="metadata" src="assets/vault-graph.mp4"></video>
-          <p class="skill-dialog__cap">The vault graph in Obsidian — every source, claim, and brief a node.</p>
+          <p class="skill-dialog__cap">The OpenKnowledge graph — every source, claim, and brief a node.</p>
         </div>
-        <p class="skill-dialog__body">The vault is the point. Everything Mycroft produces — briefs, source records, claims, findings — is saved as ordinary text notes in Obsidian, a free note-taking app, on your own computer. Notes link to each other the way reporting actually connects: this source gave that quote, that claim rests on this document. Over weeks it grows into the graph you see above — your beat, mapped. Nothing syncs anywhere unless you decide it should, and if you stop using Mycroft tomorrow, the notes still open in any text editor.</p>
+        <p class="skill-dialog__body">The workspace is the point. Everything Mycroft produces — briefs, source records, claims, findings — is journaled through OpenKnowledge on your own computer. Notes link to each other the way reporting actually connects: this source gave that quote, that claim rests on this document. Over weeks it grows into the graph you see above — your beat, mapped. Nothing syncs anywhere unless you decide it should, and the underlying Markdown remains portable.</p>
         <ul class="skill-dialog__list" role="list">
           <li>Plain text files — readable in anything, forever</li>
           <li>Notes link sources ↔ claims ↔ stories</li>
@@ -3127,8 +3127,8 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Goose, Gemma,<br><em>Obsidian.</em></h2>
-      <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with Gemma 4 31B running fully local — open-weight, quantization-aware, no cloud required. It also sets up Obsidian as the place where briefs, sources, claims, and findings land as local markdown.</p>
+      <h2 class="display display--section">Goose, Gemma,<br><em>OpenKnowledge.</em></h2>
+      <p class="lead">Mycroft isn't an app. It's an extension pack for <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a>, shipped with Gemma 4 31B running fully local — open-weight, quantization-aware, no cloud required. It uses OpenKnowledge as the local workspace where briefs, sources, claims, and findings stay searchable and connected.</p>
     </div>
 
     <div class="equation" data-cascade>
@@ -3153,17 +3153,18 @@ html.js .is-in .tw__in {
       <div class="term-op" style="--delay: 340ms"><span>+</span></div>
 
       <div class="term" style="--delay: 280ms">
-        <span class="term__pre">↳ vault</span>
-        <h3 class="term__name">Obsidian<em class="term__dot">.</em></h3>
+        <span class="term__pre">↳ workspace</span>
+        <h3 class="term__name"><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge<em class="term__dot">.</em></a></h3>
         <span class="term__rule"></span>
-        <p class="term__role">your knowledge base</p>
-        <p class="term__spec">local · on disk · markdown</p>
+        <p class="term__role">your knowledge workspace</p>
+        <p class="term__spec">local · searchable · portable</p>
       </div>
     </div>
 
     <nav class="links-row" aria-label="Runtime resources" data-reveal style="--delay: 200ms">
       <a href="https://huggingface.co/unsloth/gemma-4-31B-it-GGUF" target="_blank" rel="noreferrer">Download the 31B →</a>
       <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs →</a>
+      <a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge →</a>
     </nav>
   </section>
 
@@ -3213,9 +3214,9 @@ html.js .is-in .tw__in {
 
       <article class="stamp" style="--delay: 400ms; --tilt: -1.2deg">
         <span class="stamp__seal" style="--seal-tilt: -6deg"><span>On disk</span></span>
-        <h3 class="stamp__title">Vault stays on disk</h3>
-        <p class="stamp__body">Findings write to your Obsidian vault. Nothing syncs.</p>
-        <p class="stamp__foot">Obsidian · No sync</p>
+        <h3 class="stamp__title">Workspace stays local</h3>
+        <p class="stamp__body">Findings write to your OpenKnowledge workspace. Nothing syncs unless you choose it.</p>
+        <p class="stamp__foot">OpenKnowledge · Local</p>
       </article>
 
       <article class="stamp" style="--delay: 500ms; --tilt: 0.9deg">
@@ -3313,16 +3314,16 @@ html.js .is-in .tw__in {
         </div>
 
         <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">iii.</span> Run it — double-click. Brew installs Goose + Obsidian, clones the pack, configures your shell.</p>
+          <p class="t-line t-line--cmt"><span class="t-rn">iii.</span> Run it — double-click. The installer configures Goose + OpenKnowledge, clones the pack, and wires your shell.</p>
           <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">chmod</span> <span class="t-flag">+x</span> <span class="t-arg">./mycroft-setup.command</span> <span class="t-op">&amp;&amp;</span> <span class="t-arg">./mycroft-setup.command</span></p>
-          <p class="t-line t-line--out">brew installs goose + obsidian · clones the pack · configures shell</p>
+          <p class="t-line t-line--out">configures goose + openknowledge · clones the pack · wires your shell</p>
         </div>
 
         <div class="t-divider" aria-hidden="true"></div>
 
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> goose runtime · <span class="t-arg">installed</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> gemma 4 31b weights · <span class="t-arg">loaded</span> (QAT q4)</p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> obsidian vault · <span class="t-arg">~/Documents/Mycroft</span></p>
+        <p class="t-line t-line--ok"><span class="t-tick">✓</span> openknowledge workspace · <span class="t-arg">mycroft</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> plugins enabled · <span class="t-arg">Spotlight · Scoutpost</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> local-first mode · <span class="t-arg">ON</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> zero data retention · <span class="t-arg">confirmed</span></p>
@@ -3510,7 +3511,7 @@ html.js .is-in .tw__in {
       <li><a href="https://www.torproject.org/" target="_blank" rel="noreferrer">Tor Project</a> <span>— opt-in anonymous scraping</span></li>
       <li><a href="https://github.com/openai/whisper" target="_blank" rel="noreferrer">Whisper</a> <span>— open-weight local dictation</span></li>
       <li><a href="https://github.com/rany2/edge-tts" target="_blank" rel="noreferrer">Edge TTS</a> <span>— rany2 · spoken briefings</span></li>
-      <li><a href="https://obsidian.md/" target="_blank" rel="noreferrer">Obsidian</a> <span>— the knowledge vault</span></li>
+      <li><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge</a> <span>— local knowledge, search, and agent workspace</span></li>
       <li><a href="https://c2pa.org/" target="_blank" rel="noreferrer">C2PA</a> <span>— content-provenance standard behind SIFT manifests</span></li>
     </ul>
   </section>
