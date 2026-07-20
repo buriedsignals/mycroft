@@ -131,9 +131,10 @@ curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
 ```
 
 One static, reviewable script ([`install.sh`](install.sh)) for every install.
-Engine resolves each selected skill once into `~/.ok/skills/<name>` and projects
-the flat name into Goose's discovery directory. The script also fetches this
-repo, then opens a local configurator page in the browser —
+It verifies and applies the signed, reduced Mycroft bundle exported by Engine
+at release time; the public path never downloads or executes Engine itself.
+The bundle places the resolved skills under `~/.agents/skills/mycroft/`. The
+script then opens a local configurator page in the browser —
 served from `127.0.0.1` by `install/setup_server.py`. Sovereignty preference,
 provider keys, plugins, and vault paths (with a native folder picker) are all
 collected there; keys are verified live with each provider and written straight
@@ -148,6 +149,13 @@ The installer configures Goose, OpenKnowledge, provider files, recipe discovery,
 workspace paths, Mycroft instructions, updater recipes, scheduled workflows, and
 the first-run menu. Architecture details live in
 [docs/architecture.md](docs/architecture.md).
+
+`mycroft update` applies the latest signed public release rather than following
+a branch head. `mycroft uninstall` removes only unchanged installer-owned files
+and preserves vault/profile data; pass `--remove-data` only when that removal is
+intentional. Navigator is optional: Skip installs the same unified skill in its
+locked state, Pro unlocks OSINT Navigator, and Lab additionally unlocks the Data
+Navigator tool.
 
 ### Local Install
 
