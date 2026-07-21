@@ -69,7 +69,7 @@
       "selectable_default": true,
       "install_path": "~/.mycroft/plugins/spotlight",
       "mode": "inherits_mycroft_sovereignty",
-      "env": ["SPOTLIGHT_VAULT_PATH", "SPOTLIGHT_MONITORING_BACKEND"]
+      "env": ["SPOTLIGHT_VAULT_PATH"]
     },
     {
       "name": "scoutpost",

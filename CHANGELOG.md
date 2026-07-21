@@ -48,6 +48,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Changed — Scoutpost ownership
+
+- Scoutpost remains a Mycroft skill and configuration surface. Mycroft can
+  create and manage scouts, retrieve information units, and preserve useful
+  results in its durable knowledge workspace.
+- Generated Spotlight configuration no longer advertises a direct Scoutpost
+  integration. The updater now reads Mycroft's `plugins.scoutpost.enabled`
+  state instead of legacy `SPOTLIGHT_*` handoff markers.
+
 ### Changed — installation architecture (supersedes the generated-installer model)
 - **One static installer**: `curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash`.
   `install.sh` is a real, reviewable file in the repo (shellcheck/bash -n in CI)

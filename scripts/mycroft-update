@@ -67,6 +67,23 @@ replace_skills() {
   echo "skills re-placed from skills.manifest"
 }
 
+scoutpost_enabled() {
+  [ -n "${SCOUTPOST_API_KEY:-}" ] && return 0
+  [ -f "${MYCROFT_CONFIG:-}" ] || return 1
+  python3 - "$MYCROFT_CONFIG" <<'PY'
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as handle:
+        config = json.load(handle)
+except (OSError, ValueError):
+    raise SystemExit(1)
+
+raise SystemExit(0 if config.get("plugins", {}).get("scoutpost", {}).get("enabled") is True else 1)
+PY
+}
+
 refresh_profile() {
   mkdir -p "$MYCROFT_PROFILE_DIR"
   mkdir -p "$HOME/.local/bin"
@@ -166,7 +183,7 @@ For adversarial fact-checking, active case evidence trails, document/image-heavy
 Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
 PROFILE_SPOTLIGHT_EOF
     fi
-    if [ -n "${SCOUTPOST_API_KEY:-}" ] || [ "${SPOTLIGHT_MONITORING_BACKEND:-}" = "scoutpost" ]; then
+    if scoutpost_enabled; then
       cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_SCOUTPOST_EOF'
 
 ## Scoutpost Installed Context

@@ -1290,8 +1290,7 @@ if [ "$ENABLE_SPOTLIGHT" = "1" ]; then
     "junkipedia": {"enabled": $JUNKIPEDIA_JSON, "status": "unknown", "source": "mycroft-setup"},
     "dev_browser": {"enabled": $DEVBROWSER_JSON, "status": "unknown", "source": "mycroft-setup"},
     "unpaywall": {"enabled": false, "status": "unknown", "source": "mycroft-setup"},
-    "rlm": {"enabled": false, "mode": "off", "model": null, "prefilter": false, "hybrid": false, "evidence_boundary": "lead-only; never verified or publishable"},
-    "scoutpost": {"enabled": $SCOUTPOST_JSON, "status": "unknown", "source": "mycroft-setup", "api_base": "https://www.scoutpost.ai/api/v1"}
+    "rlm": {"enabled": false, "mode": "off", "model": null, "prefilter": false, "hybrid": false, "evidence_boundary": "lead-only; never verified or publishable"}
   },
   "created_at": "$NOW_UTC",
   "last_used": "$NOW_UTC"

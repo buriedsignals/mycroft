@@ -243,9 +243,6 @@ def build_env_lines(d):
         lines.append(f'SPOTLIGHT_VAULT_PATH="{spotlight_vault}"')
         lines.append(f'SPOTLIGHT_INGEST_TARGET="{vault}"')
         lines.append("SPOTLIGHT_SOVEREIGNTY_INHERITS_MYCROFT=1")
-        if d.get("scoutpost"):
-            lines.append("SPOTLIGHT_MONITORING_BACKEND=scoutpost")
-            lines.append("SPOTLIGHT_SCOUT_REQUESTS=scoutpost")
         if d.get("junkipediaKey"):
             lines.append("JUNKIPEDIA_API_KEY=" + shlex.quote(d["junkipediaKey"]))
     return "\n".join(lines) + "\n"

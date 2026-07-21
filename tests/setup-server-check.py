@@ -127,7 +127,8 @@ class UnitChecks(unittest.TestCase):
         self.assertIn("GOOSE_MODEL=accounts/fireworks/models/glm-5p2", env)
         self.assertIn("FIRECRAWL_API_KEY=fc-test", env)
         self.assertNotIn("OSINT_NAV_API_KEY", env)
-        self.assertIn("SPOTLIGHT_MONITORING_BACKEND=scoutpost", env)
+        self.assertNotIn("SPOTLIGHT_MONITORING_BACKEND", env)
+        self.assertNotIn("SPOTLIGHT_SCOUT_REQUESTS", env)
         self.assertNotIn("OSINT_NAVIGATOR", env)
         self.assertNotIn("BROWSERUSE", env)
 

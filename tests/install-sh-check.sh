@@ -101,6 +101,9 @@ wincludes scripts/mycroft-update 'doctor failed after update; rolling back app c
 wincludes scripts/mycroft-update 'provision-sovereign.sh'
 wincludes scripts/mycroft-update 'latest signed public bundle'
 wincludes scripts/mycroft-update 'releases/latest/download'
+wincludes scripts/mycroft-update 'config.get("plugins", {}).get("scoutpost", {}).get("enabled") is True'
+if grep -qF -- 'SPOTLIGHT_MONITORING_BACKEND' scripts/mycroft-update; then note 'legacy Spotlight-owned Scoutpost marker remains in updater'; fi
+if grep -qF -- 'SPOTLIGHT_SCOUT_REQUESTS' scripts/mycroft-update; then note 'legacy Spotlight scout-request marker remains in updater'; fi
 
 # Getting-started guide written by configurator, opened at the end
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'
@@ -114,6 +117,7 @@ includes '"runtime": "goose"'
 includes '"search_library": "firecrawl"'
 includes '"case_workspace_root": "$SPOTLIGHT_VAULT_PATH/cases"'
 includes '"dev_browser": {"enabled": $DEVBROWSER_JSON'
+excludes '"scoutpost": {"enabled": $SCOUTPOST_JSON, "status": "unknown", "source": "mycroft-setup"'
 includes '[ -n "${OSINT_NAV_API_KEY:-}" ] && store_goose_secret OSINT_NAV_API_KEY'
 includes 'integrations/preflight.py'
 excludes 'handoff-to-mycroft'
