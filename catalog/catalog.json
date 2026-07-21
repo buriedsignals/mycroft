@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-20T19:23:36Z",
-  "release_sequence": 14,
+  "released_at": "2026-07-21T08:58:33Z",
+  "release_sequence": 15,
   "products": {
     "mycroft": {
-      "version": "0.3.4",
+      "version": "0.3.5",
       "repo": "buriedsignals/mycroft",
-      "ref": "316d6981bf80d7e3f0943aca6e8e505e97d6f2c6",
+      "ref": "b42531688772795866357262572a4b6020a41010",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "316d6981bf80d7e3f0943aca6e8e505e97d6f2c6",
+        "source_commit": "b42531688772795866357262572a4b6020a41010",
         "digest": "e1e0bccb34a8b28a0d046fb88d474c21afc937f05b19db5ccd6b2a88e45191ca",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -590,13 +590,13 @@
       }
     },
     "spotlight": {
-      "version": "2.1.5",
+      "version": "2.1.6",
       "repo": "buriedsignals/spotlight",
-      "ref": "05419e0c6cb1760f2eceee0c5175f70312d0d080",
+      "ref": "0dcd08519b1549d8daa82a35724d86526b806a3d",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "05419e0c6cb1760f2eceee0c5175f70312d0d080",
+        "source_commit": "0dcd08519b1549d8daa82a35724d86526b806a3d",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -622,7 +622,7 @@
       "entitlement": "navigator.core",
       "path": "app/static/navigator-skill.md",
       "requires_keys": [],
-      "version": "0.1.0",
+      "version": "0.1.1",
       "products": [
         "mycroft",
         "spotlight"
@@ -636,7 +636,7 @@
       "package": {
         "distribution": "navigator-cli",
         "path": "app/static/navigator-skill.md",
-        "sha256": "5935aa6fbe622444881e76acd21f0357c68cbfec5f0fde0d051f098c09e72a37"
+        "sha256": "0a2043c8b6c211df6bf042f094e82260d0a585a35b5a66104b730b95149f443d"
       }
     },
     {
@@ -1386,7 +1386,7 @@
     "@tobilu/qmd": "2.5.3",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
-    "navigator-cli": "0.1.0",
+    "navigator-cli": "0.1.1",
     "scoutpost-cli": "0.1.7",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },
