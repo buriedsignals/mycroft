@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import urllib.error
@@ -138,7 +139,7 @@ def build_manifest(base: Path, credential_id: str | None, endpoint: str | None) 
         "status": "unsigned",
         "signing": {
             "profile": "noosphere-c2pa",
-            "requires_api_key": False,
+            "requires_api_key": True,
             "requires_signing_credential": True,
             "credential_id": credential_id,
             "endpoint": endpoint,
@@ -149,18 +150,21 @@ def build_manifest(base: Path, credential_id: str | None, endpoint: str | None) 
     }
 
 
-def post_for_signing(endpoint: str, manifest: dict[str, Any], artifact_path: str | None, credential_id: str | None) -> dict[str, Any]:
+def post_for_signing(endpoint: str, manifest: dict[str, Any], artifact_path: str | None, credential_id: str | None, api_key: str | None = None) -> dict[str, Any]:
     payload = {
         "artifact_path": artifact_path,
         "provenance_manifest": manifest,
         "credential_id": credential_id,
     }
     body = json.dumps(payload).encode("utf-8")
+    headers = {"Content-Type": "application/json", "User-Agent": "Mycroft-C2PA/1.0"}
+    if api_key:
+        headers["X-API-Key"] = api_key
     request = urllib.request.Request(
         endpoint,
         data=body,
         method="POST",
-        headers={"Content-Type": "application/json", "User-Agent": "Mycroft-C2PA/1.0"},
+        headers=headers,
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -172,6 +176,11 @@ def main() -> int:
     parser.add_argument("--output", help="Output path; defaults to data/provenance-manifest.json")
     parser.add_argument("--credential-id", default=None)
     parser.add_argument("--sign-endpoint", default=None)
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("NOOSPHERE_PROVENANCE_API_KEY"),
+        help="Noosphere signing API key (X-API-Key). Defaults to $NOOSPHERE_PROVENANCE_API_KEY",
+    )
     parser.add_argument("--artifact", default=None)
     parser.add_argument("--receipt-output", default=None)
     parser.add_argument("--skip-validation", action="store_true")
@@ -198,7 +207,7 @@ def main() -> int:
             else base / "data/provenance-signing-receipt.json"
         )
         try:
-            receipt = post_for_signing(args.sign_endpoint, manifest, args.artifact, args.credential_id)
+            receipt = post_for_signing(args.sign_endpoint, manifest, args.artifact, args.credential_id, args.api_key)
             receipt_path.parent.mkdir(parents=True, exist_ok=True)
             receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
             manifest["status"] = "signed"
