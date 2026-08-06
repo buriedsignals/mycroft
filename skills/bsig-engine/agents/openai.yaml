@@ -1,0 +1,4 @@
+interface:
+  display_name: "Indicator Engine"
+  short_description: "Safely inspect and operate the bsig engine"
+  default_prompt: "Use $bsig-engine to check my Indicator Labs installation and propose the safest next action."
