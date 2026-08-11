@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-07-21T10:10:39Z",
-  "release_sequence": 16,
+  "released_at": "2026-08-11T07:26:34Z",
+  "release_sequence": 17,
   "products": {
     "mycroft": {
-      "version": "0.3.5",
+      "version": "0.3.6",
       "repo": "buriedsignals/mycroft",
-      "ref": "b42531688772795866357262572a4b6020a41010",
+      "ref": "22c2ff0663b9a2c9cf2f9d9b8c61a47da5b62b7e",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "b42531688772795866357262572a4b6020a41010",
+        "source_commit": "22c2ff0663b9a2c9cf2f9d9b8c61a47da5b62b7e",
         "digest": "e1e0bccb34a8b28a0d046fb88d474c21afc937f05b19db5ccd6b2a88e45191ca",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -638,6 +638,26 @@
         "path": "app/static/navigator-skill.md",
         "sha256": "0a2043c8b6c211df6bf042f094e82260d0a585a35b5a66104b730b95149f443d"
       }
+    },
+    {
+      "id": "bsig-engine",
+      "name": "Indicator Engine",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/bsig-engine",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "mycroft"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/mycroft",
+      "kind": "portable"
     },
     {
       "id": "copywriting",
