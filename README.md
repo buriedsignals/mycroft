@@ -4,11 +4,11 @@
 
 ### Goose extension pack for investigative journalists
 
-**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 16 skills, 27 recipes, open-weight and local-capable, ZDR cloud optional.**
+**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 17 skills, 28 recipes, open-weight and local-capable, ZDR cloud optional.**
 
 [Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![16 Skills](https://img.shields.io/badge/skills-16-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![27 Recipes](https://img.shields.io/badge/recipes-27-ff6d00?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/recipes)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![17 Skills](https://img.shields.io/badge/skills-17-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![28 Recipes](https://img.shields.io/badge/recipes-28-ff6d00?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/recipes)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
 
 [![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
 
@@ -49,6 +49,7 @@ that can run with ZDR cloud models or local inference.
 | Vault Q&A | Answers questions over local newsroom memory and live sources with citations. | `vault-qa` |
 | Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured knowledge. | `vault-sync`, `newsletter-summarize` |
 | Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
+| Perspective audit | Traces observed viewpoints from source passages through summaries and an optional draft. | `perspective-audit` |
 | Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
 | Morning brief | Builds a recurring digest from configured beats, watchlists, AgentMail, bookmarks, and recent vault changes. | `morning-brief` |
 | Vault audit | Finds weak claims, missing frontmatter, orphaned sources, and stale handoffs. | `vault-audit` |
@@ -217,6 +218,7 @@ provider posture.
 - `start`
 - `vault-qa`
 - `fact-check`
+- `perspective-audit`
 - `source-verify`
 - `morning-brief`
 - `morning-brief-preflight`

@@ -1,0 +1,356 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://buriedsignals.com/schemas/mycroft/perspective-audit-v1.json",
+  "title": "Mycroft Perspective Audit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "audit_id",
+    "created_at",
+    "topic",
+    "corpus",
+    "perspectives",
+    "summaries",
+    "draft_sentences",
+    "lineage",
+    "audit_findings",
+    "reporting_gaps",
+    "human_review"
+  ],
+  "properties": {
+    "schema": { "const": "perspective-audit-v1" },
+    "audit_id": { "type": "string", "pattern": "^PA-[A-Za-z0-9._-]+$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "topic": { "type": "string", "minLength": 1 },
+    "question": { "type": "string" },
+    "corpus": { "$ref": "#/definitions/corpus" },
+    "perspectives": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/perspective" }
+    },
+    "summaries": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/summary" }
+    },
+    "draft_sentences": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/draft_sentence" }
+    },
+    "lineage": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/lineage_edge" }
+    },
+    "audit_findings": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/finding" }
+    },
+    "reporting_gaps": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/reporting_gap" }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "human_review": { "$ref": "#/definitions/review" }
+  },
+  "definitions": {
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "enum": ["unreviewed", "in_review", "approved", "rejected"]
+        },
+        "reviewer": { "type": "string" },
+        "reviewed_at": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    },
+    "corpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "description",
+        "evidence_ids",
+        "included_source_count",
+        "included_passage_count",
+        "excluded",
+        "sampling_notes",
+        "deduplication_notes",
+        "representativeness_statement"
+      ],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "evidence_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^E-[A-Za-z0-9._-]+$"
+          }
+        },
+        "included_source_count": { "type": "integer", "minimum": 0 },
+        "included_passage_count": { "type": "integer", "minimum": 0 },
+        "excluded": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["material", "reason"],
+            "properties": {
+              "material": { "type": "string" },
+              "reason": { "type": "string" }
+            }
+          }
+        },
+        "sampling_notes": { "type": "string" },
+        "deduplication_notes": { "type": "string" },
+        "representativeness_statement": { "type": "string", "minLength": 1 }
+      }
+    },
+    "perspective": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "description",
+        "stance_axes",
+        "evidence_refs",
+        "observed_source_count",
+        "extraction_confidence",
+        "representativeness",
+        "counterevidence_refs",
+        "human_review"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^P-[A-Za-z0-9._-]+$" },
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "stance_axes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "observed_source_count": { "type": "integer", "minimum": 1 },
+        "extraction_confidence": { "enum": ["high", "medium", "low"] },
+        "representativeness": { "enum": ["corpus_only", "unknown"] },
+        "counterevidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "sensitivity_notes": { "type": "string" },
+        "human_review": { "$ref": "#/definitions/review" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "perspective_refs",
+        "evidence_refs",
+        "support_type",
+        "omitted_evidence_refs",
+        "human_review"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^S-[A-Za-z0-9._-]+$" },
+        "text": { "type": "string", "minLength": 1 },
+        "perspective_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^P-[A-Za-z0-9._-]+$" }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "support_type": { "enum": ["direct", "indirect", "inferred"] },
+        "omitted_evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "human_review": { "$ref": "#/definitions/review" }
+      }
+    },
+    "draft_sentence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text",
+        "summary_refs",
+        "perspective_refs",
+        "evidence_refs",
+        "flags",
+        "model_signals",
+        "suggested_rewrites",
+        "human_review"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^D-[A-Za-z0-9._-]+$" },
+        "text": { "type": "string", "minLength": 1 },
+        "summary_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^S-[A-Za-z0-9._-]+$" }
+        },
+        "perspective_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^P-[A-Za-z0-9._-]+$" }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/finding_type" }
+        },
+        "model_signals": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/model_signal" }
+        },
+        "suggested_rewrites": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/rewrite" }
+        },
+        "human_review": { "$ref": "#/definitions/review" }
+      }
+    },
+    "model_signal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["detector", "label", "explanation"],
+      "properties": {
+        "detector": { "type": "string" },
+        "label": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "explanation": { "type": "string" }
+      }
+    },
+    "rewrite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "proposed_text",
+        "problem_addressed",
+        "rationale",
+        "claim_meaning_changed",
+        "human_review"
+      ],
+      "properties": {
+        "proposed_text": { "type": "string", "minLength": 1 },
+        "problem_addressed": { "$ref": "#/definitions/finding_type" },
+        "rationale": { "type": "string", "minLength": 1 },
+        "claim_meaning_changed": { "type": "boolean" },
+        "human_review": { "$ref": "#/definitions/review" }
+      }
+    },
+    "lineage_edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from_ref", "to_ref", "relation", "note"],
+      "properties": {
+        "from_ref": { "type": "string" },
+        "to_ref": { "type": "string" },
+        "relation": {
+          "enum": ["supports", "summarized_as", "merged_into", "propagates_to", "contradicts"]
+        },
+        "note": { "type": "string" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "severity",
+        "target_refs",
+        "evidence_refs",
+        "rationale",
+        "suggested_action",
+        "human_review"
+      ],
+      "properties": {
+        "id": { "type": "string", "pattern": "^F-[A-Za-z0-9._-]+$" },
+        "type": { "$ref": "#/definitions/finding_type" },
+        "severity": { "enum": ["info", "warning", "critical"] },
+        "target_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "evidence_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/definitions/evidence_ref" }
+        },
+        "rationale": { "type": "string", "minLength": 1 },
+        "suggested_action": { "type": "string", "minLength": 1 },
+        "human_review": { "$ref": "#/definitions/review" }
+      }
+    },
+    "reporting_gap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "description", "basis", "observed_in_corpus"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^G-[A-Za-z0-9._-]+$" },
+        "type": {
+          "enum": [
+            "possible_unobserved_viewpoint",
+            "missing_source_type",
+            "insufficient_corpus",
+            "unresolved_disagreement",
+            "other"
+          ]
+        },
+        "description": { "type": "string", "minLength": 1 },
+        "basis": { "type": "string", "minLength": 1 },
+        "observed_in_corpus": { "const": false }
+      }
+    },
+    "finding_type": {
+      "enum": [
+        "unsupported_assertion",
+        "omitted_perspective",
+        "overrepresented_perspective",
+        "collapsed_disagreement",
+        "attribution_drift",
+        "certainty_inflation",
+        "loaded_language",
+        "stereotyping",
+        "false_balance",
+        "factual_disagreement_as_opinion",
+        "other"
+      ]
+    },
+    "evidence_ref": {
+      "type": "string",
+      "pattern": "^E-[A-Za-z0-9._-]+(?:#[A-Za-z0-9._:-]+)?$"
+    }
+  }
+}

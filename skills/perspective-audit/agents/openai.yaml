@@ -1,0 +1,4 @@
+interface:
+  display_name: "Perspective audit"
+  short_description: "Trace viewpoints through sources and drafts"
+  default_prompt: "Use $perspective-audit to trace the perspectives in these sources through this draft."

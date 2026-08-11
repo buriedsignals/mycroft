@@ -26,7 +26,7 @@ Mycroft is client-side-first: the public install script starts a local configura
 
 ## Recipes
 
-- [recipes/](recipes/): Goose Recipe YAML files — morning-brief, fact-check, vault-qa, source-verify, newsletter-summarize, vault-sync, firecrawl-*, apify-social/*, dev-browser, liteparse, voice-setup, ft-preflight
+- [recipes/](recipes/): Goose Recipe YAML files — morning-brief, fact-check, perspective-audit, vault-qa, source-verify, newsletter-summarize, vault-sync, firecrawl-*, apify-social/*, dev-browser, liteparse, voice-setup, ft-preflight
 
 ## Providers
 

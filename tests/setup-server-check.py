@@ -160,6 +160,7 @@ class UnitChecks(unittest.TestCase):
         ids = {s["id"] for s in reg["skills"]}
         for expected in ["knowledge-primitives", "qmd", "obsidian", "obsidian-ingest",
                          "fact-check", "mycroft-maintenance", "web-acquisition", "scoutpost",
+                         "perspective-audit",
                          "navigator",
                          "spotlight", "spotlight-ingest", "spotlight-monitoring",
                          "spotlight-integrations"]:
