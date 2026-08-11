@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-08-11T08:11:56Z",
-  "release_sequence": 18,
+  "released_at": "2026-08-11T08:40:36Z",
+  "release_sequence": 19,
   "products": {
     "mycroft": {
       "version": "0.3.6",
@@ -1379,6 +1379,11 @@
     }
   ],
   "artifacts": [
+    {
+      "id": "homebrew-pkg",
+      "url": "https://github.com/Homebrew/brew/releases/download/6.0.16/Homebrew.pkg",
+      "sha256": "37c043dec2741810d2516666f00afebdeca304c63fa2f9cc1241d3dbed675b0f"
+    },
     {
       "id": "gemma4-26b-a4b-q4km",
       "url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/c462057f7ed65ccdb7f7e0778fae67894d425d92/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
