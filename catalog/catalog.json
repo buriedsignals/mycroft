@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.0",
-  "released_at": "2026-08-11T08:40:36Z",
-  "release_sequence": 19,
+  "released_at": "2026-08-11T08:51:35Z",
+  "release_sequence": 20,
   "products": {
     "mycroft": {
       "version": "0.3.6",
@@ -689,6 +689,26 @@
       "path": "skills/fact-check",
       "requires_keys": [],
       "version": "0.2.1",
+      "products": [
+        "mycroft"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/mycroft",
+      "kind": "portable"
+    },
+    {
+      "id": "perspective-audit",
+      "name": "Perspective audit",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/perspective-audit",
+      "requires_keys": [],
+      "version": "0.1.0",
       "products": [
         "mycroft"
       ],
