@@ -427,12 +427,15 @@ Use $MYCROFT_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_
 
 ## Fact-Checking Route
 
-When the user asks to fact-check, verify, audit citations, inspect claims, or stress-test a draft, load the Mycroft fact-check skill first:
+When the user asks to fact-check reporting, verify a journalistic claim, audit citations in a story, inspect source assertions, or stress-test a publication draft, load the Mycroft fact-check skill first:
 
 - $MYCROFT_SKILLS_DIR/fact-check/SKILL.md
 - $MYCROFT_DIR/recipes/fact-check.yaml
 
-Use the Mycroft fact-check path for drafts, quick checks, source assertions, and claim tables.
+Use the Mycroft fact-check path for publication drafts, reporting checks, source assertions, and
+journalistic claim tables. Do not use Mycroft fact-check or Spotlight for software code,
+architecture, PRDs, engineering plans, threat models, security reviews, or release reviews. Route
+those to the host's compound-engineering or code-review workflow.
 GOOSE_HINTS_EOF
   if [ "$ENABLE_SPOTLIGHT" = "1" ]; then
     cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<GOOSE_SPOTLIGHT_EOF

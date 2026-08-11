@@ -48,6 +48,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Fixed — skill routing
+
+- Scoped Mycroft fact-check and Spotlight escalation to journalistic and editorial verification.
+  Software code, architecture, PRDs, engineering plans, threat models, security reviews, and
+  release reviews now route to the host's compound-engineering or code-review workflow.
+
 ### Changed — Scoutpost ownership
 
 - Scoutpost remains a Mycroft skill and configuration surface. Mycroft can

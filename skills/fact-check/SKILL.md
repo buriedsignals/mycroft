@@ -1,14 +1,21 @@
 ---
 name: fact-check
-description: Fact-check drafts, claims, and source assertions through Mycroft's SIFT recipe, escalating to Spotlight for deeper adversarial review when available. Uses the fact-check profile of epistemic-grounding — emits the full grounding object per the spec.
+description: Fact-check journalistic claims, source assertions, citations, and publication drafts through Mycroft's SIFT recipe. Use for reporting and editorial verification. Do not use for software code, architecture, PRDs, engineering plans, threat models, or release reviews; route those to compound-engineering.
 requires: [epistemic-grounding, shell-safety]
 ---
 
 # Fact Check
 
-Use this skill when the user asks to fact-check, verify claims, inspect citations, or stress-test a draft.
+Use this skill when the user asks to verify reporting, inspect citations or source assertions, or
+stress-test a story or publication draft.
 
 Load this skill before answering fact-checking requests. Do not rely on general chat behavior for verification work.
+
+Do not use this skill for software code, architecture, PRDs, engineering plans, threat models,
+security reviews, or release reviews. The words "draft," "claim," "review," or "adversarial" do
+not trigger this skill without a journalistic or editorial verification context. Route engineering
+work to the host's compound-engineering or code-review workflow when available; otherwise use the
+normal repository engineering-review process.
 
 **Always load these skills before starting work:**
 - `epistemic-grounding` — the 5-tier ladder, confidence caps, failure router, claim-decomposition discipline. This skill uses the `fact-check` profile and must emit the full `grounding` object on every claim.
@@ -35,9 +42,11 @@ For newsroom workflows where provenance must be complete before delivery, pass
 `c2pa_sign=true`; signing remains opt-in and fact-check verdicts remain
 editorial outputs, not C2PA truth claims.
 
-## Spotlight Escalation
+## Spotlight escalation
 
-If Spotlight is installed and the request needs adversarial review, evidence grounding, document/image-heavy OSINT, or a case trail, load the Spotlight runtime contract and fact-checking path:
+If Spotlight is installed and the journalistic request needs active OSINT casework, a source
+evidence trail, document or image verification, source contact, or an independent editorial
+fact-checker, load the Spotlight runtime contract and fact-checking path:
 
 - `~/.local/share/goose/mycroft/plugins/spotlight/AGENTS.md`
 - `~/.local/share/goose/mycroft/plugins/spotlight/agents/fact-checker.md`

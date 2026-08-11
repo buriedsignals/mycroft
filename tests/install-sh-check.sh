@@ -16,6 +16,12 @@ includes() {
 excludes() {
   if grep -qF -- "$1" install.sh; then note "stale fragment present: $1"; fi
 }
+file_includes() {
+  grep -qF -- "$2" "$1" || note "missing in $1: $2"
+}
+file_excludes() {
+  if grep -qF -- "$2" "$1"; then note "stale fragment in $1: $2"; fi
+}
 
 # Layout + profile contract
 includes 'GOOSE_CONFIG="$XDG_CONFIG_HOME/goose"'
@@ -47,6 +53,19 @@ includes 'public bootstrap digest did not verify'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
+
+# Editorial routing boundary: engineering drafts and adversarial reviews belong
+# to compound-engineering/code review, not Mycroft fact-check or Spotlight.
+includes 'Do not use Mycroft fact-check or Spotlight for software code'
+includes "host's compound-engineering or code-review workflow."
+file_includes skills/fact-check/SKILL.md 'Do not use this skill for software code'
+file_includes skills/fact-check/SKILL.md 'route those to compound-engineering.'
+file_includes instructions/mycroft-soul.md 'Do not route software code'
+file_includes instructions/mycroft-soul.md "Use the host's compound-engineering or code-review workflow."
+file_excludes skills/fact-check/SKILL.md 'escalating to Spotlight for deeper adversarial review'
+file_excludes skills/fact-check/SKILL.md 'If Spotlight is installed and the request needs adversarial review'
+file_excludes instructions/mycroft-soul.md 'Escalate to Spotlight when the work needs adversarial review'
+file_excludes install.sh 'or stress-test a draft'
 
 # CLI + skills
 includes 'ln -sf "$MYCROFT_DIR/scripts/mycroft-fetch" "$HOME/.local/bin/mycroft-fetch"'
