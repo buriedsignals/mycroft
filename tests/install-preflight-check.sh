@@ -12,12 +12,12 @@ trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/bin" "$tmp/home"
 
 cat > "$tmp/catalog.json" <<'CATALOG'
-{"dependencies":{"firecrawl-cli":"1.9.8","@tobilu/qmd":"2.5.3"}}
+{"dependencies":{"firecrawl-cli":"1.9.8","@inkeep/open-knowledge":"0.34.0"}}
 CATALOG
 [ "$(mycroft_catalog_dependency_pin "$tmp/catalog.json" firecrawl-cli)" = "1.9.8" ] \
   || fail "catalog dependency pin lookup did not return firecrawl-cli's version"
-[ "$(mycroft_catalog_dependency_pin "$tmp/catalog.json" @tobilu/qmd)" = "2.5.3" ] \
-  || fail "catalog dependency pin lookup did not return QMD's version"
+[ "$(mycroft_catalog_dependency_pin "$tmp/catalog.json" @inkeep/open-knowledge)" = "0.34.0" ] \
+  || fail "catalog dependency pin lookup did not return OpenKnowledge's version"
 [ -z "$(mycroft_catalog_dependency_pin "$tmp/catalog.json" missing)" ] \
   || fail "missing catalog dependency unexpectedly returned a version"
 

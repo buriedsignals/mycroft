@@ -138,8 +138,17 @@ def validate_choices(d):
     if d.get("installFirecrawl") and not d.get("firecrawlKey"):
         errors.append({"field": "firecrawl_key", "message": "A FIRECRAWL_API_KEY is required only when the optional Firecrawl fallback is selected."})
     if not d.get("localOnly"):
-        if not d.get("fireworksKey"):
-            errors.append({"field": "fireworks_key", "message": "Cloud-first runs on Fireworks (GLM-5.2, ZDR) — FIREWORKS_API_KEY is required, or switch to Local-first."})
+        provider = d.get("cloudProvider")
+        if provider == "openrouter-glm52":
+            if not d.get("openrouterKey"):
+                errors.append({"field": "openrouter_key", "message": "OpenRouter (GLM-5.2) needs an OPENROUTER_API_KEY, or choose another provider."})
+            if not d.get("openrouterZdrConfirmed"):
+                errors.append({"field": "openrouter_zdr_confirm", "message": "Enable account-level ZDR for Non-frontier models in OpenRouter Privacy settings and confirm it here."})
+        elif provider == "fireworks-glm52":
+            if not d.get("fireworksKey"):
+                errors.append({"field": "fireworks_key", "message": "Fireworks (GLM-5.2) needs a FIREWORKS_API_KEY, or choose another provider."})
+        else:
+            errors.append({"field": "", "message": "Choose a supported cloud provider."})
     if d.get("scoutpost") and not d.get("scoutpostKey"):
         errors.append({"field": "scoutpost_api_key", "message": "SCOUTPOST_API_KEY is required while Scoutpost is enabled — add a key or untick the plugin."})
     if d.get("spotlight") and not str(d.get("spotlightVaultPath") or "").strip():
@@ -162,6 +171,17 @@ def probe(url, headers):
         return "unreachable"
 
 
+def probe_openrouter_zdr_model(model_id):
+    req = urllib.request.Request("https://openrouter.ai/api/v1/endpoints/zdr", method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=8) as response:
+            payload = json.load(response)
+        return any(endpoint.get("model_id") == model_id and endpoint.get("status") == 0
+                   for endpoint in payload.get("data", []))
+    except Exception:
+        return None
+
+
 def validate_keys(d, skip=False):
     errors, warnings = [], []
     if skip:
@@ -171,7 +191,11 @@ def validate_keys(d, skip=False):
         checks.append(("firecrawl_key", "FIRECRAWL_API_KEY", True,
                        "https://api.firecrawl.dev/v1/team/credit-usage",
                        {"Authorization": "Bearer " + d["firecrawlKey"]}))
-    if not d.get("localOnly") and d.get("fireworksKey"):
+    if not d.get("localOnly") and d.get("cloudProvider") == "openrouter-glm52" and d.get("openrouterKey"):
+        checks.append(("openrouter_key", "OPENROUTER_API_KEY", True,
+                       "https://openrouter.ai/api/v1/key",
+                       {"Authorization": "Bearer " + d["openrouterKey"]}))
+    if not d.get("localOnly") and d.get("cloudProvider") == "fireworks-glm52" and d.get("fireworksKey"):
         checks.append(("fireworks_key", "FIREWORKS_API_KEY", True,
                        "https://api.fireworks.ai/inference/v1/models",
                        {"Authorization": "Bearer " + d["fireworksKey"]}))
@@ -188,6 +212,12 @@ def validate_keys(d, skip=False):
             warnings.append(f"{name} could not be verified (provider returned 401/403); continuing anyway.")
         elif result == "unreachable":
             warnings.append(f"{name} could not be verified (provider unreachable); continuing anyway.")
+    if not d.get("localOnly") and d.get("cloudProvider") == "openrouter-glm52":
+        available = probe_openrouter_zdr_model("z-ai/glm-5.2")
+        if available is False:
+            errors.append({"field": "openrouter_key", "message": "GLM-5.2 has no healthy ZDR endpoint on OpenRouter right now — choose Fireworks or Local-first."})
+        elif available is None:
+            warnings.append("OpenRouter's live ZDR endpoint list could not be checked; continuing with per-request ZDR enforcement.")
     return errors, warnings
 
 
@@ -227,11 +257,24 @@ def build_env_lines(d):
             "MYCROFT_LOCAL_MODEL_THINKING=" + b01(model["enable_thinking"]),
         ]
     else:
-        lines += ["GOOSE_PROVIDER=fireworks-glm52",
-                  "GOOSE_MODEL=accounts/fireworks/models/glm-5p2"]
-    for key, name in [("fireworksKey", "FIREWORKS_API_KEY"),
-                      ("firecrawlKey", "FIRECRAWL_API_KEY"), ("apifyToken", "APIFY_API_TOKEN"),
-                      ("agentmailKey", "AGENTMAIL_API_KEY")]:
+        if d.get("cloudProvider") == "fireworks-glm52":
+            lines += ["MYCROFT_CLOUD_PROVIDER=fireworks-glm52",
+                      "GOOSE_PROVIDER=fireworks-glm52",
+                      "GOOSE_MODEL=accounts/fireworks/models/glm-5p2"]
+        else:
+            lines += ["MYCROFT_CLOUD_PROVIDER=openrouter-glm52",
+                      "OPENROUTER_PARAMETERS=" + shlex.quote('{"provider":{"zdr":true}}'),
+                      "OPENROUTER_ZDR_REQUEST_ENFORCED=1",
+                      "OPENROUTER_ZDR_ACCOUNT_CONFIRMED=1",
+                      "GOOSE_PROVIDER=openrouter",
+                      "GOOSE_MODEL=z-ai/glm-5.2"]
+    key_pairs = [("firecrawlKey", "FIRECRAWL_API_KEY"), ("apifyToken", "APIFY_API_TOKEN"),
+                 ("agentmailKey", "AGENTMAIL_API_KEY")]
+    if not d["localOnly"]:
+        key_pairs.insert(0, (("fireworksKey", "FIREWORKS_API_KEY")
+                             if d.get("cloudProvider") == "fireworks-glm52"
+                             else ("openrouterKey", "OPENROUTER_API_KEY")))
+    for key, name in key_pairs:
         if d.get(key):
             lines.append(f"{name}={shlex.quote(d[key])}")
     if d.get("scoutpost") and d.get("scoutpostKey"):
@@ -253,7 +296,7 @@ def build_setup_config(d):
     if d.get("firecrawlKey"):
         required.append("FIRECRAWL_API_KEY")
     if not d["localOnly"]:
-        required.append("FIREWORKS_API_KEY")
+        required.append("FIREWORKS_API_KEY" if d.get("cloudProvider") == "fireworks-glm52" else "OPENROUTER_API_KEY")
     if d.get("scoutpost"):
         required.append("SCOUTPOST_API_KEY")
     lines = [
@@ -268,7 +311,11 @@ def build_setup_config(d):
         f"INSTALL_FIRECRAWL={b01(d.get('installFirecrawl'))}",
         f"ENABLE_SPOTLIGHT={b01(d.get('spotlight'))}",
         f"ENABLE_SCOUTPOST={b01(d.get('scoutpost'))}",
-        f"ENABLE_FIREWORKS={b01(not d['localOnly'])}",
+        f"CLOUD_PROVIDER={shlex.quote(d.get('cloudProvider') or 'openrouter-glm52')}",
+        f"ENABLE_OPENROUTER={b01(not d['localOnly'] and d.get('cloudProvider') == 'openrouter-glm52')}",
+        f"OPENROUTER_ZDR_REQUEST_ENFORCED={b01(not d['localOnly'] and d.get('cloudProvider') == 'openrouter-glm52')}",
+        f"OPENROUTER_ZDR_ACCOUNT_CONFIRMED={b01(not d['localOnly'] and d.get('cloudProvider') == 'openrouter-glm52' and d.get('openrouterZdrConfirmed'))}",
+        f"ENABLE_FIREWORKS={b01(not d['localOnly'] and d.get('cloudProvider') == 'fireworks-glm52')}",
         f"ENABLE_FT={b01(d.get('ftEnabled'))}",
         f"ENABLE_AGENTMAIL={b01(d.get('agentmailEnabled') or d.get('agentmailKey'))}",
         f"ENABLE_APIFY={b01(d.get('apifyEnabled') or d.get('apifyToken'))}",
@@ -431,7 +478,9 @@ def build_getting_started(d):
         model = LOCAL_MODELS.get(d.get("localModel") or "gemma31b", LOCAL_MODELS["gemma31b"])
         provider_label = model["label"]
     else:
-        provider_label = "Fireworks AI · GLM-5.2 (ZDR cloud)"
+        provider_label = ("Fireworks AI · GLM-5.2 (direct cloud)"
+                          if d.get("cloudProvider") == "fireworks-glm52"
+                          else "OpenRouter · GLM-5.2 (per-request ZDR)")
 
     optional = []
     if d.get("ftEnabled"):
@@ -535,10 +584,12 @@ def normalize(payload):
         "ftEnabled": b("ftEnabled"),
         "agentmailEnabled": b("agentmailEnabled"),
         "apifyEnabled": b("apifyEnabled"),
-        "fireworks": b("fireworks"),
+        "cloudProvider": s("cloudProvider") or "openrouter-glm52",
+        "openrouterZdrConfirmed": b("openrouterZdrConfirmed"),
         "spotlight": b("spotlight"),
         "scoutpost": b("scoutpost"),
         "spotDevBrowser": b("spotDevBrowser"),
+        "openrouterKey": s("openrouterKey"),
         "fireworksKey": s("fireworksKey"),
         "firecrawlKey": s("firecrawlKey"),
         "apifyToken": s("apifyToken"),

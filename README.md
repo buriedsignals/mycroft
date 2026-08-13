@@ -177,9 +177,9 @@ mkdir -p ~/.local/share/goose/mycroft
 git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycroft/source
 
 export GOOSE_RECIPE_PATH=~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes
-
-mkdir -p ~/.config/goose/custom_providers
-cp ~/.local/share/goose/mycroft/source/providers/fireworks-glm52.json ~/.config/goose/custom_providers/
+export GOOSE_PROVIDER=openrouter
+export GOOSE_MODEL=z-ai/glm-5.2
+export OPENROUTER_PARAMETERS='{"provider":{"zdr":true}}'
 
 mkdir -p ~/.config/goose/mycroft
 cp ~/.local/share/goose/mycroft/source/instructions/mycroft-soul.md ~/.config/goose/mycroft/SOUL.md
@@ -194,6 +194,13 @@ state, generated instructions, and first-run files.
 Mycroft is designed for privacy-sensitive reporting:
 
 - ZDR providers are the default cloud posture.
+- The guided install defaults to OpenRouter with GLM-5.2. It configures Goose's
+  `OPENROUTER_PARAMETERS` so every request includes `provider.zdr=true`, and
+  checks OpenRouter's live endpoint list for a healthy GLM-5.2 ZDR route during
+  setup. It also requires confirmation that account-level ZDR is enabled for
+  OpenRouter's Non-frontier model group, protecting other Goose clients as
+  defense in depth. This route requires Goose 1.41 or newer; the installer
+  checks it. Fireworks remains the direct-host cloud alternative.
 - Local inference is available for sovereign workflows.
 - **Web search and scrape are sovereign by default** — a local SearXNG (search)
   and Crawl4AI (scrape) run with no API key or vendor account; Firecrawl is only an
@@ -225,7 +232,6 @@ provider posture.
 - `vault-audit`
 - `newsletter-summarize`
 - `vault-sync`
-- `qmd`
 
 **Source acquisition and parsing** — sovereign by default (Crawl4AI scrape, SearXNG search, `pdftotext`, `sitemap.py`); Firecrawl is only an optional fallback when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
 

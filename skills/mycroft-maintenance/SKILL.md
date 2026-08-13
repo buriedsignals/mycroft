@@ -53,8 +53,9 @@ The doctor checks:
 - Mycroft source checkout
 - selected skills
 - generated scheduled recipes
-- QMD CLI
+- OpenKnowledge CLI
 - Spotlight plugin, when installed
+- private Splash plugin and namespaced skills, when installed
 
 ## Rules
 

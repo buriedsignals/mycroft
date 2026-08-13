@@ -67,6 +67,46 @@ replace_skills() {
   echo "skills re-placed from skills.manifest"
 }
 
+replace_splash_skills() {
+  local splash="$MYCROFT_PLUGINS_DIR/splash" canon="$HOME/.agents/skills/splash" skill_dir
+  [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ] || return 0
+  [ -d "$splash/skills" ] || return 0
+  mkdir -p "$canon"
+  for skill_dir in "$splash"/skills/*; do
+    [ -f "$skill_dir/SKILL.md" ] || continue
+    ln -sfn "$skill_dir" "$canon/$(basename "$skill_dir")"
+  done
+  echo "private Splash skills re-placed"
+}
+
+refresh_splash_registry() {
+  local registry="$MYCROFT_PROFILE_DIR/skill-registry.json" splash="$MYCROFT_PLUGINS_DIR/splash"
+  [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ] || return 0
+  [ -f "$registry" ] && [ -d "$splash/skills" ] || return 0
+  python3 - "$registry" "$splash" <<'PY'
+import json
+import pathlib
+import sys
+
+registry_path = pathlib.Path(sys.argv[1])
+splash_dir = pathlib.Path(sys.argv[2])
+data = json.loads(registry_path.read_text(encoding="utf-8"))
+skills = [entry for entry in data.get("skills", []) if entry.get("source") != "splash-private"]
+for skill_dir in sorted((splash_dir / "skills").iterdir()):
+    if skill_dir.is_dir() and (skill_dir / "SKILL.md").is_file():
+        skills.append({
+            "id": "splash" if skill_dir.name == "splash" else f"splash-{skill_dir.name}",
+            "path": f"~/.agents/skills/splash/{skill_dir.name}/SKILL.md",
+            "source": "splash-private",
+            "enabled": True,
+        })
+data["skills"] = skills
+temporary = registry_path.with_suffix(".tmp")
+temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+temporary.replace(registry_path)
+PY
+}
+
 scoutpost_enabled() {
   [ -n "${SCOUTPOST_API_KEY:-}" ] && return 0
   [ -f "${MYCROFT_CONFIG:-}" ] || return 1
@@ -142,7 +182,7 @@ refresh_profile() {
 - Mycroft persistent soul file: $MYCROFT_PROFILE_DIR/SOUL.md
 
 Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
-Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+Use OpenKnowledge for durable local search before broad web search when the answer may already be in the Mycroft vault.
 
 ## Getting Started Route
 
@@ -183,6 +223,21 @@ For adversarial fact-checking, active case evidence trails, document/image-heavy
 Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
 PROFILE_SPOTLIGHT_EOF
     fi
+    if [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+      SPLASH_DIR="$MYCROFT_PLUGINS_DIR/splash"
+      cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_SPLASH_EOF
+
+## Splash Installed Context (private test)
+
+- Splash repo: $SPLASH_DIR
+- Splash canonical skills: $HOME/.agents/skills/splash
+- Splash orchestrator: $HOME/.agents/skills/splash/splash/SKILL.md
+- Splash stories: $SPLASH_DIR/stories
+
+Use the Splash orchestrator for human-gated visual journalism. It routes to the installed chart,
+map, image, web, video, scrolly, palette, storyboard, and delivery skills.
+PROFILE_SPLASH_EOF
+    fi
     if scoutpost_enabled; then
       cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<'PROFILE_SCOUTPOST_EOF'
 
@@ -198,22 +253,37 @@ PROFILE_SCOUTPOST_EOF
 }
 
 mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
+private_splash="$MYCROFT_PLUGINS_DIR/splash"
+private_splash_before="$(repo_rev "$private_splash" || true)"
 public_channel="$HOME/.local/share/buriedsignals/public-installer/mycroft"
-[ -x "$public_channel/bootstrap.sh" ] || chmod +x "$public_channel/bootstrap.sh" 2>/dev/null || true
-if [ ! -f "$public_channel/bootstrap.sh" ]; then
-  echo "signed public update channel is missing; re-run https://mycroft.buriedsignals.com/install.sh once"
-  exit 1
+if [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+  update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft private source"
+  update_repo_ff_only "$private_splash" "Splash private plugin"
+  if command -v bun >/dev/null 2>&1; then
+    (cd "$private_splash" && bun install --frozen-lockfile)
+  else
+    echo "Bun is missing; private Splash dependencies were not refreshed."
+  fi
+  echo "Private Mycroft + Splash checkouts updated"
+else
+  [ -x "$public_channel/bootstrap.sh" ] || chmod +x "$public_channel/bootstrap.sh" 2>/dev/null || true
+  if [ ! -f "$public_channel/bootstrap.sh" ]; then
+    echo "signed public update channel is missing; re-run https://mycroft.buriedsignals.com/install.sh once"
+    exit 1
+  fi
+  bash "$public_channel/bootstrap.sh" \
+    --product mycroft \
+    --release-base https://github.com/buriedsignals/mycroft/releases/latest/download \
+    --runtime goose \
+    --action update \
+    --no-handoff
+  echo "Mycroft source updated from the latest signed public bundle"
 fi
-bash "$public_channel/bootstrap.sh" \
-  --product mycroft \
-  --release-base https://github.com/buriedsignals/mycroft/releases/latest/download \
-  --runtime goose \
-  --action update \
-  --no-handoff
-echo "Mycroft source updated from the latest signed public bundle"
 # A Mycroft-managed Spotlight plugin is not moved to an unsigned branch head.
 # Its separately signed product installer owns Spotlight release updates.
 replace_skills || true
+replace_splash_skills || true
+refresh_splash_registry || true
 refresh_profile
 
 # Provision/refresh the sovereign stack (Crawl4AI + poppler + SearXNG) from the
@@ -231,18 +301,23 @@ if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
   else
     echo "doctor failed after update; rolling back app checkouts"
     rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
+    rollback_repo "$private_splash" "Splash private plugin" "$private_splash_before"
     refresh_profile
-    python3 "$public_channel/applicator.py" --action finalize \
-      --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
-      --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
-      --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json" || true
+    if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+      python3 "$public_channel/applicator.py" --action finalize \
+        --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
+        --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
+        --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json" || true
+    fi
     exit 1
   fi
 fi
 
-python3 "$public_channel/applicator.py" --action finalize \
-  --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
-  --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
-  --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json"
+if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+  python3 "$public_channel/applicator.py" --action finalize \
+    --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
+    --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
+    --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json"
+fi
 
 echo "update complete"

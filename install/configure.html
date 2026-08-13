@@ -63,6 +63,7 @@
   body.mode-local .cloud-only { display: none; }
   .model-card { cursor: pointer; }
   .model-card:has(input:checked) { border-color: var(--ink); box-shadow: inset 0 -3px 0 0 var(--oxide); background: #fff; }
+  .provider-card:has(input[name="cloud_provider"]:checked) { border-color: var(--ink); box-shadow: inset 0 -3px 0 0 var(--oxide); background: #fff; }
   .fit-panel { border: var(--hairline); background: var(--vellum-bright); padding: 16px 18px; margin-top: 14px; font-size: 13.5px; }
   .fit-panel.green { border-left: 3px solid var(--oxide); }
   .fit-panel.amber { border-left: 3px solid #b58a2a; }
@@ -126,14 +127,30 @@
   <div class="cloud-only">
     <p class="num">02 — Providers</p>
     <h2>Open-weight, <em>ZDR.</em></h2>
-    <p class="sec-lead"><strong>One ZDR cloud frontier: Fireworks serving GLM-5.2.</strong> Fireworks runs the open weights on its own US GPUs — "not a router," so your queries never reach Z.AI in China. ZDR is on by default for open models. Paste your key; it's checked live when you finish, so a typo fails here, not three days later in a recipe.</p>
-    <div>
-      <div class="item">
+    <p class="sec-lead"><strong>OpenRouter with GLM-5.2 is the recommended default.</strong> Mycroft uses Goose's built-in OpenRouter integration and sets <code>provider.zdr=true</code> on every inference request, so OpenRouter can route only to ZDR endpoints. Fireworks remains available as the direct-host alternative.</p>
+    <div class="grid-2">
+      <div class="item provider-card">
         <div class="item__head">
-          <label class="check"><input type="checkbox" id="fireworks" checked><span class="item__title">Fireworks AI<br><em>GLM-5.2</em></span></label>
-          <span class="badge req">ZDR cloud</span>
+          <label class="check"><input type="radio" name="cloud_provider" value="openrouter-glm52" checked><span class="item__title">OpenRouter<br><em>GLM-5.2</em></span></label>
+          <span class="badge req">Recommended</span>
         </div>
-        <p class="item__lede">GLM-5.2 (open-weight flagship by Z.ai) hosted in-house on Fireworks' US data centers — not proxied to the origin lab. 1M-token context, top ZDR model on our OSINT benchmark. ~$6-40/mo at moderate journalism use.</p>
+        <p class="item__lede">GLM-5.2 is the default open-weight model for agentic and tool-heavy work. Mycroft enforces OpenRouter's ZDR-only provider routing per request and checks that a healthy ZDR endpoint exists during setup.</p>
+        <a class="mini-btn" href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">Get API key →</a>
+        <div>
+          <label class="field-label" for="openrouter_key">OPENROUTER_API_KEY</label>
+          <input class="fld" type="password" id="openrouter_key" placeholder="sk-or-v1-xxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="callout warn">
+          <label class="check"><input type="checkbox" id="openrouter_zdr_confirm"> I enabled account-level ZDR for <strong>Non-frontier</strong> models in <a href="https://openrouter.ai/settings/privacy" target="_blank" rel="noreferrer">OpenRouter Privacy settings</a>.</label>
+          <p class="hint">Required as defense in depth for Goose Desktop or other clients. The installer also enforces ZDR on every Mycroft inference request.</p>
+        </div>
+      </div>
+      <div class="item provider-card">
+        <div class="item__head">
+          <label class="check"><input type="radio" name="cloud_provider" value="fireworks-glm52"><span class="item__title">Fireworks AI<br><em>GLM-5.2</em></span></label>
+          <span class="badge">Direct host</span>
+        </div>
+        <p class="item__lede">GLM-5.2 hosted by Fireworks on its own infrastructure. Choose this route if you prefer a direct inference provider instead of a router.</p>
         <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key →</a>
         <div>
           <label class="field-label" for="fireworks_key">FIREWORKS_API_KEY</label>
@@ -426,10 +443,12 @@ function readForm() {
     ftEnabled: c('ftEnabled'),
     agentmailEnabled: c('agentmailEnabled'),
     apifyEnabled: c('apifyEnabled'),
-    fireworks: c('fireworks'),
+    cloudProvider: (document.querySelector('input[name="cloud_provider"]:checked') || {}).value || 'openrouter-glm52',
+    openrouterZdrConfirmed: c('openrouter_zdr_confirm'),
     spotlight: c('spotlight'),
     scoutpost: c('scoutpost'),
     spotDevBrowser: c('spotDevBrowser'),
+    openrouterKey: v('openrouter_key'),
     fireworksKey: v('fireworks_key'),
     firecrawlKey: v('firecrawl_key'),
     apifyToken: v('apify_token'),

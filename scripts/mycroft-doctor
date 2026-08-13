@@ -83,6 +83,15 @@ if [ -f "$GOOSE_CONFIG/config.yaml" ]; then
     bad_check "Goose model missing from Goose config"
   fi
   if grep -q '^GOOSE_MOIM_MESSAGE_FILE:' "$GOOSE_CONFIG/config.yaml"; then ok_check "Goose Mycroft soul persisted"; else bad_check "GOOSE_MOIM_MESSAGE_FILE missing from Goose config"; fi
+  if [ "${GOOSE_PROVIDER:-}" = "openrouter" ]; then
+    if [ "${OPENROUTER_PARAMETERS:-}" = '{"provider":{"zdr":true}}' ] &&
+       grep -q '^OPENROUTER_PARAMETERS:' "$GOOSE_CONFIG/config.yaml" &&
+       grep '^OPENROUTER_PARAMETERS:' "$GOOSE_CONFIG/config.yaml" | grep -q 'zdr.*true'; then
+      ok_check "OpenRouter per-request ZDR enforced"
+    else
+      bad_check "OpenRouter ZDR enforcement missing — re-run the Mycroft installer"
+    fi
+  fi
 fi
 
 case ":${GOOSE_RECIPE_PATH:-}:" in
@@ -133,6 +142,33 @@ if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
   ok_check "Spotlight plugin"
   check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
   check_path "$MYCROFT_DATA_DIR/plugins/spotlight/skills/ingest/SKILL.md" "Spotlight ingest skill"
+fi
+if [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+  SPLASH_DIR="$MYCROFT_DATA_DIR/plugins/splash"
+  ok_check "Private Splash plugin"
+  check_path "$SPLASH_DIR/skills/splash/SKILL.md" "Splash orchestrator skill"
+  splash_skill_fail=0
+  for skill_dir in "$SPLASH_DIR"/skills/*; do
+    [ -f "$skill_dir/SKILL.md" ] || continue
+    skill_id="$(basename "$skill_dir")"
+    link="$HOME/.agents/skills/splash/$skill_id"
+    if [ -L "$link" ] && [ "$(cd "$link" 2>/dev/null && pwd -P)" = "$(cd "$skill_dir" 2>/dev/null && pwd -P)" ]; then
+      :
+    else
+      bad_check "Splash skill missing or misplaced: $link"
+      splash_skill_fail=1
+    fi
+  done
+  if [ "$splash_skill_fail" -eq 0 ]; then ok_check "Splash namespaced skills"; fi
+  if command -v bun >/dev/null 2>&1 && [ -f "$SPLASH_DIR/installer/doctor.mjs" ]; then
+    if bun "$SPLASH_DIR/installer/doctor.mjs" --root "$SPLASH_DIR" --skill-namespace splash >/dev/null 2>&1; then
+      ok_check "Splash doctor"
+    else
+      bad_check "Splash doctor failed"
+    fi
+  else
+    bad_check "Splash doctor unavailable"
+  fi
 fi
 
 if [ "$fail" -eq 0 ]; then

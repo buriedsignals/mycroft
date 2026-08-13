@@ -37,6 +37,21 @@ grep -qF 'OK    Goose provider persisted' "$tmp/modern-goose.out" \
 grep -qF 'OK    Goose model persisted' "$tmp/modern-goose.out" \
   || fail "doctor rejected Goose 1.43 nested provider model"
 
+cat > "$tmp/home/.config/goose/config.yaml" <<'GOOSE_CONFIG'
+GOOSE_PROVIDER: "openrouter"
+GOOSE_MODEL: "z-ai/glm-5.2"
+OPENROUTER_PARAMETERS: "{\"provider\":{\"zdr\":true}}"
+GOOSE_MOIM_MESSAGE_FILE: /test/SOUL.md
+GOOSE_CONFIG
+
+HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" XDG_DATA_HOME="$tmp/home/.local/share" \
+  GOOSE_PROVIDER="openrouter" OPENROUTER_PARAMETERS='{"provider":{"zdr":true}}' \
+  SEARXNG_URL="http://127.0.0.1:1" PATH="/usr/bin:/bin" \
+  bash scripts/mycroft-doctor >"$tmp/openrouter.out" 2>&1 || true
+
+grep -qF 'OK    OpenRouter per-request ZDR enforced' "$tmp/openrouter.out" \
+  || fail "doctor rejected persisted OpenRouter ZDR enforcement"
+
 cat > "$tmp/bin/firecrawl" <<'FIRECRAWL'
 #!/usr/bin/env bash
 [ "${1:-}" = "--version" ] && { echo 'firecrawl test'; exit 0; }

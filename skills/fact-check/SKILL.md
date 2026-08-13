@@ -60,7 +60,7 @@ Use Spotlight for deeper casework. Keep the fact-checker independent from the in
 
 Apply the `epistemic-grounding` skill (claim decomposition, support classification, confidence caps, failure router) to every claim. This skill adds three fact-check-specific moves:
 
-1. **Local context first.** Check Mycroft and Spotlight QMD collections before any web fetch — surface what's already known, link to it, don't re-verify.
+1. **Local context first.** Search durable Mycroft knowledge through OpenKnowledge before any web fetch — surface what's already known, link to it, and do not treat it as automatically verified.
 2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` first. Every acquisition should produce an evidence item: `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. If provenance tooling is unavailable, continue the fact-check only as a cited editorial review output and report `provenance incomplete` unless `strict_provenance=true`. See `docs/grounding-provenance-spec.md`.
 3. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
 

@@ -1,6 +1,6 @@
 ---
 name: knowledge-workspace
-description: Search, read, link, audit, and journal durable Mycroft or Spotlight knowledge through the storage-neutral Knowledge Workspace Port. Use for vault questions, durable knowledge writes, morning briefs, audits, Spotlight context lookup, approved Spotlight ingestion, OpenKnowledge health checks, legacy QMD/Obsidian migration, and any request that names a knowledge logical space.
+description: Search, read, link, audit, and journal durable Mycroft or Spotlight knowledge through the storage-neutral Knowledge Workspace Port. Use for vault questions, durable knowledge writes, morning briefs, audits, Spotlight context lookup, approved Spotlight ingestion, OpenKnowledge health checks, legacy Markdown or Obsidian migration, and any request that names a knowledge logical space.
 ---
 
 # Knowledge Workspace

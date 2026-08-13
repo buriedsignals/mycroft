@@ -30,7 +30,7 @@ Mycroft is client-side-first: the public install script starts a local configura
 
 ## Providers
 
-- [providers/](providers/): Goose custom provider JSON — fireworks-glm52 (the sole ZDR cloud frontier; Together/OpenRouter/Qwen configs retired)
+- [providers/](providers/): Goose custom provider JSON for the optional Fireworks GLM-5.2 direct-host route; the recommended OpenRouter route uses Goose's built-in provider with per-request ZDR enforcement
 
 ## Optional
 

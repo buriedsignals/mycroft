@@ -10,12 +10,51 @@
 set -euo pipefail
 
 PUBLIC_BUNDLE_PHASE=0
-if [ "${1:-}" = "--provision-from-public-bundle" ]; then
-  PUBLIC_BUNDLE_PHASE=1
-  shift
+PRIVATE_SOURCE_PHASE=0
+PRIVATE_SPLASH="${MYCROFT_PRIVATE_SPLASH:-0}"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --provision-from-public-bundle) PUBLIC_BUNDLE_PHASE=1; shift ;;
+    --provision-from-private-source) PRIVATE_SOURCE_PHASE=1; shift ;;
+    --private-splash) PRIVATE_SPLASH=1; shift ;;
+    *) echo "Mycroft installer: unknown argument: $1" >&2; exit 2 ;;
+  esac
+done
+case "$PRIVATE_SPLASH" in 0|1) ;; *) echo "Mycroft installer: MYCROFT_PRIVATE_SPLASH must be 0 or 1" >&2; exit 2 ;; esac
+export MYCROFT_PRIVATE_SPLASH="$PRIVATE_SPLASH"
+
+if [ "$PRIVATE_SPLASH" = "1" ] && [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
+  command -v git >/dev/null 2>&1 || { echo "Mycroft installer: git is required" >&2; exit 1; }
+  PRIVATE_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+  PRIVATE_MYCROFT_DIR="$PRIVATE_DATA_HOME/goose/mycroft/source"
+  PRIVATE_INSTALLER_SOURCE=""
+  if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+    PRIVATE_INSTALLER_SOURCE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  fi
+  mkdir -p "$(dirname "$PRIVATE_MYCROFT_DIR")"
+  if [ -e "$PRIVATE_MYCROFT_DIR" ] && [ ! -d "$PRIVATE_MYCROFT_DIR/.git" ]; then
+    echo "Mycroft installer: refusing to replace non-checkout path at $PRIVATE_MYCROFT_DIR" >&2
+    exit 1
+  fi
+  if [ ! -d "$PRIVATE_MYCROFT_DIR/.git" ]; then
+    if [ -n "$PRIVATE_INSTALLER_SOURCE" ] && [ -d "$PRIVATE_INSTALLER_SOURCE/.git" ]; then
+      git clone --no-local "$PRIVATE_INSTALLER_SOURCE" "$PRIVATE_MYCROFT_DIR"
+    else
+      git clone git@github.com:buriedsignals/mycroft.git "$PRIVATE_MYCROFT_DIR"
+    fi
+  else
+    if ! git -C "$PRIVATE_MYCROFT_DIR" diff --quiet || ! git -C "$PRIVATE_MYCROFT_DIR" diff --cached --quiet; then
+      echo "Mycroft installer: existing private source has local changes; refusing to overwrite them" >&2
+      exit 1
+    fi
+    git -C "$PRIVATE_MYCROFT_DIR" fetch origin main
+    git -C "$PRIVATE_MYCROFT_DIR" merge --ff-only origin/main
+  fi
+  bash "$PRIVATE_MYCROFT_DIR/install.sh" --provision-from-private-source --private-splash
+  exit $?
 fi
 
-if [ "$PUBLIC_BUNDLE_PHASE" = "0" ]; then
+if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
   PUBLIC_RELEASE_BASE="https://github.com/buriedsignals/mycroft/releases/download/v0.3.5"
   PUBLIC_BOOTSTRAP_SHA256="ebe0a8b707f4b891e2b9c87fe6b65da5e31f6a4140361faf0d99400c4f9a47a7"
   command -v curl >/dev/null 2>&1 || { echo "Mycroft installer: curl is required" >&2; exit 1; }
@@ -56,12 +95,13 @@ MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
 MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
 PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
 SPOTLIGHT_DIR="$PLUGINS_DIR/spotlight"
+SPLASH_DIR="$PLUGINS_DIR/splash"
 MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
 GOOSE_RECIPE_PATH_VALUE="$MYCROFT_DIR/recipes:$MYCROFT_GENERATED_RECIPES"
 
-# Existing Obsidian/QMD state remains readable, while fresh installs also
-# provision the OpenKnowledge CLI used by the generated Goose recipes.
+# Existing vault state remains readable, while fresh installs provision the
+# OpenKnowledge CLI used by the generated Goose recipes.
 MYCROFT_LEGACY_UPDATE=0
 for legacy_marker in "$MYCROFT_ENV" "$MYCROFT_PROFILE_DIR/setup-config.env" \
   "$MYCROFT_SKILL_REGISTRY" "$HOME/.mycroft"; do
@@ -118,6 +158,17 @@ ensure_goose() {
     curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | CONFIGURE=false bash
     ok "Goose CLI"
   else ok "Goose CLI present"; fi
+  if [ "${ENABLE_OPENROUTER:-0}" = "1" ]; then
+    local goose_version goose_major goose_minor
+    goose_version="$(goose --version 2>/dev/null | sed -n 's/[^0-9]*\([0-9][0-9]*\)\.\([0-9][0-9]*\).*/\1 \2/p' | head -n 1)"
+    read -r goose_major goose_minor <<EOF
+$goose_version
+EOF
+    if [ -z "${goose_major:-}" ] || [ "$goose_major" -lt 1 ] || { [ "$goose_major" -eq 1 ] && [ "$goose_minor" -lt 41 ]; }; then
+      warn "OpenRouter ZDR enforcement requires Goose 1.41 or newer. Update Goose and re-run the installer."
+      exit 1
+    fi
+  fi
 }
 
 install_obsidian() {
@@ -157,22 +208,6 @@ install_firecrawl() {
   fi
 }
 
-ensure_qmd() {
-  if have qmd; then ok "QMD CLI present"; return 0; fi
-  if ! have npm && [ "$MYCROFT_OS" = "Darwin" ]; then
-    ensure_brew || { warn "Node.js requires Homebrew on macOS."; exit 1; }
-    brew install node
-  fi
-  if have npm; then
-    local pin
-    pin="$(mycroft_catalog_dependency_pin "$MYCROFT_DIR/catalog/catalog.json" @tobilu/qmd)"
-    [ -n "$pin" ] || { warn "Signed catalog has no @tobilu/qmd pin; refusing an unpinned install."; exit 1; }
-    npm install -g "@tobilu/qmd@$pin" && ok "QMD CLI $pin"
-  else
-    warn "npm missing; install QMD manually from the signed catalog pin."
-  fi
-}
-
 ensure_openknowledge() {
   if have ok; then ok "OpenKnowledge CLI present"; return 0; fi
   if ! have npm; then
@@ -187,7 +222,7 @@ ensure_openknowledge() {
 
 # --- Scoutpost CLI (scout) ---------------------------------------------------
 # `scout` on PATH via npm, pinned to the vendored catalog.json (native-binary-via-
-# npm, like firecrawl/qmd). CLI branch = macOS/Linux/WSL2 with npm; a host without
+# npm, like firecrawl. CLI branch = macOS/Linux/WSL2 with npm; a host without
 # npm/scout falls back to the REST API (SCOUTPOST_API_KEY + SCOUTPOST_API_BASE). The
 # Public Supabase anon key is baked into the Scoutpost clients — it is not
 # a per-user secret, so there is no form field to collect it.
@@ -243,16 +278,6 @@ SCOUT_CFG_EOF
   ok "scout config (~/.scoutpost/config.json)"
 }
 # -----------------------------------------------------------------------------
-
-configure_qmd() {
-  if ! have qmd; then warn "QMD CLI missing; vault search and Spotlight query-vault will be unavailable until qmd is installed."; return 0; fi
-  qmd collection add "$VAULT_PATH" --name mycroft >/dev/null 2>&1 || true
-  if [ "$ENABLE_SPOTLIGHT" = "1" ]; then
-    qmd collection add "$SPOTLIGHT_VAULT_PATH" --name spotlight >/dev/null 2>&1 || true
-  fi
-  qmd update >/dev/null 2>&1 || warn "QMD installed, but initial index update failed; run qmd update after setup."
-  ok "QMD vault search configured"
-}
 
 update_repo() {
   local dir="$1" name="$2"
@@ -366,6 +391,9 @@ install_skill_registry() {
   # skill registry's "directory" pointer, so without these links the curated
   # skills are off its discovery path.
   mkdir -p "$HOME/.agents/skills/mycroft"
+  # QMD is no longer a Mycroft skill. Remove only Mycroft's obsolete symlink;
+  # never uninstall or delete a separately managed global executable.
+  [ -L "$HOME/.agents/skills/mycroft/qmd" ] && rm -f "$HOME/.agents/skills/mycroft/qmd"
   local _sid skill_dir
   # Skill set = the release-resolved manifest vendored as skills.manifest. This
   # installs exactly the Goose-runtime-correct set and falls back to on-disk
@@ -377,11 +405,59 @@ install_skill_registry() {
     done < "$MYCROFT_DIR/skills.manifest"
   else
     for skill_dir in "$MYCROFT_SKILLS_DIR"/*/; do
-      [ -d "$skill_dir" ] || continue
+      [ -f "$skill_dir/SKILL.md" ] || continue
       ln -sfn "$skill_dir" "$HOME/.agents/skills/mycroft/$(basename "$skill_dir")"
     done
   fi
   ok "Mycroft skill registry"
+}
+
+register_private_splash_skills() {
+  [ "$PRIVATE_SPLASH" = "1" ] || return 0
+  python3 - "$MYCROFT_SKILL_REGISTRY" "$SPLASH_DIR" <<'PY'
+import json
+import pathlib
+import sys
+
+registry_path = pathlib.Path(sys.argv[1])
+splash_dir = pathlib.Path(sys.argv[2])
+data = json.loads(registry_path.read_text(encoding="utf-8"))
+skills = [entry for entry in data.get("skills", []) if entry.get("source") != "splash-private"]
+for skill_dir in sorted((splash_dir / "skills").iterdir()):
+    if not skill_dir.is_dir() or not (skill_dir / "SKILL.md").is_file():
+        continue
+    skill_id = "splash" if skill_dir.name == "splash" else f"splash-{skill_dir.name}"
+    skills.append({
+        "id": skill_id,
+        "path": f"~/.agents/skills/splash/{skill_dir.name}/SKILL.md",
+        "source": "splash-private",
+        "enabled": True,
+    })
+data["skills"] = skills
+temporary = registry_path.with_suffix(".tmp")
+temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+temporary.replace(registry_path)
+PY
+  ok "Private Splash skill registry"
+}
+
+install_private_splash() {
+  [ "$PRIVATE_SPLASH" = "1" ] || return 0
+  have bun || { warn "Private Splash requires Bun on PATH; install Bun and re-run with --private-splash."; exit 1; }
+  mkdir -p "$PLUGINS_DIR"
+  if [ -e "$SPLASH_DIR" ] && [ ! -d "$SPLASH_DIR/.git" ]; then
+    warn "Refusing to replace non-checkout path at $SPLASH_DIR"
+    exit 1
+  fi
+  if [ ! -d "$SPLASH_DIR/.git" ]; then
+    git clone git@github.com:buriedsignals/splash.git "$SPLASH_DIR"
+    ok "Private Splash cloned"
+  else
+    ok "Private Splash checkout present"
+  fi
+  bash "$SPLASH_DIR/installer/install.sh" --existing-checkout --root "$SPLASH_DIR" --skill-namespace splash
+  : > "$MYCROFT_PROFILE_DIR/private-splash.enabled"
+  register_private_splash_skills
 }
 
 write_goose_instructions() {
@@ -400,14 +476,14 @@ write_goose_instructions() {
 - Mycroft generated scheduled recipes: $MYCROFT_GENERATED_RECIPES
 - Morning brief monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
 - Mycroft persistent soul file: $MYCROFT_SOUL_FILE
-- QMD vault search: qmd query, qmd search, qmd mcp
+- OpenKnowledge workspace: use the installed OpenKnowledge interface for durable local search and writes
 - Goose schedules: mycroft-morning-brief at 07:00, mycroft-vault-audit at 18:15
 - Story work lives in: $VAULT_PATH/stories
 - Durable wiki knowledge lives in: $VAULT_PATH/wiki
 - Raw and processed sources live in: $VAULT_PATH/sources
 
 Use Mycroft for durable knowledge, source records, wiki notes, story pitches, drafts, and published story packaging.
-Use QMD for local markdown search before broad web search when the answer may already be in the Mycroft or Spotlight vault.
+Use OpenKnowledge for durable local search before broad web search when the answer may already be in the Mycroft vault.
 Do not use Mycroft as the active OSINT case workspace.
 
 ## Getting Started Route
@@ -459,6 +535,21 @@ For adversarial fact-checking, active case evidence trails, document/image-heavy
 
 Keep Spotlight's fact-checker independent from investigator reasoning. It should verify structured findings and write verdicts with evidence_for and evidence_against trails.
 GOOSE_SPOTLIGHT_EOF
+  fi
+  if [ "$PRIVATE_SPLASH" = "1" ]; then
+    cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<GOOSE_SPLASH_EOF
+
+## Splash Installed Context (private test)
+
+- Splash repo: $SPLASH_DIR
+- Splash canonical skills: $HOME/.agents/skills/splash
+- Splash orchestrator: $HOME/.agents/skills/splash/splash/SKILL.md
+- Splash stories: $SPLASH_DIR/stories
+
+Use the Splash orchestrator for human-gated visual journalism. It routes to the installed chart,
+map, image, web, video, scrolly, palette, storyboard, and delivery skills. Keep story artifacts
+inside the journalist-owned Splash story directory.
+GOOSE_SPLASH_EOF
   fi
   if [ "$ENABLE_SCOUTPOST" = "1" ]; then
     cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<'GOOSE_SCOUTPOST_EOF'
@@ -657,9 +748,11 @@ configure_goose_persistent_defaults() {
 
   [ -n "${GOOSE_PROVIDER:-}" ] && set_goose_config_key GOOSE_PROVIDER "$GOOSE_PROVIDER"
   [ -n "${GOOSE_MODEL:-}" ] && set_goose_config_key GOOSE_MODEL "$GOOSE_MODEL"
+  [ -n "${OPENROUTER_PARAMETERS:-}" ] && set_goose_config_key OPENROUTER_PARAMETERS "$OPENROUTER_PARAMETERS"
   set_goose_config_key GOOSE_RECIPE_PATH "$GOOSE_RECIPE_PATH_VALUE"
   set_goose_config_key GOOSE_MOIM_MESSAGE_FILE "$MYCROFT_SOUL_FILE"
 
+  store_goose_secret OPENROUTER_API_KEY "${OPENROUTER_API_KEY:-}"
   store_goose_secret FIREWORKS_API_KEY "${FIREWORKS_API_KEY:-}"
   store_goose_secret FIRECRAWL_API_KEY "${FIRECRAWL_API_KEY:-}"
   store_goose_secret SCOUTPOST_API_KEY "${SCOUTPOST_API_KEY:-}"
@@ -1134,10 +1227,10 @@ say "Mycroft installer"
 mkdir -p "$GOOSE_CONFIG" "$PROVIDERS_DST" "$MYCROFT_PROFILE_DIR" "$MYCROFT_DATA_DIR" "$PLUGINS_DIR"
 warn_legacy_layout
 ensure_git
-if [ "$PUBLIC_BUNDLE_PHASE" = "0" ]; then
+if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
   install_or_update_mycroft
 elif [ ! -d "$MYCROFT_DIR/.git" ]; then
-  echo "Mycroft installer: the signed public bundle did not create the product checkout" >&2
+  echo "Mycroft installer: the provisioning path did not create the product checkout" >&2
   exit 1
 fi
 
@@ -1175,16 +1268,11 @@ INSTALL_SEARXNG="${INSTALL_SEARXNG:-1}"
 INSTALL_TOR="${INSTALL_TOR:-0}"
 INSTALL_FIRECRAWL="${INSTALL_FIRECRAWL:-0}"
 
-# QMD is a core capability and installs native modules. Fix a root-owned npm
-# prefix before the first global package write, and reject the incomplete Linux
-# toolchain once with the complete dependency command instead of failing several
-# minutes into npm's build.
-if ! have qmd || [ "$INSTALL_FIRECRAWL" = "1" ] || [ "$ENABLE_SCOUTPOST" = "1" ] || \
+# OpenKnowledge is always installed through npm. Prepare its global prefix even
+# when every optional npm-backed integration is disabled.
+if ! have ok || [ "$INSTALL_FIRECRAWL" = "1" ] || [ "$ENABLE_SCOUTPOST" = "1" ] || \
    { [ "$ENABLE_SPOTLIGHT" = "1" ] && [ "${SPOT_DEVBROWSER:-1}" = "1" ]; }; then
   mycroft_prepare_npm_prefix || exit 1
-fi
-if ! have qmd; then
-  mycroft_preflight_linux_build_tools || exit 1
 fi
 
 SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
@@ -1211,20 +1299,17 @@ INSTALL_CRAWL4AI="$INSTALL_CRAWL4AI" INSTALL_SEARXNG="$INSTALL_SEARXNG" INSTALL_
   bash "$MYCROFT_DIR/scripts/provision-sovereign.sh" || true
 # ...then the optional Firecrawl escape hatch (gated, off by default).
 install_firecrawl
-ensure_qmd
 ensure_openknowledge
 install_scout_cli
 install_mycroft_cli
 sync_mycroft_profile
 seed_mycroft_vault
 seed_spotlight_vault
-configure_qmd
 
 mkdir -p "$PROVIDERS_DST"
 # Clean up obsolete custom providers: pre-2026-05 installers copied local-*
-# shims (we now use Goose's built-in Local Inference); the Qwen/Together/
-# OpenRouter cloud providers were retired for the single ZDR Fireworks GLM-5.2
-# frontier, so drop any stale copies an upgrader still has.
+# shims (we now use Goose's built-in Local Inference) plus an OpenRouter
+# fallback shim. OpenRouter is now configured through Goose's built-in provider.
 rm -f "$PROVIDERS_DST/local-llama-server.json" "$PROVIDERS_DST/local-mlx.json" \
       "$PROVIDERS_DST/fireworks-qwen36plus.json" "$PROVIDERS_DST/together-qwen.json" \
       "$PROVIDERS_DST/openrouter-fallback.json"
@@ -1232,7 +1317,11 @@ if [ "$ENABLE_FIREWORKS" = "1" ]; then
   cp "$MYCROFT_DIR/providers/fireworks-glm52.json" "$PROVIDERS_DST/"
   ok "Fireworks — GLM-5.2 (ZDR)"
 fi
+if [ "${ENABLE_OPENROUTER:-0}" = "1" ]; then
+  ok "OpenRouter — GLM-5.2 (per-request ZDR enforced)"
+fi
 install_skill_registry
+install_private_splash
 write_goose_instructions
 
 if [ ! -f "$MYCROFT_ENV" ]; then
@@ -1304,7 +1393,26 @@ fi
 if [ "$ENABLE_SCOUTPOST" = "1" ]; then
   ok "Scoutpost hosted API enabled"
 fi
-
+if [ "$LOCAL_ONLY" = "1" ]; then
+  CONFIG_PROVIDER_ID="local"
+  if [ "$LOCAL_MODEL" = "qwen27b" ]; then
+    CONFIG_PROVIDER_MODEL="tomvaillant/qwen3.6-27b-abliterated-journalist-GGUF:Q4_K_M"
+  else
+    CONFIG_PROVIDER_MODEL="gemma4:31b-it-qat"
+  fi
+  CONFIG_ZDR_ENFORCED=false
+  CONFIG_ZDR_ACCOUNT_CONFIRMED=false
+elif [ "$CLOUD_PROVIDER" = "openrouter-glm52" ]; then
+  CONFIG_PROVIDER_ID="openrouter-glm52"
+  CONFIG_PROVIDER_MODEL="z-ai/glm-5.2"
+  CONFIG_ZDR_ENFORCED=true
+  CONFIG_ZDR_ACCOUNT_CONFIRMED=true
+else
+  CONFIG_PROVIDER_ID="fireworks-glm52"
+  CONFIG_PROVIDER_MODEL="accounts/fireworks/models/glm-5p2"
+  CONFIG_ZDR_ENFORCED=false
+  CONFIG_ZDR_ACCOUNT_CONFIRMED=false
+fi
 cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
 {
   "version": 1,
@@ -1329,6 +1437,12 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
       "vault_audit": "mycroft-vault-audit"
     }
   },
+  "provider": {
+    "id": "$CONFIG_PROVIDER_ID",
+    "model": "$CONFIG_PROVIDER_MODEL",
+    "zdr_request_enforced": $CONFIG_ZDR_ENFORCED,
+    "zdr_account_confirmed": $CONFIG_ZDR_ACCOUNT_CONFIRMED
+  },
   "skills": {
     "registry": "$MYCROFT_SKILL_REGISTRY",
     "directory": "$MYCROFT_SKILLS_DIR"
@@ -1349,6 +1463,24 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
   }
 }
 CONFIG_EOF
+if [ "$PRIVATE_SPLASH" = "1" ]; then
+  python3 - "$MYCROFT_CONFIG" "$SPLASH_DIR" <<'PY'
+import json
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+data.setdefault("plugins", {})["splash"] = {
+    "enabled": True,
+    "path": sys.argv[2],
+    "private_test": True,
+}
+temporary = path.with_suffix(".tmp")
+temporary.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+temporary.replace(path)
+PY
+fi
 ok "Mycroft config $MYCROFT_CONFIG"
 
 write_scheduled_recipes

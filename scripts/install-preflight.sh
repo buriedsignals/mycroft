@@ -30,7 +30,7 @@ mycroft_writable_prefix() {
 
 mycroft_prepare_npm_prefix() {
   if ! mycroft_have npm; then
-    printf 'npm is required for QMD. Install Node.js 22+ and re-run Mycroft.\n' >&2
+    printf 'npm is required for OpenKnowledge and selected integrations. Install Node.js 22+ and re-run Mycroft.\n' >&2
     return 1
   fi
 

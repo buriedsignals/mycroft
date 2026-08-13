@@ -48,6 +48,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Changed — cloud inference default
+
+- Restored OpenRouter as the guided install's recommended default, using
+  Goose's built-in `openrouter` provider and `z-ai/glm-5.2`.
+- OpenRouter selection configures Goose to attach `provider.zdr=true` to every
+  inference request and verifies that GLM-5.2 has a healthy ZDR endpoint during
+  setup. It also requires account-level ZDR confirmation for OpenRouter's
+  Non-frontier model group. Fireworks remains available as the direct-host
+  GLM-5.2 alternative.
+- The public `setup.html` now presents OpenRouter, Fireworks, and on-device
+  inference as distinct options; provider selection and key entry still happen
+  only in the localhost configurator opened by the public installer.
+
 ### Fixed — skill routing
 
 - Scoped Mycroft fact-check and Spotlight escalation to journalistic and editorial verification.

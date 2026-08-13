@@ -53,24 +53,10 @@ It writes `~/.config/goose/mycroft/morning-brief-config.md`.
 
 Ask Goose to run the `update-mycroft` recipe. It uses the installed updater, fetches `origin main`, fast-forwards only, runs `mycroft doctor`, and reports the update log path.
 
-## QMD Is Missing
+## OpenKnowledge Is Missing
 
-QMD is required for local vault search and Spotlight's `query-vault` verb.
-
-Install or repair it with:
-
-```sh
-npm install -g @tobilu/qmd
-qmd collection add ~/Documents/Mycroft --name mycroft
-qmd collection add ~/Documents/Spotlight --name spotlight
-qmd update
-```
-
-Check status:
-
-```sh
-qmd status
-```
+Rerun the Mycroft installer. It installs the catalog-pinned OpenKnowledge CLI,
+and `mycroft doctor` treats a missing `ok` command as an incomplete install.
 
 ## Fact-check Needs Deeper Investigation
 

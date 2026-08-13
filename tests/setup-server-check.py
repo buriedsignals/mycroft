@@ -27,16 +27,17 @@ import engine_bridge as engine  # noqa: E402
 
 BASE = {
     "sovereignty": "cloud", "localModel": "gemma31b",
+    "cloudProvider": "openrouter-glm52", "openrouterZdrConfirmed": True,
     "vault": "~/Documents/Mycroft", "spotlightVaultPath": "~/Documents/Spotlight",
     "installGoose": True, "installObsidian": True, "installFirecrawl": True,
     "ftEnabled": True, "agentmailEnabled": False, "apifyEnabled": False,
-    "fireworks": True, "spotlight": True, "scoutpost": True,
+    "spotlight": True, "scoutpost": True,
     "spotDevBrowser": True,
-    "fireworksKey": "fw-test", "firecrawlKey": "fc-test",
+    "openrouterKey": "or-test", "fireworksKey": "", "firecrawlKey": "fc-test",
     "apifyToken": "", "agentmailKey": "", "scoutpostKey": "scout-test",
     "navigatorConnected": True, "junkipediaKey": "",
 }
-SECRETS = ["fw-test", "fc-test", "scout-test"]
+SECRETS = ["or-test", "fc-test", "scout-test"]
 
 
 class UnitChecks(unittest.TestCase):
@@ -83,7 +84,8 @@ class UnitChecks(unittest.TestCase):
         self.assertEqual(srv.validate_choices(d), [])
         cases = [
             ({"firecrawlKey": ""}, "firecrawl_key"),
-            ({"fireworksKey": ""}, "fireworks_key"),
+            ({"openrouterKey": ""}, "openrouter_key"),
+            ({"openrouterZdrConfirmed": False}, "openrouter_zdr_confirm"),
             ({"scoutpostKey": ""}, "scoutpost_api_key"),
             ({"vault": " "}, "vault_path"),
             ({"spotlightVaultPath": ""}, "spotlight_vault_path"),
@@ -95,8 +97,12 @@ class UnitChecks(unittest.TestCase):
         keyless = srv.normalize({**BASE, "installFirecrawl": False, "firecrawlKey": ""})
         self.assertEqual(srv.validate_choices(keyless), [])
         # local mode needs no provider keys
-        local = srv.normalize({**BASE, "sovereignty": "local", "fireworksKey": ""})
+        local = srv.normalize({**BASE, "sovereignty": "local", "openrouterKey": "", "openrouterZdrConfirmed": False})
         self.assertEqual(srv.validate_choices(local), [])
+        fireworks = srv.normalize({**BASE, "cloudProvider": "fireworks-glm52",
+                                    "openrouterKey": "", "openrouterZdrConfirmed": False,
+                                    "fireworksKey": "fw-test"})
+        self.assertEqual(srv.validate_choices(fireworks), [])
         # disabled scoutpost needs no key
         off = srv.normalize({**BASE, "scoutpost": False, "scoutpostKey": ""})
         self.assertEqual(srv.validate_choices(off), [])
@@ -104,12 +110,14 @@ class UnitChecks(unittest.TestCase):
     def test_key_validation_routing(self):
         d = srv.normalize(BASE)
         orig = srv.probe
+        orig_zdr = srv.probe_openrouter_zdr_model
         try:
+            srv.probe_openrouter_zdr_model = lambda model_id: True
             srv.probe = lambda url, headers: "rejected"
             errors, warnings = srv.validate_keys(d)
             fields = {e["field"] for e in errors}
             # strict providers reject; scoutpost is lenient (warn only)
-            self.assertEqual(fields, {"firecrawl_key", "fireworks_key"})
+            self.assertEqual(fields, {"firecrawl_key", "openrouter_key"})
             self.assertTrue(any("SCOUTPOST" in w for w in warnings))
             srv.probe = lambda url, headers: "unreachable"
             errors, warnings = srv.validate_keys(d)
@@ -117,14 +125,23 @@ class UnitChecks(unittest.TestCase):
             self.assertTrue(warnings)
             srv.probe = lambda url, headers: "ok"
             self.assertEqual(srv.validate_keys(d), ([], []))
+            srv.probe_openrouter_zdr_model = lambda model_id: False
+            errors, warnings = srv.validate_keys(d)
+            self.assertTrue(any("no healthy ZDR endpoint" in e["message"] for e in errors))
         finally:
             srv.probe = orig
+            srv.probe_openrouter_zdr_model = orig_zdr
 
     def test_env_lines(self):
         env = srv.build_env_lines(srv.normalize(BASE))
         self.assertIn('MYCROFT_VAULT_PATH="$HOME/Documents/Mycroft"', env)
-        self.assertIn("GOOSE_PROVIDER=fireworks-glm52", env)
-        self.assertIn("GOOSE_MODEL=accounts/fireworks/models/glm-5p2", env)
+        self.assertIn("GOOSE_PROVIDER=openrouter", env)
+        self.assertIn("GOOSE_MODEL=z-ai/glm-5.2", env)
+        self.assertIn("OPENROUTER_PARAMETERS='{\"provider\":{\"zdr\":true}}'", env)
+        self.assertIn("OPENROUTER_ZDR_REQUEST_ENFORCED=1", env)
+        self.assertIn("OPENROUTER_ZDR_ACCOUNT_CONFIRMED=1", env)
+        self.assertIn("OPENROUTER_API_KEY=or-test", env)
+        self.assertNotIn("FIREWORKS_API_KEY", env)
         self.assertIn("FIRECRAWL_API_KEY=fc-test", env)
         self.assertNotIn("OSINT_NAV_API_KEY", env)
         self.assertNotIn("SPOTLIGHT_MONITORING_BACKEND", env)
@@ -134,7 +151,7 @@ class UnitChecks(unittest.TestCase):
 
     def test_env_lines_local(self):
         d = srv.normalize({**BASE, "sovereignty": "local", "localModel": "qwen27b",
-                           "fireworks": False, "scoutpost": False, "scoutpostKey": "",
+                           "scoutpost": False, "scoutpostKey": "",
                            "spotlight": False})
         env = srv.build_env_lines(d)
         self.assertIn("GOOSE_PROVIDER=local", env)
@@ -142,15 +159,28 @@ class UnitChecks(unittest.TestCase):
         self.assertIn("MYCROFT_LOCAL_MODEL_FILE=qwen3.6-27b-abliterated-journalist-Q4_K_M.gguf", env)
         self.assertNotIn("SPOTLIGHT_DIR", env)
         self.assertNotIn("SCOUTPOST", env)
+        self.assertNotIn("OPENROUTER_API_KEY", env)
+
+    def test_fireworks_alternative(self):
+        d = srv.normalize({**BASE, "cloudProvider": "fireworks-glm52",
+                           "openrouterKey": "", "openrouterZdrConfirmed": False,
+                           "fireworksKey": "fw-test"})
+        env = srv.build_env_lines(d)
+        self.assertIn("GOOSE_PROVIDER=fireworks-glm52", env)
+        self.assertIn("GOOSE_MODEL=accounts/fireworks/models/glm-5p2", env)
+        self.assertIn("FIREWORKS_API_KEY=fw-test", env)
+        self.assertNotIn("OPENROUTER_API_KEY", env)
 
     def test_setup_config(self):
         cfg = srv.build_setup_config(srv.normalize(BASE))
         for needle in ["SOVEREIGNTY=cloud", "LOCAL_ONLY=0", "ENABLE_SPOTLIGHT=1",
-                       "ENABLE_SCOUTPOST=1", "ENABLE_FIREWORKS=1", "SPOT_DEVBROWSER=1",
+                       "ENABLE_SCOUTPOST=1", "ENABLE_OPENROUTER=1", "ENABLE_FIREWORKS=0",
+                       "OPENROUTER_ZDR_REQUEST_ENFORCED=1", "OPENROUTER_ZDR_ACCOUNT_CONFIRMED=1",
+                       "CLOUD_PROVIDER=openrouter-glm52", "SPOT_DEVBROWSER=1",
                        "HAS_OSINT_NAVIGATOR=1", "ENABLE_FT=1",
                        "NAVIGATOR_CONNECTION=connected",
                        'VAULT_PATH="$HOME/Documents/Mycroft"',
-                       'REQUIRED_DOCTOR_ENV="FIRECRAWL_API_KEY FIREWORKS_API_KEY SCOUTPOST_API_KEY"']:
+                       'REQUIRED_DOCTOR_ENV="FIRECRAWL_API_KEY OPENROUTER_API_KEY SCOUTPOST_API_KEY"']:
             self.assertIn(needle, cfg)
         for secret in SECRETS:
             self.assertNotIn(secret, cfg)
@@ -158,7 +188,7 @@ class UnitChecks(unittest.TestCase):
     def test_skill_registry(self):
         reg = srv.build_skill_registry(srv.normalize(BASE))
         ids = {s["id"] for s in reg["skills"]}
-        for expected in ["knowledge-primitives", "qmd", "obsidian", "obsidian-ingest",
+        for expected in ["knowledge-primitives", "obsidian", "obsidian-ingest",
                          "fact-check", "mycroft-maintenance", "web-acquisition", "scoutpost",
                          "perspective-audit",
                          "navigator",
@@ -170,7 +200,7 @@ class UnitChecks(unittest.TestCase):
 
     def test_getting_started(self):
         guide = srv.build_getting_started(srv.normalize(BASE))
-        for needle in ["~/Documents/Mycroft", "Spotlight vault", "Fireworks",
+        for needle in ["~/Documents/Mycroft", "Spotlight vault", "OpenRouter",
                        "START_HERE.md", "CLI: ON", "mycroft doctor",
                        "Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)",
                        "Scoutpost (free monitoring tier, including MuckRock)"]:
@@ -260,6 +290,9 @@ print(json.dumps({"event": "result", "data": data}))
         self.assertIn("Yes, authenticate", self.page)
         self.assertNotIn('id="nav_key"', self.page)
         self.assertIn("Optional fallback", self.page)
+        self.assertIn('name="cloud_provider" value="openrouter-glm52" checked', self.page)
+        self.assertIn('provider.zdr=true', self.page)
+        self.assertIn('id="openrouter_zdr_confirm"', self.page)
         self.assertNotIn('id="installFirecrawl" checked', self.page)
 
         # 2. bad token is rejected on both active POST endpoints
@@ -303,6 +336,15 @@ class FreshInstallGuardChecks(unittest.TestCase):
 
 
 class PublicWebsiteChecks(unittest.TestCase):
+    def test_setup_page_exposes_public_inference_options(self):
+        with open(os.path.join(ROOT, "setup.html"), encoding="utf-8") as handle:
+            page = handle.read()
+        self.assertIn('aria-label="Public inference provider options"', page)
+        self.assertIn('data-provider-option="openrouter"', page)
+        self.assertIn('data-provider-option="fireworks"', page)
+        self.assertIn('data-provider-option="local"', page)
+        self.assertIn('href="https://openrouter.ai/settings/keys"', page)
+
     def test_skip_completes_without_engine_or_navigator_credential(self):
         with tempfile.TemporaryDirectory() as profile:
             proc = subprocess.Popen(
@@ -316,6 +358,11 @@ class PublicWebsiteChecks(unittest.TestCase):
                 match = re.search(r"http://127\.0\.0\.1:(\d+)/\?t=([A-Za-z0-9_-]+)", line)
                 self.assertIsNotNone(match, line)
                 port, token = int(match.group(1)), match.group(2)
+
+                page = urllib.request.urlopen(
+                    f"http://127.0.0.1:{port}/?t={token}", timeout=5).read().decode()
+                self.assertIn('name="cloud_provider" value="openrouter-glm52" checked', page)
+                self.assertIn('id="openrouter_zdr_confirm"', page)
 
                 bad_origin = urllib.request.Request(
                     f"http://127.0.0.1:{port}/navigator/status",

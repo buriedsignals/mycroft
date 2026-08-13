@@ -27,7 +27,7 @@ For Mycroft and Spotlight, the critical family is **Grounding & Evidence Integri
 | Reliable sources conflict | Disputed grounding | Preserve both evidence trails | Mark disputed |
 | Claim depends on future event | Not checkable yet | Convert to monitoring recommendation | Do not verify |
 | Evidence exists but archive failed | Chain-of-custody gap | Try archive hierarchy or local archival | Cap medium unless local copy is strong |
-| Output came from local fine-tuned model only (URL, citation, statute) | Model hallucination | Re-fetch via mycroft-fetch or qmd before quoting | Cap low until verified |
+| Output came from local fine-tuned model only (URL, citation, statute) | Model hallucination | Re-fetch via mycroft-fetch or verify against a source read through OpenKnowledge before quoting | Cap low until verified |
 
 ## Misrepair Risks
 

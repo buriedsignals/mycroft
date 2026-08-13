@@ -71,8 +71,8 @@ prompt: |
   1. Extract every factual claim: numbers, dates, quotes, named individuals, events, attributions, causal assertions.
 
   2. Check local prior context before broad web search:
-     - Search the Mycroft vault with QMD for known entities, prior source notes, and earlier verdicts.
-     - If Spotlight is installed, search the Spotlight vault for related active case evidence.
+     - Search durable Mycroft knowledge through OpenKnowledge for known entities, prior source notes, and earlier verdicts.
+     - If Spotlight is installed, read related active-case evidence through the direct, read-only case adapter described by the knowledge-workspace skill.
      - Treat prior context as evidence to inspect, not as automatic truth.
 
   3. For each claim, assign a verdict from this closed set:

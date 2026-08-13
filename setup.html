@@ -2240,6 +2240,16 @@ main.shell .sec-head .lead {
   .grid-3 > * { border-right: 0 !important; }
 }
 
+.options-label {
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-3);
+}
+.options-label:not(:first-of-type) { margin-top: var(--sp-7); }
+
 /* ──────────────────────────────────────────────────────────
    ITEM — base card. Lives inside .grid-* or stand-alone.
    ────────────────────────────────────────────────────────── */
@@ -2904,7 +2914,33 @@ body.mode-local .cloud-only { display: none; }
       <p class="lead"><strong>No membership is required.</strong> Bring only the provider keys for the options you select. Indicator members may connect Navigator directly; everyone else can continue with its unified skill locked.</p>
     </div>
 
-    <div class="grid-3" data-reveal style="--delay: 120ms">
+    <p class="options-label" data-reveal style="--delay: 100ms">Inference provider · choose one in the local configurator</p>
+    <div class="grid-3" data-reveal style="--delay: 120ms" aria-label="Public inference provider options">
+      <div class="item required" data-provider-option="openrouter">
+        <p class="item__num"><em>01</em> Public cloud</p>
+        <div class="item__head"><span class="item__title">OpenRouter</span><span class="badge req">recommended</span></div>
+        <p class="item__lede">The default cloud route uses GLM-5.2. Mycroft enforces ZDR-only routing on every inference request and asks you to confirm account-level ZDR during local setup.</p>
+        <div class="item__body">
+          <a class="mini-btn" href="https://openrouter.ai/settings/keys" target="_blank" rel="noreferrer">Get API key →</a>
+        </div>
+      </div>
+      <div class="item" data-provider-option="fireworks">
+        <p class="item__num"><em>02</em> Direct cloud</p>
+        <div class="item__head"><span class="item__title">Fireworks</span><span class="badge">alternative</span></div>
+        <p class="item__lede">Use GLM-5.2 through Fireworks directly instead of OpenRouter. This remains available to every public installer.</p>
+        <div class="item__body">
+          <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Get API key →</a>
+        </div>
+      </div>
+      <div class="item" data-provider-option="local">
+        <p class="item__num"><em>03</em> Local-first</p>
+        <div class="item__head"><span class="item__title">On-device</span><span class="badge">no key</span></div>
+        <p class="item__lede">Keep inference on your machine. The recommended 31B local model requires at least 32&nbsp;GB RAM; a 27B alternative is also available.</p>
+      </div>
+    </div>
+
+    <p class="options-label" data-reveal style="--delay: 160ms">Optional services</p>
+    <div class="grid-2" data-reveal style="--delay: 180ms">
       <div class="item">
         <p class="item__num"><em>01</em> Web access</p>
         <div class="item__head"><span class="item__title">Firecrawl</span><span class="badge">optional fallback</span></div>
@@ -2913,16 +2949,8 @@ body.mode-local .cloud-only { display: none; }
           <a class="mini-btn" href="https://firecrawl.dev" target="_blank" rel="noreferrer">Get API key →</a>
         </div>
       </div>
-      <div class="item required">
-        <p class="item__num"><em>02</em> Intelligence</p>
-        <div class="item__head"><span class="item__title">A model</span><span class="badge req">pick one</span></div>
-        <p class="item__lede"><strong>Cloud-first:</strong> Fireworks AI serving GLM-5.2 (ZDR by default — open weights on Fireworks' own US GPUs, never routed to Z.AI, ~$6-40/mo). <strong>Local-first:</strong> no key at all — Gemma 4 31B runs on your machine, 32&nbsp;GB+ RAM.</p>
-        <div class="item__body">
-          <a class="mini-btn" href="https://fireworks.ai" target="_blank" rel="noreferrer">Fireworks key →</a>
-        </div>
-      </div>
       <div class="item">
-        <p class="item__num"><em>03</em> Optional</p>
+        <p class="item__num"><em>02</em> Integrations</p>
         <div class="item__head"><span class="item__title">Extras</span><span class="badge">skippable</span></div>
         <p class="item__lede"><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a> (free monitoring tier, including MuckRock sources) · <a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> (Pro: OSINT discovery; Lab: OSINT plus Data Navigator) · <a href="https://www.junkipedia.org/" target="_blank" rel="noreferrer">Junkipedia</a> · <a href="https://apify.com" target="_blank" rel="noreferrer">Apify</a> · <a href="https://agentmail.to" target="_blank" rel="noreferrer">AgentMail</a>. Splash is coming in September 2026 and is not installed yet.</p>
       </div>
