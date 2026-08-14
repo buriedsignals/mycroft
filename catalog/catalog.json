@@ -823,6 +823,27 @@
       "kind": "portable"
     },
     {
+      "id": "qmd",
+      "name": "QMD knowledge search",
+      "audience": [
+        "journalist",
+        "researcher"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/qmd",
+      "requires_keys": [],
+      "version": "0.2.1",
+      "products": [
+        "mycroft"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/mycroft",
+      "kind": "portable"
+    },
+    {
       "id": "obsidian-ingest",
       "name": "Obsidian ingest",
       "audience": [
