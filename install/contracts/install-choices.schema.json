@@ -32,7 +32,7 @@
       "additionalProperties": false,
       "required": ["backend", "workspace_path", "project_mode", "sync", "semantic_search", "legacy_read"],
       "properties": {
-        "backend": {"enum": ["openknowledge", "markdown", "obsidian_legacy"]},
+        "backend": {"enum": ["openknowledge"]},
         "workspace_path": {"type": "string", "minLength": 1, "maxLength": 4096},
         "project_mode": {"enum": ["existing", "create"]},
         "sync": {"enum": ["local_only", "private_git"]},

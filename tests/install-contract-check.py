@@ -69,6 +69,9 @@ def validate_schema_surface() -> None:
         assert '"pattern"' not in encoded
         assert '"$ref"' not in encoded
 
+    choices = load(CONTRACTS / "install-choices.schema.json")
+    assert choices["properties"]["knowledge"]["properties"]["backend"]["enum"] == ["openknowledge"]
+
 
 def validate_fixtures() -> None:
     template = load(CONTRACTS / "mycroft-config.template.json")
