@@ -19,7 +19,7 @@ Plugins should not assume the Mycroft vault and plugin vault are the same direct
 
 Spotlight is the reference plugin shape:
 
-- plugin repo: `~/.local/share/goose/mycroft/plugins/spotlight`
+- Spotlight install path: read it from Spotlight's own configuration; Mycroft does not own or embed that checkout.
 - casework vault: configured separately from the Mycroft vault
 - handoff folder: `handoff-to-mycroft`
 - durable ingest target: Mycroft vault

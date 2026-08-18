@@ -56,7 +56,7 @@ prompt: |
      - If key is missing, note it and skip.
 
   3. **Vault recent changes**:
-     - `find {{ vault_path }} -type f -name '*.md' -mtime -1 -not -path '*/.obsidian/*'` for files changed in the last 24h.
+     - `find {{ vault_path }} -type f -name '*.md' -mtime -1` for files changed in the last 24h.
      - For each, read the diff of content (most recent N lines or first H1 + first paragraph) to see what changed.
 
   4. **Live web supplement** (only if beat is explicit):
@@ -90,7 +90,7 @@ prompt: |
   - Web (SearXNG): [if queried, list queries]
   ```
 
-  **Write to the Knowledge Workspace** with OpenKnowledge `write` at `mycroft/stories/drafts/morning-brief-YYYY-MM-DD.md`, logical space `mycroft`, and an idempotency key derived from the local date. Read the note back and verify its path and citations. If the write fails, report the durable outbox state; never fall back to Obsidian or a direct file write.
+  **Write to the Knowledge Workspace** with OpenKnowledge `write` at `stories/drafts/morning-brief-YYYY-MM-DD.md`. Read the note back and verify its path and citations. If the write fails, report the failure; never fall back to a direct file write.
 
   **Rules**:
   - Do not fabricate facts, quotes, or links.

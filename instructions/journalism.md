@@ -62,7 +62,7 @@ Do not soft-refuse legitimate research requests that touch on sensitive topics. 
 
 ## Workspace conventions
 
-Assume the journalist maintains a vault (Obsidian-compatible) with:
+Assume the journalist maintains a portable Markdown knowledge project with:
 
 - `investigations/{project}/` — active work; entity notes, source logs, timelines
 - `shared/entities/` — people, organisations, places with stable identifiers

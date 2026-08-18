@@ -28,11 +28,10 @@ import engine_bridge as engine  # noqa: E402
 BASE = {
     "sovereignty": "cloud", "localModel": "gemma31b",
     "cloudProvider": "openrouter-glm52", "openrouterZdrConfirmed": True,
-    "vault": "~/Documents/Mycroft", "spotlightVaultPath": "~/Documents/Spotlight",
-    "installGoose": True, "installObsidian": True, "installFirecrawl": True,
+    "vault": "~/Documents/Mycroft",
+    "installGoose": True, "installFirecrawl": True,
     "ftEnabled": True, "agentmailEnabled": False, "apifyEnabled": False,
     "spotlight": True, "scoutpost": True,
-    "spotDevBrowser": True,
     "openrouterKey": "or-test", "fireworksKey": "", "firecrawlKey": "fc-test",
     "apifyToken": "", "agentmailKey": "", "scoutpostKey": "scout-test",
     "navigatorConnected": True, "junkipediaKey": "",
@@ -88,7 +87,6 @@ class UnitChecks(unittest.TestCase):
             ({"openrouterZdrConfirmed": False}, "openrouter_zdr_confirm"),
             ({"scoutpostKey": ""}, "scoutpost_api_key"),
             ({"vault": " "}, "vault_path"),
-            ({"spotlightVaultPath": ""}, "spotlight_vault_path"),
         ]
         for overrides, field in cases:
             errs = srv.validate_choices(srv.normalize({**BASE, **overrides}))
@@ -148,6 +146,8 @@ class UnitChecks(unittest.TestCase):
         self.assertNotIn("SPOTLIGHT_SCOUT_REQUESTS", env)
         self.assertNotIn("OSINT_NAVIGATOR", env)
         self.assertNotIn("BROWSERUSE", env)
+        self.assertNotIn("SPOTLIGHT_DIR", env)
+        self.assertNotIn("SPOTLIGHT_VAULT_PATH", env)
 
     def test_env_lines_local(self):
         d = srv.normalize({**BASE, "sovereignty": "local", "localModel": "qwen27b",
@@ -176,7 +176,7 @@ class UnitChecks(unittest.TestCase):
         for needle in ["SOVEREIGNTY=cloud", "LOCAL_ONLY=0", "ENABLE_SPOTLIGHT=1",
                        "ENABLE_SCOUTPOST=1", "ENABLE_OPENROUTER=1", "ENABLE_FIREWORKS=0",
                        "OPENROUTER_ZDR_REQUEST_ENFORCED=1", "OPENROUTER_ZDR_ACCOUNT_CONFIRMED=1",
-                       "CLOUD_PROVIDER=openrouter-glm52", "SPOT_DEVBROWSER=1",
+                       "CLOUD_PROVIDER=openrouter-glm52",
                        "HAS_OSINT_NAVIGATOR=1", "ENABLE_FT=1",
                        "NAVIGATOR_CONNECTION=connected",
                        'VAULT_PATH="$HOME/Documents/Mycroft"',
@@ -187,21 +187,23 @@ class UnitChecks(unittest.TestCase):
 
     def test_skill_registry(self):
         reg = srv.build_skill_registry(srv.normalize(BASE))
-        ids = {s["id"] for s in reg["skills"]}
-        for expected in ["knowledge-primitives", "obsidian", "obsidian-ingest",
+        skills = {s["id"]: s for s in reg["skills"]}
+        ids = set(skills)
+        for expected in ["knowledge-primitives", "knowledge-ingest",
                          "fact-check", "mycroft-maintenance", "web-acquisition", "scoutpost",
                          "perspective-audit",
-                         "navigator",
-                         "spotlight", "spotlight-ingest", "spotlight-monitoring",
-                         "spotlight-integrations"]:
+                         "navigator"]:
             self.assertIn(expected, ids)
-        no_spot = srv.build_skill_registry(srv.normalize({**BASE, "spotlight": False, "scoutpost": False}))
-        self.assertNotIn("spotlight", {s["id"] for s in no_spot["skills"]})
+        for retired in ["spotlight", "spotlight-ingest", "spotlight-monitoring", "spotlight-integrations"]:
+            self.assertNotIn(retired, ids)
+
+        self.assertNotIn("obsidian", ids)
+        self.assertNotIn("obsidian-ingest", ids)
 
     def test_getting_started(self):
         guide = srv.build_getting_started(srv.normalize(BASE))
-        for needle in ["~/Documents/Mycroft", "Spotlight vault", "OpenRouter",
-                       "START_HERE.md", "CLI: ON", "mycroft doctor",
+        for needle in ["~/Documents/Mycroft", "Spotlight", "Spotlight's own signed setup flow", "OpenRouter",
+                       "START_HERE.md", "mycroft doctor",
                        "Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)",
                        "Scoutpost (free monitoring tier, including MuckRock)"]:
             self.assertIn(needle, guide)
@@ -209,10 +211,9 @@ class UnitChecks(unittest.TestCase):
             self.assertNotIn(secret, guide)
         local = srv.build_getting_started(srv.normalize({**BASE, "sovereignty": "local",
                                                          "spotlight": False, "scoutpost": False,
-                                                         "installObsidian": False,
                                                          "navigatorConnected": False}))
         self.assertIn("Local-first", local)
-        self.assertNotIn("Spotlight vault", local)
+        self.assertNotIn("Spotlight's own signed setup flow", local)
         self.assertNotIn("Two switches", local)
         self.assertIn("Navigator skill (locked; no credential or CLI)", local)
 
@@ -286,7 +287,13 @@ print(json.dumps({"event": "result", "data": data}))
         self.assertIn("Configure your", self.page)
         self.assertNotIn("__SETUP_TOKEN__", self.page)
         self.assertNotIn("__PLATFORM__", self.page)
-        self.assertIn("spotDevBrowser", self.page)
+        self.assertIn("Spotlight's own local setup opens", self.page)
+        self.assertNotIn("Obsidian", self.page)
+        self.assertNotIn('id="installObsidian"', self.page)
+        self.assertNotIn('id="spotlight_vault_path"', self.page)
+        self.assertNotIn("getElementById('spotlight_vault_path')", self.page)
+        self.assertNotIn("spotlight_vault_path", srv.PICKER_PROMPTS)
+        self.assertNotIn('id="spotDevBrowser"', self.page)
         self.assertIn("Yes, authenticate", self.page)
         self.assertNotIn('id="nav_key"', self.page)
         self.assertIn("Optional fallback", self.page)

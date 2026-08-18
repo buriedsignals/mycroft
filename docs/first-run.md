@@ -4,10 +4,9 @@ The installer is designed to leave the user in Goose, ready to choose a first re
 
 After setup:
 
-1. Obsidian opens the Mycroft vault.
-2. If Spotlight is enabled, Obsidian also opens the Spotlight vault.
-3. Goose opens the `start` recipe unless the user already has a morning brief monitoring profile.
-4. The Mycroft vault contains `START_HERE.md` with copy-paste starter prompts.
+1. If Spotlight is selected, Spotlight's own signed local configurator opens after Mycroft so you can choose its runtime, case directory, and OpenKnowledge workspace.
+2. Goose opens the `start` recipe unless the user already has a morning brief monitoring profile.
+3. The Mycroft knowledge project contains `START_HERE.md` with copy-paste starter prompts.
 
 The `start` recipe offers:
 
@@ -46,7 +45,6 @@ From CLI, launch the broad first-run menu:
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/start.yaml --interactive \
   --params vault_path="$HOME/Documents/Mycroft" \
-  --params vault_name="Mycroft" \
   --params morning_brief_config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
 ```
 
@@ -59,6 +57,5 @@ From CLI:
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml --interactive \
   --params vault_path="$HOME/Documents/Mycroft" \
-  --params vault_name="Mycroft" \
   --params config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
 ```

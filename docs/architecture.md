@@ -46,7 +46,7 @@ The soul file gives Goose the Mycroft identity, voice, and core operating princi
 
 ## Vaults
 
-Mycroft and Spotlight use separate Obsidian vaults.
+Mycroft and Spotlight use separate OpenKnowledge workspaces and separate product configurations.
 
 Mycroft is durable knowledge and publishing support:
 
@@ -67,7 +67,7 @@ Spotlight is active OSINT casework:
 - `exports/`
 - `handoff-to-mycroft/`
 
-Goose instructions include both paths when Spotlight is enabled, plus the Spotlight ingest target back into the Mycroft vault.
+When Spotlight is selected during Mycroft setup, Mycroft delegates to Spotlight's signed installer and then records the resulting install, workspace, and case paths for read-only handoff. Spotlight remains responsible for its own configuration, projection, runtime, doctor, and updates.
 
 ## Knowledge workspace
 

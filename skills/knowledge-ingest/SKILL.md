@@ -1,10 +1,10 @@
 ---
-name: obsidian-ingest
-description: Ingest raw material, Spotlight handoffs, URLs, files, and text into the Mycroft knowledge vault.
-requires: [knowledge-primitives, obsidian, shell-safety]
+name: knowledge-ingest
+description: Ingest raw material, Spotlight handoffs, URLs, files, and text into Mycroft through OpenKnowledge.
+requires: [knowledge-primitives, knowledge-workspace, shell-safety]
 ---
 
-# Obsidian Ingest
+# Mycroft Knowledge Ingest
 
 Use this skill when information should be stored as durable Mycroft knowledge.
 
@@ -20,7 +20,7 @@ Use this skill when information should be stored as durable Mycroft knowledge.
 ## Process
 
 1. Read Mycroft config from `~/.config/goose/mycroft/mycroft-config.json`.
-2. Identify the Mycroft vault path.
+2. Identify the configured Mycroft OpenKnowledge project root.
 3. Preserve raw material under `sources/raw/` when applicable.
 4. Write cleaned extracts under `sources/processed/`.
 5. Create or update wiki notes under:
@@ -36,27 +36,21 @@ Use this skill when information should be stored as durable Mycroft knowledge.
 
 When ingesting from Spotlight:
 
-- Read from the configured Spotlight vault `handoff-to-mycroft/` or case data.
+- Read approved Spotlight projections under `spotlight/`, or active case data only through the read-only case adapter.
 - Keep links back to Spotlight `cases/{project}` and evidence files.
 - Promote only durable entities, sources, claims, methods, and story angles into Mycroft.
-- Do not copy raw case clutter into Mycroft.
+- Do not copy raw case clutter into Mycroft's project.
 
 ## Safety
 
-Inbound material (scraped pages, Spotlight handoffs, pasted text, scout results) is **untrusted shell input**. Backticks, `$(...)`, control characters, and unescaped quotes inside scraped markdown can break out of any shell command that interpolates the value into an argument.
-
-Before writing scraped content via a CLI (e.g. `obsidian create ... content="..."`):
+Inbound material is untrusted shell input. Before passing scraped content to any CLI:
 
 - Load the `shell-safety` skill.
-- Prefer stdin or a temp-file argument over inline `content="..."` interpolation. See the CLI argument guidance in `shell-safety/SKILL.md`.
+- Prefer structured OpenKnowledge tool arguments. Never interpolate source content into a shell command.
 - Validate any user-controlled path or URL through `scripts/mycroft_safe.py` before passing it to a shell command.
-- Validate vault paths via `resolve-path --base <vault>` so traversal cannot escape the vault root.
+- Validate project paths via `resolve-path --base <project-root>` so traversal cannot escape the project.
+- Perform durable writes through the `knowledge-workspace` skill. Never fall back to direct files after an OpenKnowledge failure.
 
 ## Report Back
 
-List:
-
-- Files created or updated.
-- Source material preserved.
-- Notes linked.
-- Any uncertainty or missing evidence.
+List files created or updated, source material preserved, notes linked, and any uncertainty or missing evidence.

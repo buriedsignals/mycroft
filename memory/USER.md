@@ -22,7 +22,7 @@ instructions at it, or if you source it from the journalism.md prologue.
 - **Verification standard**: [e.g. every factual claim sourced; minimum 2 sources for controversial claims]
 - **Source protection**: [your protocols — anonymous source handling, encrypted channels]
 - **Writing voice**: [short description — terse, essayistic, long-form, etc.]
-- **Primary tools**: [Obsidian vault path, Scrivener, Google Docs, Pinpoint, Datawrapper, etc.]
+- **Primary tools**: [Open Knowledge project path, Scrivener, Google Docs, Pinpoint, Datawrapper, etc.]
 
 ## Preferences for Mycroft
 - **Output verbosity**: [concise | detailed]

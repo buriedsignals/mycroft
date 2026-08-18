@@ -94,7 +94,7 @@ MYCROFT_CONFIG="$MYCROFT_PROFILE_DIR/mycroft-config.json"
 MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
 MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
 PROVIDERS_DST="$GOOSE_CONFIG/custom_providers"
-SPOTLIGHT_DIR="$PLUGINS_DIR/spotlight"
+SPOTLIGHT_DIR=""
 SPLASH_DIR="$PLUGINS_DIR/splash"
 MYCROFT_GENERATED_RECIPES="$MYCROFT_PROFILE_DIR/generated-recipes"
 MYCROFT_MORNING_BRIEF_CONFIG="$MYCROFT_PROFILE_DIR/morning-brief-config.md"
@@ -168,23 +168,6 @@ EOF
       warn "OpenRouter ZDR enforcement requires Goose 1.41 or newer. Update Goose and re-run the installer."
       exit 1
     fi
-  fi
-}
-
-install_obsidian() {
-  [ "$INSTALL_OBSIDIAN" = "1" ] || return 0
-  if [ "$(uname -s)" = "Darwin" ]; then
-    if [ -d "/Applications/Obsidian.app" ] || [ -d "$HOME/Applications/Obsidian.app" ]; then ok "Obsidian present"
-    else
-      ensure_brew || { warn "Obsidian requires Homebrew on macOS; setup stopped before making a partial install."; exit 1; }
-      brew install --cask obsidian && ok "Obsidian"
-    fi
-    if ! have obsidian; then
-      warn "Open Obsidian, then enable Settings -> General -> Advanced -> Command Line Interface."
-      open -a Obsidian 2>/dev/null || true
-    fi
-  else
-    warn "Install Obsidian manually on Linux and enable its CLI if your package includes it."
   fi
 }
 
@@ -460,6 +443,62 @@ install_private_splash() {
   register_private_splash_skills
 }
 
+expand_user_path() {
+  local input="$1"
+  if [ "$input" = "~" ]; then printf '%s\n' "$HOME"
+  elif [[ "$input" == "~/"* ]]; then printf '%s/%s\n' "$HOME" "${input#\~/}"
+  else printf '%s\n' "$input"
+  fi
+}
+
+install_spotlight_product() {
+  [ "$ENABLE_SPOTLIGHT" = "1" ] || return 0
+  [ -f "$MYCROFT_ENV" ] || {
+    warn "Missing $MYCROFT_ENV — the Mycroft configurator did not finish."
+    exit 1
+  }
+
+  say "Opening Spotlight's own installer"
+  local installer_tmp spotlight_setup
+  installer_tmp="$(mktemp "${TMPDIR:-/tmp}/spotlight-installer.XXXXXX")"
+  if ! curl -fL --proto '=https' --tlsv1.2 \
+    https://spotlight.buriedsignals.com/install-spotlight.sh -o "$installer_tmp"; then
+    rm -f "$installer_tmp"
+    warn "Could not download Spotlight's canonical installer. Mycroft is installed, but Spotlight was not added."
+    exit 1
+  fi
+  if ! bash "$installer_tmp"; then
+    rm -f "$installer_tmp"
+    warn "Spotlight's installer did not complete. Mycroft is installed, but Spotlight was not added."
+    exit 1
+  fi
+  rm -f "$installer_tmp"
+
+  spotlight_setup="$HOME/.config/spotlight/setup-config.env"
+  [ -f "$spotlight_setup" ] || {
+    warn "Spotlight completed without its setup receipt at $spotlight_setup"
+    exit 1
+  }
+  set -a
+  . "$spotlight_setup"
+  set +a
+  SPOTLIGHT_DIR="$(expand_user_path "$SPOTLIGHT_DIR_INPUT")"
+  SPOTLIGHT_VAULT_PATH="$(expand_user_path "$SPOTLIGHT_VAULT_INPUT")"
+  SPOTLIGHT_CASES_ROOT="${SPOTLIGHT_CASES_ROOT:-$SPOTLIGHT_DIR/cases}"
+
+  # Keep Mycroft's runtime context aligned with Spotlight's canonical receipt.
+  # These values are paths only; secrets remain in Spotlight's own 0600 .env.
+  local env_tmp
+  env_tmp="$(mktemp)"
+  awk '!/^(SPOTLIGHT_DIR|SPOTLIGHT_VAULT_PATH|SPOTLIGHT_CASES_ROOT|SPOTLIGHT_INGEST_TARGET)=/' "$MYCROFT_ENV" > "$env_tmp"
+  mv "$env_tmp" "$MYCROFT_ENV"
+  printf 'SPOTLIGHT_DIR=%q\n' "$SPOTLIGHT_DIR" >> "$MYCROFT_ENV"
+  printf 'SPOTLIGHT_VAULT_PATH=%q\n' "$SPOTLIGHT_VAULT_PATH" >> "$MYCROFT_ENV"
+  printf 'SPOTLIGHT_CASES_ROOT=%q\n' "$SPOTLIGHT_CASES_ROOT" >> "$MYCROFT_ENV"
+  chmod 600 "$MYCROFT_ENV"
+  ok "Spotlight installed by its canonical signed installer"
+}
+
 write_goose_instructions() {
   cat "$MYCROFT_DIR/instructions/journalism.md" > "$MYCROFT_GOOSE_INSTRUCTIONS"
   cat >> "$MYCROFT_GOOSE_INSTRUCTIONS" <<GOOSE_HINTS_EOF
@@ -520,13 +559,12 @@ GOOSE_HINTS_EOF
 
 - Spotlight repo: $SPOTLIGHT_DIR
 - Spotlight vault: $SPOTLIGHT_VAULT_PATH
-- Spotlight cases root: $SPOTLIGHT_VAULT_PATH/cases
+- Spotlight cases root: $SPOTLIGHT_CASES_ROOT
 - Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
 - Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
-- Mycroft ingest target for Spotlight findings: $SPOTLIGHT_INGEST_TARGET
 
 Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
-Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
+Read approved Spotlight projections as evidence. Create a separate Mycroft note only when the journalist asks to preserve material in Mycroft; never have Spotlight write into Mycroft's namespace.
 For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
 
 - $SPOTLIGHT_DIR/AGENTS.md
@@ -1047,54 +1085,6 @@ VAULT_SIFT_EOF
   ok "Mycroft vault scaffold"
 }
 
-seed_spotlight_vault() {
-  [ "$ENABLE_SPOTLIGHT" = "1" ] || return 0
-  mkdir -p "$SPOTLIGHT_VAULT_PATH/cases/_template" "$SPOTLIGHT_VAULT_PATH/evidence" "$SPOTLIGHT_VAULT_PATH/captures" "$SPOTLIGHT_VAULT_PATH/briefs" "$SPOTLIGHT_VAULT_PATH/exports" "$SPOTLIGHT_VAULT_PATH/_schema"
-  write_if_missing "$SPOTLIGHT_VAULT_PATH/README.md" <<'SPOTLIGHT_README_EOF'
----
-type: spotlight-index
-tags: [mycroft, spotlight, index]
-created: $TODAY
-updated: $TODAY
----
-
-# Spotlight Vault
-
-This vault is for OSINT casework and evidence trails. Keep durable knowledge in the Mycroft vault.
-
-- cases/{project}/ stores active OSINT casework.
-- evidence/ stores screenshots, captures, and chain-of-custody notes.
-- captures/ stores raw browser captures and downloaded artefacts.
-- briefs/ stores investigation briefings.
-- exports/ stores reports and packaged outputs.
-SPOTLIGHT_README_EOF
-  write_if_missing "$SPOTLIGHT_VAULT_PATH/cases/_template/index.md" <<'SPOTLIGHT_TEMPLATE_EOF'
----
-type: investigation-note
-name: Spotlight Investigation Template
-aliases: []
-tags: [spotlight, investigation, template]
-created: $TODAY
-updated: $TODAY
-project: _template
-confidence: unverified
----
-
-# Spotlight Investigation Template
-
-## Objective
-
-## Evidence Log
-
-## Open Questions
-
-## Promote To Mycroft
-
-- Ask Mycroft to run the Spotlight ingest skill on approved findings; durable knowledge lands in the Mycroft vault.
-SPOTLIGHT_TEMPLATE_EOF
-  ok "Spotlight vault scaffold"
-}
-
 write_scheduled_recipes() {
   mkdir -p "$MYCROFT_GENERATED_RECIPES"
   cat > "$MYCROFT_GENERATED_RECIPES/morning-brief.scheduled.yaml" <<SCHEDULED_MORNING_EOF
@@ -1124,7 +1114,6 @@ prompt: |
   Run the Mycroft morning brief using these configured paths:
 
   - Mycroft vault: $VAULT_PATH
-  - Knowledge logical space: mycroft
   - Monitoring profile: $MYCROFT_MORNING_BRIEF_CONFIG
 
   If the monitoring profile does not exist yet, continue with context/beat-notes.md and tell the user to run the Morning brief preflight recipe.
@@ -1137,11 +1126,11 @@ SCHEDULED_MORNING_EOF
   cat > "$MYCROFT_GENERATED_RECIPES/vault-audit.scheduled.yaml" <<SCHEDULED_AUDIT_EOF
 version: "1.0.0"
 title: "Mycroft scheduled vault audit"
-description: "Generated by Mycroft setup. Audits the configured Mycroft vault and optional Spotlight handoffs."
+description: "Generated by Mycroft setup. Audits the configured Mycroft vault."
 
 instructions: |
   Load the Mycroft journalism instructions and knowledge-primitives skill.
-  Audit the configured vault paths. Do not rewrite user notes; write a dated report.
+  Audit the configured Mycroft vault. Do not rewrite user notes; write a dated report.
 
 parameters: []
 
@@ -1160,7 +1149,6 @@ prompt: |
   Run the Mycroft vault audit using these configured paths:
 
   - Mycroft vault: $VAULT_PATH
-  - Spotlight vault: $SPOTLIGHT_VAULT_PATH
   - Report directory: $VAULT_PATH/_audits
 
   Follow $MYCROFT_DIR/recipes/vault-audit.yaml exactly. Write the result to:
@@ -1195,27 +1183,18 @@ install_goose_schedules() {
   fi
 }
 
-open_obsidian_vaults() {
-  [ "$INSTALL_OBSIDIAN" = "1" ] || return 0
-  if [ "$(uname -s)" = "Darwin" ]; then
-    open -a Obsidian "$VAULT_PATH" 2>/dev/null || open -a Obsidian 2>/dev/null || true
-    if [ "$ENABLE_SPOTLIGHT" = "1" ]; then open -a Obsidian "$SPOTLIGHT_VAULT_PATH" 2>/dev/null || true; fi
-    ok "Obsidian opened"
-  fi
-}
-
 open_goose_start() {
   [ "$INSTALL_GOOSE" = "1" ] || return 0
   if [ "$(uname -s)" = "Darwin" ]; then
     if have goose && [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
-      goose recipe open "$MYCROFT_DIR/recipes/start.yaml" --param vault_path="$VAULT_PATH" --param vault_name="Mycroft" --param morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" >/dev/null 2>&1 || open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
+      goose recipe open "$MYCROFT_DIR/recipes/start.yaml" --param vault_path="$VAULT_PATH" --param morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" >/dev/null 2>&1 || open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
     else
       open -a Goose 2>/dev/null || open -a block-goose 2>/dev/null || true
     fi
     ok "Goose opened"
   elif have goose; then
     if [ ! -f "$MYCROFT_MORNING_BRIEF_CONFIG" ]; then
-      goose run --recipe "$MYCROFT_DIR/recipes/start.yaml" --interactive --params vault_path="$VAULT_PATH" --params vault_name="Mycroft" --params morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" || true
+      goose run --recipe "$MYCROFT_DIR/recipes/start.yaml" --interactive --params vault_path="$VAULT_PATH" --params morning_brief_config_path="$MYCROFT_MORNING_BRIEF_CONFIG" || true
     else
       goose recipe list >/dev/null 2>&1 || true
     fi
@@ -1270,25 +1249,17 @@ INSTALL_FIRECRAWL="${INSTALL_FIRECRAWL:-0}"
 
 # OpenKnowledge is always installed through npm. Prepare its global prefix even
 # when every optional npm-backed integration is disabled.
-if ! have ok || [ "$INSTALL_FIRECRAWL" = "1" ] || [ "$ENABLE_SCOUTPOST" = "1" ] || \
-   { [ "$ENABLE_SPOTLIGHT" = "1" ] && [ "${SPOT_DEVBROWSER:-1}" = "1" ]; }; then
+if ! have ok || [ "$INSTALL_FIRECRAWL" = "1" ] || [ "$ENABLE_SCOUTPOST" = "1" ]; then
   mycroft_prepare_npm_prefix || exit 1
 fi
 
-SPOTLIGHT_VAULT_PATH="$SPOTLIGHT_VAULT_INPUT"
-if [ "$SPOTLIGHT_VAULT_PATH" = "$VAULT_PATH" ]; then
-  SPOTLIGHT_VAULT_PATH="$VAULT_PATH/Spotlight"
-fi
-SPOTLIGHT_INGEST_TARGET="$VAULT_PATH"
+SPOTLIGHT_VAULT_PATH=""
+SPOTLIGHT_CASES_ROOT=""
 if [ "$ENABLE_SPOTLIGHT" = "1" ]; then SPOTLIGHT_JSON=true; else SPOTLIGHT_JSON=false; fi
 if [ "$ENABLE_SCOUTPOST" = "1" ]; then SCOUTPOST_JSON=true; else SCOUTPOST_JSON=false; fi
-if [ "${SPOT_DEVBROWSER:-1}" = "1" ]; then DEVBROWSER_JSON=true; else DEVBROWSER_JSON=false; fi
-if [ "${HAS_OSINT_NAVIGATOR:-0}" = "1" ]; then OSINT_NAVIGATOR_JSON=true; else OSINT_NAVIGATOR_JSON=false; fi
-if [ "${HAS_JUNKIPEDIA:-0}" = "1" ]; then JUNKIPEDIA_JSON=true; else JUNKIPEDIA_JSON=false; fi
 
 mkdir -p "$VAULT_PATH" && ok "Mycroft vault $VAULT_PATH"
 ensure_goose
-install_obsidian
 # Sovereign stack first (default path) via the shared idempotent provisioner —
 # the same script mycroft-update runs, so updates provision the backends too.
 # Container/image/settings are left to the provisioner's own (identical) defaults;
@@ -1304,7 +1275,6 @@ install_scout_cli
 install_mycroft_cli
 sync_mycroft_profile
 seed_mycroft_vault
-seed_spotlight_vault
 
 mkdir -p "$PROVIDERS_DST"
 # Clean up obsolete custom providers: pre-2026-05 installers copied local-*
@@ -1322,12 +1292,8 @@ if [ "${ENABLE_OPENROUTER:-0}" = "1" ]; then
 fi
 install_skill_registry
 install_private_splash
+install_spotlight_product
 write_goose_instructions
-
-if [ ! -f "$MYCROFT_ENV" ]; then
-  warn "Missing $MYCROFT_ENV — the configurator did not finish; re-run the installer."
-  exit 1
-fi
 chmod 600 "$MYCROFT_ENV"
 # Point the sovereign search tools at the provisioned SearXNG (the shell rc block
 # and goose profile source this env). Tools default to the same URL if absent.
@@ -1338,58 +1304,6 @@ ok "Mycroft environment $MYCROFT_ENV"
 install_local_model
 configure_goose_persistent_defaults
 
-if [ "$ENABLE_SPOTLIGHT" = "1" ]; then
-  mkdir -p "$PLUGINS_DIR"
-  if [ -d "$SPOTLIGHT_DIR/.git" ]; then update_repo "$SPOTLIGHT_DIR" "Spotlight"; else git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR" && ok "Spotlight cloned"; fi
-  mkdir -p "$SPOTLIGHT_VAULT_PATH" && ok "Spotlight vault $SPOTLIGHT_VAULT_PATH"
-  if [ "${SPOT_DEVBROWSER:-1}" = "1" ]; then
-    # dev-browser is Spotlight's primary browser-automation path (keyless).
-    # Version pinned to Spotlight's VALIDATED_DEPENDENCIES.md.
-    if ! have dev-browser; then
-      if have npm; then
-        npm install -g dev-browser@0.2.8 && ok "dev-browser CLI"
-      else
-        warn "npm missing; install dev-browser manually: npm install -g dev-browser@0.2.8"
-      fi
-    else
-      ok "dev-browser present"
-    fi
-    if have dev-browser; then
-      dev-browser install >/dev/null 2>&1 && ok "dev-browser Chromium" || warn "dev-browser Chromium download failed; run dev-browser install later"
-    fi
-  fi
-  NOW_UTC="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  cat > "$SPOTLIGHT_DIR/.spotlight-config.json" <<CONFIG_EOF
-{
-  "search_library": "firecrawl",
-  "vault_path": "$SPOTLIGHT_VAULT_PATH",
-  "vault_type": "obsidian",
-  "vault_app": "obsidian",
-  "case_workspace_root": "$SPOTLIGHT_VAULT_PATH/cases",
-  "cases_root": "$SPOTLIGHT_VAULT_PATH/cases",
-  "install_path": "$SPOTLIGHT_DIR",
-  "mode": "$([ "$LOCAL_ONLY" = "1" ] && echo local || echo cloud)",
-  "runtime": "goose",
-  "local_server": null,
-  "agent": null,
-  "opencode_provider": null,
-  "installed_by": "mycroft",
-  "mycroft_config": "$MYCROFT_CONFIG",
-  "mycroft_vault_path": "$VAULT_PATH",
-  "ingest_target": "$SPOTLIGHT_INGEST_TARGET",
-  "integrations": {
-    "osint_navigator": {"enabled": $OSINT_NAVIGATOR_JSON, "status": "unknown", "source": "mycroft-setup"},
-    "junkipedia": {"enabled": $JUNKIPEDIA_JSON, "status": "unknown", "source": "mycroft-setup"},
-    "dev_browser": {"enabled": $DEVBROWSER_JSON, "status": "unknown", "source": "mycroft-setup"},
-    "unpaywall": {"enabled": false, "status": "unknown", "source": "mycroft-setup"},
-    "rlm": {"enabled": false, "mode": "off", "model": null, "prefilter": false, "hybrid": false, "evidence_boundary": "lead-only; never verified or publishable"}
-  },
-  "created_at": "$NOW_UTC",
-  "last_used": "$NOW_UTC"
-}
-CONFIG_EOF
-  [ -f "$SPOTLIGHT_DIR/integrations/preflight.py" ] && (set -a; . "$MYCROFT_ENV"; set +a; python3 "$SPOTLIGHT_DIR/integrations/preflight.py" --text || true)
-fi
 if [ "$ENABLE_SCOUTPOST" = "1" ]; then
   ok "Scoutpost hosted API enabled"
 fi
@@ -1450,7 +1364,7 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
   "vaults": {
     "mycroft": "$VAULT_PATH",
     "spotlight": "$SPOTLIGHT_VAULT_PATH",
-    "spotlight_ingest_target": "$SPOTLIGHT_INGEST_TARGET"
+    "spotlight_ingest_target": null
   },
   "sovereignty": {
     "default": "$SOVEREIGNTY",
@@ -1458,7 +1372,7 @@ cat > "$MYCROFT_CONFIG" <<CONFIG_EOF
     "local_model": "$LOCAL_MODEL"
   },
   "plugins": {
-    "spotlight": {"enabled": $SPOTLIGHT_JSON, "path": "$SPOTLIGHT_DIR", "inherits_mycroft_sovereignty": true},
+    "spotlight": {"enabled": $SPOTLIGHT_JSON, "path": $([ "$ENABLE_SPOTLIGHT" = "1" ] && printf '"%s"' "$SPOTLIGHT_DIR" || echo null), "inherits_mycroft_sovereignty": false},
     "scoutpost": {"enabled": $SCOUTPOST_JSON, "mode": "hosted", "api_base": "https://www.scoutpost.ai/api/v1"}
   }
 }
@@ -1525,7 +1439,6 @@ else
   (crontab -l 2>/dev/null | grep -v 'mycroft-update'; printf '15 10 * * 1 %s/.local/bin/mycroft-update\n' "$HOME") | crontab - && ok "weekly updater cron"
 fi
 
-open_obsidian_vaults
 open_goose_start
 
 MARKER_START='# === mycroft ==='

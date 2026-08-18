@@ -199,21 +199,19 @@ Prefer "Add to my knowledge base" when the user has links, files, newsletters, p
 
 Use $MYCROFT_SOURCE_DIR/recipes/start.yaml as the broad first-run recipe. Use $MYCROFT_SOURCE_DIR/recipes/morning-brief-preflight.yaml only when the user specifically chooses the morning brief path.
 PROFILE_EOF
-    if [ -n "${SPOTLIGHT_DIR:-}" ] || [ -d "$MYCROFT_PLUGINS_DIR/spotlight" ]; then
-      SPOTLIGHT_DIR="${SPOTLIGHT_DIR:-$MYCROFT_PLUGINS_DIR/spotlight}"
+    if [ -n "${SPOTLIGHT_DIR:-}" ] && [ -d "$SPOTLIGHT_DIR" ]; then
       cat >> "$MYCROFT_PROFILE_DIR/goose-mycroft.md" <<PROFILE_SPOTLIGHT_EOF
 
 ## Spotlight Installed Context
 
 - Spotlight repo: $SPOTLIGHT_DIR
 - Spotlight vault: ${SPOTLIGHT_VAULT_PATH:-}
-- Spotlight cases root: ${SPOTLIGHT_VAULT_PATH:-}/cases
+- Spotlight cases root: ${SPOTLIGHT_CASES_ROOT:-}
 - Spotlight ingest skill: $SPOTLIGHT_DIR/skills/ingest/SKILL.md
 - Spotlight AGENTS runtime contract: $SPOTLIGHT_DIR/AGENTS.md
-- Mycroft ingest target for Spotlight findings: ${SPOTLIGHT_INGEST_TARGET:-}
 
 Use Spotlight for active OSINT casework, evidence trails, captures, and case briefs.
-Use the Spotlight ingest skill to promote confirmed findings into the Mycroft vault.
+Read approved Spotlight projections as evidence. Create a separate Mycroft note only when the journalist asks to preserve material in Mycroft; never have Spotlight write into Mycroft's namespace.
 For adversarial fact-checking, active case evidence trails, document/image-heavy OSINT, or an independent fact-checker loop, load:
 
 - $SPOTLIGHT_DIR/AGENTS.md
@@ -279,8 +277,8 @@ else
     --no-handoff
   echo "Mycroft source updated from the latest signed public bundle"
 fi
-# A Mycroft-managed Spotlight plugin is not moved to an unsigned branch head.
-# Its separately signed product installer owns Spotlight release updates.
+# Spotlight is a separate product. Its own signed installer owns its source,
+# configuration, skills, runtime, and updates.
 replace_skills || true
 replace_splash_skills || true
 refresh_splash_registry || true

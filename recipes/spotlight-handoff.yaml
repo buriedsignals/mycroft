@@ -4,7 +4,7 @@ description: "Read an existing Spotlight case or prepare and explicitly launch a
 
 instructions: |
   Load the Mycroft journalism instructions and the knowledge-workspace skill.
-  Active Spotlight cases use the direct, read-only case adapter. Durable approved findings use the spotlight_verified logical space. Do not query active cases through OpenKnowledge.
+  Active Spotlight cases use the direct, read-only case adapter. Durable approved projections under `spotlight/` are read-only to Mycroft. Do not query active cases through OpenKnowledge.
 
 parameters:
   - key: request
@@ -18,13 +18,13 @@ parameters:
   - key: cases_root
     input_type: string
     requirement: optional
-    description: "Configured Spotlight case workspace root; normally supplied by Engine configuration."
+    description: "Configured Spotlight case workspace root; read from Spotlight configuration when omitted."
     default: ""
 
 extensions:
   - type: builtin
     name: developer
-    description: "Read-only case-file access and the Engine-owned Spotlight launch command."
+    description: "Read-only case-file access and the installed Spotlight launch command."
 
 prompt: |
   Action: {{ action }}
@@ -40,7 +40,7 @@ prompt: |
   1. Ask only for missing scope, jurisdiction, sensitivity, known sources, and the question to prove or disprove.
   2. Draft the exact Spotlight brief and show it to the journalist.
   3. Do not launch until the journalist explicitly approves that brief.
-  4. Run `bsig spotlight doctor`. If healthy, launch via `bsig spotlight run` and hand the approved brief to the configured harness. Never create a case directory directly.
+  4. For a public install, run `spotlight doctor` and launch with `spotlight`. For an Engine-managed install, run `bsig doctor --product spotlight` and launch via `bsig spotlight run`. Hand the approved brief to the configured harness. Never create a case directory directly.
   5. If Spotlight is unavailable, keep the proposal as a Mycroft story/source plan and state that no investigation started.
 
 activities:

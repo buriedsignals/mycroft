@@ -48,11 +48,10 @@ If Spotlight is installed and the journalistic request needs active OSINT casewo
 evidence trail, document or image verification, source contact, or an independent editorial
 fact-checker, load the Spotlight runtime contract and fact-checking path:
 
-- `~/.local/share/goose/mycroft/plugins/spotlight/AGENTS.md`
-- `~/.local/share/goose/mycroft/plugins/spotlight/agents/fact-checker.md`
-- `~/.local/share/goose/mycroft/plugins/spotlight/skills/spotlight/SKILL.md`
-- `~/.local/share/goose/mycroft/plugins/spotlight/skills/ingest/SKILL.md`
-- Spotlight vault path from `~/.config/goose/mycroft/mycroft-config.json`
+- Spotlight's install path from `plugins.spotlight.path` in `~/.config/goose/mycroft/mycroft-config.json`, or `SPOTLIGHT_DIR`
+- `<spotlight-install>/AGENTS.md`
+- `<spotlight-install>/agents/fact-checker.md`
+- Canonical Spotlight skills under `~/.agents/skills/spotlight/`
 
 Use Spotlight for deeper casework. Keep the fact-checker independent from the investigator's reasoning: verify structured findings and evidence, not the narrative that produced them. Promote durable findings back into Mycroft through the Spotlight ingest path and preserve links to evidence.
 

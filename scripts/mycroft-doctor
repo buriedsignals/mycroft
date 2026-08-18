@@ -138,10 +138,10 @@ if command -v mycroft-safe >/dev/null 2>&1; then
 else
   bad_check "mycroft-safe CLI missing from PATH"
 fi
-if [ -d "$MYCROFT_DATA_DIR/plugins/spotlight" ]; then
+if [ -n "${SPOTLIGHT_DIR:-}" ] && [ -d "$SPOTLIGHT_DIR" ]; then
   ok_check "Spotlight plugin"
-  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/.spotlight-config.json" "Spotlight config"
-  check_path "$MYCROFT_DATA_DIR/plugins/spotlight/skills/ingest/SKILL.md" "Spotlight ingest skill"
+  check_path "$SPOTLIGHT_DIR/.spotlight-config.json" "Spotlight config"
+  check_path "$SPOTLIGHT_DIR/skills/ingest/SKILL.md" "Spotlight ingest skill"
 fi
 if [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
   SPLASH_DIR="$MYCROFT_DATA_DIR/plugins/splash"

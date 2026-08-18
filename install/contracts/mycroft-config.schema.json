@@ -121,7 +121,7 @@
           "properties": {
             "enabled": {"type": "boolean"},
             "path": {"type": ["string", "null"]},
-            "inherits_mycroft_sovereignty": {"const": true}
+            "inherits_mycroft_sovereignty": {"const": false}
           }
         },
         "scoutpost": {

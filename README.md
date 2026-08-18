@@ -55,7 +55,7 @@ that can run with ZDR cloud models or local inference.
 | Vault audit | Finds weak claims, missing frontmatter, orphaned sources, and stale handoffs. | `vault-audit` |
 | Browser acquisition | Opens a journalist-controlled browser session for portals, forms, downloads, and authenticated source capture. | `dev-browser` |
 | Scoutpost | Sets up or queries hosted monitoring scouts and information units. | `scoutpost` skill |
-| Spotlight handoff | Moves active case findings into durable newsroom memory. | Spotlight plugin + ingest |
+| Spotlight handoff | Reads approved Spotlight projections without mixing active case state into Mycroft. | Spotlight + read-only handoff |
 
 ## Mycroft, Spotlight, Scoutpost
 
@@ -120,8 +120,9 @@ exports/
 _schema/
 ```
 
-OpenKnowledge indexes both workspaces when Spotlight is enabled, so agents can
-search prior work without flattening casework into published knowledge.
+Each product owns its own OpenKnowledge workspace when Spotlight is enabled.
+Mycroft can read Spotlight's approved projections, while active Spotlight cases
+remain outside Mycroft and are accessed only through the read-only case adapter.
 
 ## Install
 

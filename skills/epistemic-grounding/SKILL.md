@@ -19,7 +19,7 @@ A source is only an anchor. Grounding is the relationship between the claim and 
 
 Mycroft uses this skill at two intensities:
 
-- **default** — used by `morning-brief`, `vault-qa`, `obsidian-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md` plus a `source::` line. No required schema.
+- **default** — used by `morning-brief`, `vault-qa`, `knowledge-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md` plus a `source::` line. No required schema.
 - **fact-check** — used by `fact-check`, `fact-check-c2pa`, draft-verification work, anything destined for publication or editor review. Emit the full `grounding` object per the schema in `tools/mycroft/docs/grounding-provenance-spec.md` and the `tools/mycroft/schemas/sift-manifest.schema.json`. See the fact-check skill for the contract.
 
 The ladder, confidence caps, and failure router below are universal — they apply at both intensities.

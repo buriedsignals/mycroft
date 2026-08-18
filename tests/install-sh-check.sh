@@ -146,21 +146,19 @@ if grep -qF -- 'SPOTLIGHT_SCOUT_REQUESTS' scripts/mycroft-update; then note 'leg
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'
 includes 'open "$GETTING_STARTED"'
 
-# Spotlight contract (current spotlight repo: dev-browser primary, no handoff,
-# canonical .spotlight-config.json, OSINT_NAV_API_KEY naming)
-includes 'git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR"'
-includes 'npm install -g dev-browser@0.2.8'
-includes '"runtime": "goose"'
-includes '"search_library": "firecrawl"'
-includes '"case_workspace_root": "$SPOTLIGHT_VAULT_PATH/cases"'
-includes '"dev_browser": {"enabled": $DEVBROWSER_JSON'
-excludes '"scoutpost": {"enabled": $SCOUTPOST_JSON, "status": "unknown", "source": "mycroft-setup"'
-includes '[ -n "${OSINT_NAV_API_KEY:-}" ] && store_goose_secret OSINT_NAV_API_KEY'
-includes 'integrations/preflight.py'
-excludes 'handoff-to-mycroft'
-excludes 'BROWSERUSE'
-excludes 'OSINT_NAVIGATOR_API_KEY'
-excludes 'browser_use'
+# Spotlight remains a Mycroft setup choice, but its signed public installer owns
+# every Spotlight runtime/config/update detail.
+includes 'install_spotlight_product'
+includes '[ "$ENABLE_SPOTLIGHT" = "1" ] || return 0'
+includes 'https://spotlight.buriedsignals.com/install-spotlight.sh'
+includes 'Spotlight installed by its canonical signed installer'
+excludes 'git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR"'
+excludes 'npm install -g dev-browser@0.2.8'
+excludes '"runtime": "goose"'
+excludes '"search_library": "firecrawl"'
+excludes '"case_workspace_root": "$SPOTLIGHT_VAULT_PATH/cases"'
+excludes '"dev_browser": {"enabled": $DEVBROWSER_JSON'
+excludes 'SPOT_DEVBROWSER'
 
 # Seed-note dates: quoted heredocs rely on the writer substituting $TODAY
 includes 'sed "s/\$TODAY/$TODAY/g" > "$path"'

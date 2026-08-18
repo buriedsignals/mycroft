@@ -48,7 +48,7 @@ Use one of these instead:
 
 ## CLI Argument Guidance
 
-When passing untrusted strings as CLI arguments (e.g. `obsidian create ... content="<scraped markdown>"`), the shell still expands `$`, backticks, and quotes inside the double-quoted argument. Prefer:
+When passing untrusted strings as CLI arguments, the shell still expands `$`, backticks, and quotes inside a double-quoted argument. Prefer:
 
 - stdin: `printf '%s' "$content" | tool --content-stdin`
 - temp file: `tool --content-file /tmp/note-<uuid>.md` (after validating the path with `resolve-path`)

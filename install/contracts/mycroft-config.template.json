@@ -49,7 +49,7 @@
       "spotlight": {
         "enabled": {"$input": "plugins.spotlight.enabled"},
         "path": {"$input": "plugins.spotlight.path"},
-        "inherits_mycroft_sovereignty": true
+        "inherits_mycroft_sovereignty": false
       },
       "scoutpost": {
         "enabled": {"$input": "plugins.scoutpost.enabled"},

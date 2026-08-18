@@ -13,11 +13,6 @@ parameters:
     requirement: required
     description: "Mycroft vault path."
     default: "~/Documents/OpenKnowledge"
-  - key: vault_name
-    input_type: string
-    requirement: optional
-    description: "Obsidian vault name."
-    default: "Mycroft"
   - key: config_path
     input_type: string
     requirement: optional
@@ -51,7 +46,6 @@ prompt: |
   type: monitoring-profile
   title: Morning Brief Monitoring Profile
   vault_path: "{{ vault_path }}"
-  vault_name: "{{ vault_name }}"
   updated: YYYY-MM-DD
   tags: [mycroft, morning-brief, monitoring]
   ---

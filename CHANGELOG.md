@@ -48,6 +48,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Changed — OpenKnowledge and Spotlight ownership
+
+- Mycroft writes durable notes through OpenKnowledge in its configured project.
+  The installer and shipped skill set no longer include a second note application.
+- Spotlight retains sole ownership of active cases and its approved knowledge
+  projection. Mycroft can search and read those results but cannot write them.
+- Selecting Spotlight in Mycroft setup now delegates to Spotlight's canonical
+  signed installer. Mycroft no longer clones, configures, or updates Spotlight.
+
 ### Changed — cloud inference default
 
 - Restored OpenRouter as the guided install's recommended default, using
@@ -167,7 +176,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
   vocabulary consistency with sift-manifest.
 - `recipes/fact-check-c2pa.yaml` JSON template updated to the 7-field shape.
 - `fact-check/SKILL.md` now requires `[epistemic-grounding, shell-safety]`.
-- `obsidian-ingest/SKILL.md` (public) now requires `shell-safety` and includes
+- The ingest skill now requires `shell-safety` and includes
   a Safety section documenting scraped content as untrusted shell input.
 - `mycroft-doctor` exports `PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"`
   at the top so the doctor works correctly when run from cron, Goose recipes,
@@ -183,7 +192,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
   via `mycroft_safe.py` before passing to bash, curl, or any CLI that
   interprets quotes/dollars/backticks. Forbids `eval` and `bash -c "..."` on
   untrusted values.
-- `obsidian-ingest` (public skill) now documents that scraped markdown should
+- The ingest skill now documents that scraped markdown should
   be written via stdin or temp file rather than interpolated into a CLI
   `content="..."` argv element.
 

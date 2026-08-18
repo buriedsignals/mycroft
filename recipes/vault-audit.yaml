@@ -1,6 +1,6 @@
 version: "1.0.0"
 title: "Vault audit"
-description: "Scheduled audit of the Mycroft vault for stale notes, missing frontmatter, orphaned sources, weak claims, and Spotlight handoffs that should be promoted."
+description: "Scheduled audit of the Mycroft vault for stale notes, missing frontmatter, orphaned sources, weak claims, and approved Spotlight material already handed to Mycroft."
 
 instructions: |
   Load the Mycroft journalism instructions, knowledge-primitives skill, and knowledge-workspace skill.
@@ -12,11 +12,6 @@ parameters:
     requirement: required
     description: "Mycroft vault path."
     default: "~/Documents/OpenKnowledge"
-  - key: spotlight_vault_path
-    input_type: string
-    requirement: optional
-    description: "Spotlight vault path, if installed."
-    default: "~/Documents/Spotlight"
   - key: output_path
     input_type: string
     requirement: optional
@@ -35,7 +30,7 @@ extensions:
 prompt: |
   Run a Mycroft vault audit.
 
-  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads under `mycroft/`. Skip `.obsidian/`, `.trash/`, and binary files.
+  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
 
   Check:
 
@@ -48,13 +43,7 @@ prompt: |
   7. Story pitches that have no evidence links.
   8. Sensitive notes that lack explicit `sensitive: true` frontmatter.
 
-  If `{{ spotlight_vault_path }}` exists, inspect only:
-
-  - `{{ spotlight_vault_path }}/handoff-to-mycroft/`
-  - `{{ spotlight_vault_path }}/briefs/`
-  - `{{ spotlight_vault_path }}/cases/`
-
-  Do not copy Spotlight casework into Mycroft during the audit.
+  Do not inspect Spotlight's workspace or active cases during the audit. Audit only material already present in Mycroft's `handoff/from-spotlight/` folder.
 
   Write a dated markdown report to `{{ output_path }}/vault-audit-YYYY-MM-DD.md` with:
 

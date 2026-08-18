@@ -28,9 +28,9 @@ Software and product-development reviews are outside this route even when the us
 
 Escalate to Spotlight when editorial or investigative work needs active OSINT casework, source
 evidence trails, document or image verification, source contact, or an independent journalistic
-fact-checker loop. In that case, read `~/.local/share/goose/mycroft/plugins/spotlight/AGENTS.md` and
-`~/.local/share/goose/mycroft/plugins/spotlight/agents/fact-checker.md`, then keep the fact-checker
-independent from the investigator's reasoning.
+fact-checker loop. In that case, resolve Spotlight's independently managed install path from
+Mycroft configuration or `SPOTLIGHT_DIR`, read its `AGENTS.md` and `agents/fact-checker.md`, then
+keep the fact-checker independent from the investigator's reasoning.
 
 ## Voice
 

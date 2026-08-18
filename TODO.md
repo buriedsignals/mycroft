@@ -28,8 +28,8 @@ Make the enabled skills discoverable by **symlinking them into a per-product nam
 
 ## Reference implementation (engine, commit `cce76bbf`)
 - `internal/products/mycroft/module.go` → `skillSymlinkSteps` (the symlink + dir steps).
-- `internal/products/mycroft/skill_registry.go` → `curatedSkills` (the enabled set: 7 mycroft
-  skills, obsidian gated; + 7 Spotlight cross-overs when present).
+- `internal/products/mycroft/skill_registry.go` → `curatedSkills` (the enabled Mycroft set
+  plus Spotlight cross-overs when present).
 - `internal/doctor/checks.go` → `CheckSkillsRegistered` (verifies each link resolves to a SKILL.md).
 - Uninstall removes the `~/.agents/skills/mycroft/` dir + links (engine widens the owned-roots
   for it).

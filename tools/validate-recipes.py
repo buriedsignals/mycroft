@@ -75,7 +75,8 @@ def validate_recipe(path: Path) -> list[str]:
             "direct, read-only case adapter",
             "Do not query active cases through OpenKnowledge",
             "explicitly approves",
-            "bsig spotlight doctor",
+            "spotlight doctor",
+            "bsig doctor --product spotlight",
             "bsig spotlight run",
             "Never create a case directory directly",
         ):

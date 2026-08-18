@@ -28,10 +28,11 @@ Run:
 mycroft update
 ```
 
-This calls `~/.local/bin/mycroft-update`, which fetches `origin main` and fast-forwards only:
+This calls `~/.local/bin/mycroft-update`, which updates Mycroft through its signed release channel:
 
 - `~/.local/share/goose/mycroft/source`
-- `~/.local/share/goose/mycroft/plugins/spotlight`, when installed
+
+Spotlight is updated separately with `spotlight update`; Mycroft never updates or rewrites Spotlight's checkout.
 
 Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the update. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the source instructions plus local install paths, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`.
 

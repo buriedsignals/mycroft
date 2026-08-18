@@ -4,7 +4,7 @@ description: "Journal findings from the current Goose session into the configure
 
 instructions: |
   Load the Mycroft journalism instructions and knowledge-workspace skill.
-  Use OpenKnowledge for writes. Never silently fall back to Obsidian or direct files.
+  Use OpenKnowledge for writes. Never silently fall back to direct files.
 
 parameters:
   - key: vault_path
@@ -12,11 +12,6 @@ parameters:
     requirement: required
     description: "OpenKnowledge project root"
     default: "~/Documents/OpenKnowledge"
-  - key: logical_space
-    input_type: string
-    requirement: required
-    description: "Declared destination: knowledge | company | mycroft | spotlight_verified"
-    default: "mycroft"
   - key: project
     input_type: string
     requirement: optional
@@ -36,17 +31,17 @@ extensions:
     args: ["--cwd", "{{ vault_path }}", "mcp"]
 
 prompt: |
-  Sync these findings into logical space `{{ logical_space }}` in `{{ vault_path }}`:
+  Sync these findings into the Mycroft OpenKnowledge project rooted at `{{ vault_path }}`:
 
   ```
   {{ findings }}
   ```
 
   **Step 1 — Structure the findings** into:
-  - **Entities**: people, organizations, places (one note per entity under `mycroft/shared/entities/`)
-  - **Sources**: documents, URLs, interviews (one note per source under `mycroft/shared/sources/`)
-  - **Methodology**: techniques used, one note per technique under `mycroft/shared/methodology/` (only if novel)
-  - **Project notes**: if {{ project }} is set, per-project notes under `mycroft/investigations/{{ project }}/`
+  - **Entities**: people, organizations, places (one note per entity under `shared/entities/`)
+  - **Sources**: documents, URLs, interviews (one note per source under `shared/sources/`)
+  - **Methodology**: techniques used, one note per technique under `shared/methodology/` (only if novel)
+  - **Project notes**: if {{ project }} is set, per-project notes under `investigations/{{ project }}/`
 
   **Step 2 — For each note**:
 
@@ -68,7 +63,7 @@ prompt: |
 
   **Step 3 — Write through OpenKnowledge**:
 
-  Require request and idempotency IDs, `{{ logical_space }}`, actor, classification, and summary. Use `write` for new documents and bounded `edit` with expected-version checks for existing documents. Read every result back and verify links before reporting success.
+  Use `write` for new documents. Before a bounded `edit`, read the current document and target one exact occurrence. Read every result back and verify its content and links before reporting success.
 
   **Step 4 — Report back**:
   - List every file created / updated.
@@ -76,10 +71,10 @@ prompt: |
 
   **Rules**:
   - Do not write to `consulting/` or `journals/` vaults — those are off-limits unless explicitly targeted.
-  - If OpenKnowledge fails, leave the write in the durable outbox and report it. Do not write elsewhere.
+  - If OpenKnowledge fails, report exactly which documents were not written. Do not write elsewhere or claim that a durable outbox exists.
   - Never fabricate entity details. If a fact is missing, leave the field blank rather than guessing.
 
 activities:
-  - "Sync these findings to the {{ logical_space }} knowledge space"
+  - "Sync these findings to Mycroft knowledge"
   - "Write these entities and sources into investigations/{{ project }}/"
   - "Update a durable entity record"

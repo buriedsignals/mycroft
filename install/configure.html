@@ -186,21 +186,13 @@
   </div>
 
   <p class="num">03 — Core setup</p>
-  <h2>Two essentials. <em>One escape hatch.</em></h2>
-  <p class="sec-lead"><strong>Goose and Obsidian are required.</strong> Sovereign web research runs through local SearXNG and Crawl4AI; Firecrawl is an optional fallback for hard anti-bot targets.</p>
-  <div class="grid-3">
+  <h2>One essential. <em>One escape hatch.</em></h2>
+  <p class="sec-lead"><strong>Goose is required.</strong> Open Knowledge stores and indexes durable Markdown. Sovereign web research runs through local SearXNG and Crawl4AI; Firecrawl is an optional fallback for hard anti-bot targets.</p>
+  <div class="grid-2">
     <div class="item">
       <div class="item__head"><span class="item__title">Goose<em>.</em></span><span class="badge req">required</span></div>
       <p class="item__lede">The agent runtime Mycroft plugs into. Desktop or CLI.</p>
       <label class="check"><input type="checkbox" id="installGoose" checked> Auto-install</label>
-    </div>
-    <div class="item">
-      <div class="item__head"><span class="item__title">Obsidian<em>.</em></span><span class="badge req">required</span></div>
-      <p class="item__lede">Mycroft reads/writes your knowledge vault through Obsidian's built-in CLI.</p>
-      <label class="check"><input type="checkbox" id="installObsidian" checked> Auto-install</label>
-      <div class="callout warn"><strong>Two manual steps after first launch:</strong>
-        <ol><li>Settings → General → Advanced → <strong>CLI: ON</strong></li><li>Keep Obsidian <strong>running</strong> for vault recipes</li></ol>
-      </div>
     </div>
     <div class="item">
       <div class="item__head"><span class="item__title">Firecrawl<em>.</em></span><span class="badge">Optional fallback</span></div>
@@ -216,7 +208,7 @@
 
   <div class="item" style="margin-top:14px;">
     <div class="item__head"><span class="item__title">Your <em>vault.</em></span><span class="badge req">required</span></div>
-    <p class="item__lede">Where Mycroft's durable newsroom memory lives — an Obsidian-compatible folder, created if it doesn't exist. Spotlight uses its own vault path in the plugin section below.</p>
+    <p class="item__lede">Where Mycroft's durable newsroom memory lives — a portable Markdown project indexed by Open Knowledge and created if it doesn't exist. Spotlight uses its own workspace configured by Spotlight's installer.</p>
     <div class="path-row">
       <input class="fld" type="text" id="vault_path" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
       <button type="button" class="mini-btn" data-browse="vault_path" data-prompt="Choose your Mycroft vault folder">Browse…</button>
@@ -263,19 +255,10 @@
   <div class="plugin">
     <div>
       <label class="check"><input type="checkbox" id="spotlight" checked><span class="item__title" style="font-size:24px;"><em>Spotlight.</em></span></label>
-      <p><strong>Public.</strong> OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, and knowledge-vault ingestion. Inherits your Mycroft cloud/local preference. <a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">spotlight.buriedsignals.com</a></p>
+      <p><strong>Public.</strong> OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, and knowledge projection. After Mycroft is configured, Spotlight's own local setup opens so you can choose its runtime, model, case directory, and Open Knowledge workspace. <a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">spotlight.buriedsignals.com</a></p>
     </div>
     <div>
-      <label class="field-label" for="spotlight_vault_path">Spotlight investigations vault</label>
-      <div class="path-row">
-        <input class="fld" type="text" id="spotlight_vault_path" value="~/Documents/Spotlight" autocomplete="off" spellcheck="false">
-        <button type="button" class="mini-btn" data-browse="spotlight_vault_path" data-prompt="Choose your Spotlight investigations vault folder">Browse…</button>
-      </div>
-      <p class="hint">Keep this separate from the Mycroft vault in the required section.</p>
-      <p class="hint" style="margin:0 0 6px;">Navigator is connected separately below. Credentials are stored by Navigator in the OS keychain and are never entered on this page.</p>
-      <label class="check" style="margin-top:12px;"><input type="checkbox" id="spotDevBrowser" checked> dev-browser — sandboxed Playwright browser for portals, forms, JS-heavy pages, screenshots. No key; downloads Chromium (~300&nbsp;MB).</label>
-      <label class="field-label" for="junkipedia_key">JUNKIPEDIA_API_KEY <span class="opt">— optional</span></label>
-      <input class="fld" type="password" id="junkipedia_key" placeholder="jk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      <p class="hint" style="margin:0;">This choice delegates installation to Spotlight's signed public installer. Mycroft does not clone Spotlight, write its configuration, or manage its updates.</p>
     </div>
   </div>
   <div class="plugin">
@@ -341,24 +324,22 @@ const PLATFORM = "__PLATFORM__"; // mac | linux | windows-wsl — detected by th
 /* Vault path: native Browse (the local server opens a real OS folder dialog)
    plus per-OS default chips. */
 const OS_DEFAULTS = {
-  'mac': { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight',
+  'mac': { vault: '~/Documents/Mycroft',
     hint: 'macOS default — ~ is your home folder.' },
-  'linux': { vault: '~/Documents/Mycroft', spotlight: '~/Documents/Spotlight',
+  'linux': { vault: '~/Documents/Mycroft',
     hint: 'Linux default — ~ is your home folder.' },
-  'windows-wsl': { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/Mycroft', spotlight: '/mnt/c/Users/YOUR-USERNAME/Documents/Spotlight',
-    hint: 'Replace YOUR-USERNAME with your Windows username. Keeping the vault under /mnt/c/… lets Windows Obsidian read it from WSL.' },
+  'windows-wsl': { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/Mycroft',
+    hint: 'Replace YOUR-USERNAME with your Windows username. Keeping the project under /mnt/c/… makes it accessible from Windows and WSL.' },
 };
 
 function applyOsDefault(os, force) {
   const defs = OS_DEFAULTS[os] || OS_DEFAULTS.mac;
   const vault = document.getElementById('vault_path');
-  const spot = document.getElementById('spotlight_vault_path');
   if (force || !vault.dataset.touched) vault.value = defs.vault;
-  if (force || !spot.dataset.touched) spot.value = defs.spotlight;
   document.getElementById('vaultOsHint').textContent = defs.hint;
   document.querySelectorAll('.os-chip').forEach(ch => ch.classList.toggle('active', ch.dataset.os === os));
 }
-['vault_path', 'spotlight_vault_path'].forEach(id => {
+['vault_path'].forEach(id => {
   document.getElementById(id).addEventListener('input', e => { e.target.dataset.touched = '1'; });
 });
 document.querySelectorAll('.os-chip').forEach(ch => ch.addEventListener('click', () => applyOsDefault(ch.dataset.os, true)));
@@ -436,9 +417,7 @@ function readForm() {
     sovereignty: document.querySelector('input[name="sovereignty"]:checked').value,
     localModel: (document.querySelector('input[name="local_model"]:checked') || {}).value || 'gemma31b',
     vault: v('vault_path'),
-    spotlightVaultPath: v('spotlight_vault_path'),
     installGoose: c('installGoose'),
-    installObsidian: c('installObsidian'),
     installFirecrawl: c('installFirecrawl'),
     ftEnabled: c('ftEnabled'),
     agentmailEnabled: c('agentmailEnabled'),
@@ -447,7 +426,6 @@ function readForm() {
     openrouterZdrConfirmed: c('openrouter_zdr_confirm'),
     spotlight: c('spotlight'),
     scoutpost: c('scoutpost'),
-    spotDevBrowser: c('spotDevBrowser'),
     openrouterKey: v('openrouter_key'),
     fireworksKey: v('fireworks_key'),
     firecrawlKey: v('firecrawl_key'),
@@ -456,7 +434,6 @@ function readForm() {
     scoutpostKey: v('scoutpost_api_key'),
     osintNavigatorKey: '',
     navigatorChoice,
-    junkipediaKey: v('junkipedia_key'),
   };
 }
 

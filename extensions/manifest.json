@@ -35,16 +35,9 @@
     {
       "name": "openknowledge",
       "required": true,
-      "install": "Installed and configured by the Buried Signals Engine from the signed dependency catalog",
+      "install": "Installed by Mycroft's canonical installer or by the Buried Signals Engine from its signed dependency catalog",
       "env": [],
       "used_by": ["morning-brief", "vault-sync", "vault-qa", "vault-audit"]
-    },
-    {
-      "name": "obsidian-cli",
-      "required": false,
-      "install": "Legacy upgrade adapter only; not installed for new Engine-managed profiles",
-      "env": [],
-      "used_by": ["obsidian_legacy"]
     },
     {
       "name": "dev-browser",
@@ -67,9 +60,9 @@
       "repo": "https://github.com/buriedsignals/spotlight",
       "status": "launching with Mycroft",
       "selectable_default": true,
-      "install_path": "~/.mycroft/plugins/spotlight",
-      "mode": "inherits_mycroft_sovereignty",
-      "env": ["SPOTLIGHT_VAULT_PATH"]
+      "install_path": "chosen in Spotlight's setup",
+      "mode": "delegated_signed_installer",
+      "env": ["SPOTLIGHT_DIR", "SPOTLIGHT_VAULT_PATH", "SPOTLIGHT_CASES_ROOT"]
     },
     {
       "name": "scoutpost",

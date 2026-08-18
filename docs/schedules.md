@@ -54,7 +54,7 @@ Desktop users can trigger the same updater manually from Goose with the `update-
 The updater fetches `origin main` and fast-forwards only:
 
 - `~/.local/share/goose/mycroft/source`
-- `~/.local/share/goose/mycroft/plugins/spotlight`
+- Spotlight is not updated by Mycroft; when installed, use `spotlight update`.
 
 Source recipes and skills are loaded directly from the checkout, so recipe and skill changes apply after the update. After source updates, the updater refreshes `~/.config/goose/mycroft/SOUL.md`, regenerates `~/.config/goose/.goosehints` from the updated source instructions plus local install paths, refreshes provider JSON files that are already installed under Goose, and runs `mycroft doctor`.
 
