@@ -1404,7 +1404,7 @@
   ],
   "dependencies": {
     "@flue/cli": "1.0.0-beta.9",
-    "@inkeep/open-knowledge": "0.34.0",
+    "@inkeep/open-knowledge": "0.54.3",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
     "navigator-cli": "0.1.1",
