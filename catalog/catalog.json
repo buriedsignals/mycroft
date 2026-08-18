@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.4",
-  "released_at": "2026-08-15T20:01:56Z",
-  "release_sequence": 21,
+  "released_at": "2026-08-18T10:45:00Z",
+  "release_sequence": 22,
   "products": {
     "mycroft": {
       "version": "0.3.7",
       "repo": "buriedsignals/mycroft",
-      "ref": "0b3f505073ad747a8480b3d7e47224c8d3fbe78b",
+      "ref": "80bf24337bd494030eb6da18b2e8aa21ea80c52f",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "0b3f505073ad747a8480b3d7e47224c8d3fbe78b",
-        "digest": "5b61b22087dc3692d20db446b30eaf512bafa526e4982ccf804625100a8ddead",
+        "source_commit": "80bf24337bd494030eb6da18b2e8aa21ea80c52f",
+        "digest": "f5919291f8320af6c8627439e96e10e0b368d012fc5038d067665a0a1916c3ed",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -440,7 +440,7 @@
                       ]
                     },
                     "inherits_mycroft_sovereignty": {
-                      "const": true
+                      "const": false
                     }
                   }
                 },
@@ -573,7 +573,7 @@
                 "path": {
                   "$input": "plugins.spotlight.path"
                 },
-                "inherits_mycroft_sovereignty": true
+                "inherits_mycroft_sovereignty": false
               },
               "scoutpost": {
                 "enabled": {
@@ -801,35 +801,15 @@
       "kind": "portable"
     },
     {
-      "id": "obsidian",
-      "name": "Obsidian vault",
+      "id": "knowledge-ingest",
+      "name": "Knowledge ingest",
       "audience": [
         "journalist"
       ],
       "entitlement": "mycroft.core",
-      "path": "skills/obsidian",
+      "path": "skills/knowledge-ingest",
       "requires_keys": [],
-      "version": "0.2.2",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "obsidian-ingest",
-      "name": "Obsidian ingest",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/obsidian-ingest",
-      "requires_keys": [],
-      "version": "0.2.2",
+      "version": "0.3.0",
       "products": [
         "mycroft"
       ],

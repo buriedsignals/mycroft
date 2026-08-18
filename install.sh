@@ -40,7 +40,7 @@ if [ "$PRIVATE_SPLASH" = "1" ] && [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVAT
     if [ -n "$PRIVATE_INSTALLER_SOURCE" ] && [ -d "$PRIVATE_INSTALLER_SOURCE/.git" ]; then
       git clone --no-local "$PRIVATE_INSTALLER_SOURCE" "$PRIVATE_MYCROFT_DIR"
     else
-      git clone git@github.com:buriedsignals/mycroft.git "$PRIVATE_MYCROFT_DIR"
+      git clone https://github.com/buriedsignals/mycroft.git "$PRIVATE_MYCROFT_DIR"
     fi
   else
     if ! git -C "$PRIVATE_MYCROFT_DIR" diff --quiet || ! git -C "$PRIVATE_MYCROFT_DIR" diff --cached --quiet; then
@@ -433,7 +433,7 @@ install_private_splash() {
     exit 1
   fi
   if [ ! -d "$SPLASH_DIR/.git" ]; then
-    git clone git@github.com:buriedsignals/splash.git "$SPLASH_DIR"
+    git clone https://github.com/buriedsignals/splash.git "$SPLASH_DIR"
     ok "Private Splash cloned"
   else
     ok "Private Splash checkout present"
