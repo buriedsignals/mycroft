@@ -13,7 +13,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Absolute path to your primary vault (intelligence or knowledge)"
-    default: "~/Documents/OpenKnowledge"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: beat
     input_type: string
     requirement: optional

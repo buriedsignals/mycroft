@@ -11,12 +11,12 @@ parameters:
     input_type: string
     requirement: required
     description: "Mycroft vault path."
-    default: "~/Documents/OpenKnowledge"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: output_path
     input_type: string
     requirement: optional
     description: "Directory for audit reports."
-    default: "~/Documents/Mycroft/_audits"
+    default: "~/Documents/OpenKnowledge/Mycroft/_audits"
 
 extensions:
   - type: builtin

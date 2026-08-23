@@ -1,6 +1,7 @@
 # First Run
 
 The installer is designed to leave the user in Goose, ready to choose a first reporting action.
+The default Mycroft workspace is `~/Documents/OpenKnowledge/Mycroft`; Spotlight remains a sibling workspace at `~/Documents/OpenKnowledge/Spotlight`.
 
 After setup:
 
@@ -44,7 +45,7 @@ From CLI, launch the broad first-run menu:
 
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/start.yaml --interactive \
-  --params vault_path="$HOME/Documents/Mycroft" \
+  --params vault_path="$HOME/Documents/OpenKnowledge/Mycroft" \
   --params morning_brief_config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
 ```
 
@@ -56,6 +57,6 @@ From CLI:
 
 ```sh
 goose run --recipe ~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml --interactive \
-  --params vault_path="$HOME/Documents/Mycroft" \
+  --params vault_path="$HOME/Documents/OpenKnowledge/Mycroft" \
   --params config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
 ```

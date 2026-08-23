@@ -28,7 +28,7 @@ import engine_bridge as engine  # noqa: E402
 BASE = {
     "sovereignty": "cloud", "localModel": "gemma31b",
     "cloudProvider": "openrouter-glm52", "openrouterZdrConfirmed": True,
-    "vault": "~/Documents/Mycroft",
+    "vault": "~/Documents/OpenKnowledge/Mycroft",
     "installGoose": True, "installFirecrawl": True,
     "ftEnabled": True, "agentmailEnabled": False, "apifyEnabled": False,
     "spotlight": True, "scoutpost": True,
@@ -132,7 +132,7 @@ class UnitChecks(unittest.TestCase):
 
     def test_env_lines(self):
         env = srv.build_env_lines(srv.normalize(BASE))
-        self.assertIn('MYCROFT_VAULT_PATH="$HOME/Documents/Mycroft"', env)
+        self.assertIn('MYCROFT_VAULT_PATH="$HOME/Documents/OpenKnowledge/Mycroft"', env)
         self.assertIn("GOOSE_PROVIDER=openrouter", env)
         self.assertIn("GOOSE_MODEL=z-ai/glm-5.2", env)
         self.assertIn("OPENROUTER_PARAMETERS='{\"provider\":{\"zdr\":true}}'", env)
@@ -179,7 +179,7 @@ class UnitChecks(unittest.TestCase):
                        "CLOUD_PROVIDER=openrouter-glm52",
                        "HAS_OSINT_NAVIGATOR=1", "ENABLE_FT=1",
                        "NAVIGATOR_CONNECTION=connected",
-                       'VAULT_PATH="$HOME/Documents/Mycroft"',
+                       'VAULT_PATH="$HOME/Documents/OpenKnowledge/Mycroft"',
                        'REQUIRED_DOCTOR_ENV="FIRECRAWL_API_KEY OPENROUTER_API_KEY SCOUTPOST_API_KEY"']:
             self.assertIn(needle, cfg)
         for secret in SECRETS:
@@ -202,7 +202,7 @@ class UnitChecks(unittest.TestCase):
 
     def test_getting_started(self):
         guide = srv.build_getting_started(srv.normalize(BASE))
-        for needle in ["~/Documents/Mycroft", "Spotlight", "Spotlight's own signed setup flow", "OpenRouter",
+        for needle in ["~/Documents/OpenKnowledge/Mycroft", "Spotlight", "Spotlight's own signed setup flow", "OpenRouter",
                        "START_HERE.md", "mycroft doctor",
                        "Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)",
                        "Scoutpost (free monitoring tier, including MuckRock)"]:
@@ -216,6 +216,48 @@ class UnitChecks(unittest.TestCase):
         self.assertNotIn("Spotlight's own signed setup flow", local)
         self.assertNotIn("Two switches", local)
         self.assertIn("Navigator skill (locked; no credential or CLI)", local)
+    def test_openknowledge_workspace_defaults_are_siblings(self):
+        with open(os.path.join(ROOT, "install", "configure.html"), encoding="utf-8") as handle:
+            page = handle.read()
+        self.assertIn('id="vault_path" value="~/Documents/OpenKnowledge/Mycroft"', page)
+        self.assertIn("'mac': { vault: '~/Documents/OpenKnowledge/Mycroft'", page)
+        self.assertIn("'linux': { vault: '~/Documents/OpenKnowledge/Mycroft'", page)
+        self.assertIn("'/mnt/c/Users/YOUR-USERNAME/Documents/OpenKnowledge/Mycroft'", page)
+
+        expected_defaults = {
+            "docs/first-run.md": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/start.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/morning-brief.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/morning-brief-preflight.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/vault-audit.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/vault-qa.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/vault-sync.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "skills/mycroft-maintenance/SKILL.md": "~/Documents/OpenKnowledge/Mycroft",
+        }
+        for relative, expected in expected_defaults.items():
+            with open(os.path.join(ROOT, relative), encoding="utf-8") as handle:
+                text = handle.read()
+            self.assertIn(expected, text, relative)
+            self.assertNotIn("~/Documents/Mycroft", text, relative)
+    def test_openknowledge_contract_fixtures_use_sibling_defaults(self):
+        for relative in [
+            "install/contracts/testdata/default.inputs.json",
+            "install/contracts/testdata/default.expected.json",
+        ]:
+            with open(os.path.join(ROOT, relative), encoding="utf-8") as handle:
+                data = json.load(handle)
+            self.assertEqual(
+                data["vaults"]["mycroft"],
+                "/home/reporter/Documents/OpenKnowledge/Mycroft",
+                relative,
+            )
+
+    def test_openknowledge_skill_docs_keep_spotlight_as_a_sibling(self):
+        relative = "skills/mycroft-maintenance/SKILL.md"
+        with open(os.path.join(ROOT, relative), encoding="utf-8") as handle:
+            text = handle.read()
+        self.assertIn("~/Documents/OpenKnowledge/Spotlight", text)
+        self.assertNotIn("~/Documents/Spotlight", text)
 
 
 class ServerChecks(unittest.TestCase):

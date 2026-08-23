@@ -210,7 +210,7 @@
     <div class="item__head"><span class="item__title">Your <em>vault.</em></span><span class="badge req">required</span></div>
     <p class="item__lede">Where Mycroft's durable newsroom memory lives — a portable Markdown project indexed by Open Knowledge and created if it doesn't exist. Spotlight uses its own workspace configured by Spotlight's installer.</p>
     <div class="path-row">
-      <input class="fld" type="text" id="vault_path" value="~/Documents/Mycroft" autocomplete="off" spellcheck="false">
+      <input class="fld" type="text" id="vault_path" value="~/Documents/OpenKnowledge/Mycroft" autocomplete="off" spellcheck="false">
       <button type="button" class="mini-btn" data-browse="vault_path" data-prompt="Choose your Mycroft vault folder">Browse…</button>
     </div>
     <div class="os-chips" role="group" aria-label="Default path per operating system">
@@ -324,11 +324,11 @@ const PLATFORM = "__PLATFORM__"; // mac | linux | windows-wsl — detected by th
 /* Vault path: native Browse (the local server opens a real OS folder dialog)
    plus per-OS default chips. */
 const OS_DEFAULTS = {
-  'mac': { vault: '~/Documents/Mycroft',
+  'mac': { vault: '~/Documents/OpenKnowledge/Mycroft',
     hint: 'macOS default — ~ is your home folder.' },
-  'linux': { vault: '~/Documents/Mycroft',
+  'linux': { vault: '~/Documents/OpenKnowledge/Mycroft',
     hint: 'Linux default — ~ is your home folder.' },
-  'windows-wsl': { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/Mycroft',
+  'windows-wsl': { vault: '/mnt/c/Users/YOUR-USERNAME/Documents/OpenKnowledge/Mycroft',
     hint: 'Replace YOUR-USERNAME with your Windows username. Keeping the project under /mnt/c/… makes it accessible from Windows and WSL.' },
 };
 

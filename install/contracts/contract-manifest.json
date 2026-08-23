@@ -8,8 +8,8 @@
     {"path": "mycroft-config.schema.json", "sha256": "66a3293935995102f159aaa2d8fb858e937ad7b558953b40229b2c0e0b95aff4"},
     {"path": "mycroft-config.template.json", "sha256": "f7bd2e12e554e8062b0af4f8cf0af667b110a2d288b6277a795ac5f773d3d531"},
     {"path": "validation-profile.md", "sha256": "e0e2a126f3cf9118dbb63acb924a0a0884eb925356f242a68c978f31559121fd"},
-    {"path": "testdata/default.inputs.json", "sha256": "f07ec0a43c393c78c13c3515880d43f2cfe5b33fe0d8b2142f1574c100896c11"},
-    {"path": "testdata/default.expected.json", "sha256": "87ae04827675806ffaa4a6d15d99acdfdf123f2e9bebe5f5c4ca59108ad65472"},
+    {"path": "testdata/default.inputs.json", "sha256": "9279b4411d65380c6929a306f7a661cf6b42c91ffca43f4ae183b47e87e1e0ef"},
+    {"path": "testdata/default.expected.json", "sha256": "b3c94e43464d4059f1883d20be0dce1954a5bdd9050e640a7b0700e1a5798e5f"},
     {"path": "testdata/firecrawl-fallback.inputs.json", "sha256": "144e9bc44b4062c6fbda5d0480890c44446980852f6519d3b4deb6919e122ba2"},
     {"path": "testdata/firecrawl-fallback.expected.json", "sha256": "36af05c34df387ce92e595b6eb067273ab3d486ebe001db9c8d13b44fafbc39c"}
   ]

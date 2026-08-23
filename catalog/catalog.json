@@ -1005,6 +1005,148 @@
       }
     },
     {
+      "id": "arbiter",
+      "name": "Arbiter",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/arbiter",
+      "requires_keys": [
+        "ARBITER_API_KEY"
+      ],
+      "version": "1.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-execution",
+      "name": "Phase execution",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-execution",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-gate1",
+      "name": "Phase gate 1",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-gate1",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-ingest",
+      "name": "Phase ingest",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-ingest",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-methodology",
+      "name": "Phase methodology",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-methodology",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-preflight",
+      "name": "Phase preflight",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-preflight",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-report",
+      "name": "Phase report",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-report",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
       "id": "spotlight",
       "name": "Spotlight orchestrator",
       "audience": [

@@ -11,7 +11,7 @@ parameters:
     input_type: string
     requirement: required
     description: "OpenKnowledge project root"
-    default: "~/Documents/OpenKnowledge"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: project
     input_type: string
     requirement: optional

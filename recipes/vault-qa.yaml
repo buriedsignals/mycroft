@@ -17,7 +17,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Absolute or ~-expanded path to the journalist's vault root"
-    default: "~/Documents/OpenKnowledge"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: entity
     input_type: string
     requirement: optional

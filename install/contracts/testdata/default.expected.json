@@ -8,5 +8,5 @@
   "schema_version": "mycroft-config/v2",
   "skills": {"directory": "/home/reporter/.agents/skills/mycroft", "registry": "/home/reporter/.config/goose/mycroft/skill-registry.json"},
   "sovereignty": {"local_model": null, "local_only": false},
-  "vaults": {"mycroft": "/home/reporter/Documents/Mycroft", "spotlight": null, "spotlight_ingest_target": null}
+  "vaults": {"mycroft": "/home/reporter/Documents/OpenKnowledge/Mycroft", "spotlight": null, "spotlight_ingest_target": null}
 }

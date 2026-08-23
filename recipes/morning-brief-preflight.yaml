@@ -12,7 +12,7 @@ parameters:
     input_type: string
     requirement: required
     description: "Mycroft vault path."
-    default: "~/Documents/OpenKnowledge"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: config_path
     input_type: string
     requirement: optional
