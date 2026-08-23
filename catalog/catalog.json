@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.4",
-  "released_at": "2026-08-18T10:45:00Z",
-  "release_sequence": 22,
+  "released_at": "2026-08-23T07:00:00Z",
+  "release_sequence": 23,
   "products": {
     "mycroft": {
       "version": "0.3.7",
@@ -620,7 +620,7 @@
       "entitlement": "navigator.core",
       "path": "app/static/navigator-skill.md",
       "requires_keys": [],
-      "version": "0.1.1",
+      "version": "0.3.0",
       "products": [
         "mycroft",
         "spotlight"
@@ -634,7 +634,7 @@
       "package": {
         "distribution": "navigator-cli",
         "path": "app/static/navigator-skill.md",
-        "sha256": "0a2043c8b6c211df6bf042f094e82260d0a585a35b5a66104b730b95149f443d"
+        "sha256": "909ad01b2e5e5a62eff7d77d5cd465744e39f04e31ae6ddb5e9a967d9ed0265b"
       }
     },
     {
@@ -1387,7 +1387,7 @@
     "@inkeep/open-knowledge": "0.54.3",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
-    "navigator-cli": "0.1.1",
+    "navigator-cli": "0.3.0",
     "scoutpost-cli": "0.1.7",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },
@@ -1623,7 +1623,7 @@
     },
     {
       "id": "spotlight-gemma4-12b",
-      "display": "Gemma 4 12B — Spotlight tuned",
+      "display": "Gemma 4 12B \u2014 Spotlight tuned",
       "hf_repo": "",
       "ollama_tag": "",
       "ollama_alias": "",
