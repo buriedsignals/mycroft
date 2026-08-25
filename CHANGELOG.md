@@ -48,6 +48,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Fixed — public installer on macOS and Windows (WSL)
+
+- The public bootstrap still shipped on `v0.3.5` expands empty `CHOICES_ARGS`
+  and `ACTION_ARGS` arrays under `set -u`, which aborts macOS `/bin/bash` 3.2
+  with `CHOICES_ARGS[@]: unbound variable`. After digest verification, `install.sh`
+  rewrites those expansions to the nounset-safe form already in Engine.
+- The localhost configurator no longer uses `xdg-open`/`gio` on WSL (that path
+  fails with `Operation not supported`). It opens `wslview` or Windows `cmd.exe`
+  instead, and prints the loopback URL if no GUI opener works.
+
 ### Changed — OpenKnowledge and Spotlight ownership
 
 - Mycroft writes durable notes through OpenKnowledge in its configured project.
