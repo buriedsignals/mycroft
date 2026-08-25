@@ -59,6 +59,7 @@ if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
   PUBLIC_BOOTSTRAP_SHA256="ebe0a8b707f4b891e2b9c87fe6b65da5e31f6a4140361faf0d99400c4f9a47a7"
   command -v curl >/dev/null 2>&1 || { echo "Mycroft installer: curl is required" >&2; exit 1; }
   command -v openssl >/dev/null 2>&1 || { echo "Mycroft installer: OpenSSL is required" >&2; exit 1; }
+  command -v python3 >/dev/null 2>&1 || { echo "Mycroft installer: Python 3 is required" >&2; exit 1; }
   PUBLIC_BOOTSTRAP_TMP="$(mktemp "${TMPDIR:-/tmp}/mycroft-public-bootstrap.XXXXXX")"
   trap 'rm -f "$PUBLIC_BOOTSTRAP_TMP"' EXIT HUP INT TERM
   curl -fL --proto '=https' --tlsv1.2 "$PUBLIC_RELEASE_BASE/bootstrap.sh" -o "$PUBLIC_BOOTSTRAP_TMP"
@@ -67,6 +68,22 @@ if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
     echo "Mycroft installer: public bootstrap digest did not verify" >&2
     exit 1
   }
+  # v0.3.5's published bootstrap expands empty arrays as "${CHOICES_ARGS[@]}"
+  # under `set -u`. macOS /bin/bash 3.2 aborts with "unbound variable" before
+  # the applicator runs. The current Engine bootstrap already uses the
+  # nounset-safe `${arr[@]+"${arr[@]}"}` form; rewrite the verified copy so
+  # this Pages-deployed install.sh unblocks Mac without replacing immutable
+  # v0.3.5 release assets. The rewrite is a no-op on a bootstrap that already
+  # has the safe form.
+  python3 - "$PUBLIC_BOOTSTRAP_TMP" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace('  "${CHOICES_ARGS[@]}" \\\n', '  "${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}" \\\n')
+text = text.replace('  "${ACTION_ARGS[@]}" \\\n', '  "${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}" \\\n')
+path.write_text(text, encoding="utf-8")
+PY
   bash "$PUBLIC_BOOTSTRAP_TMP" --product mycroft --release-base "$PUBLIC_RELEASE_BASE" --runtime goose
   exit $?
 fi
@@ -1486,6 +1503,8 @@ GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"
 if [ -f "$GETTING_STARTED" ]; then
   if [ "$(uname -s)" = "Darwin" ]; then
     open "$GETTING_STARTED" 2>/dev/null || true
+  elif have wslview; then
+    wslview "$GETTING_STARTED" >/dev/null 2>&1 || true
   elif have xdg-open; then
     xdg-open "$GETTING_STARTED" >/dev/null 2>&1 || true
   fi

@@ -54,6 +54,10 @@ includes '--provision-from-private-source'
 includes 'if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then'
 includes 'if [ -n "$PRIVATE_INSTALLER_SOURCE" ] && [ -d "$PRIVATE_INSTALLER_SOURCE/.git" ]; then'
 includes 'git clone --no-local "$PRIVATE_INSTALLER_SOURCE" "$PRIVATE_MYCROFT_DIR"'
+includes 'Mycroft installer: Python 3 is required'
+includes '${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}'
+includes '${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}'
+includes 'wslview "$GETTING_STARTED"'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
@@ -163,6 +167,14 @@ excludes 'SPOT_DEVBROWSER'
 
 # Seed-note dates: quoted heredocs rely on the writer substituting $TODAY
 includes 'sed "s/\$TODAY/$TODAY/g" > "$path"'
+
+# macOS /bin/bash 3.2 treats empty "${arr[@]}" as unbound under `set -u`.
+# The published v0.3.5 bootstrap still uses that form; install.sh rewrites it
+# to the nounset-safe expansion after digest verification.
+if ! /bin/bash -c 'set -u; CHOICES_ARGS=(); : "${CHOICES_ARGS[@]}"' >/dev/null 2>&1; then
+  /bin/bash -c 'set -u; CHOICES_ARGS=(); ACTION_ARGS=(); : "${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}"; : "${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}"' \
+    || note "nounset-safe empty-array expansion failed under /bin/bash"
+fi
 
 if command -v shellcheck >/dev/null 2>&1; then
   shellcheck -S error install.sh || fail=1
