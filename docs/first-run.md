@@ -5,7 +5,7 @@ The default Mycroft workspace is `~/Documents/OpenKnowledge/Mycroft`; Spotlight 
 
 After setup:
 
-1. If Spotlight is selected, Spotlight's own signed local configurator opens after Mycroft so you can choose its runtime, case directory, and OpenKnowledge workspace.
+1. If Spotlight is already installed, Mycroft records its workspace and case paths for read-only handoff. Mycroft does not install Spotlight. Install Spotlight separately in Indicator Labs.
 2. Goose opens the `start` recipe unless the user already has a morning brief monitoring profile.
 3. The Mycroft knowledge project contains `START_HERE.md` with copy-paste starter prompts.
 

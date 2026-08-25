@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
-# Mycroft installer — buriedsignals/mycroft
+# Mycroft contributor installer. Journalists use Indicator Labs
+# (https://buriedsignals.com/join), not curl|bash from Pages.
 #
-# One static script for every install:
-#   curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
-#
-# Phase 1 fetches the Mycroft repo, phase 2 opens a local configurator page
-# in your browser (your choices and API keys go to a server on 127.0.0.1
-# only — nothing leaves this machine), phase 3 installs and verifies.
+# From a git checkout:
+#   bash install.sh
 set -euo pipefail
 
 PUBLIC_BUNDLE_PHASE=0
@@ -59,6 +56,7 @@ if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
   PUBLIC_BOOTSTRAP_SHA256="ebe0a8b707f4b891e2b9c87fe6b65da5e31f6a4140361faf0d99400c4f9a47a7"
   command -v curl >/dev/null 2>&1 || { echo "Mycroft installer: curl is required" >&2; exit 1; }
   command -v openssl >/dev/null 2>&1 || { echo "Mycroft installer: OpenSSL is required" >&2; exit 1; }
+  command -v python3 >/dev/null 2>&1 || { echo "Mycroft installer: Python 3 is required" >&2; exit 1; }
   PUBLIC_BOOTSTRAP_TMP="$(mktemp "${TMPDIR:-/tmp}/mycroft-public-bootstrap.XXXXXX")"
   trap 'rm -f "$PUBLIC_BOOTSTRAP_TMP"' EXIT HUP INT TERM
   curl -fL --proto '=https' --tlsv1.2 "$PUBLIC_RELEASE_BASE/bootstrap.sh" -o "$PUBLIC_BOOTSTRAP_TMP"
@@ -67,6 +65,22 @@ if [ "$PUBLIC_BUNDLE_PHASE" = "0" ] && [ "$PRIVATE_SOURCE_PHASE" = "0" ]; then
     echo "Mycroft installer: public bootstrap digest did not verify" >&2
     exit 1
   }
+  # v0.3.5's published bootstrap expands empty arrays as "${CHOICES_ARGS[@]}"
+  # under `set -u`. macOS /bin/bash 3.2 aborts with "unbound variable" before
+  # the applicator runs. The current Engine bootstrap already uses the
+  # nounset-safe `${arr[@]+"${arr[@]}"}` form; rewrite the verified copy so
+  # this Pages-deployed install.sh unblocks Mac without replacing immutable
+  # v0.3.5 release assets. The rewrite is a no-op on a bootstrap that already
+  # has the safe form.
+  python3 - "$PUBLIC_BOOTSTRAP_TMP" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+text = path.read_text(encoding="utf-8")
+text = text.replace('  "${CHOICES_ARGS[@]}" \\\n', '  "${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}" \\\n')
+text = text.replace('  "${ACTION_ARGS[@]}" \\\n', '  "${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}" \\\n')
+path.write_text(text, encoding="utf-8")
+PY
   bash "$PUBLIC_BOOTSTRAP_TMP" --product mycroft --release-base "$PUBLIC_RELEASE_BASE" --runtime goose
   exit $?
 fi
@@ -451,43 +465,28 @@ expand_user_path() {
   fi
 }
 
-install_spotlight_product() {
-  [ "$ENABLE_SPOTLIGHT" = "1" ] || return 0
+# Record Spotlight handoff paths only when Spotlight is already installed.
+# Mycroft never downloads or execs Spotlight's installer.
+record_existing_spotlight_handoff() {
+  local spotlight_setup="$HOME/.config/spotlight/setup-config.env"
+  ENABLE_SPOTLIGHT=0
+  SPOTLIGHT_DIR=""
+  SPOTLIGHT_VAULT_PATH=""
+  SPOTLIGHT_CASES_ROOT=""
+  [ -f "$spotlight_setup" ] || return 0
   [ -f "$MYCROFT_ENV" ] || {
     warn "Missing $MYCROFT_ENV — the Mycroft configurator did not finish."
     exit 1
   }
-
-  say "Opening Spotlight's own installer"
-  local installer_tmp spotlight_setup
-  installer_tmp="$(mktemp "${TMPDIR:-/tmp}/spotlight-installer.XXXXXX")"
-  if ! curl -fL --proto '=https' --tlsv1.2 \
-    https://spotlight.buriedsignals.com/install-spotlight.sh -o "$installer_tmp"; then
-    rm -f "$installer_tmp"
-    warn "Could not download Spotlight's canonical installer. Mycroft is installed, but Spotlight was not added."
-    exit 1
-  fi
-  if ! bash "$installer_tmp"; then
-    rm -f "$installer_tmp"
-    warn "Spotlight's installer did not complete. Mycroft is installed, but Spotlight was not added."
-    exit 1
-  fi
-  rm -f "$installer_tmp"
-
-  spotlight_setup="$HOME/.config/spotlight/setup-config.env"
-  [ -f "$spotlight_setup" ] || {
-    warn "Spotlight completed without its setup receipt at $spotlight_setup"
-    exit 1
-  }
   set -a
+  # shellcheck disable=SC1090
   . "$spotlight_setup"
   set +a
+  [ -n "${SPOTLIGHT_DIR_INPUT:-}" ] || return 0
   SPOTLIGHT_DIR="$(expand_user_path "$SPOTLIGHT_DIR_INPUT")"
-  SPOTLIGHT_VAULT_PATH="$(expand_user_path "$SPOTLIGHT_VAULT_INPUT")"
+  SPOTLIGHT_VAULT_PATH="$(expand_user_path "${SPOTLIGHT_VAULT_INPUT:-}")"
   SPOTLIGHT_CASES_ROOT="${SPOTLIGHT_CASES_ROOT:-$SPOTLIGHT_DIR/cases}"
-
-  # Keep Mycroft's runtime context aligned with Spotlight's canonical receipt.
-  # These values are paths only; secrets remain in Spotlight's own 0600 .env.
+  ENABLE_SPOTLIGHT=1
   local env_tmp
   env_tmp="$(mktemp)"
   awk '!/^(SPOTLIGHT_DIR|SPOTLIGHT_VAULT_PATH|SPOTLIGHT_CASES_ROOT|SPOTLIGHT_INGEST_TARGET)=/' "$MYCROFT_ENV" > "$env_tmp"
@@ -496,7 +495,7 @@ install_spotlight_product() {
   printf 'SPOTLIGHT_VAULT_PATH=%q\n' "$SPOTLIGHT_VAULT_PATH" >> "$MYCROFT_ENV"
   printf 'SPOTLIGHT_CASES_ROOT=%q\n' "$SPOTLIGHT_CASES_ROOT" >> "$MYCROFT_ENV"
   chmod 600 "$MYCROFT_ENV"
-  ok "Spotlight installed by its canonical signed installer"
+  ok "Spotlight handoff recorded from an existing Spotlight install"
 }
 
 write_goose_instructions() {
@@ -1292,7 +1291,7 @@ if [ "${ENABLE_OPENROUTER:-0}" = "1" ]; then
 fi
 install_skill_registry
 install_private_splash
-install_spotlight_product
+record_existing_spotlight_handoff
 write_goose_instructions
 chmod 600 "$MYCROFT_ENV"
 # Point the sovereign search tools at the provisioned SearXNG (the shell rc block
@@ -1486,6 +1485,8 @@ GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"
 if [ -f "$GETTING_STARTED" ]; then
   if [ "$(uname -s)" = "Darwin" ]; then
     open "$GETTING_STARTED" 2>/dev/null || true
+  elif have wslview; then
+    wslview "$GETTING_STARTED" >/dev/null 2>&1 || true
   elif have xdg-open; then
     xdg-open "$GETTING_STARTED" >/dev/null 2>&1 || true
   fi

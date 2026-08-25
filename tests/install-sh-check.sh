@@ -54,6 +54,10 @@ includes '--provision-from-private-source'
 includes 'if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then'
 includes 'if [ -n "$PRIVATE_INSTALLER_SOURCE" ] && [ -d "$PRIVATE_INSTALLER_SOURCE/.git" ]; then'
 includes 'git clone --no-local "$PRIVATE_INSTALLER_SOURCE" "$PRIVATE_MYCROFT_DIR"'
+includes 'Mycroft installer: Python 3 is required'
+includes '${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}'
+includes '${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}'
+includes 'wslview "$GETTING_STARTED"'
 # No keys or choices baked into the script itself
 excludes '__CFG__'
 excludes 'ENV_EOF'
@@ -147,12 +151,14 @@ if grep -qF -- 'SPOTLIGHT_SCOUT_REQUESTS' scripts/mycroft-update; then note 'leg
 includes 'GETTING_STARTED="$MYCROFT_PROFILE_DIR/getting-started.html"'
 includes 'open "$GETTING_STARTED"'
 
-# Spotlight remains a Mycroft setup choice, but its signed public installer owns
-# every Spotlight runtime/config/update detail.
-includes 'install_spotlight_product'
-includes '[ "$ENABLE_SPOTLIGHT" = "1" ] || return 0'
-includes 'https://spotlight.buriedsignals.com/install-spotlight.sh'
-includes 'Spotlight installed by its canonical signed installer'
+# Spotlight is a sibling Indicator Labs product. Mycroft records handoff
+# paths only when Spotlight is already installed; it never curls or execs
+# Spotlight's public installer.
+includes 'record_existing_spotlight_handoff'
+includes 'Mycroft never downloads or execs Spotlight'
+excludes 'install_spotlight_product'
+excludes 'https://spotlight.buriedsignals.com/install-spotlight.sh'
+excludes 'Spotlight installed by its canonical signed installer'
 excludes 'git clone https://github.com/buriedsignals/spotlight.git "$SPOTLIGHT_DIR"'
 excludes 'npm install -g dev-browser@0.2.8'
 excludes '"runtime": "goose"'
@@ -163,6 +169,14 @@ excludes 'SPOT_DEVBROWSER'
 
 # Seed-note dates: quoted heredocs rely on the writer substituting $TODAY
 includes 'sed "s/\$TODAY/$TODAY/g" > "$path"'
+
+# macOS /bin/bash 3.2 treats empty "${arr[@]}" as unbound under `set -u`.
+# The published v0.3.5 bootstrap still uses that form; install.sh rewrites it
+# to the nounset-safe expansion after digest verification.
+if ! /bin/bash -c 'set -u; CHOICES_ARGS=(); : "${CHOICES_ARGS[@]}"' >/dev/null 2>&1; then
+  /bin/bash -c 'set -u; CHOICES_ARGS=(); ACTION_ARGS=(); : "${CHOICES_ARGS[@]+"${CHOICES_ARGS[@]}"}"; : "${ACTION_ARGS[@]+"${ACTION_ARGS[@]}"}"' \
+    || note "nounset-safe empty-array expansion failed under /bin/bash"
+fi
 
 if command -v shellcheck >/dev/null 2>&1; then
   shellcheck -S error install.sh || fail=1

@@ -9,7 +9,8 @@
 ## Checklist
 
 - [ ] `python3 tools/validate-recipes.py` passes
-- [ ] HTML files parse (setup.html, index.html, assets/logo/preview.html)
+- [ ] HTML files parse (index.html, assets/logo/preview.html)
+- [ ] Journalist CTAs: `bash tests/journalist-install-cta-check.sh`
 - [ ] No API keys, no secrets, no PII in the diff
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` if user-visible
 - [ ] Documentation touched if behaviour or architecture changed
@@ -18,4 +19,4 @@
 
 ## Screenshots / transcripts
 
-<!-- For UI changes (setup.html, landing): include a screenshot. For recipe changes: include a sample run. -->
+<!-- For UI changes (landing or configurator): include a screenshot. For recipe changes: include a sample run. -->

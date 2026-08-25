@@ -126,31 +126,14 @@ remain outside Mycroft and are accessed only through the read-only case adapter.
 
 ## Install
 
-### Guided Install
+Journalists install Mycroft through **Indicator Labs** after joining at
+[buriedsignals.com/join](https://buriedsignals.com/join). Secrets are entered
+in the operating-system prompt, not on this website.
 
-```bash
-curl -fsSL https://mycroft.buriedsignals.com/install.sh | bash
-```
-
-One static, reviewable script ([`install.sh`](install.sh)) for every install.
-It verifies and applies the signed, reduced Mycroft bundle exported by Engine
-at release time; the public path never downloads or executes Engine itself.
-The bundle places the resolved skills under `~/.agents/skills/mycroft/`. The
-script then opens a local configurator page in the browser —
-served from `127.0.0.1` by `install/setup_server.py`. Sovereignty preference,
-provider keys, plugins, and vault paths (with a native folder picker) are all
-collected there; keys are verified live with each provider and written straight
-to `~/.config/goose/mycroft/.env` with owner-only permissions. **No API key
-ever appears on a website or inside a downloadable artifact.**
-
-Prefer a file? The hosted setup page offers a ZIP whose `install.command`
-fetches and runs the same canonical script. When the install finishes, open a
-new terminal so shell configuration changes take effect.
-
-The installer configures Goose, OpenKnowledge, provider files, recipe discovery,
-workspace paths, Mycroft instructions, updater recipes, scheduled workflows, and
-the first-run menu. Architecture details live in
-[docs/architecture.md](docs/architecture.md).
+GitHub stays the contributor path. Clone the repository and run
+[`install.sh`](install.sh) from the working tree if you are developing or
+adopting an existing checkout. That script is not the public journalist
+installer.
 
 `mycroft update` applies the latest signed public release rather than following
 a branch head. `mycroft uninstall` removes only unchanged installer-owned files

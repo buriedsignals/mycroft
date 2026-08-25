@@ -31,7 +31,7 @@ BASE = {
     "vault": "~/Documents/OpenKnowledge/Mycroft",
     "installGoose": True, "installFirecrawl": True,
     "ftEnabled": True, "agentmailEnabled": False, "apifyEnabled": False,
-    "spotlight": True, "scoutpost": True,
+    "spotlight": False, "scoutpost": True,
     "openrouterKey": "or-test", "fireworksKey": "", "firecrawlKey": "fc-test",
     "apifyToken": "", "agentmailKey": "", "scoutpostKey": "scout-test",
     "navigatorConnected": True, "junkipediaKey": "",
@@ -173,7 +173,7 @@ class UnitChecks(unittest.TestCase):
 
     def test_setup_config(self):
         cfg = srv.build_setup_config(srv.normalize(BASE))
-        for needle in ["SOVEREIGNTY=cloud", "LOCAL_ONLY=0", "ENABLE_SPOTLIGHT=1",
+        for needle in ["SOVEREIGNTY=cloud", "LOCAL_ONLY=0", "ENABLE_SPOTLIGHT=0",
                        "ENABLE_SCOUTPOST=1", "ENABLE_OPENROUTER=1", "ENABLE_FIREWORKS=0",
                        "OPENROUTER_ZDR_REQUEST_ENFORCED=1", "OPENROUTER_ZDR_ACCOUNT_CONFIRMED=1",
                        "CLOUD_PROVIDER=openrouter-glm52",
@@ -202,11 +202,12 @@ class UnitChecks(unittest.TestCase):
 
     def test_getting_started(self):
         guide = srv.build_getting_started(srv.normalize(BASE))
-        for needle in ["~/Documents/OpenKnowledge/Mycroft", "Spotlight", "Spotlight's own signed setup flow", "OpenRouter",
+        for needle in ["~/Documents/OpenKnowledge/Mycroft", "OpenRouter",
                        "START_HERE.md", "mycroft doctor",
                        "Navigator (Pro: OSINT; Lab: OSINT + Data Navigator)",
                        "Scoutpost (free monitoring tier, including MuckRock)"]:
             self.assertIn(needle, guide)
+        self.assertNotIn("Spotlight's own signed setup flow", guide)
         for secret in SECRETS:
             self.assertNotIn(secret, guide)
         local = srv.build_getting_started(srv.normalize({**BASE, "sovereignty": "local",
@@ -329,7 +330,8 @@ print(json.dumps({"event": "result", "data": data}))
         self.assertIn("Configure your", self.page)
         self.assertNotIn("__SETUP_TOKEN__", self.page)
         self.assertNotIn("__PLATFORM__", self.page)
-        self.assertIn("Spotlight's own local setup opens", self.page)
+        self.assertNotIn("Spotlight's own local setup opens", self.page)
+        self.assertNotIn('id="spotlight"', self.page)
         self.assertNotIn("Obsidian", self.page)
         self.assertNotIn('id="installObsidian"', self.page)
         self.assertNotIn('id="spotlight_vault_path"', self.page)
@@ -370,6 +372,80 @@ print(json.dumps({"event": "result", "data": data}))
         self.assertEqual(set(os.listdir(self.tmp)), {"bsig", "engine-plan.ready"})
 
 
+class BrowserOpenChecks(unittest.TestCase):
+    URL = "http://127.0.0.1:35347/?t=E5XFmNB5LTtXFuyrGBYaQw"
+
+    def test_wsl_prefers_wslview_then_windows_cmd(self):
+        cmds = srv.configurator_open_commands(
+            self.URL,
+            platform_id="windows-wsl",
+            which=lambda name: "/usr/bin/wslview" if name == "wslview" else None,
+            isfile=lambda path: False,
+            env={},
+        )
+        self.assertEqual(cmds, [["/usr/bin/wslview", self.URL]])
+
+    def test_wsl_uses_cmd_exe_when_wslview_is_missing(self):
+        cmds = srv.configurator_open_commands(
+            self.URL,
+            platform_id="windows-wsl",
+            which=lambda name: None,
+            isfile=lambda path: path == "/mnt/c/Windows/System32/cmd.exe",
+            env={},
+        )
+        self.assertEqual(cmds, [[
+            "/mnt/c/Windows/System32/cmd.exe", "/c", "start", "", self.URL,
+        ]])
+
+    def test_mac_uses_open(self):
+        cmds = srv.configurator_open_commands(
+            self.URL, platform_id="mac", which=lambda name: None,
+            isfile=lambda path: False, env={},
+        )
+        self.assertEqual(cmds, [["open", self.URL]])
+
+    def test_wsl_does_not_fall_back_to_webbrowser_gio(self):
+        webbrowser_calls = []
+
+        def fake_run(argv, **kwargs):
+            return subprocess.CompletedProcess(argv, 1, b"", b"gio: Operation not supported")
+
+        opened = srv.open_local_url(
+            self.URL,
+            platform_id="windows-wsl",
+            which=lambda name: None,
+            isfile=lambda path: False,
+            isdir=lambda path: False,
+            env={},
+            run=fake_run,
+            browser_open=lambda url: webbrowser_calls.append(url) or True,
+        )
+        self.assertFalse(opened)
+        self.assertEqual(webbrowser_calls, [])
+
+    def test_wsl_cmd_exe_success_opens_the_url(self):
+        runs = []
+
+        def fake_run(argv, **kwargs):
+            runs.append((argv, kwargs.get("cwd")))
+            return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+        opened = srv.open_local_url(
+            self.URL,
+            platform_id="windows-wsl",
+            which=lambda name: None,
+            isfile=lambda path: path == "/mnt/c/Windows/System32/cmd.exe",
+            isdir=lambda path: path == "/mnt/c/Windows/System32",
+            env={},
+            run=fake_run,
+            browser_open=lambda url: (_ for _ in ()).throw(AssertionError("webbrowser")),
+        )
+        self.assertTrue(opened)
+        self.assertEqual(runs, [([
+            "/mnt/c/Windows/System32/cmd.exe", "/c", "start", "", self.URL,
+        ], "/mnt/c/Windows/System32")])
+
+
 class FreshInstallGuardChecks(unittest.TestCase):
     def test_engine_required_never_exposes_legacy_submit_when_engine_is_missing(self):
         with tempfile.TemporaryDirectory() as profile:
@@ -385,14 +461,14 @@ class FreshInstallGuardChecks(unittest.TestCase):
 
 
 class PublicWebsiteChecks(unittest.TestCase):
-    def test_setup_page_exposes_public_inference_options(self):
-        with open(os.path.join(ROOT, "setup.html"), encoding="utf-8") as handle:
+    def test_public_site_has_no_setup_page_and_points_at_join(self):
+        self.assertFalse(os.path.exists(os.path.join(ROOT, "setup.html")))
+        with open(os.path.join(ROOT, "index.html"), encoding="utf-8") as handle:
             page = handle.read()
-        self.assertIn('aria-label="Public inference provider options"', page)
-        self.assertIn('data-provider-option="openrouter"', page)
-        self.assertIn('data-provider-option="fireworks"', page)
-        self.assertIn('data-provider-option="local"', page)
-        self.assertIn('href="https://openrouter.ai/settings/keys"', page)
+        self.assertIn("https://buriedsignals.com/join", page)
+        self.assertIn("https://github.com/buriedsignals/mycroft", page)
+        self.assertNotIn("href=\"setup.html\"", page)
+        self.assertNotRegex(page, r"curl\s[^\n]*mycroft\.buriedsignals\.com/install\.sh")
 
     def test_skip_completes_without_engine_or_navigator_credential(self):
         with tempfile.TemporaryDirectory() as profile:

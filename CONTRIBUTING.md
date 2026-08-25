@@ -14,9 +14,8 @@ Mycroft is an extension pack for [Goose](https://goose-docs.ai/) built for inves
 git clone https://github.com/buriedsignals/mycroft.git
 cd mycroft
 
-# Preview the setup page locally
-open index.html       # landing
-open setup.html       # install landing page
+# Preview the landing page locally
+open index.html       # landing; Set up goes to buriedsignals.com/join
 
 # Validate all recipes + configs
 python3 tools/validate-recipes.py

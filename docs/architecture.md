@@ -67,7 +67,7 @@ Spotlight is active OSINT casework:
 - `exports/`
 - `handoff-to-mycroft/`
 
-When Spotlight is selected during Mycroft setup, Mycroft delegates to Spotlight's signed installer and then records the resulting install, workspace, and case paths for read-only handoff. Spotlight remains responsible for its own configuration, projection, runtime, doctor, and updates.
+Mycroft does not install Spotlight. If both products are already installed, Mycroft records Spotlight's install, workspace, and case paths for read-only handoff. Spotlight remains responsible for its own configuration, projection, runtime, doctor, and updates.
 
 ## Knowledge workspace
 

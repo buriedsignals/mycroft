@@ -26,8 +26,8 @@ Please include:
 
 In-scope:
 
-- The landing pages (`index.html`, `setup.html`)
-- The canonical installer (`install.sh`) and local configurator (`install/setup_server.py`, `install/configure.html`)
+- The landing page (`index.html`)
+- The contributor installer (`install.sh`) and local configurator (`install/setup_server.py`, `install/configure.html`)
 - Recipe YAML files and any executable paths they invoke
 - Provider configuration JSONs
 - Anything under `tools/`, `extensions/`, `scripts/`

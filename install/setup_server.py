@@ -19,6 +19,7 @@ import os
 import platform
 import secrets
 import shlex
+import shutil
 import string
 import subprocess
 import sys
@@ -57,6 +58,102 @@ def detect_platform():
             pass
         return "linux"
     return "linux"
+
+
+WSL_CMD_CANDIDATES = (
+    "/mnt/c/Windows/System32/cmd.exe",
+    "/mnt/c/WINDOWS/System32/cmd.exe",
+)
+WSL_CMD_CWD_CANDIDATES = (
+    "/mnt/c/Windows/System32",
+    "/mnt/c/WINDOWS/System32",
+)
+
+
+def configurator_open_commands(
+    url,
+    *,
+    platform_id=None,
+    which=None,
+    isfile=None,
+    env=None,
+):
+    """Argv lists to try, in order, when opening the loopback configurator.
+
+    WSL's xdg-open often shells out to `gio`, which fails with
+    "Operation not supported". Prefer wslview or the Windows host cmd.exe
+    so the URL opens in a real Windows browser that can reach WSL2 localhost.
+    """
+    platform_id = detect_platform() if platform_id is None else platform_id
+    which = shutil.which if which is None else which
+    isfile = os.path.isfile if isfile is None else isfile
+    env = os.environ if env is None else env
+    commands = []
+    browser = str(env.get("BROWSER") or "").strip()
+    if browser:
+        commands.append([browser, url])
+    if platform_id == "mac":
+        commands.append(["open", url])
+        return commands
+    if platform_id == "windows-wsl":
+        wslview = which("wslview")
+        if wslview:
+            commands.append([wslview, url])
+        cmd = which("cmd.exe") or which("cmd")
+        if not cmd:
+            for candidate in WSL_CMD_CANDIDATES:
+                if isfile(candidate):
+                    cmd = candidate
+                    break
+        if cmd:
+            commands.append([cmd, "/c", "start", "", url])
+        return commands
+    xdg = which("xdg-open")
+    if xdg:
+        commands.append([xdg, url])
+    return commands
+
+
+def open_local_url(
+    url,
+    *,
+    platform_id=None,
+    which=None,
+    isfile=None,
+    isdir=None,
+    env=None,
+    run=None,
+    browser_open=None,
+):
+    """Open a 127.0.0.1 configurator URL. Returns True if an opener reported success."""
+    platform_id = detect_platform() if platform_id is None else platform_id
+    isdir = os.path.isdir if isdir is None else isdir
+    run = subprocess.run if run is None else run
+    browser_open = webbrowser.open if browser_open is None else browser_open
+    for argv in configurator_open_commands(
+        url, platform_id=platform_id, which=which, isfile=isfile, env=env
+    ):
+        extra = {}
+        basename = os.path.basename(argv[0]).lower() if argv else ""
+        if basename in {"cmd.exe", "cmd"}:
+            for cwd in WSL_CMD_CWD_CANDIDATES:
+                if isdir(cwd):
+                    extra["cwd"] = cwd
+                    break
+        try:
+            completed = run(argv, capture_output=True, timeout=15, **extra)
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            continue
+        if getattr(completed, "returncode", 1) == 0:
+            return True
+    if platform_id == "windows-wsl":
+        # Python's webbrowser module uses xdg-open → gio on WSL, which fails
+        # with "Operation not supported". Do not retry that path.
+        return False
+    try:
+        return bool(browser_open(url))
+    except Exception:
+        return False
 
 
 def pick_folder_natively(prompt):
@@ -297,7 +394,7 @@ def build_setup_config(d):
         f'VAULT_PATH="{expand_home_for_shell(d["vault"])}"',
         f"INSTALL_GOOSE={b01(d.get('installGoose'))}",
         f"INSTALL_FIRECRAWL={b01(d.get('installFirecrawl'))}",
-        f"ENABLE_SPOTLIGHT={b01(d.get('spotlight'))}",
+        f"ENABLE_SPOTLIGHT=0",
         f"ENABLE_SCOUTPOST={b01(d.get('scoutpost'))}",
         f"CLOUD_PROVIDER={shlex.quote(d.get('cloudProvider') or 'openrouter-glm52')}",
         f"ENABLE_OPENROUTER={b01(not d['localOnly'] and d.get('cloudProvider') == 'openrouter-glm52')}",
@@ -493,7 +590,7 @@ def build_getting_started(d):
         provider_label=esc(provider_label),
         vault=esc(d["vault"]),
         spotlight_vault_row=(
-            '    <tr><th>Spotlight</th><td>Installed and configured by Spotlight\'s own signed setup flow</td></tr>\n'
+            '    <tr><th>Spotlight</th><td>Install separately in Indicator Labs; Mycroft records handoff if Spotlight is already present</td></tr>\n'
             if d.get("spotlight") else ""
         ),
         plugins_row=(f'    <tr><th>Plugins</th><td>{esc(" · ".join(plugins))}</td></tr>\n' if plugins else ""),
@@ -546,7 +643,7 @@ def normalize(payload):
         "apifyEnabled": b("apifyEnabled"),
         "cloudProvider": s("cloudProvider") or "openrouter-glm52",
         "openrouterZdrConfirmed": b("openrouterZdrConfirmed"),
-        "spotlight": b("spotlight"),
+        "spotlight": False,
         "scoutpost": b("scoutpost"),
         "openrouterKey": s("openrouterKey"),
         "fireworksKey": s("fireworksKey"),
@@ -742,10 +839,10 @@ def main():
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     if not args.no_browser:
-        try:
-            webbrowser.open(url)
-        except Exception:
-            pass
+        if not open_local_url(url):
+            print("  Could not open a browser automatically.", flush=True)
+            print("  Paste the Configurator URL into a browser on this computer.", flush=True)
+            print("  On Windows (WSL), open it in your Windows browser.", flush=True)
     try:
         finished = done.wait(SUBMIT_TIMEOUT_SECONDS)
     except KeyboardInterrupt:

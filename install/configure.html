@@ -254,11 +254,11 @@
   <h2>Specialized <em>engines.</em></h2>
   <div class="plugin">
     <div>
-      <label class="check"><input type="checkbox" id="spotlight" checked><span class="item__title" style="font-size:24px;"><em>Spotlight.</em></span></label>
-      <p><strong>Public.</strong> OSINT investigation system — multi-phase research, adversarial SIFT fact-checking, evidence grounding, and knowledge projection. After Mycroft is configured, Spotlight's own local setup opens so you can choose its runtime, model, case directory, and Open Knowledge workspace. <a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">spotlight.buriedsignals.com</a></p>
+      <div class="item__head"><span class="item__title" style="font-size:24px;"><em>Spotlight.</em></span><span class="badge">Indicator Labs</span></div>
+      <p>OSINT investigation system — install it as its own product in the Indicator Labs desktop. Mycroft records handoff paths only if Spotlight is already installed on this machine. <a href="https://buriedsignals.com/join" target="_blank" rel="noreferrer">buriedsignals.com/join</a></p>
     </div>
     <div>
-      <p class="hint" style="margin:0;">This choice delegates installation to Spotlight's signed public installer. Mycroft does not clone Spotlight, write its configuration, or manage its updates.</p>
+      <p class="hint" style="margin:0;">Mycroft does not download, clone, or run Spotlight's installer.</p>
     </div>
   </div>
   <div class="plugin">
@@ -275,8 +275,8 @@
 
   <div class="plugin">
     <div>
-      <div class="item__head"><span class="item__title" style="font-size:24px;">Splash for <em>Visual Journalism.</em></span><span class="badge">Coming September 2026</span></div>
-      <p>Forthcoming workflows for charts, maps, explainers, and publication-ready visual stories built from verified reporting. Splash is listed for discovery only and is not installed by this configurator yet.</p>
+      <div class="item__head"><span class="item__title" style="font-size:24px;">Splash for <em>Visual Journalism.</em></span><span class="badge">Indicator Labs</span></div>
+      <p>Charts, maps, and visual stories. Install Splash as its own product in the Indicator Labs desktop — not from this Mycroft form. <a href="https://buriedsignals.com/join" target="_blank" rel="noreferrer">buriedsignals.com/join</a></p>
     </div>
   </div>
 
@@ -424,7 +424,7 @@ function readForm() {
     apifyEnabled: c('apifyEnabled'),
     cloudProvider: (document.querySelector('input[name="cloud_provider"]:checked') || {}).value || 'openrouter-glm52',
     openrouterZdrConfirmed: c('openrouter_zdr_confirm'),
-    spotlight: c('spotlight'),
+    spotlight: false,
     scoutpost: c('scoutpost'),
     openrouterKey: v('openrouter_key'),
     fireworksKey: v('fireworks_key'),
