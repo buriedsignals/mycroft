@@ -158,11 +158,11 @@ GitHub stays the contributor path. Clone the repository for development.
 [`install.sh`](install.sh) remains only as a fail-closed pointer for old
 curl|bash pipes; it does not install Mycroft or open a configure page.
 
-`mycroft update` applies the latest signed public release rather than following
-a branch head. `mycroft uninstall` removes only unchanged installer-owned files
-and preserves wiki/profile data; pass `--remove-data` only when that removal is
-intentional. Navigator is optional: membership unlocks OSINT Navigator through
-the unified Navigator skill.
+`mycroft update` and `mycroft uninstall` in Indicator Labs move the checkout
+Engine installed. Leftover `mycroft-update` / `mycroft-uninstall` wrappers on
+PATH fail closed toward Indicator Labs unless a private Splash-enabled git
+checkout is present. Navigator is optional: membership unlocks OSINT Navigator
+through the unified Navigator skill.
 
 ### Local Install
 

@@ -253,31 +253,27 @@ PROFILE_SCOUTPOST_EOF
 mycroft_before="$(repo_rev "$MYCROFT_SOURCE_DIR" || true)"
 private_splash="$MYCROFT_PLUGINS_DIR/splash"
 private_splash_before="$(repo_rev "$private_splash" || true)"
-public_channel="$HOME/.local/share/buriedsignals/public-installer/mycroft"
-if [ -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
-  update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft private source"
-  update_repo_ff_only "$private_splash" "Splash private plugin"
-  if command -v bun >/dev/null 2>&1; then
-    (cd "$private_splash" && bun install --frozen-lockfile)
-  else
-    echo "Bun is missing; private Splash dependencies were not refreshed."
-  fi
-  echo "Private Mycroft + Splash checkouts updated"
-else
-  [ -x "$public_channel/bootstrap.sh" ] || chmod +x "$public_channel/bootstrap.sh" 2>/dev/null || true
-  if [ ! -f "$public_channel/bootstrap.sh" ]; then
-    echo "signed public update channel is missing; re-run https://mycroft.buriedsignals.com/install.sh once"
-    exit 1
-  fi
-  bash "$public_channel/bootstrap.sh" \
-    --product mycroft \
-    --release-base https://github.com/buriedsignals/mycroft/releases/latest/download \
-    --runtime goose \
-    --action update \
-    --no-handoff
-  echo "Mycroft source updated from the latest signed public bundle"
+if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
+  cat <<EOF
+Mycroft updates through Indicator Labs, not a signed public-installer bundle.
+
+Journalists: https://buriedsignals.com/join
+Contributors: clone this repository and update Mycroft from Indicator Labs
+against the local checkout, or keep a private Splash-enabled git checkout.
+
+There is no curl|bash public installer and no cached bootstrap update channel.
+EOF
+  exit 1
 fi
-# Spotlight is a separate product. Its own signed installer owns its source,
+update_repo_ff_only "$MYCROFT_SOURCE_DIR" "Mycroft private source"
+update_repo_ff_only "$private_splash" "Splash private plugin"
+if command -v bun >/dev/null 2>&1; then
+  (cd "$private_splash" && bun install --frozen-lockfile)
+else
+  echo "Bun is missing; private Splash dependencies were not refreshed."
+fi
+echo "Private Mycroft + Splash checkouts updated"
+# Spotlight is a separate product. Indicator Labs owns its source,
 # configuration, skills, runtime, and updates.
 replace_skills || true
 replace_splash_skills || true
@@ -301,21 +297,8 @@ if [ -x "$HOME/.local/bin/mycroft-doctor" ]; then
     rollback_repo "$MYCROFT_SOURCE_DIR" "Mycroft source" "$mycroft_before"
     rollback_repo "$private_splash" "Splash private plugin" "$private_splash_before"
     refresh_profile
-    if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
-      python3 "$public_channel/applicator.py" --action finalize \
-        --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
-        --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
-        --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json" || true
-    fi
     exit 1
   fi
-fi
-
-if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
-  python3 "$public_channel/applicator.py" --action finalize \
-    --bundle "$public_channel/bundle.json" --signature "$public_channel/bundle.sig" \
-    --public-key "$public_channel/public-installer-release.pub.pem" --runtime goose \
-    --receipt "$HOME/.config/buriedsignals/public-installs/mycroft.json"
 fi
 
 echo "update complete"

@@ -3,8 +3,9 @@ title: "Update Mycroft"
 description: "Safely update the Goose-installed Mycroft profile from the upstream repository."
 
 instructions: |
-  This recipe is the desktop-safe manual update path for Mycroft.
-  Do not improvise shell commands.
+  Journalists update Mycroft in Indicator Labs at https://buriedsignals.com/join.
+  This recipe is only the desktop-safe path for a private Splash-enabled git checkout.
+  Do not fetch a public-installer bundle or improvise shell commands.
   Run the deterministic updater wrapper, then summarize the result.
 
 parameters: []
@@ -14,9 +15,14 @@ extensions:
     name: developer
 
 prompt: |
-  Update Mycroft by running exactly:
+  Update Mycroft only if this machine has a private Splash-enabled git checkout
+  by running exactly:
 
   ~/.local/bin/mycroft-update --manual
+
+  If the updater fails closed and points at Indicator Labs, tell the user to
+  update Mycroft there (https://buriedsignals.com/join). Do not fetch a
+  public-installer bundle or re-run install.sh.
 
   Then inspect the update log at:
 

@@ -2,7 +2,7 @@
 # Provision (idempotently) the Mycroft sovereign stack: Crawl4AI (scrape),
 # poppler/pdftotext (PDF), SearXNG (search), and — opt-in — Tor (opsec).
 #
-# Run by install.sh on a fresh install AND by mycroft-update on every update, so
+# Run by Indicator Labs on a fresh install AND by mycroft-update on private
 # an existing install that fast-forwards to the sovereign recipes also gains the
 # SearXNG container + Crawl4AI backends instead of silently living on the
 # Firecrawl fallback. Every step is best-effort and idempotent: a missing tool

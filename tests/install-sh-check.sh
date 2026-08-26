@@ -47,6 +47,29 @@ file_excludes skills/fact-check/SKILL.md 'escalating to Spotlight for deeper adv
 file_excludes skills/fact-check/SKILL.md 'If Spotlight is installed and the request needs adversarial review'
 file_excludes instructions/mycroft-soul.md 'Escalate to Spotlight when the work needs adversarial review'
 
+bash -n scripts/mycroft-update || { echo "scripts/mycroft-update does not parse"; exit 1; }
+bash -n scripts/mycroft-uninstall || { echo "scripts/mycroft-uninstall does not parse"; exit 1; }
+file_excludes scripts/mycroft-update 'public-installer/mycroft'
+file_excludes scripts/mycroft-update 'applicator.py'
+file_excludes scripts/mycroft-update 'bootstrap.sh'
+file_excludes scripts/mycroft-update 'mycroft.buriedsignals.com/install.sh'
+file_includes scripts/mycroft-update 'https://buriedsignals.com/join'
+file_includes scripts/mycroft-update 'Indicator Labs'
+file_excludes scripts/mycroft-uninstall 'bootstrap.sh'
+file_excludes scripts/mycroft-uninstall 'applicator.py'
+file_includes scripts/mycroft-uninstall 'https://buriedsignals.com/join'
+file_includes scripts/mycroft-uninstall 'Indicator Labs'
+
+if bash scripts/mycroft-uninstall >/tmp/mycroft-uninstall-pointer.out 2>&1; then
+  note "mycroft-uninstall must exit non-zero; product uninstall is Indicator Labs"
+else
+  :
+fi
+if ! grep -qF 'https://buriedsignals.com/join' /tmp/mycroft-uninstall-pointer.out; then
+  note "mycroft-uninstall output missing Indicator Labs join URL"
+fi
+rm -f /tmp/mycroft-uninstall-pointer.out
+
 if ! bash install.sh >/tmp/mycroft-install-pointer.out 2>&1; then
   :
 else

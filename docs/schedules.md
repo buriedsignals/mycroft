@@ -37,21 +37,19 @@ The scheduled morning brief reads those files before ranking overnight items.
 
 ## Repo Updater
 
-Mycroft repo updates are not Goose schedules. They are plain system jobs that run weekly:
+Journalist Mycroft updates are Indicator Labs (`https://buriedsignals.com/join`),
+not a weekly public-installer job.
 
-```sh
-~/.local/bin/mycroft-update
-```
-
-On macOS, setup uses a user crontab entry rather than a LaunchAgent/Login Item. Rerunning setup removes the old `com.buriedsignals.mycroft.update.plist` LaunchAgent if it exists.
-
-Desktop users can trigger the same updater manually from Goose with the `update-mycroft` recipe. The recipe calls:
+A leftover `~/.local/bin/mycroft-update` wrapper only fast-forwards a private
+Splash-enabled git checkout. Without that marker it fails closed and points at
+Indicator Labs. Desktop users with a private checkout can still trigger it from
+Goose with the `update-mycroft` recipe:
 
 ```sh
 ~/.local/bin/mycroft-update --manual
 ```
 
-The updater fetches `origin main` and fast-forwards only:
+The private updater fetches `origin main` and fast-forwards only:
 
 - `~/.local/share/goose/mycroft/source`
 - Spotlight is not updated by Mycroft; when installed, use `spotlight update`.

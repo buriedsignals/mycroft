@@ -2,27 +2,22 @@
 
 ## macOS Says It Cannot Verify The Installer
 
-This only happens with the ZIP path (`install.command`): right-click the file, choose **Open**, then **Open** again. The recommended `curl … | bash` command never triggers Gatekeeper.
-
-Do not require journalists to run `xattr`, `chmod`, or other shell commands for normal installation.
+Journalists install Mycroft through Indicator Labs
+(`https://buriedsignals.com/join`), not a ZIP or `curl | bash` command.
 
 ## Mycroft Update Appears As A Login Item
 
 Older generated installers created a LaunchAgent named `com.buriedsignals.mycroft.update`.
 
-Rerun a current installer. It unloads and removes:
+Unload and delete it in Finder, or from a terminal you already trust:
 
 ```text
 ~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist
 ```
 
-Then it installs the Mycroft repo updater as a weekly user crontab entry instead.
-
-You can also remove the old LaunchAgent manually from Finder by deleting:
-
-```text
-~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist
-```
+Do not replace it with a weekly crontab. Journalists update Mycroft in
+Indicator Labs. A leftover `mycroft-update` wrapper only fast-forwards a
+private Splash-enabled git checkout.
 
 ## Goose Schedules Are Missing
 

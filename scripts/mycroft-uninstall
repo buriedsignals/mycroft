@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
+# Mycroft is uninstalled through Indicator Labs. This file remains so old
+# public-installer wrappers fail closed instead of applying a cached bootstrap.
 set -euo pipefail
 
-channel="$HOME/.local/share/buriedsignals/public-installer/mycroft"
-bootstrap="$channel/bootstrap.sh"
-if [ ! -f "$bootstrap" ]; then
-  echo "Mycroft uninstall receipt channel is missing; no files were removed." >&2
-  exit 1
-fi
+JOIN='https://buriedsignals.com/join'
 
-args=(--product mycroft --runtime goose --action uninstall)
-for arg in "$@"; do
-  case "$arg" in
-    --remove-data|--force|--dry-run) args+=("$arg") ;;
-    *) echo "usage: mycroft-uninstall [--remove-data] [--force] [--dry-run]" >&2; exit 2 ;;
-  esac
-done
-bash "$bootstrap" "${args[@]}"
+cat <<EOF
+Mycroft is uninstalled in Indicator Labs, not by this script.
+
+Journalists: $JOIN
+Contributors: uninstall Mycroft from Indicator Labs against the local checkout.
+
+There is no signed public-installer uninstall channel.
+EOF
+exit 1

@@ -20,7 +20,12 @@ Mycroft is a Goose profile, not a separate app.
 
 ## Update Path
 
-Automatic updates are deterministic shell work, not agent reasoning. Setup installs a weekly system job; Goose Desktop can trigger the same path through the `update-mycroft` recipe.
+Journalists update Mycroft in Indicator Labs (`https://buriedsignals.com/join`).
+Do not fetch a signed public-installer bundle or re-run `install.sh`.
+
+Automatic contributor updates for a private Splash-enabled git checkout are
+deterministic shell work, not agent reasoning. Goose Desktop can trigger the
+same path through the `update-mycroft` recipe.
 
 Run:
 
@@ -28,9 +33,12 @@ Run:
 mycroft update
 ```
 
-This calls `~/.local/bin/mycroft-update`, which updates Mycroft through its signed release channel:
+This calls `~/.local/bin/mycroft-update`, which fast-forwards only a private
+git checkout when `private-splash.enabled` is present:
 
 - `~/.local/share/goose/mycroft/source`
+
+Without that marker, the script fails closed and points at Indicator Labs.
 
 Spotlight is updated separately with `spotlight update`; Mycroft never updates or rewrites Spotlight's checkout.
 
