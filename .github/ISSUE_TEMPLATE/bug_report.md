@@ -10,7 +10,7 @@ labels: bug
 **Reproduce**
 <!--
 Steps to trigger the bug. Include the recipe, the command, or the page URL.
-For landing or configurator bugs: attach a screenshot of index.html or install/configure.html.
+For landing bugs: attach a screenshot of index.html.
 -->
 
 **Environment**

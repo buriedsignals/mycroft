@@ -152,12 +152,11 @@ Shipped skill set is the engine-resolved list in
 
 Journalists install Mycroft through **Indicator Labs** after joining at
 [buriedsignals.com/join](https://buriedsignals.com/join). Secrets are entered
-in the operating-system prompt, not on this website.
+in the operating-system prompt, not on this website or a localhost form.
 
-GitHub stays the contributor path. Clone the repository and run
-[`install.sh`](install.sh) from the working tree if you are developing or
-adopting an existing checkout. That script is not the public journalist
-installer.
+GitHub stays the contributor path. Clone the repository for development.
+[`install.sh`](install.sh) remains only as a fail-closed pointer for old
+curl|bash pipes; it does not install Mycroft or open a configure page.
 
 `mycroft update` applies the latest signed public release rather than following
 a branch head. `mycroft uninstall` removes only unchanged installer-owned files
@@ -167,12 +166,11 @@ the unified Navigator skill.
 
 ### Local Install
 
-Clone the repo and run the same installer from the working tree:
+Clone the repo and install Mycroft from Indicator Labs against that checkout.
+Do not run `install.sh`; it exits after pointing at Indicator Labs.
 
 ```sh
-mkdir -p ~/.local/share/goose/mycroft
-git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycroft/source
-bash ~/.local/share/goose/mycroft/source/install.sh
+git clone https://github.com/buriedsignals/mycroft.git
 ```
 
 ### Manual Install

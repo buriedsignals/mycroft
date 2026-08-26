@@ -52,7 +52,7 @@ Conventional style appreciated:
 ## PR checklist
 
 - [ ] `python3 tools/validate-recipes.py` passes
-- [ ] HTML validates (`bash tests/install-sh-check.sh && python3 tests/setup-server-check.py`)
+- [ ] HTML and journalist CTAs validate (`bash tests/install-sh-check.sh && bash tests/journalist-install-cta-check.sh`)
 - [ ] No API keys, no PII, no secrets in the diff
 - [ ] `CHANGELOG.md` updated under `[Unreleased]` if user-visible
 - [ ] For plugin integration changes, [`docs/plugin-authoring.md`](docs/plugin-authoring.md) updated

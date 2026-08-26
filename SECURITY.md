@@ -27,7 +27,8 @@ Please include:
 In-scope:
 
 - The landing page (`index.html`)
-- The contributor installer (`install.sh`) and local configurator (`install/setup_server.py`, `install/configure.html`)
+- Indicator Labs / Engine key collection for Mycroft secrets
+- Recipes, skills, and the local Goose projection
 - Recipe YAML files and any executable paths they invoke
 - Provider configuration JSONs
 - Anything under `tools/`, `extensions/`, `scripts/`
