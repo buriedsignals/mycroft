@@ -1,16 +1,16 @@
 version: "1.0.0"
-title: "Vault audit"
-description: "Scheduled audit of the Mycroft vault for stale notes, missing frontmatter, orphaned sources, weak claims, and approved Spotlight material already handed to Mycroft."
+title: "Wiki audit"
+description: "Scheduled audit of the Mycroft OpenKnowledge wiki for stale notes, missing frontmatter, orphaned sources, weak claims, and approved Spotlight material already handed to Mycroft."
 
 instructions: |
   Load the Mycroft journalism instructions, knowledge-primitives skill, and knowledge-workspace skill.
-  Audit the vault. Do not rewrite the user's notes unless the task explicitly says to fix; by default, write a dated audit report.
+  Audit the wiki. Do not rewrite the user's notes unless the task explicitly says to fix; by default, write a dated audit report.
 
 parameters:
   - key: vault_path
     input_type: string
     requirement: required
-    description: "Mycroft vault path."
+    description: "Mycroft OpenKnowledge workspace path."
     default: "~/Documents/OpenKnowledge/Mycroft"
   - key: output_path
     input_type: string
@@ -21,14 +21,14 @@ parameters:
 extensions:
   - type: builtin
     name: developer
-    description: "Shell + file access for reading the vault and writing the audit report."
+    description: "Shell + file access for reading the wiki and writing the audit report."
   - type: stdio
     name: openknowledge
     cmd: ok
     args: ["--cwd", "{{ vault_path }}", "mcp"]
 
 prompt: |
-  Run a Mycroft vault audit.
+  Run a Mycroft wiki audit.
 
   Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
 
@@ -45,10 +45,10 @@ prompt: |
 
   Do not inspect Spotlight's workspace or active cases during the audit. Audit only material already present in Mycroft's `handoff/from-spotlight/` folder.
 
-  Write a dated markdown report to `{{ output_path }}/vault-audit-YYYY-MM-DD.md` with:
+  Write a dated markdown report to `{{ output_path }}/wiki-audit-YYYY-MM-DD.md` with:
 
   ```markdown
-  # Vault Audit — YYYY-MM-DD
+  # Wiki Audit — YYYY-MM-DD
 
   ## Summary
 
@@ -68,6 +68,6 @@ prompt: |
   Keep findings specific: include paths and short reasons.
 
 activities:
-  - "Run today's vault audit"
+  - "Run today's wiki audit"
   - "Find weak claims and orphaned sources"
   - "Review Spotlight handoffs"

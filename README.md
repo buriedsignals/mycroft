@@ -4,11 +4,11 @@
 
 ### Goose extension pack for investigative journalists
 
-**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 17 skills, 28 recipes, open-weight and local-capable, ZDR cloud optional.**
+**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 18 skills, open-weight and local-capable, ZDR cloud optional.**
 
-[Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
+[Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Skills](#skills) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![17 Skills](https://img.shields.io/badge/skills-17-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![28 Recipes](https://img.shields.io/badge/recipes-28-ff6d00?style=for-the-badge&logo=windowsterminal&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/recipes)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![18 Skills](https://img.shields.io/badge/skills-18-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
 
 [![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
 
@@ -19,63 +19,71 @@ Built by [**Buried Signals**](https://buriedsignals.com/) • [tom@buriedsignals
 ---
 
 Mycroft is a Goose extension pack for newsroom memory, recurring editorial
-workflows, source-grounded fact-checking, and handoffs between monitoring,
-investigation, and publishing.
+workflows, source-grounded fact-checking, and connections to the rest of the
+Buried Signals suite.
 
-It gives an investigative journalist a durable local knowledge base, a set of
-Goose recipes for common reporting work, and a privacy-conscious provider setup
-that can run with ZDR cloud models or local inference.
+It gives an investigative journalist a durable local OpenKnowledge wiki, a set
+of Goose recipes for common reporting work, and a privacy-conscious provider
+setup that can run with ZDR cloud models or local inference.
 
 ## What Mycroft Does
 
-- Maintains an OpenKnowledge journalism workspace for sources, notes, methods,
-  story material, and handoffs.
+- Maintains an OpenKnowledge journalism wiki for sources, notes, methods,
+  story material, and promoted Spotlight findings.
 - Ingests links, PDFs, newsletters, pasted notes, documents, and folders into
   structured local knowledge.
-- Answers questions over the vault with citations.
+- Answers questions over that wiki with citations.
 - Runs SIFT-style source checks and draft fact-checks.
-- Produces morning briefs and recurring vault audits.
+- Produces morning briefs and recurring wiki audits.
 - Helps set up beats, watchlists, source-monitoring profiles, and story
   triggers.
-- Connects Scoutpost monitoring to Spotlight investigations and durable vault
-  memory.
-- Keeps provider and vault configuration local to the user's machine.
+- Connects to Scoutpost monitoring and Spotlight investigations when those
+  sibling products are installed.
+- Keeps provider and workspace configuration local to the user's machine.
 
 ## Core Workflows
 
 | Workflow | What it does | Main recipe |
 |---|---|---|
 | Start | First-run menu for beats, knowledge ingest, morning brief, scouts, lead investigation, or demo flow. | `start` |
-| Vault Q&A | Answers questions over local newsroom memory and live sources with citations. | `vault-qa` |
-| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured knowledge. | `vault-sync`, `newsletter-summarize` |
+| Wiki Q&A | Answers questions over local newsroom memory and live sources with citations. | `wiki-qa` |
+| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured knowledge. | `wiki-sync`, `newsletter-summarize` |
 | Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
 | Perspective audit | Traces observed viewpoints from source passages through summaries and an optional draft. | `perspective-audit` |
 | Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
-| Morning brief | Builds a recurring digest from configured beats, watchlists, AgentMail, bookmarks, and recent vault changes. | `morning-brief` |
-| Vault audit | Finds weak claims, missing frontmatter, orphaned sources, and stale handoffs. | `vault-audit` |
+| Morning brief | Builds a recurring digest from configured beats, watchlists, bookmarks, and recent wiki changes. | `morning-brief` |
+| Wiki audit | Finds weak claims, missing frontmatter, orphaned sources, and stale promoted Spotlight findings. | `wiki-audit` |
 | Browser acquisition | Opens a journalist-controlled browser session for portals, forms, downloads, and authenticated source capture. | `dev-browser` |
 | Scoutpost | Sets up or queries hosted monitoring scouts and information units. | `scoutpost` skill |
-| Spotlight handoff | Reads approved Spotlight projections without mixing active case state into Mycroft. | Spotlight + read-only handoff |
+| Spotlight case | Reads an existing Spotlight case read-only, or launches Spotlight for a new lead (Spotlight owns the brief gate). | `spotlight-case` |
 
 ## Mycroft, Spotlight, Scoutpost
 
-- **Mycroft** is durable knowledge and publishing support: source records, wiki
-  notes, claim checks, methods, story pitches, drafts, briefings, and published
-  packages.
-- **Spotlight** is active OSINT casework: briefs, methodology, research cycles,
-  evidence, fact-checking, review, exports, and handoffs.
-- **Scoutpost** is hosted monitoring: page scouts, beat scouts, social/civic
-  scouts, information units, and follow-up alerts.
+These are **sibling products**. Indicator Lab can install several of them on one
+machine; Mycroft does **not** install Spotlight (or Scoutpost) for you.
 
-The normal loop is: Scoutpost surfaces leads, Spotlight investigates them,
-Mycroft preserves the durable knowledge and supports publication.
+- **Mycroft** — durable knowledge and publishing support: source records, wiki
+  notes, claim checks, methods, story pitches, drafts, briefings.
+- **Spotlight** — active OSINT casework: briefs, methodology, research cycles,
+  evidence, review, exports. Own installer, own workspace, own update path —
+  including its own brief approval gate.
+- **Scoutpost** — hosted monitoring: page/beat/social scouts and alerts.
+
+When both Mycroft and Spotlight are present, Mycroft records Spotlight’s paths
+so it can (1) launch Spotlight with a lead and let Spotlight brief the case, or
+(2) read an existing case read-only without copying live files into the wiki
+(`spotlight-case`). Material you choose to keep long-term can be promoted into
+Mycroft under `handoff/from-spotlight/`.
+
+Typical loop: Scoutpost surfaces leads → Spotlight investigates → Mycroft keeps
+the durable notes and supports publication.
 
 ## First Run
 
 When the installer finishes it opens a personalized getting-started guide in
 the browser — example prompts and first workflows, written to
 `~/.config/goose/mycroft/getting-started.html`. Mycroft also
-opens Goose and writes `START_HERE.md` into the vault. The first-run menu
+opens Goose and writes `START_HERE.md` into the wiki. The first-run menu
 offers:
 
 - Set up my beat.
@@ -85,19 +93,18 @@ offers:
 - Set up scouts.
 - Show me a demo workflow.
 
-If the vault is empty and the journalist already has material, start with
+If the wiki is empty and the journalist already has material, start with
 knowledge ingest. If the journalist already knows the beat, start with the
-morning brief preflight. If the lead needs active OSINT work, hand it to
-Spotlight.
+morning brief preflight. If the lead needs active OSINT work and Spotlight is
+installed, launch Spotlight (`spotlight-case` with action `launch`) and let it
+run its brief gate.
 
 See [docs/first-run.md](docs/first-run.md).
 
-## Vaults
+## OpenKnowledge wiki
 
-Mycroft and Spotlight use separate vaults because they serve different editorial
-states.
-
-The Mycroft vault is durable newsroom memory:
+Mycroft’s durable memory is an OpenKnowledge workspace. Default location:
+`~/Documents/OpenKnowledge/Mycroft`.
 
 ```text
 _schema/
@@ -107,22 +114,39 @@ wiki/
 stories/
 context/
 handoff/from-spotlight/
+_audits/
 ```
 
-The Spotlight vault is active casework:
+Spotlight uses a **separate** workspace / case root for active investigations.
+Mycroft never mixes live case state into its wiki; it only reads cases
+read-only (`spotlight-case`), and only keeps what you promote under
+`handoff/from-spotlight/`.
 
-```text
-cases/
-evidence/
-captures/
-briefs/
-exports/
-_schema/
-```
+## Skills
 
-Each product owns its own OpenKnowledge workspace when Spotlight is enabled.
-Mycroft can read Spotlight's approved projections, while active Spotlight cases
-remain outside Mycroft and are accessed only through the read-only case adapter.
+Shipped skill set is the engine-resolved list in
+[`skills.manifest`](skills.manifest) (18 skills):
+
+| Skill | Role |
+|---|---|
+| `ai-writing-detox` | Strip AI-sounding patterns from drafts |
+| `bsig-engine` | Talk to the Buried Signals Engine / Indicator Labs stack |
+| `copywriting` | Editorial copy help |
+| `epistemic-grounding` | Confidence, sourcing, and claim discipline |
+| `fact-check` | SIFT-style claim checking |
+| `foia-requests` | Public-records request drafting and tracking |
+| `interview-prep` | Dossiers, question frames, attribution rules |
+| `knowledge-ingest` | Bring material into the wiki |
+| `knowledge-primitives` | Note types, frontmatter, link structure |
+| `knowledge-workspace` | OpenKnowledge as the primary wiki interface |
+| `mycroft-maintenance` | Doctor, update, and repair helpers |
+| `navigator` | OSINT Navigator connection (membership unlocks) |
+| `perspective-audit` | Trace viewpoints through sources and drafts |
+| `photo-metadata` | Caption / IPTC / EXIF workflows |
+| `scoutpost` | Hosted monitoring scouts |
+| `shell-safety` | Safe shell use with untrusted inbound text |
+| `story-pitch` | Pitch framing |
+| `web-acquisition` | Local search/scrape (SearXNG + Crawl4AI) |
 
 ## Install
 
@@ -137,10 +161,9 @@ installer.
 
 `mycroft update` applies the latest signed public release rather than following
 a branch head. `mycroft uninstall` removes only unchanged installer-owned files
-and preserves vault/profile data; pass `--remove-data` only when that removal is
-intentional. Navigator is optional: Skip installs the same unified skill in its
-locked state, Pro unlocks OSINT Navigator, and Lab additionally unlocks the Data
-Navigator tool.
+and preserves wiki/profile data; pass `--remove-data` only when that removal is
+intentional. Navigator is optional: membership unlocks OSINT Navigator through
+the unified Navigator skill.
 
 ### Local Install
 
@@ -185,16 +208,16 @@ Mycroft is designed for privacy-sensitive reporting:
   OpenRouter's Non-frontier model group, protecting other Goose clients as
   defense in depth. This route requires Goose 1.41 or newer; the installer
   checks it. Fireworks remains the direct-host cloud alternative.
-- Local inference is available for sovereign workflows.
-- **Web search and scrape are sovereign by default** — a local SearXNG (search)
-  and Crawl4AI (scrape) run with no API key or vendor account; Firecrawl is only an
+- Local inference is available when you want on-device models.
+- **Web search and scrape are local by default** — SearXNG (search) and
+  Crawl4AI (scrape) run with no API key or vendor account; Firecrawl is only an
   optional fallback when `FIRECRAWL_API_KEY` is set. An opt-in `--tor` fetch can
   route scraping through Tor so a target of investigation never sees the operator's
   IP. The installer provisions this stack, and `mycroft update` keeps it current.
-- Vaults, schedules, generated instructions, and fallback script secrets live on
+- Wiki, schedules, generated instructions, and fallback script secrets live on
   the user's machine.
 - API keys are stored locally through Goose or Mycroft config files, not in the
-  vault.
+  wiki.
 - Source acquisition and fact-check recipes preserve local evidence trails where
   tooling is available.
 
@@ -207,17 +230,19 @@ provider posture.
 **Core journalism**
 
 - `start`
-- `vault-qa`
+- `wiki-qa`
 - `fact-check`
+- `fact-check-c2pa`
 - `perspective-audit`
 - `source-verify`
 - `morning-brief`
 - `morning-brief-preflight`
-- `vault-audit`
+- `wiki-audit`
 - `newsletter-summarize`
-- `vault-sync`
+- `wiki-sync`
+- `spotlight-case`
 
-**Source acquisition and parsing** — sovereign by default (Crawl4AI scrape, SearXNG search, `pdftotext`, `sitemap.py`); Firecrawl is only an optional fallback when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
+**Source acquisition and parsing** — local by default (Crawl4AI scrape, SearXNG search, `pdftotext`, `sitemap.py`); Firecrawl is only an optional fallback when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
 
 - `firecrawl-scrape` — scrape a URL to markdown (Crawl4AI)
 - `firecrawl-change-track` — snapshot + diff a page across runs
@@ -238,6 +263,7 @@ provider posture.
 - `apify-social/linkedin`
 - `voice-setup`
 - `update-mycroft`
+- `ft-preflight`
 
 ## Documentation
 
@@ -245,7 +271,7 @@ provider posture.
 - [First run](docs/first-run.md) — what happens after setup.
 - [Grounding and provenance](docs/grounding-provenance-spec.md) — evidence
   bundles, claim grounding, and optional C2PA signing.
-- [Schedules](docs/schedules.md) — morning brief, vault audit, and updater
+- [Schedules](docs/schedules.md) — morning brief, wiki audit, and updater
   schedules.
 - [Plugin authoring](docs/plugin-authoring.md) — adding workflows and plugins.
 - [Troubleshooting](docs/troubleshooting.md) — common install and runtime
@@ -271,7 +297,7 @@ exist without them. *(Listing does not imply affiliation or endorsement.)*
 |----------|----------------------------|
 | **Agent runtime** | [Goose](https://github.com/block/goose) (Block, Apache-2.0 — the open-source runtime Mycroft is built on) |
 | **Journalism skills & methods** | [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism) (Joe Amditis, MIT) · [SIFT](https://hapgood.us/2019/06/19/sift-the-four-moves/) (Mike Caulfield) |
-| **Sovereign search & scraping** | [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) · [Crawl4AI](https://github.com/unclecode/crawl4ai) (unclecode, Apache-2.0) · [Playwright](https://playwright.dev/) (browser automation) · [Poppler](https://poppler.freedesktop.org/) (`pdftotext` — PDF extraction) · [Tor](https://www.torproject.org/) (opt-in anonymous scraping) |
+| **Local search & scraping** | [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) · [Crawl4AI](https://github.com/unclecode/crawl4ai) (unclecode, Apache-2.0) · [Playwright](https://playwright.dev/) (browser automation) · [Poppler](https://poppler.freedesktop.org/) (`pdftotext` — PDF extraction) · [Tor](https://www.torproject.org/) (opt-in anonymous scraping) |
 | **Local inference** | [llama.cpp](https://github.com/ggml-org/llama.cpp) (ggml, MIT) |
 | **Media & metadata** | [ExifTool](https://exiftool.org/) (Phil Harvey — powers photo-metadata) |
 | **Voice** | [Whisper](https://github.com/openai/whisper) (MIT — open-weight local dictation) · [Edge TTS](https://github.com/rany2/edge-tts) (rany2, LGPL-3.0 — spoken briefings) |

@@ -7,13 +7,13 @@ Mycroft uses two scheduling layers.
 Goose owns scheduled AI work. The installer creates generated recipe files with the user's selected vault paths:
 
 - `~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml`
-- `~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml`
+- `~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml`
 
 Then it asks Goose to schedule them:
 
 ```sh
 goose schedule add --schedule-id mycroft-morning-brief --cron "0 0 7 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml
-goose schedule add --schedule-id mycroft-vault-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml
+goose schedule add --schedule-id mycroft-wiki-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml
 ```
 
 Goose stores and runs these schedules. Use Goose Desktop's Scheduler page or the CLI to inspect them:
@@ -21,7 +21,7 @@ Goose stores and runs these schedules. Use Goose Desktop's Scheduler page or the
 ```sh
 goose schedule list
 goose schedule run-now --schedule-id mycroft-morning-brief
-goose schedule run-now --schedule-id mycroft-vault-audit
+goose schedule run-now --schedule-id mycroft-wiki-audit
 ```
 
 ## Morning Brief Preflight
@@ -31,7 +31,7 @@ The first setup run opens the broader `start` recipe if `~/.config/goose/mycroft
 The preflight recipe asks what the brief should monitor and writes:
 
 - `~/.config/goose/mycroft/morning-brief-config.md`
-- `<Mycroft vault>/context/morning-brief.md`
+- `<Mycroft wiki>/context/morning-brief.md`
 
 The scheduled morning brief reads those files before ranking overnight items.
 

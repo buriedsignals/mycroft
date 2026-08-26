@@ -5,7 +5,7 @@ description: Knowledge-base structure for journalist vaults. Load before creatin
 
 # Knowledge Primitives
 
-Use this skill whenever information should become durable knowledge in the Mycroft vault.
+Use this skill whenever information should become durable knowledge in the Mycroft wiki.
 
 ## Core Model
 
@@ -15,7 +15,7 @@ Mycroft uses a journalist knowledge base with three layers:
 2. Processed sources: cleaned extracts and summaries in `sources/processed/`.
 3. Wiki knowledge: atomic, linked notes in `wiki/`.
 
-The vault also keeps:
+The wiki also keeps:
 
 - `_schema/` for rules, frontmatter, and ingestion policy.
 - `index.md` for navigation.

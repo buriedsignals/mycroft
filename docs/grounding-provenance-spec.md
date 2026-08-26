@@ -11,7 +11,7 @@ Scope is deliberate: this spec applies to the **fact-check** profile
 of the `epistemic-grounding` skill (the `fact-check` skill, the default
 `fact-check.yaml` recipe, and the compatibility `fact-check-c2pa.yaml` recipe).
 Routine Mycroft skills — `morning-brief`,
-`vault-qa`, `knowledge-ingest`, `source-monitor`, `content-creator` — use the
+`wiki-qa`, `knowledge-ingest`, `source-monitor`, `content-creator` — use the
 **default** profile: the ladder and confidence caps applied in-head plus
 the lighter `confidence:` tag from `SOUL.md`. See
 `skills/epistemic-grounding/SKILL.md` for the profile boundary.

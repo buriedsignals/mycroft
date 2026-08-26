@@ -36,7 +36,7 @@ If schedules are missing, add them manually:
 
 ```sh
 goose schedule add --schedule-id mycroft-morning-brief --cron "0 0 7 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml
-goose schedule add --schedule-id mycroft-vault-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/vault-audit.scheduled.yaml
+goose schedule add --schedule-id mycroft-wiki-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml
 ```
 
 ## Morning Brief Has No Beat

@@ -9,7 +9,7 @@
       "required": true,
       "install": "npm install -g firecrawl-cli",
       "env": ["FIRECRAWL_API_KEY"],
-      "used_by": ["vault-qa", "fact-check", "source-verify", "morning-brief", "newsletter-summarize", "firecrawl-*"]
+      "used_by": ["wiki-qa", "fact-check", "source-verify", "morning-brief", "newsletter-summarize", "firecrawl-*"]
     },
     {
       "name": "apify-rest",
@@ -37,7 +37,7 @@
       "required": true,
       "install": "Installed by Mycroft's canonical installer or by the Buried Signals Engine from its signed dependency catalog",
       "env": [],
-      "used_by": ["morning-brief", "vault-sync", "vault-qa", "vault-audit"]
+      "used_by": ["morning-brief", "wiki-sync", "wiki-qa", "wiki-audit"]
     },
     {
       "name": "dev-browser",

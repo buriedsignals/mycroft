@@ -54,10 +54,10 @@
         "schedules": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["morning_brief", "vault_audit"],
+          "required": ["morning_brief", "wiki_audit"],
           "properties": {
             "morning_brief": {"type": ["string", "null"]},
-            "vault_audit": {"type": ["string", "null"]}
+            "wiki_audit": {"type": ["string", "null"]}
           }
         }
       }

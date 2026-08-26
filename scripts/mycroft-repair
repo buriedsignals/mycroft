@@ -211,8 +211,8 @@ fi
 if have goose; then
   say "Re-registering Mycroft schedules"
   morning="$MYCROFT_PROFILE_DIR/generated-recipes/morning-brief.scheduled.yaml"
-  audit="$MYCROFT_PROFILE_DIR/generated-recipes/vault-audit.scheduled.yaml"
-  for pair in "mycroft-morning-brief:$morning:0 0 7 * * *" "mycroft-vault-audit:$audit:0 15 18 * * *"; do
+  audit="$MYCROFT_PROFILE_DIR/generated-recipes/wiki-audit.scheduled.yaml"
+  for pair in "mycroft-morning-brief:$morning:0 0 7 * * *" "mycroft-wiki-audit:$audit:0 15 18 * * *"; do
     id="${pair%%:*}"
     rest="${pair#*:}"
     src="${rest%:*}"

@@ -19,7 +19,7 @@ A source is only an anchor. Grounding is the relationship between the claim and 
 
 Mycroft uses this skill at two intensities:
 
-- **default** — used by `morning-brief`, `vault-qa`, `knowledge-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md` plus a `source::` line. No required schema.
+- **default** — used by `morning-brief`, `wiki-qa`, `knowledge-ingest`, `source-monitor`, `content-creator`, casual fact-checks. Apply the ladder and confidence-cap rubric in your head; emit only the `confidence: high|medium|low` tag mandated by `SOUL.md` plus a `source::` line. No required schema.
 - **fact-check** — used by `fact-check`, `fact-check-c2pa`, draft-verification work, anything destined for publication or editor review. Emit the full `grounding` object per the schema in `tools/mycroft/docs/grounding-provenance-spec.md` and the `tools/mycroft/schemas/sift-manifest.schema.json`. See the fact-check skill for the contract.
 
 The ladder, confidence caps, and failure router below are universal — they apply at both intensities.
@@ -79,7 +79,7 @@ Never upgrade a claim beyond the weakest material element. If the amount is dire
 
 - **Local-model output is a lead, not authority.** Mycroft's default model (fine-tuned Qwen3.5-9B per `SOUL.md`) hallucinates URLs, citations, statute IDs, and database paths. Any such atom in a model response is `confidence: low, unsourced` until verified via `mycroft-fetch` (Crawl4AI/SearXNG) or against a source read through OpenKnowledge. The fine-tune teaches style and domain vocabulary, not citation accuracy.
 - **`unverified` ≠ `false`** (from `SOUL.md`). Evidence-absent is not the same as evidence-contradicts. When grounding is missing, name the gap rather than rewrite the claim into something the evidence supports.
-- **Apply this skill at ingestion time, not just at fact-check time.** A note filed to the vault with a `confidence: high` tag becomes a citation source for future answers. Inflated confidence at ingest is load-bearing for downstream errors.
+- **Apply this skill at ingestion time, not just at fact-check time.** A note filed to the wiki with a `confidence: high` tag becomes a citation source for future answers. Inflated confidence at ingest is load-bearing for downstream errors.
 
 ## When to use the full grounding object
 

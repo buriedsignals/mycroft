@@ -5,7 +5,7 @@ The default Mycroft workspace is `~/Documents/OpenKnowledge/Mycroft`; Spotlight 
 
 After setup:
 
-1. If Spotlight is already installed, Mycroft records its workspace and case paths for read-only handoff. Mycroft does not install Spotlight. Install Spotlight separately in Indicator Labs.
+1. If Spotlight is already installed, Mycroft records its workspace and case paths so Goose can launch Spotlight or read cases read-only. Mycroft does not install Spotlight. Install Spotlight separately in Indicator Labs.
 2. Goose opens the `start` recipe unless the user already has a morning brief monitoring profile.
 3. The Mycroft knowledge project contains `START_HERE.md` with copy-paste starter prompts.
 
@@ -18,7 +18,7 @@ The `start` recipe offers:
 - Set up scouts
 - Show me a demo
 
-The "Add to my knowledge base" path is the best default when the vault is empty and the journalist has links, files, newsletters, pasted notes, PDFs, or folders. Vault cleanup and audits are later workflows for existing note collections.
+The "Add to my knowledge base" path is the best default when the wiki is empty and the journalist has links, files, newsletters, pasted notes, PDFs, or folders. Wiki cleanup and audits are later workflows for existing note collections.
 
 ## What To Do Next
 
@@ -36,7 +36,7 @@ The morning brief path runs the `morning-brief-preflight` questions:
 - ignored sources
 - time window
 - story triggers
-- Spotlight handoff triggers
+- Spotlight launch triggers
 - sensitivity rules
 
 It writes the answers locally. Fallback script secrets stay in `~/.config/goose/mycroft/.env`; provider secrets should be stored through Goose. The monitoring profile should not contain API keys.

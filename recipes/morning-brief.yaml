@@ -1,6 +1,6 @@
 version: "1.0.0"
 title: "Morning brief"
-description: "Daily digest pulled from the morning-brief monitoring profile, X bookmarks (ft), AgentMail inbox, and recent vault changes. Writes a dated note into the Mycroft vault."
+description: "Daily digest pulled from the morning-brief monitoring profile, X bookmarks (ft), AgentMail inbox, and recent wiki changes. Writes a dated note into the Mycroft wiki."
 
 instructions: |
   Load the Mycroft journalism instructions and knowledge-workspace skill as session context.
@@ -42,7 +42,7 @@ prompt: |
   0. **Monitoring profile**:
      - Read `{{ monitoring_config }}` if it exists.
      - Also read `{{ vault_path }}/context/morning-brief.md` and `{{ vault_path }}/context/beat-notes.md` if present.
-     - Use these files to rank relevance, define ignored sources, and identify Spotlight handoff triggers.
+     - Use these files to rank relevance, define ignored sources, and identify when a lead should open in Spotlight.
 
   1. **X/Twitter bookmarks via ft CLI** (optional):
      - Run `ft sync` to refresh (if the command succeeds within 20s; otherwise skip — not blocking).
@@ -99,7 +99,7 @@ prompt: |
   - Exclude items from `consulting/` or `journals/` vaults entirely.
 
 activities:
-  - "message: **Morning brief ready.** Pulls from X bookmarks, AgentMail, and recent vault changes."
+  - "message: **Morning brief ready.** Pulls from X bookmarks, AgentMail, and recent wiki changes."
   - "Run today's morning brief"
   - "Run brief with emphasis on {{ beat }}"
   - "Show me just the AgentMail digest"

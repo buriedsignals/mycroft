@@ -39,7 +39,7 @@ Prefer the case's structured artifacts: `data/summary.json`, `data/findings.json
 
 ### Trigger an investigation
 
-Mycroft may prepare a Spotlight brief, but starting active casework is an explicit handoff. Confirm the lead, scope, jurisdiction, sensitivity, and the question to prove or disprove. Show the exact brief to the journalist and obtain approval. For a public install, run `spotlight doctor` and launch with `spotlight`; for an Engine-managed install, use `bsig spotlight run`. Pass the approved brief through the configured harness's normal prompt/file mechanism. Never create a case by writing into the cases directory and never route the brief through OpenKnowledge.
+If Spotlight is installed and the lead needs active OSINT casework, launch Spotlight and stop. Confirm the lead in one short line (who/what, jurisdiction if known, sensitivity if stated). Do not draft a Mycroft brief and do not run a Mycroft approval gate — Spotlight owns the brief and methodology gates. For a public install, run `spotlight doctor` and launch with `spotlight`; for an Engine-managed install, use `bsig spotlight run`. Pass only the lead through the configured harness's normal entrypoint. Never create a case by writing into the cases directory and never route active case material through OpenKnowledge.
 
 If Spotlight is absent or its doctor fails, preserve the proposal as a Mycroft story/source plan and report that no investigation was started. After Spotlight completes and projection is approved, Mycroft may read durable results under `spotlight/`; it must not create, edit, or delete them. Do not treat active-case output as durable knowledge.
 

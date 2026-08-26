@@ -291,7 +291,7 @@
                   "additionalProperties": false,
                   "required": [
                     "morning_brief",
-                    "vault_audit"
+                    "wiki_audit"
                   ],
                   "properties": {
                     "morning_brief": {
@@ -300,7 +300,7 @@
                         "null"
                       ]
                     },
-                    "vault_audit": {
+                    "wiki_audit": {
                       "type": [
                         "string",
                         "null"
@@ -514,8 +514,8 @@
                 "morning_brief": {
                   "$input": "goose.schedules.morning_brief"
                 },
-                "vault_audit": {
-                  "$input": "goose.schedules.vault_audit"
+                "wiki_audit": {
+                  "$input": "goose.schedules.wiki_audit"
                 }
               }
             },

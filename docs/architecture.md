@@ -44,7 +44,7 @@ Mycroft uses two Goose context mechanisms:
 
 The soul file gives Goose the Mycroft identity, voice, and core operating principles. It stays concise because persistent instructions are injected every turn.
 
-## Vaults
+## Knowledge workspaces
 
 Mycroft and Spotlight use separate OpenKnowledge workspaces and separate product configurations.
 
@@ -67,7 +67,12 @@ Spotlight is active OSINT casework:
 - `exports/`
 - `handoff-to-mycroft/`
 
-Mycroft does not install Spotlight. If both products are already installed, Mycroft records Spotlight's install, workspace, and case paths for read-only handoff. Spotlight remains responsible for its own configuration, projection, runtime, doctor, and updates.
+Mycroft does not install Spotlight. Indicator Lab can install both as sibling
+products. If Spotlight is already present, Mycroft records its install,
+workspace, and case paths so the `spotlight-case` recipe can launch Spotlight
+(Spotlight owns the brief gate) or read an existing case without copying live
+files into the Mycroft wiki. Spotlight remains responsible for its own
+configuration, projection, runtime, doctor, and updates.
 
 ## Knowledge workspace
 

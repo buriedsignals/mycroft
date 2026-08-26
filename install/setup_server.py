@@ -36,7 +36,7 @@ from navigator_bridge import NavigatorBridgeError, NavigatorInstallerBridge
 
 SUBMIT_TIMEOUT_SECONDS = 30 * 60
 
-PICKER_PROMPTS = {"vault_path": "Choose your Mycroft vault folder"}
+PICKER_PROMPTS = {"vault_path": "Choose your Mycroft wiki folder"}
 
 # Public Supabase anon key for hosted Scoutpost (functions/v1). Not a secret — it is
 # baked into the engine binary and the SPA; sent as the `apikey:` header alongside the
@@ -231,7 +231,7 @@ def b01(value):
 def validate_choices(d):
     errors = []
     if not str(d.get("vault") or "").strip():
-        errors.append({"field": "vault_path", "message": "Vault path is required — Mycroft has nowhere to keep your knowledge without it."})
+        errors.append({"field": "vault_path", "message": "Wiki path is required — Mycroft has nowhere to keep your knowledge without it."})
     if d.get("installFirecrawl") and not d.get("firecrawlKey"):
         errors.append({"field": "firecrawl_key", "message": "A FIRECRAWL_API_KEY is required only when the optional Firecrawl fallback is selected."})
     if not d.get("localOnly"):
@@ -513,8 +513,8 @@ $prompt_cards
   <p class="num">$n_schedule — On schedule</p>
   <h2>While you <em>sleep.</em></h2>
   <table>
-    <tr><th>Morning brief</th><td>Daily 07:00 — digest from your beats, watchlists$brief_sources, and recent vault changes. Run "Create my morning brief" once to configure it.</td></tr>
-    <tr><th>Vault audit</th><td>Daily 18:15 — flags weak claims, missing frontmatter, orphaned sources, stale handoffs.</td></tr>
+    <tr><th>Morning brief</th><td>Daily 07:00 — digest from your beats, watchlists$brief_sources, and recent wiki changes. Run "Create my morning brief" once to configure it.</td></tr>
+    <tr><th>Wiki audit</th><td>Daily 18:15 — flags weak claims, missing frontmatter, orphaned sources, stale handoffs.</td></tr>
     <tr><th>Updates</th><td>Weekly Monday 10:15 — pulls the latest recipes and skills, verifies with <code>mycroft doctor</code>, rolls back on failure.</td></tr>
   </table>
 
@@ -563,8 +563,8 @@ def build_getting_started(d):
 
     prompts = [
         ("Set up your beat", "Set up my beat. I cover [your beat] in [your region]."),
-        ("Feed the vault", "Add this to my knowledge base: [paste a link, or drop a PDF / folder path]"),
-        ("Ask your vault", "What do we know about [person, company, or topic]?"),
+        ("Feed the wiki", "Add this to my knowledge base: [paste a link, or drop a PDF / folder path]"),
+        ("Ask your wiki", "What do we know about [person, company, or topic]?"),
         ("Morning brief", "Create my morning brief."),
         ("Fact-check", "Fact-check this draft: [paste your draft]"),
     ]

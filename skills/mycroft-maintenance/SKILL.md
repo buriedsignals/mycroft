@@ -15,7 +15,7 @@ Mycroft is a Goose profile, not a separate app.
 - Mycroft Goose profile: `~/.config/goose/mycroft`
 - Mycroft source checkout: `~/.local/share/goose/mycroft/source`
 - Mycroft plugin checkouts: `~/.local/share/goose/mycroft/plugins`
-- Mycroft vault: user-selected, usually `~/Documents/OpenKnowledge/Mycroft`
+- Mycroft wiki: user-selected, usually `~/Documents/OpenKnowledge/Mycroft`
 - Spotlight vault: user-selected, usually `~/Documents/OpenKnowledge/Spotlight`
 
 ## Update Path

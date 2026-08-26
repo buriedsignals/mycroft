@@ -1,20 +1,21 @@
 version: "1.0.0"
-title: "Spotlight investigation handoff"
-description: "Read an existing Spotlight case or prepare and explicitly launch a new Spotlight investigation without mixing case state into durable knowledge."
+title: "Spotlight case"
+description: "Read an existing Spotlight case read-only from Mycroft, or launch Spotlight for a new lead so Spotlight can run its own brief gate."
 
 instructions: |
   Load the Mycroft journalism instructions and the knowledge-workspace skill.
   Active Spotlight cases use the direct, read-only case adapter. Durable approved projections under `spotlight/` are read-only to Mycroft. Do not query active cases through OpenKnowledge.
+  Mycroft does not own Spotlight's brief or methodology approval. When launching, hand the lead to Spotlight and stop.
 
 parameters:
   - key: request
     input_type: string
     requirement: required
-    description: "A case slug to inspect, or the lead/question for a proposed investigation."
+    description: "A case slug to inspect, or the lead/question to open in Spotlight."
   - key: action
     input_type: string
     requirement: required
-    description: "Either read_case or start_investigation."
+    description: "Either read_case or launch."
   - key: cases_root
     input_type: string
     requirement: optional
@@ -36,13 +37,12 @@ prompt: |
   2. Read structured case artifacts directly and read-only. Prefer summary, findings, fact-check, and ingestion receipts.
   3. Cite results as `case:<slug>/<relative-path>`. Do not index, copy, or write case content through OpenKnowledge.
 
-  For `start_investigation`:
-  1. Ask only for missing scope, jurisdiction, sensitivity, known sources, and the question to prove or disprove.
-  2. Draft the exact Spotlight brief and show it to the journalist.
-  3. Do not launch until the journalist explicitly approves that brief.
-  4. For a public install, run `spotlight doctor` and launch with `spotlight`. For an Engine-managed install, run `bsig doctor --product spotlight` and launch via `bsig spotlight run`. Hand the approved brief to the configured harness. Never create a case directory directly.
-  5. If Spotlight is unavailable, keep the proposal as a Mycroft story/source plan and state that no investigation started.
+  For `launch`:
+  1. Confirm the lead in one short line (who/what, jurisdiction if known, sensitivity if stated). Do not draft a Mycroft brief and do not run a Mycroft approval gate — Spotlight owns the brief gate.
+  2. For a public install, run `spotlight doctor` and launch with `spotlight`. For an Engine-managed install, run `bsig doctor --product spotlight` and launch via `bsig spotlight run`. Pass only the lead/request text into Spotlight's normal entrypoint.
+  3. Never create a case directory directly. Never put active case material in OpenKnowledge.
+  4. If Spotlight is unavailable, keep a Mycroft story/source plan and state that no investigation started.
 
 activities:
   - "Inspect an active Spotlight case"
-  - "Turn this lead into a Spotlight investigation"
+  - "Open this lead in Spotlight"

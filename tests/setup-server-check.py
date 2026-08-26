@@ -230,9 +230,9 @@ class UnitChecks(unittest.TestCase):
             "recipes/start.yaml": "~/Documents/OpenKnowledge/Mycroft",
             "recipes/morning-brief.yaml": "~/Documents/OpenKnowledge/Mycroft",
             "recipes/morning-brief-preflight.yaml": "~/Documents/OpenKnowledge/Mycroft",
-            "recipes/vault-audit.yaml": "~/Documents/OpenKnowledge/Mycroft",
-            "recipes/vault-qa.yaml": "~/Documents/OpenKnowledge/Mycroft",
-            "recipes/vault-sync.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/wiki-audit.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/wiki-qa.yaml": "~/Documents/OpenKnowledge/Mycroft",
+            "recipes/wiki-sync.yaml": "~/Documents/OpenKnowledge/Mycroft",
             "skills/mycroft-maintenance/SKILL.md": "~/Documents/OpenKnowledge/Mycroft",
         }
         for relative, expected in expected_defaults.items():

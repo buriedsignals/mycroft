@@ -69,19 +69,19 @@ def validate_recipe(path: Path) -> list[str]:
             if k not in param:
                 errs.append(f"parameter missing required field {k!r}: {param.get('key', param)}")
 
-    if path.name == "spotlight-handoff.yaml":
+    if path.name == "spotlight-case.yaml":
         rendered = "\n".join(str(data.get(k, "")) for k in ("instructions", "prompt"))
         for required in (
             "direct, read-only case adapter",
             "Do not query active cases through OpenKnowledge",
-            "explicitly approves",
+            "Spotlight owns the brief gate",
             "spotlight doctor",
             "bsig doctor --product spotlight",
             "bsig spotlight run",
             "Never create a case directory directly",
         ):
             if required not in rendered:
-                errs.append(f"Spotlight handoff safety contract missing: {required}")
+                errs.append(f"Spotlight case safety contract missing: {required}")
 
     return errs
 

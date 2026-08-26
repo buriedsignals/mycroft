@@ -1,23 +1,23 @@
 version: "1.0.0"
-title: "Vault Q&A"
-description: "Answer a journalist's question grounded in their vault and live web search, with citations for every factual claim."
+title: "Wiki Q&A"
+description: "Answer a journalist's question grounded in their OpenKnowledge wiki and live web search, with citations for every factual claim."
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, attribution, SIFT, no fabrication) as the session's system context.
-  Load the knowledge-workspace skill and use OpenKnowledge as the primary vault interface.
-  Answer from the journalist's vault first; supplement with live web via the sovereign search/scrape tools when the vault is incomplete.
-  Every factual claim must have a citation. If neither vault nor web has it, say "not found in available sources".
+  Load the knowledge-workspace skill and use OpenKnowledge as the primary wiki interface.
+  Answer from the journalist's wiki first; supplement with live web via the local search/scrape tools when the wiki is incomplete.
+  Every factual claim must have a citation. If neither wiki nor web has it, say "not found in available sources".
 
 parameters:
+  - key: vault_path
+    input_type: string
+    requirement: required
+    description: "Absolute or ~-expanded path to the Mycroft OpenKnowledge workspace"
+    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: question
     input_type: string
     requirement: required
     description: "The question to answer"
-  - key: vault_path
-    input_type: string
-    requirement: required
-    description: "Absolute or ~-expanded path to the journalist's vault root"
-    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: entity
     input_type: string
     requirement: optional
@@ -27,7 +27,7 @@ parameters:
 extensions:
   - type: builtin
     name: developer
-    description: "Shell + file access — used to grep/read vault files and invoke the search/scrape tools"
+    description: "Shell + file access — used to grep/read wiki files and invoke the search/scrape tools"
   - type: stdio
     name: openknowledge
     cmd: ok
@@ -35,26 +35,26 @@ extensions:
 
 prompt: |
   Question: {{ question }}
-  Vault root: {{ vault_path }}
+  Wiki root: {{ vault_path }}
 
   Steps:
 
   1. Search the `mycroft/` namespace with OpenKnowledge `search`, then read the most relevant notes exactly with `exec` (not summaries — you need direct quotes for citations).
      - If OpenKnowledge reports unavailable or unready, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
 
-  2. If vault coverage is incomplete, use the sovereign search/scrape tools for live web:
+  2. If wiki coverage is incomplete, use the local search/scrape tools for live web:
      - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "query"` for discovery (returns JSON; parse and pick relevant URLs)
      - `python3 "$MYCROFT_DIR/tools/scrape.py" <url>` for specific pages (returns markdown)
-     - Never use WebFetch or curl for pages — use the sovereign search/scrape tools only.
+     - Never use WebFetch or curl for pages — use the local search/scrape tools only.
 
   3. Synthesize an answer:
      - Lead with the answer in 1-3 sentences.
      - Follow with supporting detail.
      - Every factual claim gets an inline citation:
-       - Vault: relative note path, e.g. `investigations/acme/source-a.md`
+       - Wiki: relative note path, e.g. `investigations/acme/source-a.md`
        - Web: the full URL
      - Flag unverified claims with an `unverified:` prefix.
-     - If neither vault nor web has a fact you'd otherwise need, say "not found in available sources" — do NOT fabricate.
+     - If neither wiki nor web has a fact you'd otherwise need, say "not found in available sources" — do NOT fabricate.
 
   4. End with a short "gaps" section if appropriate:
      - What would strengthen the answer
@@ -63,7 +63,7 @@ prompt: |
   Keep the overall answer tight. Terse. No moralising, no sycophancy.
 
 activities:
-  - "message: **Vault Q&A ready.** Ask anything grounded in your vault + live web. Every claim gets a citation."
+  - "message: **Wiki Q&A ready.** Ask anything grounded in your wiki + live web. Every claim gets a citation."
   - "What do I already have on ...?"
   - "What's the latest on my beat this week?"
   - "Cross-check these claims against my sources"

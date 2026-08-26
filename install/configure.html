@@ -99,7 +99,7 @@
 <div class="shell" id="formShell">
   <p class="brand">Mycroft<em>.</em></p>
   <h1>Configure your <em>install.</em></h1>
-  <p class="lede">Pick how Mycroft runs, paste your keys, point it at a vault. This page is served by the installer running on your machine — everything you enter goes to <code>127.0.0.1</code> only and is written to <code>~/.config/goose/mycroft</code>. Nothing is uploaded.</p>
+  <p class="lede">Pick how Mycroft runs, paste your keys, point it at a wiki. This page is served by the installer running on your machine — everything you enter goes to <code>127.0.0.1</code> only and is written to <code>~/.config/goose/mycroft</code>. Nothing is uploaded.</p>
   <p class="local-note">Local page · keys never leave this machine</p>
 
   <form id="form" onsubmit="return false;">
@@ -211,7 +211,7 @@
     <p class="item__lede">Where Mycroft's durable newsroom memory lives — a portable Markdown project indexed by Open Knowledge and created if it doesn't exist. Spotlight uses its own workspace configured by Spotlight's installer.</p>
     <div class="path-row">
       <input class="fld" type="text" id="vault_path" value="~/Documents/OpenKnowledge/Mycroft" autocomplete="off" spellcheck="false">
-      <button type="button" class="mini-btn" data-browse="vault_path" data-prompt="Choose your Mycroft vault folder">Browse…</button>
+      <button type="button" class="mini-btn" data-browse="vault_path" data-prompt="Choose your Mycroft wiki folder">Browse…</button>
     </div>
     <div class="os-chips" role="group" aria-label="Default path per operating system">
       <span class="hint" style="margin:0;">Default for:</span>
@@ -312,7 +312,7 @@
 <div class="shell done" id="doneShell" hidden>
   <p class="brand">Mycroft<em>.</em></p>
   <h1>Configured<em>.</em></h1>
-  <p>Your choices and keys are saved on this machine. The installer is now setting up Goose, your vault, recipes, and schedules — <strong>watch the terminal</strong> for progress.</p>
+  <p>Your choices and keys are saved on this machine. The installer is now setting up Goose, your wiki, recipes, and schedules — <strong>watch the terminal</strong> for progress.</p>
   <p>When it finishes, your personalized getting-started guide opens automatically.</p>
   <p id="doneWarnings" style="color:var(--ink-dim); font-size:13.5px;"></p>
 </div>
@@ -321,7 +321,7 @@
 const TOKEN = "__SETUP_TOKEN__";
 const PLATFORM = "__PLATFORM__"; // mac | linux | windows-wsl — detected by the local server
 
-/* Vault path: native Browse (the local server opens a real OS folder dialog)
+/* Wiki path: native Browse (the local server opens a real OS folder dialog)
    plus per-OS default chips. */
 const OS_DEFAULTS = {
   'mac': { vault: '~/Documents/OpenKnowledge/Mycroft',
