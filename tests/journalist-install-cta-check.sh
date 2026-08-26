@@ -14,7 +14,7 @@ JOIN='https://buriedsignals.com/join'
 GITHUB='https://github.com/buriedsignals/mycroft'
 
 if ! grep -qF "$JOIN" index.html; then
-  note "index.html missing Set up href $JOIN"
+  note "index.html missing Install href $JOIN"
 fi
 if ! grep -qF "$GITHUB" index.html; then
   note "index.html missing GitHub link"
