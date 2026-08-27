@@ -48,6 +48,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Changed — signed catalog
+
+- Republished engine catalog release sequence 24. The hosted copy now includes
+  the Splash product and its skill rows. `catalog/` remains a byte-identical
+  publish artifact; do not hand-edit it.
+
 ### Changed — OpenKnowledge and Spotlight ownership
 
 - Mycroft writes durable notes through OpenKnowledge in its configured project.

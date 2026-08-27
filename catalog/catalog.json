@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.4",
-  "released_at": "2026-08-23T07:00:00Z",
-  "release_sequence": 23,
+  "released_at": "2026-08-25T12:42:49Z",
+  "release_sequence": 24,
   "products": {
     "mycroft": {
       "version": "0.3.7",
@@ -47,6 +47,7 @@
                 "id": {
                   "enum": [
                     "fireworks-glm52",
+                    "public-ai",
                     "other-subscription",
                     "local-9b",
                     "local-27b"
@@ -291,7 +292,7 @@
                   "additionalProperties": false,
                   "required": [
                     "morning_brief",
-                    "wiki_audit"
+                    "vault_audit"
                   ],
                   "properties": {
                     "morning_brief": {
@@ -300,7 +301,7 @@
                         "null"
                       ]
                     },
-                    "wiki_audit": {
+                    "vault_audit": {
                       "type": [
                         "string",
                         "null"
@@ -514,8 +515,8 @@
                 "morning_brief": {
                   "$input": "goose.schedules.morning_brief"
                 },
-                "wiki_audit": {
-                  "$input": "goose.schedules.wiki_audit"
+                "vault_audit": {
+                  "$input": "goose.schedules.vault_audit"
                 }
               }
             },
@@ -596,6 +597,27 @@
         "schema_version": "spotlight-install-contract/v1",
         "source_commit": "b19760cfdd60f1e51c5f73ecb86268d24fc1676e",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "writer_mode": "engine_v2",
+        "choice_schema": {
+          "type": "object"
+        },
+        "config_schema": {
+          "type": "object"
+        },
+        "template": {
+          "document": {}
+        }
+      }
+    },
+    "splash": {
+      "version": "0.1.0",
+      "repo": "buriedsignals/splash",
+      "ref": "9e2074c69c5bcd60661a3b45959411aed0326911",
+      "entitlement": "splash.core",
+      "install_contract": {
+        "schema_version": "splash-install-contract/v1",
+        "source_commit": "9e2074c69c5bcd60661a3b45959411aed0326911",
+        "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "type": "object"
@@ -1495,6 +1517,326 @@
         "license": "MIT",
         "author": "Joe Amditis"
       }
+    },
+    {
+      "id": "splash",
+      "name": "Splash orchestrator",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/splash",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "analyst",
+      "name": "Analyst",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/analyst",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "chart-beat",
+      "name": "Chart beat",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/chart-beat",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "chart-video",
+      "name": "Chart video",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/chart-video",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "chart-web",
+      "name": "Chart web",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/chart-web",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "deliver",
+      "name": "Deliver",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/deliver",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "doctrine",
+      "name": "Doctrine",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/doctrine",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "dw-beat",
+      "name": "Datawrapper beat",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/dw-beat",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "image-beat",
+      "name": "Image beat",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/image-beat",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "intake",
+      "name": "Intake",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/intake",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "map-beat",
+      "name": "Map beat",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/map-beat",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "map-web",
+      "name": "Map web",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/map-web",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "newsroom-charter",
+      "name": "Newsroom charter",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/newsroom-charter",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "palette",
+      "name": "Palette",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/palette",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "scrolly",
+      "name": "Scrollytelling",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/scrolly",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
+    },
+    {
+      "id": "storyboard",
+      "name": "Storyboard",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "splash.core",
+      "path": "skills/storyboard",
+      "requires_keys": [],
+      "version": "0.1.0",
+      "products": [
+        "splash"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/splash",
+      "kind": "portable"
     }
   ],
   "artifacts": [
@@ -1603,6 +1945,26 @@
         "source_url": "https://docs.fireworks.ai/guides/security_compliance/data_handling",
         "verified_at": "2026-07-17"
       }
+    },
+    {
+      "id": "public-ai",
+      "display": "Public AI — Apertus 1.5 70B",
+      "base_url": "https://api.publicai.co/v1",
+      "api": "openai-chat",
+      "secret_id": "PUBLIC_AI_API_KEY",
+      "products": [
+        "mycroft"
+      ],
+      "adapters": [
+        "goose"
+      ],
+      "privacy": {
+        "tier": "confidential-cloud",
+        "enforcement": "provider-stated",
+        "disclosure": "Prompts leave this device through Engine's loopback invoke translator to Public AI; operational metadata remains outside this inference claim.",
+        "source_url": "https://publicai.co",
+        "verified_at": "2026-08-25"
+      }
     }
   ],
   "cloud_models": [
@@ -1661,6 +2023,32 @@
             "output": 4.4,
             "snapshot_date": "2026-07-17",
             "source_url": "https://fireworks.ai/pricing"
+          }
+        }
+      ]
+    },
+    {
+      "id": "apertus-v15-70b",
+      "display": "Apertus 1.5 70B",
+      "products": [
+        "mycroft"
+      ],
+      "recommendation": "candidate",
+      "routes": [
+        {
+          "provider_id": "public-ai",
+          "remote_id": "swiss-ai/apertus-v1.5-70b",
+          "adapters": [
+            "goose"
+          ],
+          "pricing": {
+            "currency": "USD",
+            "unit": "per_million_tokens",
+            "input": 0.80,
+            "output": 0.80,
+            "cached_read": 0,
+            "snapshot_date": "2026-08-25",
+            "source_url": "https://publicai.co"
           }
         }
       ]
