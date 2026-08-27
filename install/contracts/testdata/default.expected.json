@@ -4,7 +4,7 @@
   "paths": {"data": "/home/reporter/.local/share/goose/mycroft", "plugins": "/home/reporter/.local/share/goose/mycroft/plugins", "profile": "/home/reporter/.config/goose/mycroft", "source": "/home/reporter/.local/share/goose/mycroft/source"},
   "plugins": {"scoutpost": {"api_base": "https://www.scoutpost.ai/api/v1", "enabled": false, "mode": "hosted"}, "spotlight": {"enabled": false, "inherits_mycroft_sovereignty": false, "path": null}},
   "product": "mycroft",
-  "provider": {"id": "fireworks-glm52", "model": "accounts/fireworks/models/glm-5p2"},
+  "provider": {"id": "featherless", "model": "zai-org/GLM-5.2"},
   "schema_version": "mycroft-config/v2",
   "skills": {"directory": "/home/reporter/.agents/skills/mycroft", "registry": "/home/reporter/.config/goose/mycroft/skill-registry.json"},
   "sovereignty": {"local_model": null, "local_only": false},

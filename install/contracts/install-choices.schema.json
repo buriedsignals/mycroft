@@ -22,7 +22,7 @@
       "required": ["id", "model"],
       "properties": {
         "id": {
-          "enum": ["fireworks-glm52", "other-subscription", "local-9b", "local-27b"]
+          "enum": ["featherless", "other-subscription", "local-9b", "local-27b"]
         },
         "model": {"type": ["string", "null"]}
       }

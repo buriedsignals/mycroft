@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.4",
-  "released_at": "2026-08-25T12:42:49Z",
-  "release_sequence": 24,
+  "released_at": "2026-08-27T14:00:00Z",
+  "release_sequence": 25,
   "products": {
     "mycroft": {
       "version": "0.3.7",
@@ -46,7 +46,7 @@
               "properties": {
                 "id": {
                   "enum": [
-                    "fireworks-glm52",
+                    "featherless",
                     "public-ai",
                     "other-subscription",
                     "local-9b",
@@ -1883,8 +1883,7 @@
       "api": "openai-chat",
       "secret_id": "OPENCODE_API_KEY",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "adapters": [
         "goose",
@@ -1899,51 +1898,23 @@
       }
     },
     {
-      "id": "openrouter",
-      "display": "OpenRouter",
-      "base_url": "https://openrouter.ai/api/v1",
+      "id": "featherless",
+      "display": "Featherless — GLM-5.2",
+      "base_url": "https://api.featherless.ai/v1",
       "api": "openai-chat",
-      "secret_id": "OPENROUTER_API_KEY",
+      "secret_id": "FEATHERLESS_API_KEY",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "adapters": [
-        "pi"
-      ],
-      "privacy": {
-        "tier": "confidential-cloud",
-        "enforcement": "request-enforced",
-        "disclosure": "Prompts leave this device. Engine forces ZDR-only inference routing per request; operational metadata and other networked tools are not covered.",
-        "source_url": "https://openrouter.ai/docs/guides/features/zdr",
-        "verified_at": "2026-07-17"
-      },
-      "request_body": {
-        "provider": {
-          "zdr": true
-        }
-      }
-    },
-    {
-      "id": "fireworks",
-      "display": "Fireworks AI",
-      "base_url": "https://api.fireworks.ai/inference/v1",
-      "api": "openai-chat",
-      "secret_id": "FIREWORKS_API_KEY",
-      "products": [
-        "mycroft",
-        "spotlight"
-      ],
-      "adapters": [
-        "goose",
-        "pi"
+        "goose"
       ],
       "privacy": {
         "tier": "confidential-cloud",
         "enforcement": "provider-stated",
-        "disclosure": "Prompts leave this device. Fireworks states open-model prompts and generations are not persisted without opt-in; service metadata remains.",
-        "source_url": "https://docs.fireworks.ai/guides/security_compliance/data_handling",
-        "verified_at": "2026-07-17"
+        "disclosure": "Prompts leave this device. Featherless states API chats, prompts, and completions are not logged or stored; operational metadata remains outside this inference claim.",
+        "source_url": "https://featherless.ai/docs/privacy-and-logging",
+        "verified_at": "2026-08-27"
       }
     },
     {
@@ -1972,57 +1943,24 @@
       "id": "glm-5.2",
       "display": "GLM-5.2",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "recommendation": "default",
       "routes": [
         {
-          "provider_id": "opencode-go",
-          "remote_id": "glm-5.2",
+          "provider_id": "featherless",
+          "remote_id": "zai-org/GLM-5.2",
           "adapters": [
-            "goose",
-            "pi"
+            "goose"
           ],
           "pricing": {
             "currency": "USD",
             "unit": "per_million_tokens",
-            "input": 1.4,
-            "output": 4.4,
-            "cached_read": 0.26,
-            "snapshot_date": "2026-07-17",
-            "source_url": "https://opencode.ai/docs/go/"
-          }
-        },
-        {
-          "provider_id": "openrouter",
-          "remote_id": "z-ai/glm-5.2",
-          "adapters": [
-            "pi"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 1.4,
-            "output": 4.4,
-            "snapshot_date": "2026-07-17",
-            "source_url": "https://openrouter.ai/models"
-          }
-        },
-        {
-          "provider_id": "fireworks",
-          "remote_id": "accounts/fireworks/models/glm-5p2",
-          "adapters": [
-            "goose",
-            "pi"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 1.4,
-            "output": 4.4,
-            "snapshot_date": "2026-07-17",
-            "source_url": "https://fireworks.ai/pricing"
+            "input": 0.75,
+            "output": 2.4,
+            "cached_read": 0.15,
+            "snapshot_date": "2026-08-27",
+            "source_url": "https://featherless.ai/docs/request-pricing-and-credits"
           }
         }
       ]
@@ -2044,8 +1982,8 @@
           "pricing": {
             "currency": "USD",
             "unit": "per_million_tokens",
-            "input": 0.80,
-            "output": 0.80,
+            "input": 0.8,
+            "output": 0.8,
             "cached_read": 0,
             "snapshot_date": "2026-08-25",
             "source_url": "https://publicai.co"
@@ -2057,8 +1995,7 @@
       "id": "deepseek-v4-flash",
       "display": "DeepSeek V4 Flash",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "recommendation": "candidate",
       "routes": [
@@ -2085,8 +2022,7 @@
       "id": "deepseek-v4-pro",
       "display": "DeepSeek V4 Pro",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "recommendation": "advanced",
       "routes": [
@@ -2125,8 +2061,7 @@
       "artifact_id": "gemma4-26b-a4b-q4km",
       "filename": "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "context_tokens": 40960,
       "recommendation": "default"
@@ -2145,15 +2080,14 @@
       "artifact_id": "gemma4-31b-q4km",
       "filename": "gemma-4-31B-it-Q4_K_M.gguf",
       "products": [
-        "mycroft",
-        "spotlight"
+        "mycroft"
       ],
       "context_tokens": 40960,
       "recommendation": "advanced"
     },
     {
       "id": "spotlight-gemma4-12b",
-      "display": "Gemma 4 12B \u2014 Spotlight tuned",
+      "display": "Gemma 4 12B — Spotlight tuned",
       "hf_repo": "",
       "ollama_tag": "",
       "ollama_alias": "",
@@ -2168,7 +2102,7 @@
         "spotlight"
       ],
       "context_tokens": 40960,
-      "recommendation": "advanced"
+      "recommendation": "default"
     },
     {
       "id": "gemma4-e4b-sidecar",
