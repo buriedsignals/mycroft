@@ -150,49 +150,37 @@ Shipped skill set is the engine-resolved list in
 
 ## Install
 
-Journalists install Mycroft through **Indicator Labs** after joining at
-[buriedsignals.com/join](https://buriedsignals.com/join). Secrets are entered
-in the operating-system prompt, not on this website or a localhost form.
+**Buried Signals Engine (`bsig`) is Mycroft's only installation authority.**
+Indicator Labs submits the same Engine plans while adding guided setup,
+credential prompts, repair, and automatic updates for
+[members](https://buriedsignals.com/join).
 
-GitHub stays the contributor path. Clone the repository for development.
-[`install.sh`](install.sh) remains only as a fail-closed pointer for old
-curl|bash pipes; it does not install Mycroft or open a configure page.
+For agent-led manual setup, fetch the signed Engine descriptor at:
 
-`mycroft update` and `mycroft uninstall` in Indicator Labs move the checkout
-Engine installed. Leftover `mycroft-update` / `mycroft-uninstall` wrappers on
-PATH fail closed toward Indicator Labs unless a private Splash-enabled git
-checkout is present. Navigator is optional: membership unlocks OSINT Navigator
-through the unified Navigator skill.
-
-### Local Install
-
-Clone the repo and install Mycroft from Indicator Labs against that checkout.
-Do not run `install.sh`; it exits after pointing at Indicator Labs.
-
-```sh
-git clone https://github.com/buriedsignals/mycroft.git
+```text
+https://navigator.indicator.media/api/artifacts/bootstrap/bsig/<platform>
 ```
 
-### Manual Install
+Use `darwin-arm64`, `darwin-amd64`, `linux-arm64`, `linux-amd64`, or
+`windows-amd64`. Download the archive, checksum, signature, and public key
+before the 60-second grants expire; verify SHA-256 and Minisign before running
+`bsig`. Then:
 
-Manual setup is for development and debugging. At minimum:
-
-```sh
-mkdir -p ~/.local/share/goose/mycroft
-git clone https://github.com/buriedsignals/mycroft.git ~/.local/share/goose/mycroft/source
-
-export GOOSE_RECIPE_PATH=~/.local/share/goose/mycroft/source/recipes:~/.config/goose/mycroft/generated-recipes
-export GOOSE_PROVIDER=openrouter
-export GOOSE_MODEL=z-ai/glm-5.2
-export OPENROUTER_PARAMETERS='{"provider":{"zdr":true}}'
-
-mkdir -p ~/.config/goose/mycroft
-cp ~/.local/share/goose/mycroft/source/instructions/mycroft-soul.md ~/.config/goose/mycroft/SOUL.md
-cp ~/.local/share/goose/mycroft/source/instructions/journalism.md ~/.config/goose/.goosehints
+```text
+bsig catalog sync
+bsig --json configure describe mycroft
 ```
 
-Use the guided installer for normal use; it also handles OpenKnowledge search, schedules, updater
-state, generated instructions, and first-run files.
+The agent selects values from that signed descriptor and submits the JSON
+request on stdin to `bsig configure plan mycroft`. Review and apply the emitted
+`plan.json`. Secrets use Engine's stdin/keychain path, never argv or chat.
+Manual updates use `bsig plan update mycroft`; Indicator Labs automates the
+same lifecycle.
+
+[`install.sh`](install.sh) remains a fail-closed pointer for old `curl | bash`
+commands; it is not another installer. Contributors may clone
+[`buriedsignals/mycroft`](https://github.com/buriedsignals/mycroft), but Engine
+installs the catalog-pinned public commit for journalists.
 
 ## Privacy And Providers
 
