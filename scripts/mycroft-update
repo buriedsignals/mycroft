@@ -255,13 +255,12 @@ private_splash="$MYCROFT_PLUGINS_DIR/splash"
 private_splash_before="$(repo_rev "$private_splash" || true)"
 if [ ! -f "$MYCROFT_PROFILE_DIR/private-splash.enabled" ]; then
   cat <<EOF
-Mycroft updates through Indicator Labs, not a signed public-installer bundle.
+This private-checkout updater is not the public Mycroft lifecycle.
 
-Journalists: https://buriedsignals.com/join
-Contributors: clone this repository and update Mycroft from Indicator Labs
-against the local checkout, or keep a private Splash-enabled git checkout.
+Managed users update in Indicator Labs: https://buriedsignals.com/join
+Open-source users update through Engine with: bsig plan update mycroft
 
-There is no curl|bash public installer and no cached bootstrap update channel.
+There is no curl|bash public installer or cached bootstrap update channel.
 EOF
   exit 1
 fi

@@ -5,7 +5,7 @@ The default Mycroft workspace is `~/Documents/OpenKnowledge/Mycroft`; Spotlight 
 
 After setup:
 
-1. If Spotlight is already installed, Mycroft records its workspace and case paths so Goose can launch Spotlight or read cases read-only. Mycroft does not install Spotlight. Install Spotlight separately in Indicator Labs.
+1. If Spotlight is already installed, Mycroft records its workspace and case paths so Goose can launch Spotlight or read cases read-only. Mycroft does not install Spotlight. Install Spotlight separately through Indicator Labs or the signed open-source Engine path documented in Spotlight's README.
 2. Goose opens the `start` recipe unless the user already has a morning brief monitoring profile.
 3. The Mycroft knowledge project contains `START_HERE.md` with copy-paste starter prompts.
 

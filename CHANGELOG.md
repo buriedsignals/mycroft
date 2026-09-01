@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-09-01 — Open-source credential guidance
+
+### Changed
+- Install and security guidance now distinguishes Indicator Labs' managed
+  credential prompts from the public Engine path. Open-source users receive the
+  exact Engine credential IDs and use the protected `bsig` stdin/keychain flow;
+  no Mycroft localhost page collects secrets.
+
 ## 2026-07-08 — Sovereign web stack (SearXNG search + Crawl4AI scrape; Firecrawl demoted)
 
 ### Changed

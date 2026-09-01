@@ -37,8 +37,9 @@ The scheduled morning brief reads those files before ranking overnight items.
 
 ## Repo Updater
 
-Journalist Mycroft updates are Indicator Labs (`https://buriedsignals.com/join`),
-not a weekly public-installer job.
+Managed Mycroft updates are automated by Indicator Labs
+(`https://buriedsignals.com/join`). Open-source installations use the signed
+Engine path and `bsig plan update mycroft`; neither path uses a weekly public-installer job.
 
 A leftover `~/.local/bin/mycroft-update` wrapper only fast-forwards a private
 Splash-enabled git checkout. Without that marker it fails closed and points at

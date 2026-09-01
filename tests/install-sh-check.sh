@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Journalist install is Indicator Labs. The bash installer must fail closed.
+# Both Engine paths are documented; the legacy bash installer remains fail closed.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -26,6 +26,9 @@ includes 'Indicator Labs'
 includes 'There is no localhost configure.html server'
 includes 'Do not use Mycroft fact-check or Spotlight for software code'
 includes "host's compound-engineering or code-review workflow."
+includes 'Open-source and agent-led users'
+includes 'bsig'
+includes 'stdin/keychain flow'
 excludes 'setup_server.py'
 excludes 'engine_bridge.py'
 excludes 'bootstrap.sh'
@@ -52,10 +55,12 @@ bash -n scripts/mycroft-uninstall || { echo "scripts/mycroft-uninstall does not 
 file_excludes scripts/mycroft-update 'public-installer/mycroft'
 file_excludes scripts/mycroft-update 'applicator.py'
 file_excludes scripts/mycroft-update 'bootstrap.sh'
+file_includes scripts/mycroft-update 'bsig plan update mycroft'
 file_excludes scripts/mycroft-update 'mycroft.buriedsignals.com/install.sh'
 file_includes scripts/mycroft-update 'https://buriedsignals.com/join'
 file_includes scripts/mycroft-update 'Indicator Labs'
 file_excludes scripts/mycroft-uninstall 'bootstrap.sh'
+file_includes scripts/mycroft-uninstall 'bsig plan uninstall mycroft'
 file_excludes scripts/mycroft-uninstall 'applicator.py'
 file_includes scripts/mycroft-uninstall 'https://buriedsignals.com/join'
 file_includes scripts/mycroft-uninstall 'Indicator Labs'

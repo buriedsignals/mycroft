@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Mycroft is uninstalled through Indicator Labs. This file remains so old
-# public-installer wrappers fail closed instead of applying a cached bootstrap.
+# This fail-closed pointer does not uninstall Mycroft. Indicator Labs owns the
+# managed path; Engine owns the open-source path.
 set -euo pipefail
 
 JOIN='https://buriedsignals.com/join'
 
 cat <<EOF
-Mycroft is uninstalled in Indicator Labs, not by this script.
+This script is a fail-closed pointer; it does not uninstall Mycroft.
 
-Journalists: $JOIN
-Contributors: uninstall Mycroft from Indicator Labs against the local checkout.
+Managed users: uninstall in Indicator Labs at $JOIN
+Open-source users: review and apply: bsig plan uninstall mycroft
 
 There is no signed public-installer uninstall channel.
 EOF

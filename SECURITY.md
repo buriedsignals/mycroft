@@ -43,8 +43,7 @@ Out-of-scope (report upstream):
 
 Mycroft's privacy posture:
 
-- API keys are entered on a configurator page served from `127.0.0.1` by the installer itself and written directly to `~/.config/goose/mycroft/.env` (mode 600) — they **never transit Buried Signals infrastructure** and never exist in any downloadable artifact.
-- The hosted pages are static and contain no forms; the configurator accepts POSTs only on the loopback interface, guarded by a per-run token.
+- API keys are stored through Engine's operating-system credential broker. Managed users enter them through Indicator Labs' protected prompt; open-source users use Engine's protected `bsig` stdin/keychain flow and enter values through a private operating-system or terminal prompt outside agent chat. Keys never belong in argv, shell history, repository files, a hosted page, or a localhost Mycroft form.
 - Recipes call user-provided cloud APIs directly; prompts are not proxied through us.
 - Local-first mode routes LLM inference to the user's machine; zero network egress for that component.
 

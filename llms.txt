@@ -2,7 +2,7 @@
 
 > Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), opinionated provider configs favouring open-weight Zero Data Retention models (one cloud frontier: Fireworks serving GLM-5.2 in-house, never routed to the origin lab), and optional sovereign-mode local inference (Gemma 4 31B, or a fine-tuned Qwen) on Ollama or llama-server. Public Spotlight and the Scoutpost monitoring skill ship alongside. The unified Navigator skill stays locked for anonymous installs, unlocks OSINT discovery for Pro, and adds Data Navigator for Lab. Splash for Visual Journalism is coming in September 2026.
 
-Mycroft is client-side-first: the public install script starts a local configurator on 127.0.0.1, then applies a signed public bundle. Provider keys stay on the machine, Navigator credentials use the OS keychain, and the installer never downloads Indicator Labs or Engine. No telemetry, no surveillance.
+Mycroft is local-first and installed through Buried Signals Engine. Indicator Labs submits the managed plan; open-source and agent-led users apply the same signed Engine plan directly. Provider keys stay in Engine's operating-system credential broker and enter through either Indicator Labs' protected prompt or the public `bsig` stdin/keychain flow. No Mycroft localhost page collects credentials. No telemetry, no surveillance.
 
 ## Core docs
 
@@ -20,9 +20,8 @@ Mycroft is client-side-first: the public install script starts a local configura
 
 ## Setup
 
-- [index.html](index.html): public landing page
-- [setup.html](setup.html): install landing — one-line curl installer + local configurator
-- [install.sh](install.sh): canonical static installer (runs the local configurator)
+- [README](README.md#install): signed Engine setup for managed and open-source users
+- [install.sh](install.sh): fail-closed pointer for retired curl|bash installs; it never collects credentials
 
 ## Recipes
 

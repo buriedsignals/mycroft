@@ -2,8 +2,9 @@
 
 ## macOS Says It Cannot Verify The Installer
 
-Journalists install Mycroft through Indicator Labs
-(`https://buriedsignals.com/join`), not a ZIP or `curl | bash` command.
+Managed journalists install Mycroft through Indicator Labs
+(`https://buriedsignals.com/join`). Open-source and agent-led users follow the
+signed Engine path in the README. Neither path uses a ZIP or `curl | bash`.
 
 ## Mycroft Update Appears As A Login Item
 
@@ -15,9 +16,9 @@ Unload and delete it in Finder, or from a terminal you already trust:
 ~/Library/LaunchAgents/com.buriedsignals.mycroft.update.plist
 ```
 
-Do not replace it with a weekly crontab. Journalists update Mycroft in
-Indicator Labs. A leftover `mycroft-update` wrapper only fast-forwards a
-private Splash-enabled git checkout.
+Do not replace it with a weekly crontab. Indicator Labs automates managed
+updates; open-source installations use `bsig plan update mycroft`. A leftover
+`mycroft-update` wrapper only fast-forwards a private Splash-enabled git checkout.
 
 ## Goose Schedules Are Missing
 
