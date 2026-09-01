@@ -591,11 +591,11 @@
     "spotlight": {
       "version": "2.1.9",
       "repo": "buriedsignals/spotlight",
-      "ref": "b19760cfdd60f1e51c5f73ecb86268d24fc1676e",
+      "ref": "e2ec4b49b0c28aa77a0283c02967ad76cd6ce8ea",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "b19760cfdd60f1e51c5f73ecb86268d24fc1676e",
+        "source_commit": "e2ec4b49b0c28aa77a0283c02967ad76cd6ce8ea",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -886,7 +886,7 @@
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
-      "bundle_sha256": "1aaf886ad085878b28b723b2d7dc942e74559de2fde0cd6f0e18d6d2e941e1c6"
+      "bundle_sha256": "1b599896f4db571b20a05acb1a783ea2b403fd141fe1752176c3b4f3cafa4dae"
     },
     {
       "id": "shell-safety",
@@ -909,7 +909,7 @@
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
-      "bundle_sha256": "dd0668eadcef4b08b6fb37865a46656c452b6a9b700e21e098de368220bf289a"
+      "bundle_sha256": "63b45efa90012b2b6822937cc263c985f0ba2c59e50a8bc3e15381c15a53d55c"
     },
     {
       "id": "ingest",
