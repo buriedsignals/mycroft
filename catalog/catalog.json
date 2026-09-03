@@ -1898,28 +1898,35 @@
       }
     },
     {
-      "id": "featherless",
-      "display": "Featherless — GLM-5.2",
-      "base_url": "https://api.featherless.ai/v1",
+      "id": "openrouter",
+      "display": "OpenRouter \u2014 zero data retention",
+      "base_url": "https://openrouter.ai/api/v1",
       "api": "openai-chat",
-      "secret_id": "FEATHERLESS_API_KEY",
+      "secret_id": "OPENROUTER_API_KEY",
       "products": [
         "mycroft"
       ],
       "adapters": [
-        "goose"
+        "goose",
+        "pi"
       ],
       "privacy": {
         "tier": "confidential-cloud",
-        "enforcement": "provider-stated",
-        "disclosure": "Prompts leave this device. Featherless states API chats, prompts, and completions are not logged or stored; operational metadata remains outside this inference claim.",
-        "source_url": "https://featherless.ai/docs/privacy-and-logging",
-        "verified_at": "2026-08-27"
+        "enforcement": "request-enforced",
+        "disclosure": "Prompts leave this device. Every request carries provider.zdr=true and data_collection=deny, so OpenRouter routes only to endpoints that do not retain prompts and excludes those that collect them; a provider that cannot retain data also cannot train on it. Every endpoint serving these models is in France or the United States. Routing and retention are enforced per request; third-party plugins such as web search have their own policies and are outside this claim.",
+        "source_url": "https://openrouter.ai/docs/guides/features/zdr",
+        "verified_at": "2026-09-03"
+      },
+      "request_body": {
+        "provider": {
+          "zdr": true,
+          "data_collection": "deny"
+        }
       }
     },
     {
       "id": "public-ai",
-      "display": "Public AI — Apertus 1.5 70B",
+      "display": "Public AI \u2014 Apertus 1.5 70B",
       "base_url": "https://api.publicai.co/v1",
       "api": "openai-chat",
       "secret_id": "PUBLIC_AI_API_KEY",
@@ -1940,27 +1947,55 @@
   ],
   "cloud_models": [
     {
-      "id": "glm-5.2",
-      "display": "GLM-5.2",
+      "id": "mistral-large",
+      "display": "Mistral Large \u2014 France",
       "products": [
         "mycroft"
       ],
+      "context_tokens": 262144,
       "recommendation": "default",
       "routes": [
         {
-          "provider_id": "featherless",
-          "remote_id": "zai-org/GLM-5.2",
+          "provider_id": "openrouter",
+          "remote_id": "mistralai/mistral-large-2512",
           "adapters": [
             "goose"
           ],
           "pricing": {
             "currency": "USD",
             "unit": "per_million_tokens",
-            "input": 0.75,
-            "output": 2.4,
-            "cached_read": 0.15,
-            "snapshot_date": "2026-08-27",
-            "source_url": "https://featherless.ai/docs/request-pricing-and-credits"
+            "input": 0.5,
+            "output": 1.5,
+            "cached_read": 0.05,
+            "snapshot_date": "2026-09-03",
+            "source_url": "https://openrouter.ai/api/v1/models"
+          }
+        }
+      ]
+    },
+    {
+      "id": "gemini-flash-lite",
+      "display": "Gemini 3.1 Flash Lite \u2014 United States",
+      "products": [
+        "mycroft"
+      ],
+      "context_tokens": 1048576,
+      "recommendation": "candidate",
+      "routes": [
+        {
+          "provider_id": "openrouter",
+          "remote_id": "google/gemini-3.1-flash-lite",
+          "adapters": [
+            "goose"
+          ],
+          "pricing": {
+            "currency": "USD",
+            "unit": "per_million_tokens",
+            "input": 0.25,
+            "output": 1.5,
+            "cached_read": 0.0125,
+            "snapshot_date": "2026-09-03",
+            "source_url": "https://openrouter.ai/api/v1/models"
           }
         }
       ]
@@ -2087,7 +2122,7 @@
     },
     {
       "id": "spotlight-gemma4-12b",
-      "display": "Gemma 4 12B — Spotlight tuned",
+      "display": "Gemma 4 12B \u2014 Spotlight tuned",
       "hf_repo": "",
       "ollama_tag": "",
       "ollama_alias": "",
