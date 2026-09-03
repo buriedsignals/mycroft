@@ -185,6 +185,30 @@ commands; it is not another installer. Contributors may clone
 [`buriedsignals/mycroft`](https://github.com/buriedsignals/mycroft), but Engine
 installs the catalog-pinned public commit for journalists.
 
+## Install from source (agents)
+
+Engine is the supported path above. An agent pointed at this repository can
+install the runtime set without cloning the whole repository: `install-set.txt`
+names the directories a runtime needs; everything else is the site, catalog, and
+documentation. Scripts use the Python 3 standard library only.
+
+```bash
+git clone --filter=blob:none --sparse https://github.com/buriedsignals/mycroft.git mycroft
+cd mycroft
+git sparse-checkout set $(grep -v '^#' install-set.txt)
+```
+
+Then link the skills into your agent's skills directory (Windows: use
+`New-Item -ItemType Junction` in place of `ln -s`):
+
+| Agent | Link |
+|---|---|
+| Goose, Cursor, Codex, Gemini (shared agents store) | `mkdir -p ~/.agents/skills/mycroft && for s in skills/*/; do ln -s "$PWD/$s" ~/.agents/skills/mycroft/$(basename "$s"); done` |
+| Claude Code | `ln -s "$PWD" ~/.claude/skills/mycroft` |
+
+These are the same links Engine creates; a later Engine install adopts or
+replaces them. Provider keys are never read from this checkout.
+
 ## Privacy And Providers
 
 Mycroft is designed for privacy-sensitive reporting:

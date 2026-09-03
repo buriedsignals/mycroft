@@ -1,0 +1,10 @@
+{
+  "name": "mycroft",
+  "version": "0.1.0",
+  "description": "Newsroom memory, recurring editorial work, and privacy-conscious reporting skills for investigative journalists.",
+  "author": { "name": "Buried Signals", "url": "https://buriedsignals.com" },
+  "homepage": "https://github.com/buriedsignals/mycroft",
+  "repository": "https://github.com/buriedsignals/mycroft",
+  "license": "MIT",
+  "keywords": ["journalism", "fact-checking", "foia", "knowledge-management", "goose"]
+}
