@@ -612,11 +612,11 @@
     "splash": {
       "version": "0.1.0",
       "repo": "buriedsignals/splash",
-      "ref": "9e2074c69c5bcd60661a3b45959411aed0326911",
+      "ref": "26465d98aa228aad988716f633605b39212d156a",
       "entitlement": "splash.core",
       "install_contract": {
         "schema_version": "splash-install-contract/v1",
-        "source_commit": "9e2074c69c5bcd60661a3b45959411aed0326911",
+        "source_commit": "26465d98aa228aad988716f633605b39212d156a",
         "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "writer_mode": "engine_v2",
         "choice_schema": {
