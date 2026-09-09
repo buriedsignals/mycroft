@@ -1841,6 +1841,11 @@
   ],
   "artifacts": [
     {
+      "id": "goose-desktop-windows-amd64",
+      "url": "https://github.com/aaif-goose/goose/releases/download/v1.50.0/Goose-win32-x64.zip",
+      "sha256": "26a30ee0239ff6e86a0581da9f2c76bf24f06c8fac946f2fc70223c3f6ca3623"
+    },
+    {
       "id": "homebrew-pkg",
       "url": "https://github.com/Homebrew/brew/releases/download/6.0.16/Homebrew.pkg",
       "sha256": "37c043dec2741810d2516666f00afebdeca304c63fa2f9cc1241d3dbed675b0f"
@@ -1872,7 +1877,7 @@
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
     "navigator-cli": "0.3.0",
-    "scoutpost-cli": "0.1.7",
+    "scoutpost-cli": "0.1.22",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },
   "providers": [
