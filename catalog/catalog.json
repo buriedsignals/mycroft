@@ -1846,6 +1846,11 @@
       "sha256": "26a30ee0239ff6e86a0581da9f2c76bf24f06c8fac946f2fc70223c3f6ca3623"
     },
     {
+      "id": "goose-desktop-darwin-arm64",
+      "url": "https://github.com/aaif-goose/goose/releases/download/v1.50.0/Goose.zip",
+      "sha256": "a0e738e94b24d45101aedbc8081196ac9ae60df377c5dc909f526b2c47b06176"
+    },
+    {
       "id": "homebrew-pkg",
       "url": "https://github.com/Homebrew/brew/releases/download/6.0.16/Homebrew.pkg",
       "sha256": "37c043dec2741810d2516666f00afebdeca304c63fa2f9cc1241d3dbed675b0f"
@@ -1904,7 +1909,7 @@
     },
     {
       "id": "openrouter",
-      "display": "OpenRouter \u2014 zero data retention",
+      "display": "OpenRouter — zero data retention",
       "base_url": "https://openrouter.ai/api/v1",
       "api": "openai-chat",
       "secret_id": "OPENROUTER_API_KEY",
@@ -1931,7 +1936,7 @@
     },
     {
       "id": "public-ai",
-      "display": "Public AI \u2014 Apertus 1.5 70B",
+      "display": "Public AI — Apertus 1.5 70B",
       "base_url": "https://api.publicai.co/v1",
       "api": "openai-chat",
       "secret_id": "PUBLIC_AI_API_KEY",
@@ -1953,7 +1958,7 @@
   "cloud_models": [
     {
       "id": "mistral-large",
-      "display": "Mistral Large \u2014 France",
+      "display": "Mistral Large — France",
       "products": [
         "mycroft"
       ],
@@ -1980,7 +1985,7 @@
     },
     {
       "id": "gemini-flash-lite",
-      "display": "Gemini 3.1 Flash Lite \u2014 United States",
+      "display": "Gemini 3.1 Flash Lite — United States",
       "products": [
         "mycroft"
       ],
@@ -2127,7 +2132,7 @@
     },
     {
       "id": "spotlight-gemma4-12b",
-      "display": "Gemma 4 12B \u2014 Spotlight tuned",
+      "display": "Gemma 4 12B — Spotlight tuned",
       "hf_repo": "",
       "ollama_tag": "",
       "ollama_alias": "",
