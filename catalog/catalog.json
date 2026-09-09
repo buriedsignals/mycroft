@@ -589,13 +589,13 @@
       }
     },
     "spotlight": {
-      "version": "2.1.9",
+      "version": "2.2.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "e2ec4b49b0c28aa77a0283c02967ad76cd6ce8ea",
+      "ref": "57e27d15f41dfa47e075529eac60f1d93a2e2c12",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "e2ec4b49b0c28aa77a0283c02967ad76cd6ce8ea",
+        "source_commit": "57e27d15f41dfa47e075529eac60f1d93a2e2c12",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1189,13 +1189,13 @@
       "kind": "portable"
     },
     {
-      "id": "investigate",
-      "name": "Investigate",
+      "id": "investigation-methodology",
+      "name": "Investigation Methodology",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/investigate",
+      "path": "skills/investigation-methodology",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
@@ -1316,13 +1316,13 @@
       "kind": "portable"
     },
     {
-      "id": "review",
-      "name": "Review",
+      "id": "editorial-review",
+      "name": "Editorial Review",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/review",
+      "path": "skills/editorial-review",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
