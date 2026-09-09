@@ -591,11 +591,11 @@
     "spotlight": {
       "version": "2.2.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "57e27d15f41dfa47e075529eac60f1d93a2e2c12",
+      "ref": "7bca9ee0555b64de820f909520cea48b77589ca2",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "57e27d15f41dfa47e075529eac60f1d93a2e2c12",
+        "source_commit": "7bca9ee0555b64de820f909520cea48b77589ca2",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
