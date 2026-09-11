@@ -25,7 +25,7 @@ No build step. The repo is static files — HTML, YAML, JSON, SVG, Markdown.
 
 ## Adding a recipe
 
-1. Drop a new `.yaml` file under `recipes/` (or `recipes/apify-social/` for social scrapers).
+1. Drop a new `.yaml` file directly under `recipes/` (Goose does not scan subfolders, and a `/` in a recipe name is read as a file path; social scrapers use the `apify-` prefix).
 2. Follow the [Goose Recipe reference](https://goose-docs.ai/docs/guides/recipes/recipe-reference).
 3. Required fields: `version`, `title`, `description`, and at least one of `instructions` / `prompt`.
 4. Run `python3 tools/validate-recipes.py` — commit only if it passes.

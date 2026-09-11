@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SearXNG web search for Mycroft recipes — sovereign default (no API key, no vendor).
+"""SearXNG web search for Mycroft recipes — sovereign path (no API key, no vendor), optional.
 
     python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>"           # numbered results
     python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>" --json    # JSON for parsing
@@ -8,7 +8,12 @@
 Queries a local, self-hosted SearXNG JSON endpoint (SEARXNG_URL, default
 http://localhost:8899). Paginates past the first page so obscure/long-tail
 sources stay reachable. If SearXNG is unreachable and the `firecrawl` CLI is
-present, falls back to it (optional escape hatch; the default path is sovereign).
+present, falls back to it.
+
+SearXNG is optional at install time (`acquisition.search` is "searxng" or
+"firecrawl" in mycroft-config.json). On an install without SearXNG, Firecrawl
+is the only search provider and every query takes the fallback branch; the
+output states which provider answered.
 
 Exit 0 on success; 3 if no provider can return results.
 """

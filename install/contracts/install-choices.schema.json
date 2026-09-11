@@ -69,10 +69,11 @@
     "acquisition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["search", "scrape", "firecrawl"],
+      "required": ["search", "scrape", "searxng", "firecrawl"],
       "properties": {
-        "search": {"const": "searxng"},
+        "search": {"enum": ["searxng", "firecrawl"]},
         "scrape": {"const": "crawl4ai"},
+        "searxng": {"enum": ["disabled", "enabled"]},
         "firecrawl": {"enum": ["disabled", "fallback"]}
       }
     }

@@ -4,13 +4,15 @@
   "config_schema": "mycroft-config/v2",
   "template_schema": "mycroft-template/v1",
   "files": [
-    {"path": "install-choices.schema.json", "sha256": "54e33ef02f73cf7cb213ad1bea2c7a4d5a8e30895fd4ff68e6811f352fcb88e2"},
-    {"path": "mycroft-config.schema.json", "sha256": "66a3293935995102f159aaa2d8fb858e937ad7b558953b40229b2c0e0b95aff4"},
-    {"path": "mycroft-config.template.json", "sha256": "f7bd2e12e554e8062b0af4f8cf0af667b110a2d288b6277a795ac5f773d3d531"},
+    {"path": "install-choices.schema.json", "sha256": "860ea9a2eb9e80f858cb5ad35c3c9b57da61b532a2d6a627732f212033a39977"},
+    {"path": "mycroft-config.schema.json", "sha256": "cf1788da46efd77b46a8dd75b505bcaec2588cc0af13d60036d99ad92e90d0f6"},
+    {"path": "mycroft-config.template.json", "sha256": "f41e0e467fa8c671d98d36d5b9c1a60ba49c62e308bf3f9e654e49e53a2165ac"},
     {"path": "validation-profile.md", "sha256": "e0e2a126f3cf9118dbb63acb924a0a0884eb925356f242a68c978f31559121fd"},
-    {"path": "testdata/default.inputs.json", "sha256": "9279b4411d65380c6929a306f7a661cf6b42c91ffca43f4ae183b47e87e1e0ef"},
-    {"path": "testdata/default.expected.json", "sha256": "b3c94e43464d4059f1883d20be0dce1954a5bdd9050e640a7b0700e1a5798e5f"},
-    {"path": "testdata/firecrawl-fallback.inputs.json", "sha256": "144e9bc44b4062c6fbda5d0480890c44446980852f6519d3b4deb6919e122ba2"},
-    {"path": "testdata/firecrawl-fallback.expected.json", "sha256": "36af05c34df387ce92e595b6eb067273ab3d486ebe001db9c8d13b44fafbc39c"}
+    {"path": "testdata/default.inputs.json", "sha256": "0c513a2d6a486ea22781766f8a2c8ecef3acd03b62e6ce476a0dba84eead7085"},
+    {"path": "testdata/default.expected.json", "sha256": "8be07446b35b0d28b0b52a20c332d1f37e1d669c25f4f248aa8ad0b206eb46c0"},
+    {"path": "testdata/firecrawl-fallback.inputs.json", "sha256": "23f178737e8f3fd3f3557a9f4dad91334867dd078a61eb7dd9554f55bd90e690"},
+    {"path": "testdata/firecrawl-fallback.expected.json", "sha256": "07a2df866a335845fac85fd55d35a7e1822302bf0879e29a31ffe04bb8584fc9"},
+    {"path": "testdata/firecrawl-only.inputs.json", "sha256": "6831c0370281936c65e09b12612871d92ef9c7a304bbe3030891735a689135f5"},
+    {"path": "testdata/firecrawl-only.expected.json", "sha256": "fd09369be5cf4769bc03b68a1936ee001a76e2af85e828b8923aa2cbab0993e6"}
   ]
 }

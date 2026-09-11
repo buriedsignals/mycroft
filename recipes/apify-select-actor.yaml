@@ -1,6 +1,6 @@
 version: "1.0.0"
 title: "Apify social — select actor"
-description: "Router. Given a natural-language intent (platform + target), dispatches to the correct apify-social/{platform} recipe."
+description: "Router. Given a natural-language intent (platform + target), dispatches to the correct apify-{platform} recipe."
 
 instructions: |
   You are a curation-aware router over six Apify actors. The journalist gives an intent in plain language;
@@ -23,12 +23,12 @@ prompt: |
 
   | Platform | Operation | Recipe |
   |---|---|---|
-  | Instagram | profile posts | `apify-social/instagram.yaml` |
-  | Instagram | post comments | `apify-social/instagram-comments.yaml` |
-  | X / Twitter | profile tweets OR single conversation OR keyword search | `apify-social/x.yaml` |
-  | Facebook | profile/page posts | `apify-social/facebook.yaml` |
-  | TikTok | user videos | `apify-social/tiktok.yaml` |
-  | LinkedIn | post search | `apify-social/linkedin.yaml` |
+  | Instagram | profile posts | `apify-instagram.yaml` |
+  | Instagram | post comments | `apify-instagram-comments.yaml` |
+  | X / Twitter | profile tweets OR single conversation OR keyword search | `apify-x.yaml` |
+  | Facebook | profile/page posts | `apify-facebook.yaml` |
+  | TikTok | user videos | `apify-tiktok.yaml` |
+  | LinkedIn | post search | `apify-linkedin.yaml` |
 
   **Process**:
 
@@ -40,7 +40,7 @@ prompt: |
      - Search keywords → bare string
   4. Invoke the matching recipe:
      ```
-     goose run --recipe apify-social/<platform>.yaml --params url="<normalized>" --params max_items=<reasonable_default>
+     goose run --recipe apify-<platform> --params url="<normalized>" --params max_items=<reasonable_default>
      ```
   5. Report back with: the platform/recipe chosen, the normalized input, and the results.
 

@@ -4,11 +4,11 @@
 
 ### Goose extension pack for investigative journalists
 
-**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 18 skills, open-weight and local-capable, ZDR cloud optional.**
+**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 19 skills, open-weight and local-capable, ZDR cloud optional.**
 
 [Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Skills](#skills) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![18 Skills](https://img.shields.io/badge/skills-18-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![19 Skills](https://img.shields.io/badge/skills-19-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
 
 [![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
 
@@ -125,11 +125,12 @@ read-only (`spotlight-case`), and only keeps what you promote under
 ## Skills
 
 Shipped skill set is the engine-resolved list in
-[`skills.manifest`](skills.manifest) (18 skills):
+[`skills.manifest`](skills.manifest) (19 skills):
 
 | Skill | Role |
 |---|---|
 | `ai-writing-detox` | Strip AI-sounding patterns from drafts |
+| `apify-social` | Social collection through Apify actors (per-platform recipes, REST fallback) |
 | `bsig-engine` | Talk to the Buried Signals Engine / Indicator Labs stack |
 | `copywriting` | Editorial copy help |
 | `epistemic-grounding` | Confidence, sourcing, and claim discipline |
@@ -214,19 +215,22 @@ replaces them. Provider keys are never read from this checkout.
 Mycroft is designed for privacy-sensitive reporting:
 
 - ZDR providers are the default cloud posture.
-- The guided install defaults to OpenRouter with GLM-5.2. It configures Goose's
-  `OPENROUTER_PARAMETERS` so every request includes `provider.zdr=true`, and
-  checks OpenRouter's live endpoint list for a healthy GLM-5.2 ZDR route during
-  setup. It also requires confirmation that account-level ZDR is enabled for
-  OpenRouter's Non-frontier model group, protecting other Goose clients as
-  defense in depth. This route requires Goose 1.41 or newer; the installer
-  checks it. Fireworks remains the direct-host cloud alternative.
+- The Engine catalog offers three cloud providers; pick one in
+  `bsig configure describe mycroft` or Indicator Labs:
+  - **OpenRouter** — Goose's built-in provider with `OPENROUTER_PARAMETERS`
+    fixed to `provider.zdr=true` + `data_collection=deny`, so every request is
+    routed only to endpoints that keep nothing. Default model: Mistral Large.
+  - **Public AI** — Swiss-hosted Apertus 1.5 70B. Goose reaches it through the
+    Engine's loopback adapter, so it works through Indicator Labs or
+    `bsig run mycroft` from a terminal.
+  - **OpenCode Go** — provider-stated zero retention, no training.
 - Local inference is available when you want on-device models.
-- **Web search and scrape are local by default** — SearXNG (search) and
-  Crawl4AI (scrape) run with no API key or vendor account; Firecrawl is only an
-  optional fallback when `FIRECRAWL_API_KEY` is set. An opt-in `--tor` fetch can
+- **Web search and scrape**: with SearXNG enabled (needs Docker Desktop),
+  search runs through SearXNG and scrape through Crawl4AI with no API key or
+  vendor account; otherwise search runs through Firecrawl with
+  `FIRECRAWL_API_KEY`. One of the two is required. An opt-in `--tor` fetch can
   route scraping through Tor so a target of investigation never sees the operator's
-  IP. The installer provisions this stack, and `mycroft update` keeps it current.
+  IP. The Engine provisions this stack.
 - Wiki, schedules, generated instructions, and fallback script secrets live on
   the user's machine.
 - API keys are stored locally through Goose or Mycroft config files, not in the
@@ -255,7 +259,7 @@ provider posture.
 - `wiki-sync`
 - `spotlight-case`
 
-**Source acquisition and parsing** — local by default (Crawl4AI scrape, SearXNG search, `pdftotext`, `sitemap.py`); Firecrawl is only an optional fallback when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
+**Source acquisition and parsing** — local where the install allows (Crawl4AI scrape, SearXNG search when enabled, `pdftotext`, `sitemap.py`); Firecrawl takes over search when SearXNG is not installed, and is the fallback otherwise when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
 
 - `firecrawl-scrape` — scrape a URL to markdown (Crawl4AI)
 - `firecrawl-change-track` — snapshot + diff a page across runs
@@ -267,13 +271,13 @@ provider posture.
 
 **Social and optional workflows**
 
-- `apify-social/select-actor`
-- `apify-social/instagram`
-- `apify-social/x`
-- `apify-social/facebook`
-- `apify-social/tiktok`
-- `apify-social/instagram-comments`
-- `apify-social/linkedin`
+- `apify-select-actor`
+- `apify-instagram`
+- `apify-x`
+- `apify-facebook`
+- `apify-tiktok`
+- `apify-instagram-comments`
+- `apify-linkedin`
 - `voice-setup`
 - `update-mycroft`
 - `ft-preflight`

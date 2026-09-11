@@ -21,7 +21,7 @@ prompt: |
   Scrape Instagram comments on: {{ url }} (up to {{ max_items }}).
 
   **Requires**: `APIFY_API_TOKEN`.
-  **Validate**: url must match /p/ or /reel/ — if it's a profile URL, stop and tell the journalist to use `apify-social/instagram.yaml` instead.
+  **Validate**: url must match /p/ or /reel/ — if it's a profile URL, stop and tell the journalist to use `apify-instagram.yaml` instead.
 
   Run:
   ```sh

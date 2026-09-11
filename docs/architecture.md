@@ -17,8 +17,8 @@ Mycroft is a Goose extension pack, not a fork of Goose.
 
 The installer sets up Goose separately, then layers Mycroft configuration on top:
 
-- Goose's built-in OpenRouter provider plus optional custom provider JSON files
-  in `~/.config/goose/custom_providers/`
+- provider entries written into Goose's own config (Goose 1.48+ no longer
+  loads custom-provider JSON; the Public AI route uses the Engine's loopback adapter)
 - global Goose hints at `~/.config/goose/.goosehints`
 - Mycroft Goose profile under `~/.config/goose/mycroft/`
 - updateable Mycroft source checkout under `~/.local/share/goose/mycroft/source/`

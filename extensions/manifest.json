@@ -16,7 +16,7 @@
       "required": false,
       "install": "No CLI — recipes call Apify REST API via curl",
       "env": ["APIFY_API_TOKEN"],
-      "used_by": ["apify-social/*"]
+      "used_by": ["apify-*"]
     },
     {
       "name": "agentmail-rest",
