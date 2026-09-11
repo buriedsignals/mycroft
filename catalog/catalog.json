@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.1.4",
-  "released_at": "2026-08-27T14:00:00Z",
-  "release_sequence": 25,
+  "min_engine_version": "0.1.5",
+  "released_at": "2026-09-11T08:11:21Z",
+  "release_sequence": 26,
   "products": {
     "mycroft": {
-      "version": "0.3.7",
+      "version": "0.3.8",
       "repo": "buriedsignals/mycroft",
-      "ref": "80bf24337bd494030eb6da18b2e8aa21ea80c52f",
+      "ref": "5db00c79177b025f6ce35a5eb48c284ce65027f9",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "80bf24337bd494030eb6da18b2e8aa21ea80c52f",
-        "digest": "f5919291f8320af6c8627439e96e10e0b368d012fc5038d067665a0a1916c3ed",
+        "source_commit": "5db00c79177b025f6ce35a5eb48c284ce65027f9",
+        "digest": "a45e8ee7b9cafdc19b10a12240c2b173659cf1585ad89714f235e7415ffb79bc",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -47,7 +47,6 @@
                 "id": {
                   "enum": [
                     "featherless",
-                    "public-ai",
                     "other-subscription",
                     "local-9b",
                     "local-27b"
@@ -184,14 +183,24 @@
               "required": [
                 "search",
                 "scrape",
+                "searxng",
                 "firecrawl"
               ],
               "properties": {
                 "search": {
-                  "const": "searxng"
+                  "enum": [
+                    "searxng",
+                    "firecrawl"
+                  ]
                 },
                 "scrape": {
                   "const": "crawl4ai"
+                },
+                "searxng": {
+                  "enum": [
+                    "disabled",
+                    "enabled"
+                  ]
                 },
                 "firecrawl": {
                   "enum": [
@@ -292,7 +301,7 @@
                   "additionalProperties": false,
                   "required": [
                     "morning_brief",
-                    "vault_audit"
+                    "wiki_audit"
                   ],
                   "properties": {
                     "morning_brief": {
@@ -301,7 +310,7 @@
                         "null"
                       ]
                     },
-                    "vault_audit": {
+                    "wiki_audit": {
                       "type": [
                         "string",
                         "null"
@@ -382,7 +391,10 @@
               ],
               "properties": {
                 "search": {
-                  "const": "searxng"
+                  "enum": [
+                    "searxng",
+                    "firecrawl"
+                  ]
                 },
                 "scrape": {
                   "const": "crawl4ai"
@@ -515,8 +527,8 @@
                 "morning_brief": {
                   "$input": "goose.schedules.morning_brief"
                 },
-                "vault_audit": {
-                  "$input": "goose.schedules.vault_audit"
+                "wiki_audit": {
+                  "$input": "goose.schedules.wiki_audit"
                 }
               }
             },
@@ -588,15 +600,15 @@
         }
       }
     },
-    "spotlight": {
-      "version": "2.2.0",
-      "repo": "buriedsignals/spotlight",
-      "ref": "7bca9ee0555b64de820f909520cea48b77589ca2",
-      "entitlement": "spotlight.core",
+    "splash": {
+      "version": "0.1.0",
+      "repo": "buriedsignals/splash",
+      "ref": "0c1f316ae059581990b0d451ef1315f34b0c5586",
+      "entitlement": "splash.core",
       "install_contract": {
-        "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "7bca9ee0555b64de820f909520cea48b77589ca2",
-        "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "schema_version": "splash-install-contract/v1",
+        "source_commit": "0c1f316ae059581990b0d451ef1315f34b0c5586",
+        "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "type": "object"
@@ -609,15 +621,15 @@
         }
       }
     },
-    "splash": {
-      "version": "0.1.0",
-      "repo": "buriedsignals/splash",
-      "ref": "0c1f316ae059581990b0d451ef1315f34b0c5586",
-      "entitlement": "splash.core",
+    "spotlight": {
+      "version": "2.2.1",
+      "repo": "buriedsignals/spotlight",
+      "ref": "9a33b67f5bb8ff1d6731abcf57398261de1704ce",
+      "entitlement": "spotlight.core",
       "install_contract": {
-        "schema_version": "splash-install-contract/v1",
-        "source_commit": "0c1f316ae059581990b0d451ef1315f34b0c5586",
-        "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "schema_version": "spotlight-install-contract/v1",
+        "source_commit": "9a33b67f5bb8ff1d6731abcf57398261de1704ce",
+        "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "type": "object"
@@ -689,6 +701,28 @@
       "path": "skills/copywriting",
       "requires_keys": [],
       "version": "0.2.1",
+      "products": [
+        "mycroft"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/mycroft",
+      "kind": "portable"
+    },
+    {
+      "id": "apify-social",
+      "name": "Apify social-media collection",
+      "audience": [
+        "journalist"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/apify-social",
+      "requires_keys": [
+        "APIFY_API_TOKEN"
+      ],
+      "version": "0.1.0",
       "products": [
         "mycroft"
       ],
@@ -1929,8 +1963,8 @@
       },
       "request_body": {
         "provider": {
-          "zdr": true,
-          "data_collection": "deny"
+          "data_collection": "deny",
+          "zdr": true
         }
       }
     },
@@ -1985,7 +2019,7 @@
     },
     {
       "id": "gemini-flash-lite",
-      "display": "Gemini 3.1 Flash Lite — United States",
+      "display": "Gemini 3.5 Flash Lite — United States",
       "products": [
         "mycroft"
       ],
@@ -1994,17 +2028,17 @@
       "routes": [
         {
           "provider_id": "openrouter",
-          "remote_id": "google/gemini-3.1-flash-lite",
+          "remote_id": "google/gemini-3.5-flash-lite",
           "adapters": [
             "goose"
           ],
           "pricing": {
             "currency": "USD",
             "unit": "per_million_tokens",
-            "input": 0.25,
-            "output": 1.5,
-            "cached_read": 0.0125,
-            "snapshot_date": "2026-09-03",
+            "input": 0.3,
+            "output": 2.5,
+            "cached_read": 0.03,
+            "snapshot_date": "2026-09-11",
             "source_url": "https://openrouter.ai/api/v1/models"
           }
         }
@@ -2029,7 +2063,6 @@
             "unit": "per_million_tokens",
             "input": 0.8,
             "output": 0.8,
-            "cached_read": 0,
             "snapshot_date": "2026-08-25",
             "source_url": "https://publicai.co"
           }
