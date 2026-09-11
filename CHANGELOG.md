@@ -56,6 +56,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 > changes shape, which is a breaking change for downstream consumers parsing
 > `cases/{project}/data/fact-check.json` or the legacy SIFT manifest.
 
+### Added — landing-page skills index
+
+- Added a centered “See all skills” dialog that reads the installed set from
+  `skills.manifest` and each skill preview from its `SKILL.md` metadata, keeping
+  the landing page synchronized with the files Mycroft installs.
+
 ### Changed — signed catalog
 
 - Republished engine catalog release sequence 24. The hosted copy now includes

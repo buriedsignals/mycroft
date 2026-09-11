@@ -36,6 +36,8 @@ jobs:
               V().feed(open(f).read())
               print(f + ': OK')
           "
+      - name: Validate skills index
+        run: python3 tests/skills-index-check.py
       - name: Validate journalist install CTAs
         run: bash tests/journalist-install-cta-check.sh
       - name: Validate installer pointer

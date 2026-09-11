@@ -1643,6 +1643,99 @@ button.day-card.is-settled:focus-visible {
   border-bottom-color: var(--oxide-active);
 }
 
+.skills-index-cta {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+.skills-dialog {
+  width: min(980px, calc(100vw - 40px));
+  max-height: min(86vh, 920px);
+  overflow: hidden;
+}
+.skills-dialog .skill-dialog__inner {
+  max-height: min(86vh, 920px);
+  overflow-y: auto;
+}
+.skills-dialog .skill-dialog__close {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 -34px auto;
+  background: #fbf6e8;
+}
+.skills-index__intro {
+  max-width: 62ch;
+}
+.skills-index__status {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-5);
+}
+.skills-index__status[hidden] {
+  display: none;
+}
+.skills-index__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: var(--hairline);
+}
+.skills-index__item {
+  padding: var(--sp-5) var(--sp-5) var(--sp-5) 0;
+  border-bottom: var(--hairline);
+}
+.skills-index__item:nth-child(even) {
+  padding-right: 0;
+  padding-left: var(--sp-5);
+  border-left: var(--hairline);
+}
+.skills-index__meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  font-family: var(--mono);
+  font-size: var(--cap-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0 0 var(--sp-3);
+}
+.skills-index__number {
+  color: var(--oxide);
+}
+.skills-index__name {
+  font-family: var(--serif);
+  font-size: clamp(22px, 2.4vw, 30px);
+  font-style: italic;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--sp-3);
+}
+.skills-index__description {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 var(--sp-4);
+}
+.skills-index__link {
+  font-family: var(--mono);
+  font-size: var(--cap-sm);
+  letter-spacing: 0.05em;
+  color: var(--oxide);
+  border-bottom: 1px solid var(--rule);
+}
+.skills-index__link:hover {
+  color: var(--oxide-active);
+  border-bottom-color: var(--oxide-active);
+}
+
 .card__kicker {
   display: flex;
   justify-content: space-between;
@@ -1721,6 +1814,14 @@ button.day-card.is-settled:focus-visible {
   }
   .day-card {
     padding: 28px;
+  }
+  .skills-index__grid {
+    grid-template-columns: 1fr;
+  }
+  .skills-index__item,
+  .skills-index__item:nth-child(even) {
+    padding: var(--sp-5) 0;
+    border-left: 0;
   }
 }
 
@@ -2999,7 +3100,7 @@ html.js .is-in .tw__in {
         Old-school reporting.<br><em>New-school machinery</em>
       </h1>
 
-      <p class="hero__desc" data-reveal style="--delay: 220ms">A Goose extension pack with 21 journalism skills, a local searchable wiki, and an optional on-device model — connected to Splash, Spotlight, Navigator, and Scoutpost.</p>
+      <p class="hero__desc" data-reveal style="--delay: 220ms">A Goose extension pack with <span data-skills-count>journalism skills</span>, a local searchable wiki, and an optional on-device model — connected to Splash, Spotlight, Navigator, and Scoutpost.</p>
 
       <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
         <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
@@ -3085,6 +3186,24 @@ html.js .is-in .tw__in {
         </button>
       </article>
     </div>
+
+    <div class="skills-index-cta" data-reveal>
+      <button class="btn btn--mono" type="button" data-dialog="dlg-skills">
+        See all skills <span class="btn__arr" aria-hidden="true">→</span>
+      </button>
+    </div>
+
+    <dialog class="skill-dialog skills-dialog" id="dlg-skills" aria-labelledby="dlg-skills-title" aria-describedby="dlg-skills-intro">
+      <div class="skill-dialog__inner">
+        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
+        <p class="skill-dialog__kicker">§ Mycroft · installed skill set</p>
+        <h3 class="skill-dialog__title" id="dlg-skills-title">All <em>skills</em></h3>
+        <p class="skill-dialog__body skills-index__intro" id="dlg-skills-intro">The skills Mycroft installs, read directly from the metadata in each skill file.</p>
+        <p class="skills-index__status" id="skills-index-status" role="status">Loading the skills index…</p>
+        <div class="skills-index__grid" id="skills-index" role="list"></div>
+        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills" target="_blank" rel="noreferrer">browse the skills directory →</a></p>
+      </div>
+    </dialog>
 
     <dialog class="skill-dialog" id="dlg-brief" aria-labelledby="dlg-brief-title">
       <div class="skill-dialog__inner">
@@ -3378,7 +3497,7 @@ html.js .is-in .tw__in {
         <div class="t-divider" aria-hidden="true"></div>
 
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> goose runtime · <span class="t-arg">ready</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> 21 journalism skills · <span class="t-arg">available</span></p>
+        <p class="t-line t-line--ok"><span class="t-tick">✓</span> <span data-skills-count>journalism skills</span> · <span class="t-arg">available</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> local searchable wiki · <span class="t-arg">attached</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> optional on-device model · <span class="t-arg">if you want it</span></p>
         <p class="t-line t-line--ok"><span class="t-tick">✓</span> sibling tools · <span class="t-arg">Spotlight · Scoutpost · Navigator · Splash</span></p>
@@ -8548,6 +8667,108 @@ export {
 <script>
 /* day-card skill dialogs */
 (function () {
+  var skillsPromise;
+
+  function frontmatterValue(markdown, key) {
+    var block = markdown.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/);
+    if (!block) throw new Error('Skill metadata is missing');
+    var match = block[1].match(new RegExp('^' + key + ':\\s*(.+)$', 'm'));
+    if (!match) throw new Error('Skill ' + key + ' is missing');
+    var value = match[1].trim();
+    if (value.charAt(0) === '"' && value.charAt(value.length - 1) === '"') {
+      try { return JSON.parse(value); } catch (error) { return value.slice(1, -1); }
+    }
+    if (value.charAt(0) === "'" && value.charAt(value.length - 1) === "'") {
+      return value.slice(1, -1).replace(/''/g, "'");
+    }
+    return value;
+  }
+
+  function skillTitle(markdown, fallback) {
+    var match = markdown.match(/^#\s+(.+)$/m);
+    return match ? match[1].trim() : fallback;
+  }
+
+  function renderSkills(skills) {
+    var index = document.getElementById('skills-index');
+    var status = document.getElementById('skills-index-status');
+    if (!index || !status) return;
+
+    skills.forEach(function (skill, position) {
+      var item = document.createElement('article');
+      var meta = document.createElement('p');
+      var number = document.createElement('span');
+      var id = document.createElement('span');
+      var title = document.createElement('h4');
+      var description = document.createElement('p');
+      var link = document.createElement('a');
+
+      item.className = 'skills-index__item';
+      item.setAttribute('role', 'listitem');
+      meta.className = 'skills-index__meta';
+      number.className = 'skills-index__number';
+      number.textContent = String(position + 1).padStart(2, '0');
+      id.textContent = skill.id;
+      title.className = 'skills-index__name';
+      title.textContent = skill.title;
+      description.className = 'skills-index__description';
+      description.textContent = skill.description.replace(/`/g, '');
+      link.className = 'skills-index__link';
+      link.href = 'https://github.com/buriedsignals/mycroft/blob/main/skills/' + encodeURIComponent(skill.id) + '/SKILL.md';
+      link.target = '_blank';
+      link.rel = 'noreferrer';
+      link.textContent = 'read the skill →';
+
+      meta.append(number, id);
+      item.append(meta, title, description, link);
+      index.append(item);
+    });
+
+    document.querySelectorAll('[data-skills-count]').forEach(function (node) {
+      node.textContent = skills.length + ' journalism skills';
+    });
+    status.hidden = true;
+  }
+
+  function loadSkills() {
+    if (skillsPromise) return skillsPromise;
+    var status = document.getElementById('skills-index-status');
+    skillsPromise = fetch('skills.manifest')
+      .then(function (response) {
+        if (!response.ok) throw new Error('Skills manifest could not be loaded');
+        return response.text();
+      })
+      .then(function (manifest) {
+        var ids = manifest.split(/\r?\n/).map(function (line) { return line.trim(); })
+          .filter(function (line) { return line && line.charAt(0) !== '#'; });
+        return Promise.all(ids.map(function (skillId) {
+          if (!/^[a-z0-9][a-z0-9-]*$/.test(skillId)) throw new Error('Invalid skill id');
+          return fetch('skills/' + skillId + '/SKILL.md').then(function (response) {
+            if (!response.ok) throw new Error(skillId + ' could not be loaded');
+            return response.text();
+          }).then(function (markdown) {
+            return {
+              id: skillId,
+              name: frontmatterValue(markdown, 'name'),
+              title: skillTitle(markdown, frontmatterValue(markdown, 'name')),
+              description: frontmatterValue(markdown, 'description')
+            };
+          });
+        }));
+      })
+      .then(function (skills) {
+        renderSkills(skills);
+        return skills;
+      })
+      .catch(function () {
+        if (status) status.textContent = 'The skills index could not be loaded. Use the GitHub directory below.';
+      });
+    return skillsPromise;
+  }
+
+  var skillsButton = document.querySelector('[data-dialog="dlg-skills"]');
+  if (skillsButton) skillsButton.addEventListener('click', loadSkills);
+
   document.querySelectorAll('[data-dialog]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var dlg = document.getElementById(btn.dataset.dialog);
