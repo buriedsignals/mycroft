@@ -11,7 +11,6 @@ parameters:
     input_type: string
     requirement: required
     description: "OpenKnowledge project root"
-    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: project
     input_type: string
     requirement: optional
@@ -29,6 +28,8 @@ extensions:
     name: openknowledge
     cmd: ok
     args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
+    available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
 prompt: |
   Sync these findings into the Mycroft OpenKnowledge project rooted at `{{ vault_path }}`:

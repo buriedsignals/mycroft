@@ -11,7 +11,6 @@ parameters:
     input_type: string
     requirement: required
     description: "Mycroft OpenKnowledge workspace path."
-    default: "~/Documents/OpenKnowledge/Mycroft"
   - key: output_path
     input_type: string
     requirement: optional
@@ -26,6 +25,8 @@ extensions:
     name: openknowledge
     cmd: ok
     args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
+    available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
 prompt: |
   Run a Mycroft wiki audit.

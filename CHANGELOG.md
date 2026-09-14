@@ -4,6 +4,21 @@ All notable changes to this project will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2026-09-14 — Trim the OpenKnowledge tool surface; retire the Featherless contract id
+
+### Changed
+- `wiki-qa`, `wiki-audit`, `wiki-sync` and `morning-brief` declare
+  `available_tools` on their OpenKnowledge extension so Goose advertises only
+  the nine tools these recipes and the knowledge skills use (search, exec,
+  write, edit, links, lint, history, move, delete). Measured on Goose 1.50:
+  27 -> 15 tools and 27K -> 17K prompt tokens on the first turn of `wiki-qa`.
+- The recipes no longer default `vault_path` to a `~` path: Goose does not
+  expand it, so the OpenKnowledge extension failed to start (`chdir ENOENT`)
+  and the recipe silently continued without the vault. The path is required and
+  must be absolute; Engine-generated schedules pass it.
+- Install contract: the provider id enum names `openrouter` instead of the
+  retired `featherless`; fixtures follow (Mistral Large 2512 on OpenRouter).
+
 ## 2026-09-01 — Open-source credential guidance
 
 ### Changed

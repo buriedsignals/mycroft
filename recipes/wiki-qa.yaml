@@ -12,8 +12,7 @@ parameters:
   - key: vault_path
     input_type: string
     requirement: required
-    description: "Absolute or ~-expanded path to the Mycroft OpenKnowledge workspace"
-    default: "~/Documents/OpenKnowledge/Mycroft"
+    description: "Absolute path to the Mycroft OpenKnowledge workspace (Goose does not expand ~; Engine-generated schedules pass it)"
   - key: question
     input_type: string
     requirement: required
@@ -32,6 +31,8 @@ extensions:
     name: openknowledge
     cmd: ok
     args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
+    available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
 prompt: |
   Question: {{ question }}

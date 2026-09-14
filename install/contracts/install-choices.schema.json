@@ -22,7 +22,7 @@
       "required": ["id", "model"],
       "properties": {
         "id": {
-          "enum": ["featherless", "other-subscription", "local-9b", "local-27b"]
+          "enum": ["openrouter", "other-subscription", "local-9b", "local-27b"]
         },
         "model": {"type": ["string", "null"]}
       }
