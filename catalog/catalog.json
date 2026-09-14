@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-11T08:11:21Z",
-  "release_sequence": 26,
+  "released_at": "2026-09-14T13:14:18Z",
+  "release_sequence": 27,
   "products": {
     "mycroft": {
-      "version": "0.3.8",
+      "version": "0.3.9",
       "repo": "buriedsignals/mycroft",
-      "ref": "5db00c79177b025f6ce35a5eb48c284ce65027f9",
+      "ref": "2e8c98e1022b84ac2d7464e4b09d78b82445d3a2",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "5db00c79177b025f6ce35a5eb48c284ce65027f9",
-        "digest": "a45e8ee7b9cafdc19b10a12240c2b173659cf1585ad89714f235e7415ffb79bc",
+        "source_commit": "2e8c98e1022b84ac2d7464e4b09d78b82445d3a2",
+        "digest": "4aee042c8722345f11f1b955905b9e7fe70c5cee6c395e5f2102a3fde41076e2",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -46,7 +46,7 @@
               "properties": {
                 "id": {
                   "enum": [
-                    "featherless",
+                    "openrouter",
                     "other-subscription",
                     "local-9b",
                     "local-27b"
@@ -1957,13 +1957,18 @@
       "privacy": {
         "tier": "confidential-cloud",
         "enforcement": "request-enforced",
-        "disclosure": "Prompts leave this device. Every request carries provider.zdr=true and data_collection=deny, so OpenRouter routes only to endpoints that do not retain prompts and excludes those that collect them; a provider that cannot retain data also cannot train on it. Every endpoint serving these models is in France or the United States. Routing and retention are enforced per request; third-party plugins such as web search have their own policies and are outside this claim.",
+        "disclosure": "Prompts leave this device. Every request carries provider.zdr=true, data_collection=deny and provider.only=[mistral, google-vertex, google-ai-studio], so OpenRouter routes Mistral models only to Mistral SAS in France and Gemini only to Google, and only to endpoints that do not retain prompts; a provider that cannot retain data also cannot train on it. Routing, host and retention are enforced per request; OpenRouter itself (New York) relays the request without storing it; third-party plugins such as web search have their own policies and are outside this claim.",
         "source_url": "https://openrouter.ai/docs/guides/features/zdr",
-        "verified_at": "2026-09-03"
+        "verified_at": "2026-09-14"
       },
       "request_body": {
         "provider": {
           "data_collection": "deny",
+          "only": [
+            "mistral",
+            "google-vertex",
+            "google-ai-studio"
+          ],
           "zdr": true
         }
       }
