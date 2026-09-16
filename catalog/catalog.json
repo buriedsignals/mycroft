@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-16T13:35:45Z",
-  "release_sequence": 28,
+  "released_at": "2026-09-16T18:57:37Z",
+  "release_sequence": 29,
   "products": {
     "mycroft": {
       "version": "0.3.9",
@@ -1908,6 +1908,12 @@
       "id": "gemma4-e4b-q4km",
       "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/0720adb23527c2cd5ea01d1db067cd960327fdac/gemma-4-E4B-it-Q4_K_M.gguf",
       "sha256": "519b9793ed6ce0ff530f1b7c96e848e08e49e7af4d57bb97f76215963a54146d"
+    },
+    {
+      "id": "llamacpp-macos-arm64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9290/llama-b9290-bin-macos-arm64.tar.gz",
+      "sha256": "a21ef33fd78686c6e6b28fc601e60aee6be31abe451fa2cee1e28bb850ffdab2",
+      "size_bytes": 9758358
     },
     {
       "id": "gemma4-12b-qat-q4_0",
