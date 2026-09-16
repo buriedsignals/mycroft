@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-14T13:14:18Z",
-  "release_sequence": 27,
+  "released_at": "2026-09-16T13:35:45Z",
+  "release_sequence": 28,
   "products": {
     "mycroft": {
       "version": "0.3.9",
@@ -1908,6 +1908,12 @@
       "id": "gemma4-e4b-q4km",
       "url": "https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF/resolve/0720adb23527c2cd5ea01d1db067cd960327fdac/gemma-4-E4B-it-Q4_K_M.gguf",
       "sha256": "519b9793ed6ce0ff530f1b7c96e848e08e49e7af4d57bb97f76215963a54146d"
+    },
+    {
+      "id": "gemma4-12b-qat-q4_0",
+      "url": "https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/29d097773436b69ff9feafd636ab4cf873786537/gemma-4-12b-it-qat-q4_0.gguf",
+      "sha256": "93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b",
+      "size_bytes": 6975879296
     }
   ],
   "dependencies": {
@@ -2167,6 +2173,27 @@
       ],
       "context_tokens": 40960,
       "recommendation": "advanced"
+    },
+    {
+      "id": "gemma4-12b-qat",
+      "display": "Gemma 4 12B QAT",
+      "hf_repo": "",
+      "ollama_tag": "",
+      "ollama_alias": "",
+      "quant": "",
+      "min_ram_gb": 24,
+      "tier": "local-12b",
+      "stop_tokens": null,
+      "backend": "llamacpp",
+      "artifact_id": "gemma4-12b-qat-q4_0",
+      "filename": "gemma-4-12b-it-qat-q4_0.gguf",
+      "products": [
+        "mycroft"
+      ],
+      "context_tokens": 40960,
+      "recommendation": "advanced",
+      "experimental": true,
+      "disclaimer": "Experimental — Still being evaluated for Mycroft. Responses may be slow or unreliable. Operation on 24 GB Macs has not yet been validated."
     },
     {
       "id": "spotlight-gemma4-12b",
