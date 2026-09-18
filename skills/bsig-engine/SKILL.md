@@ -102,6 +102,10 @@ Use this skill for “Help me set up my morning brief”, “Where is today's br
 “Pause my brief” and changes to brief settings. Follow `recipes/morning-brief-preflight.yaml`
 for setup and `recipes/newsletter-setup.yaml` for separately authorized newsletter handoffs.
 There is no Morning brief management section in Indicator Labs.
+First check `bsig brief status --json`. If Engine is missing or does not recognize
+the brief command, explain that a compatible Engine update is required and stop
+setup. Publishing Mycroft recipes does not install the matching Engine binary;
+do not promise current-installer support or fall back to a Goose schedule.
 If status reports legacy.handover_required, follow `docs/schedules.md` and the
 Engine recovery action. Never use Goose CLI list/remove as proof of scheduler
 quiescence. `complete-legacy-handover` requires the user to quit Goose first and

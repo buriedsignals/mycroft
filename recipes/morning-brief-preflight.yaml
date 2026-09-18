@@ -16,7 +16,11 @@ extensions:
 
 prompt: |
   The journalist can start by saying "Help me set up my morning brief" in Goose.
-  First run `bsig brief status --json`. If legacy.handover_required is true,
+  First run `bsig brief status --json`. If Engine is missing or does not recognize
+  the brief command, stop setup and explain that a compatible Engine update is
+  required. Do not promise that the currently published installer includes it,
+  invent a schedule, or substitute the old Goose scheduler.
+  If legacy.handover_required is true,
   explain recovery_action and follow docs/schedules.md. Never create/delete a
   Goose schedule or edit its storage as an automatic repair. The macOS completion
   command must run from Terminal after all Goose processes have quit; other

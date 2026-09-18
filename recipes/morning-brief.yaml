@@ -14,6 +14,9 @@ extensions:
 
 prompt: |
   Run `bsig brief status --json` using the installed Engine.
+  If Engine is missing or does not recognize the brief command, stop and explain
+  that a compatible Engine update is required. Do not promise that the currently
+  published installer includes it or substitute the old Goose scheduler.
   If no setup exists, or recurrence is paused or needs verification, explain the
   returned state and guide the journalist through morning-brief setup in Goose.
   Do not create an implicit schedule or invent sources or a beat from memory.

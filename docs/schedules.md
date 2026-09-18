@@ -2,6 +2,11 @@
 
 ## Morning brief
 
+These recipes require an Engine build that supports `bsig brief`. Publishing or
+updating Mycroft alone does not install that Engine build. If the command is not
+recognized, setup stops with an update-required message; the new background
+workflow is unavailable until a compatible Engine release is installed.
+
 Ask Mycroft in Goose: “Help me set up my morning brief.” Setup collects the beat,
 watchlist, specific sources and their collection/disclosure permissions, days,
 local start time, IANA timezone, and destination. It has no default authority to
