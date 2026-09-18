@@ -8,11 +8,11 @@
     {"path": "mycroft-config.schema.json", "sha256": "cf1788da46efd77b46a8dd75b505bcaec2588cc0af13d60036d99ad92e90d0f6"},
     {"path": "mycroft-config.template.json", "sha256": "f41e0e467fa8c671d98d36d5b9c1a60ba49c62e308bf3f9e654e49e53a2165ac"},
     {"path": "validation-profile.md", "sha256": "e0e2a126f3cf9118dbb63acb924a0a0884eb925356f242a68c978f31559121fd"},
-    {"path": "testdata/default.inputs.json", "sha256": "df26b84f9d1d00a099259622ed3d1d9444ac8d54071e4754c29c59dfaa05e42d"},
-    {"path": "testdata/default.expected.json", "sha256": "ddd28e1b78e5c80ca6fd1a790fca9167e119b461a494fd9a9a83ef671918b36a"},
+    {"path": "testdata/default.inputs.json", "sha256": "5333baa32ad357aa6388466ae1db3f3f93c3a0bcf40383dcf59c071da967f0e2"},
+    {"path": "testdata/default.expected.json", "sha256": "c0fce171c48bfb854f9e21326ed093dfa6e76e22bea159ac83f635286d23809e"},
     {"path": "testdata/firecrawl-fallback.inputs.json", "sha256": "23f178737e8f3fd3f3557a9f4dad91334867dd078a61eb7dd9554f55bd90e690"},
     {"path": "testdata/firecrawl-fallback.expected.json", "sha256": "07a2df866a335845fac85fd55d35a7e1822302bf0879e29a31ffe04bb8584fc9"},
-    {"path": "testdata/firecrawl-only.inputs.json", "sha256": "6ea8ff8484bf8135928e57c0d6efd57b06419fcda0b08959000e645f03359f04"},
-    {"path": "testdata/firecrawl-only.expected.json", "sha256": "5f3f52021068426b689f9253081fbfa86827fe6135a1f799f70551f88a306a0b"}
+    {"path": "testdata/firecrawl-only.inputs.json", "sha256": "afa790007e6ea59a1472f35b223d0b073d21ac3df74393e7bfed8e915432f723"},
+    {"path": "testdata/firecrawl-only.expected.json", "sha256": "658507791d7d10ed7d0f2da35d449bbf9fc933d4ac76997bd0d1b140fcda9e16"}
   ]
 }

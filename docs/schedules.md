@@ -1,39 +1,96 @@
 # Schedules
 
-Mycroft uses two scheduling layers.
+## Morning brief
 
-## Goose Recipe Schedules
+Ask Mycroft in Goose: “Help me set up my morning brief.” Setup collects the beat,
+watchlist, specific sources and their collection/disclosure permissions, days,
+local start time, IANA timezone, and destination. It has no default authority to
+collect private mail, subscribe to newsletters, or send email.
 
-Goose owns scheduled AI work. The installer creates generated recipe files with the user's selected vault paths:
+Engine owns this one local background job. Goose and Indicator Labs may be
+closed. The chosen time is the earliest start; Engine checks every five minutes,
+so generation normally starts around that time, not at an exact minute.
+The computer must be on and the user logged in; after sleep it catches
+up on the latest eligible slot instead of sending a backlog. It cannot deliver
+while the computer is powered off. Local provider services and protected
+credentials must also be available in the background.
 
-- `~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml`
-- `~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml`
+Every completed brief has a wiki copy and a named saved Goose conversation,
+separate from the setup chat. Optional email uses AgentMail and the explicitly
+confirmed destination. Native notifications are a convenience; denied or
+unsupported notifications do not erase the saved result.
 
-Then it asks Goose to schedule them:
+Use these typed controls from Mycroft or a terminal:
 
 ```sh
-goose schedule add --schedule-id mycroft-morning-brief --cron "0 0 7 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml
-goose schedule add --schedule-id mycroft-wiki-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml
+bsig brief status --json
+bsig brief history --json
+bsig brief open-result --json
+bsig brief pause --json
+bsig brief resume --json
+bsig brief remove --json
 ```
 
-Goose stores and runs these schedules. Use Goose Desktop's Scheduler page or the CLI to inspect them:
+`resume` requires verified settings and delivery. `remove` disables this job
+and removes its exact owned notification helpers; it preserves the wiki,
+Goose history, private run receipts and AgentMail inbox. Product uninstall also
+preserves reporting data unless a separate data-removal choice is made.
 
-```sh
-goose schedule list
-goose schedule run-now --schedule-id mycroft-morning-brief
-goose schedule run-now --schedule-id mycroft-wiki-audit
-```
+Setup remains paused until a real background verification saves the first
+result. Goose-only then activates under the original Enable approval; email
+also needs the journalist's receipt confirmation. Inspect `recovery_action`
+when verification fails. Public AI and subscription CLI providers are not
+supported by the background generation path in this version.
 
-## Morning Brief Preflight
+## Existing Goose morning-brief schedules
 
-The first setup run opens the broader `start` recipe if `~/.config/goose/mycroft/morning-brief-config.md` does not exist. If the user chooses "Create my morning brief," that flow continues into `morning-brief-preflight`.
+New installs never create `mycroft-morning-brief` in Goose. The install option
+`enable_schedules` now applies only to the separate `mycroft-vault-audit` job;
+that job remains Goose-owned and is not migrated here.
 
-The preflight recipe asks what the brief should monitor and writes:
+Engine detects the exact old morning-brief ID or an install receipt for it.
+An ID alone is not ownership proof: edited or foreign jobs are never deleted
+automatically. Unreadable/malformed scheduler storage also blocks the new path.
+Old installer-profile preferences are copied into a private inactive
+`legacy-preferences.md` draft. The previous conversational default at
+`~/.mycroft/morning-brief-config.md` is retained separately as
+`legacy-conversation-preferences.md`. `bsig brief legacy-draft-show --json`
+returns the available paths. Neither draft authorizes source access or email.
 
-- `~/.config/goose/mycroft/morning-brief-config.md`
-- `<Mycroft wiki>/context/morning-brief.md`
+When status reports `legacy_handover_required`:
 
-The scheduled morning brief reads those files before ranking overnight items.
+1. In Goose's existing schedule controls, pause the old morning-brief job,
+   wait for any running invocation to finish, then delete that job. Preserve
+   its recipe and editorial preferences. Do not touch the wiki-audit job.
+2. On macOS, quit every Goose window and Goose CLI/background process, then
+   run `bsig brief complete-legacy-handover --json` in Terminal. Engine checks
+   the native process table twice around strict persisted schedule absence.
+   A process-query error or any Goose process leaves the handover blocked.
+3. Reopen Goose and resume setup. The new configuration remains paused and
+   requires fresh background verification before activation.
+
+Windows and Linux handover completion is unavailable until equivalent native
+quiescence checks are validated. Keep the new path paused on those platforms.
+Never clear Engine's handover record manually or recreate the old job as a
+repair. Goose 1.50's CLI `schedule list` starts a scheduler and its `remove`
+command cannot stop another resident scheduler; neither is a handover proof.
+Engine therefore performs no automatic Goose deletion or rollback that could
+silently re-enable a paused old schedule.
+
+## Updates
+
+Mycroft product updates refresh the owned Engine executable transactionally.
+Normal Indicator Labs startup also calls the typed `brief refresh-runtime`
+operation after app-only updates. It refreshes only an existing owned job,
+refuses a running job, preserves configuration/history, and retries on the next
+startup if busy. It never creates a first job or enables recurrence. This
+protects the notification host path when Squirrel retires an old version
+folder. A standalone Engine has no packaged Labs notification host; saved
+Goose/wiki results remain available.
+
+Native end-to-end acceptance of credentials, model execution, saved-session
+opening, delivery, sleep and notification clicks is still required for each
+release platform. Unit tests and cross-compilation are not that evidence.
 
 ## Repo Updater
 

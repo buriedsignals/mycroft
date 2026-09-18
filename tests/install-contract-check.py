@@ -95,6 +95,7 @@ def validate_fixtures() -> None:
         assert canonical(rendered) == canonical(load(expected_path)), stem
         assert rendered["schema_version"] == "mycroft-config/v2"
         assert rendered["product"] == "mycroft"
+        assert rendered["goose"]["schedules"]["morning_brief"] is None
         assert rendered["acquisition"]["search"] in SEARCH_PROVIDERS, stem
         assert rendered["acquisition"]["scrape"] == "crawl4ai"
         assert rendered["acquisition"]["firecrawl"] in {"disabled", "fallback"}

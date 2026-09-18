@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+- Retire new Goose morning-brief schedules, preserve inactive legacy preferences, and gate upgrades on verified scheduler handover. Keep the separate wiki audit and reporting data.
+
 - Add resumable morning brief setup in Goose with typed Engine verification, optional AgentMail delivery and separate newsletter subscription handoffs.
 
 ## 2026-09-14 — Trim the OpenKnowledge tool surface; retire the Featherless contract id
@@ -70,6 +72,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - `install/setup_server.py` skill registry derives from `skills.manifest` (hardcoded list retired).
 
 ## [Unreleased]
+
+- Retire new Goose morning-brief schedules, preserve inactive legacy preferences, and gate upgrades on verified scheduler handover. Keep the separate wiki audit and reporting data.
 
 - Add resumable morning brief setup in Goose with typed Engine verification, optional AgentMail delivery and separate newsletter subscription handoffs.
 

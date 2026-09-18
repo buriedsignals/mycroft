@@ -13,7 +13,7 @@ The `start` recipe offers:
 
 - Set up my beat
 - Add to my knowledge base
-- Create my morning brief
+- Help me set up my morning brief
 - Investigate a lead
 - Set up scouts
 - Show me a demo
@@ -22,41 +22,21 @@ The "Add to my knowledge base" path is the best default when the wiki is empty a
 
 ## What To Do Next
 
-Start chatting with Mycroft in Goose and pick one first action. If you know your beat, start there. If you already have material, add it to the knowledge base. If you want daily monitoring, choose the morning brief path.
+Start chatting with Mycroft in Goose and pick one first action. If you know your beat, start there. If you already have material, add it to the knowledge base. For a daily brief, say “Help me set up my morning brief.”
 
 Then create a folder for investigations in the Spotlight vault and ask Mycroft to Spotlight it. Spotlight is the active casework space; Mycroft is the durable knowledge and publishing space.
 
-## Morning Brief Preflight
+## Morning Brief Setup
 
-The morning brief path runs the `morning-brief-preflight` questions:
+Say “Help me set up my morning brief” in Goose. This starts the interactive
+`morning-brief-preflight` recipe; it is a prompt, not a desktop button.
 
-- beats
-- watchlists
-- priority sources
-- ignored sources
-- time window
-- story triggers
-- Spotlight launch triggers
-- sensitivity rules
+Mycroft asks what to cover, which sources it may collect and disclose, when to
+start, and whether to save in Goose/wiki only or also email an explicit
+recipient through AgentMail. Newsletter subscriptions need their own approval.
+The first result and real background execution must verify before recurrence
+becomes active. Existing editorial preferences are suggestions for review,
+not collection or delivery permission.
 
-It writes the answers locally. Fallback script secrets stay in `~/.config/goose/mycroft/.env`; provider secrets should be stored through Goose. The monitoring profile should not contain API keys.
-
-From CLI, launch the broad first-run menu:
-
-```sh
-goose run --recipe ~/.local/share/goose/mycroft/source/recipes/start.yaml --interactive \
-  --params vault_path="$HOME/Documents/OpenKnowledge/Mycroft" \
-  --params morning_brief_config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
-```
-
-## Re-running Preflight
-
-From Goose, run the `morning-brief-preflight` recipe again when beats or monitoring priorities change.
-
-From CLI:
-
-```sh
-goose run --recipe ~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml --interactive \
-  --params vault_path="$HOME/Documents/OpenKnowledge/Mycroft" \
-  --params config_path="$HOME/.config/goose/mycroft/morning-brief-config.md"
-```
+See [Schedules](schedules.md) for result locations, sleep/offline behavior,
+controls, existing-install handover and platform limitations.

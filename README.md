@@ -51,7 +51,7 @@ setup that can run with ZDR cloud models or local inference.
 | Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
 | Perspective audit | Traces observed viewpoints from source passages through summaries and an optional draft. | `perspective-audit` |
 | Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
-| Morning brief | Builds a recurring digest from configured beats, watchlists, bookmarks, and recent wiki changes. | `morning-brief` |
+| Morning brief | Builds a cited digest from the selected web/RSS sources, wiki material and approved newsletter senders. | `morning-brief` |
 | Wiki audit | Finds weak claims, missing frontmatter, orphaned sources, and stale promoted Spotlight findings. | `wiki-audit` |
 | Browser acquisition | Opens a journalist-controlled browser session for portals, forms, downloads, and authenticated source capture. | `dev-browser` |
 | Scoutpost | Sets up or queries hosted monitoring scouts and information units. | `scoutpost` skill |

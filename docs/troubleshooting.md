@@ -20,30 +20,21 @@ Do not replace it with a weekly crontab. Indicator Labs automates managed
 updates; open-source installations use `bsig plan update mycroft`. A leftover
 `mycroft-update` wrapper only fast-forwards a private Splash-enabled git checkout.
 
-## Goose Schedules Are Missing
+## Morning Brief Is Missing
 
-Check Goose schedule support:
+Run `bsig brief status --json` and follow its `recovery_action`. Use
+`bsig brief history --json` for save/delivery stages and
+`bsig brief open-result --json` for the last saved Goose conversation and wiki
+location. A proposed next slot while paused does not mean recurrence is active.
 
-```sh
-goose schedule list
-```
+Do not repair this by creating a Goose morning-brief schedule. For
+`legacy_handover_required`, follow [the supported handover](schedules.md#existing-goose-morning-brief-schedules).
+For a changed beat or destination, ask Mycroft in Goose to change the morning
+brief settings. Background verification resumes from durable checkpoints;
+never regenerate an already saved digest just to retry email.
 
-If schedules are missing, add them manually:
-
-```sh
-goose schedule add --schedule-id mycroft-morning-brief --cron "0 0 7 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/morning-brief.scheduled.yaml
-goose schedule add --schedule-id mycroft-wiki-audit --cron "0 15 18 * * *" --recipe-source ~/.config/goose/mycroft/generated-recipes/wiki-audit.scheduled.yaml
-```
-
-## Morning Brief Has No Beat
-
-Run the preflight recipe:
-
-```sh
-goose run --recipe ~/.local/share/goose/mycroft/source/recipes/morning-brief-preflight.yaml --interactive
-```
-
-It writes `~/.config/goose/mycroft/morning-brief-config.md`.
+The separate wiki-audit schedule remains Goose-owned. Inspect it through Goose's
+existing schedule controls; changing it does not repair morning-brief delivery.
 
 ## Manual Desktop Update
 
