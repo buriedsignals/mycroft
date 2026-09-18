@@ -1,6 +1,6 @@
 ---
 name: bsig-engine
-description: Safely inspect and operate the local Indicator Labs `bsig` Engine for Mycroft, Spotlight, Navigator, and Scoutpost. Use when the user asks to diagnose installation health, inspect authentication or stored-key status, prepare or apply an Engine-managed install/update/uninstall, verify the installed stack, or repair an Engine-managed product. Do not use for ordinary journalism or to edit Engine-owned files manually.
+description: Safely inspect and operate the local Indicator Labs `bsig` Engine for Mycroft, Spotlight, Navigator, and Scoutpost. Use when the user asks to diagnose installation health, inspect authentication or stored-key status, prepare or apply an Engine-managed install/update/uninstall, verify the installed stack, or repair an Engine-managed product, or set up and control a morning brief and its selected newsletter handoffs. Do not use for ordinary journalism or to edit Engine-owned files manually.
 ---
 
 # Indicator Engine
@@ -95,3 +95,67 @@ data that will be removed. If rollback is partial, stop and surface the rollback
   unchanged.
 - Finish with what was checked, what changed, the post-change doctor result, and any remaining
   manual action. Never claim success from command exit alone.
+
+## Morning brief in Goose
+
+Use this skill for “Help me set up my morning brief”, “Where is today's brief?”,
+“Pause my brief” and changes to brief settings. Follow `recipes/morning-brief-preflight.yaml`
+for setup and `recipes/newsletter-setup.yaml` for separately authorized newsletter handoffs.
+There is no Morning brief management section in Indicator Labs.
+
+- `bsig brief status --json` returns schedule, verification step, next eligible start,
+  timezone, last run, last saved result and recovery_action. A next_run while paused
+  is a proposed slot, not a promise of execution. Show per-stage and partial-source status.
+- `bsig brief setup-draft --json` saves incomplete editorial choices from stdin
+  without execution authority. `bsig brief setup-draft-show --json` returns its
+  private draft_file for resuming an account/key handoff; status reports
+  setup_draft_available. Use the recipe schema; never store keys or confirmation URLs.
+- `bsig brief config --json` returns a private config_file. Read it to resume a new
+  chat or make changes; never manually edit Engine state. `bsig brief plan --json`
+  reads nonsecret configuration JSON on stdin and returns a private plan_file plus
+  plan_id. Review that exact plan with the journalist. `bsig brief apply PLAN_ID --json`
+  saves it paused and invalidates prior verification. Do not interpolate user text
+  into executable shell; use structured stdin or a safely quoted nonsecret here-document.
+- After one explicit Enable of the displayed plan, `bsig brief verify --enable --json`
+  starts real OS-background verification. The journalist may close Goose. Goose-only
+  activates automatically after verified saves; email waits for the journalist's
+  receipt report. `bsig brief confirm-email received --json` activates it;
+  `bsig brief confirm-email not-received --json` keeps it paused. Provider acceptance
+  alone is not receipt. After repair, `bsig brief verify --json` resumes the authorized
+  setup; an explicit pause or settings change needs fresh authorization.
+- `bsig brief open-result --json` returns the latest saved Goose conversation link and
+  wiki location. Check its date against today: if today's run failed, label an older
+  result as older. No arbitrary active-chat injection. Notifications may be denied;
+  the saved conversation and wiki are still available through this command.
+- On explicit requests use `bsig brief run-now --json`, `bsig brief pause --json`,
+  `bsig brief resume --json`, `bsig brief remove --json`, `bsig brief history --json`,
+  or `bsig brief retry-delivery RUN_ID --json`. Run-now is bounded but can take up to
+  20 minutes. Pause suppresses new sends, not already submitted mail. Remove preserves
+  results and the AgentMail inbox; it does not unsubscribe publications.
+- Status may require model, knowledge, source, mail or OS-background repair. Follow
+  the returned action and scoped doctor findings; do not claim support for Public AI
+  or subscription CLI providers, or bypass a failed background proof. If status reports
+  legacy_handover_required, follow that recovery guidance before enabling anything.
+
+For AgentMail, `bsig keys validate AGENTMAIL_API_KEY --json` checks the saved key without
+reading it into chat. The existing Mycroft product's **Integrations → AgentMail inbox →
+Enter API key…** control in Indicator Labs opens the protected OS prompt. **Get an API
+key from AgentMail** points to `https://console.agentmail.to/dashboard/api-keys`; the
+journalist can sign in/create an account there. Return to the saved setup afterward.
+No new Labs UI is needed. Users without Labs can operate the private stdin key flow
+in their own Terminal; the agent never handles the key.
+
+With explicit inbox-creation authorization, `bsig brief inbox-create PROFILE --json`
+returns a verified identity/address. For an existing inbox use
+`bsig brief inbox-resolve INBOX_ID --json`. Show the returned address; never assume
+`default` or infer an address from its ID. Newsletter collection is independent of
+email delivery. Changing to Goose-only clears only delivery fields and preserves
+editorial choices and individually approved newsletter sources.
+
+`bsig brief newsletter-list --json` returns a private newsletters_file; read it to
+resume publication-specific human handoffs. `bsig brief newsletter-record --json`
+reads one evidence object on stdin and persists submitted, confirmation_pending,
+active, human_action_required or failed status. It never performs a subscription,
+follows a link or changes collection/disclosure consent. Only record observed or
+explicitly user-reported evidence; form submission is not activation. Do not store
+confirmation tokens. Use the newsletter recipe's exact schema and evidence kinds.

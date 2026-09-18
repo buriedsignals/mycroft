@@ -4,6 +4,10 @@ All notable changes to this project will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- Add resumable morning brief setup in Goose with typed Engine verification, optional AgentMail delivery and separate newsletter subscription handoffs.
+
 ## 2026-09-14 — Trim the OpenKnowledge tool surface; retire the Featherless contract id
 
 ### Changed
@@ -66,6 +70,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 - `install/setup_server.py` skill registry derives from `skills.manifest` (hardcoded list retired).
 
 ## [Unreleased]
+
+- Add resumable morning brief setup in Goose with typed Engine verification, optional AgentMail delivery and separate newsletter subscription handoffs.
 
 > **Next tag will be [0.2.0]** (pre-1.0 minor bump): fact-check output contract
 > changes shape, which is a breaking change for downstream consumers parsing
