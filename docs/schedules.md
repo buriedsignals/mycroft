@@ -26,10 +26,16 @@ Use these typed controls from Mycroft or a terminal:
 bsig brief status --json
 bsig brief history --json
 bsig brief open-result --json
+bsig brief source-coverage RUN_ID --json
 bsig brief pause --json
 bsig brief resume --json
 bsig brief remove --json
 ```
+
+For a run with partial inputs, `source-coverage` returns a private `coverage_file`
+with source outcomes. Mycroft reads that file to explain missing inputs; article
+text and source labels are not printed into Engine's audit stream. Sources whose
+disclosure was not approved retain opaque excluded-source labels.
 
 `resume` requires verified settings and delivery. `remove` disables this job
 and removes its exact owned notification helpers; it preserves the wiki,

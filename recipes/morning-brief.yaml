@@ -26,6 +26,9 @@ prompt: |
 
   Read the actual result. Present its saved conversation link and wiki location,
   actual reporting window, partial sources, and email status when applicable.
+  If partial_source_count is nonzero, use `bsig brief source-coverage RUN_ID --json`
+  with the returned run_id and read its private coverage_file. Report the saved
+  statuses without guessing the identities behind excluded-source labels.
   Say provider accepted only when that is the recorded status; do not turn it
   into confirmed inbox delivery. On failure, give the reported recovery action.
   Use `bsig brief open-result --json` to retrieve the latest saved result when asked

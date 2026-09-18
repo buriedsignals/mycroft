@@ -111,6 +111,10 @@ exports old editorial preferences without granting source or delivery consent.
 - `bsig brief status --json` returns schedule, verification step, next eligible start,
   timezone, last run, last saved result and recovery_action. A next_run while paused
   is a proposed slot, not a promise of execution. Show per-stage and partial-source status.
+- When a run has partial_source_count greater than zero, call
+  `bsig brief source-coverage RUN_ID --json` with its returned run_id and read the
+  private coverage_file. Report the saved source statuses; keep opaque excluded
+  labels as supplied. Do not guess source identities or read the full source packet.
 - `bsig brief setup-draft --json` saves incomplete editorial choices from stdin
   without execution authority. `bsig brief setup-draft-show --json` returns its
   private draft_file for resuming an account/key handoff; status reports
