@@ -1,106 +1,43 @@
-version: "1.0.0"
+version: "2.0.0"
 title: "Morning brief"
-description: "Daily digest pulled from the morning-brief monitoring profile, X bookmarks (ft), AgentMail inbox, and recent wiki changes. Writes a dated note into the Mycroft wiki."
+description: "Run your configured morning brief through Engine, then open its saved Goose conversation and verified wiki note. Setup and controls stay in Mycroft in Goose."
 
 instructions: |
-  Load the Mycroft journalism instructions and knowledge-workspace skill as session context.
-  Aggregate overnight inputs. Rank by editorial relevance to the journalist's beat and monitoring profile.
-  Cite every item. No fabrication.
-  Write the result through OpenKnowledge into logical space `mycroft` at `mycroft/stories/drafts/morning-brief-YYYY-MM-DD.md`.
-
-parameters:
-  - key: vault_path
-    input_type: string
-    requirement: required
-    description: "Absolute path to your primary vault (intelligence or knowledge)"
-  - key: beat
-    input_type: string
-    requirement: optional
-    description: "Short beat descriptor to rank by (falls back to monitoring_config and context/beat-notes.md if empty)"
-    default: ""
-  - key: monitoring_config
-    input_type: string
-    requirement: optional
-    description: "Local morning brief monitoring profile written by morning-brief-preflight."
-    default: "~/.mycroft/morning-brief-config.md"
+  Use the installed Engine's typed morning-brief operations as the authority.
+  Never acquire sources, write the brief, send mail, or create schedules yourself.
+  Never ask for an API key in chat or pass credentials on the command line.
+  Do not claim that a saved wiki note alone is chat or email delivery.
 
 extensions:
   - type: builtin
     name: developer
-  - type: stdio
-    name: openknowledge
-    cmd: ok
-    args: ["--cwd", "{{ vault_path }}", "mcp"]
-    # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
-    available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
-    description: "Shell + file access for CLI invocations and vault writes"
 
 prompt: |
-  Build today's morning brief. Current date is today's date in the journalist's timezone.
+  Run `bsig brief status --json` using the installed Engine.
+  If no setup exists, or recurrence is paused or needs verification, explain the
+  returned state and guide the journalist through morning-brief setup in Goose.
+  Do not create an implicit schedule or invent sources or a beat from memory.
 
-  **Inputs** (gather in parallel; skip any that are unavailable):
+  If ready, run `bsig brief run-now --json`. Engine collects only the selected
+  sources, validates the full brief and its citations, saves it through
+  OpenKnowledge, and preserves the same result in a named Goose conversation.
+  Optional email uses the approved recipient and AgentMail sending inbox.
+  Engine owns source permissions, background scheduling, retries and delivery.
 
-  0. **Monitoring profile**:
-     - Read `{{ monitoring_config }}` if it exists.
-     - Also read `{{ vault_path }}/context/morning-brief.md` and `{{ vault_path }}/context/beat-notes.md` if present.
-     - Use these files to rank relevance, define ignored sources, and identify when a lead should open in Spotlight.
+  Read the actual result. Present its saved conversation link and wiki location,
+  actual reporting window, partial sources, and email status when applicable.
+  Say provider accepted only when that is the recorded status; do not turn it
+  into confirmed inbox delivery. On failure, give the reported recovery action.
+  Use `bsig brief open-result --json` to retrieve the latest saved result when asked
+  "Where is today's brief?". Do not add a Morning brief screen to Indicator Labs.
 
-  1. **X/Twitter bookmarks via ft CLI** (optional):
-     - Run `ft sync` to refresh (if the command succeeds within 20s; otherwise skip — not blocking).
-     - Then `ft list --since "24 hours ago" --json` (or equivalent) to get newly bookmarked items.
-     - If `ft` is not installed or fails, note this in the brief's "Sources checked" section and proceed.
-
-  2. **AgentMail inbox** (optional, needs AGENTMAIL_API_KEY):
-     - `curl -s -H "Authorization: Bearer $AGENTMAIL_API_KEY" https://api.agentmail.to/v1/inboxes/default/messages?unread=true&limit=25`
-     - Extract headlines + gist per message. Classify: newsletter / alert / relevant-to-beat / spam.
-     - Do NOT archive or mark read — read-only pass.
-     - If key is missing, note it and skip.
-
-  3. **Vault recent changes**:
-     - `find {{ vault_path }} -type f -name '*.md' -mtime -1` for files changed in the last 24h.
-     - For each, read the diff of content (most recent N lines or first H1 + first paragraph) to see what changed.
-
-  4. **Live web supplement** (only if beat is explicit):
-     - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<beat> news past 24h"` — optional 1-2 queries max to catch overnight breaking news.
-     - NEVER use WebFetch, curl for pages, or apify-rag.
-
-  **Synthesize**:
-
-  Produce a markdown note with this structure:
-
-  ```markdown
-  # Morning brief — YYYY-MM-DD
-
-  **Theme of the day**: [one sentence]
-
-  ## Top items
-  1. **[Headline]**
-     - Source: [X / newsletter / vault / web] — [citation: ft id / AgentMail subject / vault path / URL]
-     - Why it matters: [1 sentence]
-     - Summary: [2 sentences]
-
-  [... up to 10 items, ranked by relevance]
-
-  ## Story angles
-  - [angle — what to pursue and why]
-
-  ## Sources checked
-  - ft: [status, count]
-  - AgentMail: [status, count]
-  - Vault ({{ vault_path }}): [status, count]
-  - Web (SearXNG): [if queried, list queries]
-  ```
-
-  **Write to the Knowledge Workspace** with OpenKnowledge `write` at `stories/drafts/morning-brief-YYYY-MM-DD.md`. Read the note back and verify its path and citations. If the write fails, report the failure; never fall back to a direct file write.
-
-  **Rules**:
-  - Do not fabricate facts, quotes, or links.
-  - Flag any unverified claim with `unverified:`.
-  - Prioritise: (1) timely, (2) relevant to the journalist's beat, (3) actionable.
-  - Exclude items from `consulting/` or `journals/` vaults entirely.
+  Sources may include explicitly chosen public websites/RSS, selected wiki
+  material, and individually approved newsletters. There is no automatic
+  bookmark import, guessed monitoring profile, or unread-only inbox scan.
+  Newsletters and private wiki text require explicit disclosure approval before
+  entering an emailed brief, including when the model runs locally.
 
 activities:
-  - "message: **Morning brief ready.** Pulls from X bookmarks, AgentMail, and recent wiki changes."
-  - "Run today's morning brief"
-  - "Run brief with emphasis on {{ beat }}"
-  - "Show me just the AgentMail digest"
+  - "Run today's configured morning brief"
+  - "Where is today's brief?"
+  - "Show morning brief status"
