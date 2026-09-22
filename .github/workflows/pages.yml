@@ -48,6 +48,10 @@ jobs:
         run: bash tests/doctor-backends-check.sh
       - name: Validate grounding/provenance tooling
         run: python3 tests/grounding-provenance-check.py
+      - name: Validate fact-check recipe and lookup tools
+        run: |
+          python3 tests/fact-check-recipe-contract.py
+          python3 tests/fact-check-tools-check.py
       - name: Validate JSON parses
         run: |
           python3 -c "

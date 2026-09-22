@@ -57,11 +57,13 @@ Use Spotlight for deeper casework. Keep the fact-checker independent from the in
 
 ## Method
 
-Apply the `epistemic-grounding` skill (claim decomposition, support classification, confidence caps, failure router) to every claim. This skill adds three fact-check-specific moves:
+Apply the `epistemic-grounding` skill (claim decomposition, support classification, confidence caps, failure router) to every claim. This skill adds four fact-check-specific moves:
 
+0. **Extract every claim first.** Follow `references/extraction.md`: write `claims.md` before any search, then gate it with `python3 "$MYCROFT_DIR/tools/claim-density.py" <draft> <claim count>`. Exit 1 means the list is thin; reopen extraction.
 1. **Local context first.** Search durable Mycroft knowledge through OpenKnowledge before any web fetch — surface what's already known, link to it, and do not treat it as automatically verified.
 2. **SIFT acquisition.** Stop, investigate the source, find better coverage, trace to origin. Acquire evidence via `mycroft-fetch` first. Every acquisition should produce an evidence item: `mycroft-fetch` records URL, acquisition method, accessed_at, sha256 of saved bytes, content_type, access_method, and the missing-source gate. If provenance tooling is unavailable, continue the fact-check only as a cited editorial review output and report `provenance incomplete` unless `strict_provenance=true`. See `docs/grounding-provenance-spec.md`.
-3. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
+3. **Primary records by tool.** Numbers, papers, filings and rulings have a producing body; go there before reporting about it. Route files in `references/routes/` (markets-economy, quotes-attribution, web-social-archives, science-studies, companies-courts, official-statistics) say where. `tools/marketdata.py` pulls economic series (FRED, Treasury, ECB, Eurostat, EIA…); `tools/evidence-lookup.py` covers Wayback, Crossref, PubMed, arXiv, EDGAR, CourtListener. Run them with `--evidence` to store the raw response as an `E-*` item you can cite. Recompute derived figures yourself.
+4. **Verdict mapping.** Translate the grounding analysis to the closed verdict set (below) and emit the output contract.
 
 ### Suspect media triage
 
@@ -148,4 +150,8 @@ Correction note format: "Correction [date]: an earlier version stated [error]. I
 
 ---
 
-*Suspect-media triage, right-of-response gate, and corrections protocol adapted (one-off, 2026-07-06) from Joe Amditis's `source-verification` and `fact-check-workflow` skills (jamditis/claude-skills-journalism, MIT).*
+## Credits
+
+Claim extraction, the density gate, the evidence routes and the lookup tools are adapted from [Big If True](https://verso.ink/big-if-true/) by Verso.
+
+Suspect-media triage, right-of-response gate, and corrections protocol adapted (one-off, 2026-07-06) from Joe Amditis's `source-verification` and `fact-check-workflow` skills (jamditis/claude-skills-journalism, MIT).

@@ -35,6 +35,17 @@ def main() -> int:
     assert "C2PA signing is optional and off by default" in recipe
     assert "build-provenance-manifest.py" in recipe
     assert "NOOSPHERE_C2PA_URL" in recipe
+    assert "references/extraction.md" in recipe, "extraction must load the Big If True-derived rules"
+    assert "claim-density.py" in recipe, "extraction must run the density gate before verification"
+    assert "marketdata.py\" --evidence" in recipe and "evidence-lookup.py\" --evidence" in recipe, (
+        "primary-record lookups must capture provenance with --evidence"
+    )
+    skill = (ROOT / "skills/fact-check/SKILL.md").read_text(encoding="utf-8")
+    assert "references/extraction.md" in skill and "claim-density.py" in skill
+    for route in ("markets-economy", "quotes-attribution", "web-social-archives", "science-studies", "companies-courts", "official-statistics"):
+        assert (ROOT / f"skills/fact-check/references/routes/{route}.md").is_file(), f"missing route file {route}"
+        assert route in skill, f"SKILL.md must name the {route} route"
+    assert "verso.ink" in skill and "verso.ink/big-if-true" in (ROOT / "index.html").read_text(encoding="utf-8"), "Verso credit missing"
 
     print("fact-check recipe contract: OK")
     return 0

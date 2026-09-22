@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+- Fact-check: claim-extraction rules and density gate, evidence route files, and primary-record
+  lookup tools (`tools/evidence-lookup.py`, `tools/marketdata.py`), adapted from Big If True by Verso.
+- `mycroft-fetch` stores artifacts under `raw/`; a JSON search body no longer overwrites its own record.
+
 - Retire new Goose morning-brief schedules, preserve inactive legacy preferences, and gate upgrades on verified scheduler handover. Keep the separate wiki audit and reporting data.
 
 - Add resumable morning brief setup in Goose with typed Engine verification, optional AgentMail delivery and separate newsletter subscription handoffs.

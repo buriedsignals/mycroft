@@ -153,7 +153,8 @@ def create_evidence_record(
     evidence_id = f"E-{uuid.uuid4().hex[:12]}"
     prov_id = f"prov-{uuid.uuid4().hex[:12]}"
     out_dir = provenance_dir()
-    artifact_path = output_path or out_dir / f"{evidence_id}.{extension_for_format(fmt)}"
+    # raw/ keeps a JSON body from sharing a name with its own E-*.json record
+    artifact_path = output_path or out_dir / "raw" / f"{evidence_id}.{extension_for_format(fmt)}"
     atomic_write(artifact_path, content_bytes)
     accessed_at = now_iso()
 

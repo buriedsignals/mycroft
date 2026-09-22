@@ -4,7 +4,7 @@ description: "Run SIFT methodology against a draft article with C2PA provenance 
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, SIFT, no fabrication) as session context.
-  Load ~/.mycroft/skills/fact-check/SKILL.md before checking claims.
+  Load "$MYCROFT_DIR/skills/fact-check/SKILL.md" before checking claims.
   Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
   Do not rewrite the draft; do not moralise. Report, let the journalist decide.
 
