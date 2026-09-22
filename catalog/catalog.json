@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-18T20:17:49Z",
-  "release_sequence": 30,
+  "released_at": "2026-09-22T13:59:05Z",
+  "release_sequence": 31,
   "products": {
     "mycroft": {
       "version": "0.3.9",
@@ -1920,6 +1920,36 @@
       "url": "https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/29d097773436b69ff9feafd636ab4cf873786537/gemma-4-12b-it-qat-q4_0.gguf",
       "sha256": "93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b",
       "size_bytes": 6975879296
+    },
+    {
+      "id": "dev-browser-0.2.8-darwin-arm64",
+      "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-darwin-arm64",
+      "sha256": "cea00c638e2d4c37576051e1b06f355b355230975c3d619e0547b1d0e57f81e7",
+      "size_bytes": 1512368
+    },
+    {
+      "id": "dev-browser-0.2.8-darwin-x64",
+      "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-darwin-x64",
+      "sha256": "e1f57346fdc0d4335805c797ee22ef866338bad0cd83d487434dd77fca5969e7",
+      "size_bytes": 1590704
+    },
+    {
+      "id": "dev-browser-0.2.8-linux-x64",
+      "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-linux-x64",
+      "sha256": "b792900b17d7fae48bce890b9bce46dfe360e69de3362cbf870889955b30ca2a",
+      "size_bytes": 1641544
+    },
+    {
+      "id": "dev-browser-0.2.8-linux-arm64",
+      "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-linux-arm64",
+      "sha256": "0a9f1e38a373c1a5a6b286f9190eb3beb69136fbad79bafa6ef57d3389ddf5f0",
+      "size_bytes": 1512224
+    },
+    {
+      "id": "dev-browser-0.2.8-windows-x64",
+      "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-windows-x64.exe",
+      "sha256": "7f7264ca93087d1b5709c00f8c9e246a35b92fdf8024584f4c29e0e6f78c967e",
+      "size_bytes": 1681408
     }
   ],
   "dependencies": {
