@@ -1,9 +1,9 @@
 version: "1.0.0"
 title: "Batch scrape"
-description: "Scrape N URLs in parallel (own IP; no vendor rate limits). Useful for source comparison, beat sweeps, or bulk extraction."
+description: "Scrape N URLs in parallel using the configured acquisition backend. Useful for source comparison, beat sweeps, or bulk extraction."
 
 instructions: |
-  Batch scrape via the Crawl4AI-backed scrape tool (own IP; no vendor rate limits).
+  Batch scrape via the configured scrape tool; API acquisition is subject to vendor limits.
 
 parameters:
   - key: urls
@@ -30,7 +30,7 @@ prompt: |
 
   If `{{ urls }}` is a path, read the file first. Normalize to one URL per line.
 
-  Run each via `python3 "$MYCROFT_DIR/tools/scrape.py" <url> --format {{ format }}`. Parallelize with `xargs -P 4` (own-IP, no vendor rate limits):
+  Run each via `python3 "$MYCROFT_DIR/tools/scrape.py" <url> --format {{ format }}`. Parallelize with `xargs -P 4`, respecting provider rate limits:
 
   ```sh
   echo "<URLS>" | xargs -P 4 -I {} sh -c 'python3 "$MYCROFT_DIR/tools/scrape.py" {} --format {{ format }} > /tmp/fc-$(echo {} | md5 | cut -c1-8).md; echo "DONE: {}"'

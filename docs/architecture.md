@@ -13,6 +13,16 @@ configuration writer so provider choices, Goose behavior, and OpenKnowledge
 paths remain compatible; Engine owns the generated acquisition and lifecycle
 contract, while the product phase fills that declared ownership boundary.
 
+The normalized acquisition contract selects a pair: SearXNG search with Crawl4AI
+scrape, or Firecrawl search with Firecrawl scrape. `firecrawl: "fallback"` permits
+cloud fallback for the local pair and is required for the API-only pair.
+`tools/acquisition_policy.py` loads that selection for acquisition entrypoints,
+doctor, and private-update provisioning. It honors `MYCROFT_CONFIG`, profile
+overrides, and Goose's native Unix/Windows config location. Invalid or explicitly
+missing selected configuration fails closed; an unmanaged tool without a default
+profile retains local-only acquisition. Provider availability never changes
+permission to use cloud acquisition.
+
 Mycroft is a Goose extension pack, not a fork of Goose.
 
 The installer sets up Goose separately, then layers Mycroft configuration on top:

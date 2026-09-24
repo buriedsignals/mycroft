@@ -96,7 +96,7 @@
       "required": ["search", "scrape", "firecrawl"],
       "properties": {
         "search": {"enum": ["searxng", "firecrawl"]},
-        "scrape": {"const": "crawl4ai"},
+        "scrape": {"enum": ["crawl4ai", "firecrawl"]},
         "firecrawl": {"enum": ["disabled", "fallback"]}
       }
     },

@@ -2,15 +2,13 @@
 # Provision (idempotently) the Mycroft sovereign stack: Crawl4AI (scrape),
 # poppler/pdftotext (PDF), SearXNG (search), and — opt-in — Tor (opsec).
 #
-# Run by Indicator Labs on a fresh install AND by mycroft-update on private
-# an existing install that fast-forwards to the sovereign recipes also gains the
-# SearXNG container + Crawl4AI backends instead of silently living on the
-# Firecrawl fallback. Every step is best-effort and idempotent: a missing tool
-# prints a warning and returns 0 — provisioning never aborts its caller or the
-# unattended update.
+# Used by local provisioning and private updates. The installed acquisition
+# policy is authoritative: API-only installations never provision local search
+# or browser scraping. Tool installation remains best-effort; invalid policy
+# fails before any provisioning.
 #
 # Config (all env-overridable):
-#   INSTALL_CRAWL4AI / INSTALL_SEARXNG / INSTALL_TOR   1|0 (default 1/1/0)
+#   INSTALL_CRAWL4AI / INSTALL_SEARXNG / INSTALL_TOR   1|0 (local default 1/1/0)
 #   SEARXNG_PORT (8899)  SEARXNG_CONTAINER (mycroft-searxng)
 #   SEARXNG_IMAGE (searxng/searxng:latest)
 #   SEARXNG_SETTINGS ($MYCROFT_PROFILE_DIR/searxng/settings.yml)
@@ -26,6 +24,19 @@ SEARXNG_SETTINGS="${SEARXNG_SETTINGS:-$MYCROFT_PROFILE_DIR/searxng/settings.yml}
 INSTALL_CRAWL4AI="${INSTALL_CRAWL4AI:-1}"
 INSTALL_SEARXNG="${INSTALL_SEARXNG:-1}"
 INSTALL_TOR="${INSTALL_TOR:-0}"
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+if ! ACQUISITION="$(python3 "$SCRIPT_DIR/../tools/acquisition_policy.py")"; then
+  printf '%s\n' "Acquisition configuration invalid; no tools provisioned." >&2
+  exit 1
+fi
+read -r SEARCH_BACKEND SCRAPE_BACKEND FIRECRAWL_MODE <<< "$ACQUISITION"
+if [ "$SCRAPE_BACKEND" = "firecrawl" ]; then
+  INSTALL_CRAWL4AI=0
+fi
+if [ "$SEARCH_BACKEND" = "firecrawl" ]; then
+  INSTALL_SEARXNG=0
+fi
 
 have() { command -v "$1" >/dev/null 2>&1; }
 ok()   { printf "  \033[1;32m+\033[0m %s\n" "$*"; }
@@ -76,11 +87,11 @@ provision_poppler() {
 provision_searxng() {
   # Sovereign search default. Runs a local SearXNG JSON endpoint on
   # $SEARXNG_PORT; the Mycroft search tools point at $SEARXNG_URL_VALUE. Needs
-  # Docker — best-effort: absent Docker degrades to the Firecrawl search fallback
-  # (if a key is present) rather than aborting.
+  # Docker — best-effort: absent Docker leaves local search unavailable unless
+  # Firecrawl fallback has been explicitly enabled.
   [ "$INSTALL_SEARXNG" = "1" ] || return 0
   if ! have docker; then
-    warn "Docker not found — SearXNG (sovereign search) not provisioned. Install Docker, then re-run \`mycroft update\`; or point SEARXNG_URL at an existing instance. Search falls back to Firecrawl if a key is set."
+    warn "Docker not found — SearXNG not provisioned. Install Docker, then re-run \`mycroft update\`; or point SEARXNG_URL at an existing instance. Firecrawl fallback requires explicit configuration."
     return 0
   fi
   mkdir -p "$(dirname "$SEARXNG_SETTINGS")"

@@ -4,7 +4,7 @@
   "provider": {"id": "openrouter", "model": "mistralai/mistral-large-2512"},
   "skills": {"registry": "/home/reporter/.config/goose/mycroft/skill-registry.json", "directory": "/home/reporter/.agents/skills/mycroft"},
   "vaults": {"mycroft": "/home/reporter/Documents/OpenKnowledge/Mycroft", "spotlight": null, "spotlight_ingest_target": null},
-  "acquisition": {"search": "firecrawl", "scrape": "crawl4ai", "firecrawl": "fallback"},
+  "acquisition": {"search": "firecrawl", "scrape": "firecrawl", "firecrawl": "fallback"},
   "sovereignty": {"local_only": false, "local_model": null},
   "plugins": {"spotlight": {"enabled": false, "path": null}, "scoutpost": {"enabled": false}}
 }

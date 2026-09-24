@@ -81,6 +81,8 @@ def validate_schema_surface() -> None:
     assert set(acquisition["required"]) == {"search", "scrape", "searxng", "firecrawl"}
     config = load(CONTRACTS / "mycroft-config.schema.json")
     assert config["properties"]["acquisition"]["properties"]["search"]["enum"] == SEARCH_PROVIDERS
+    for schema in (choices, config):
+        assert schema["properties"]["acquisition"]["properties"]["scrape"]["enum"] == ["crawl4ai", "firecrawl"]
 
 
 def validate_fixtures() -> None:
@@ -97,7 +99,8 @@ def validate_fixtures() -> None:
         assert rendered["product"] == "mycroft"
         assert rendered["goose"]["schedules"]["morning_brief"] is None
         assert rendered["acquisition"]["search"] in SEARCH_PROVIDERS, stem
-        assert rendered["acquisition"]["scrape"] == "crawl4ai"
+        expected_scrape = "firecrawl" if rendered["acquisition"]["search"] == "firecrawl" else "crawl4ai"
+        assert rendered["acquisition"]["scrape"] == expected_scrape, stem
         assert rendered["acquisition"]["firecrawl"] in {"disabled", "fallback"}
         if rendered["acquisition"]["search"] == "firecrawl":
             # No SearXNG means Firecrawl is the only search provider, so it cannot be disabled.
@@ -108,7 +111,7 @@ def validate_fixtures() -> None:
     # Both search providers must stay covered by fixtures.
     assert seen_search == set(SEARCH_PROVIDERS), seen_search
     firecrawl_only = render(template["document"], load(CONTRACTS / "testdata" / "firecrawl-only.inputs.json"))
-    assert firecrawl_only["acquisition"] == {"search": "firecrawl", "scrape": "crawl4ai", "firecrawl": "fallback"}
+    assert firecrawl_only["acquisition"] == {"search": "firecrawl", "scrape": "firecrawl", "firecrawl": "fallback"}
 
 
 def main() -> None:

@@ -6,6 +6,11 @@ fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/home" "$tmp/bin"
+export MYCROFT_DIR="$PWD"
+export MYCROFT_CONFIG="$tmp/mycroft-config.json"
+cat > "$MYCROFT_CONFIG" <<'CONFIG'
+{"acquisition":{"search":"searxng","scrape":"crawl4ai","firecrawl":"disabled"}}
+CONFIG
 
 HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" XDG_DATA_HOME="$tmp/home/.local/share" \
   SEARXNG_URL="http://127.0.0.1:1" PATH="/usr/bin:/bin" \
@@ -58,6 +63,9 @@ cat > "$tmp/bin/firecrawl" <<'FIRECRAWL'
 exit 2
 FIRECRAWL
 chmod +x "$tmp/bin/firecrawl"
+cat > "$MYCROFT_CONFIG" <<'CONFIG'
+{"acquisition":{"search":"searxng","scrape":"crawl4ai","firecrawl":"fallback"}}
+CONFIG
 
 HOME="$tmp/home" XDG_CONFIG_HOME="$tmp/home/.config" XDG_DATA_HOME="$tmp/home/.local/share" \
   FIRECRAWL_API_KEY="fc-test" SEARXNG_URL="http://127.0.0.1:1" \

@@ -15,7 +15,7 @@ MYCROFT_PROFILE_DIR="${MYCROFT_PROFILE_DIR:-$GOOSE_CONFIG/mycroft}"
 MYCROFT_DATA_DIR="${MYCROFT_DATA_DIR:-$XDG_DATA_HOME/goose/mycroft}"
 MYCROFT_DIR="${MYCROFT_DIR:-$MYCROFT_DATA_DIR/source}"
 MYCROFT_ENV="$MYCROFT_PROFILE_DIR/.env"
-MYCROFT_CONFIG="${MYCROFT_CONFIG:-$MYCROFT_PROFILE_DIR/mycroft-config.json}"
+MYCROFT_CONFIG="${MYCROFT_CONFIG-$MYCROFT_PROFILE_DIR/mycroft-config.json}"
 MYCROFT_SKILL_REGISTRY="$MYCROFT_PROFILE_DIR/skill-registry.json"
 MYCROFT_GOOSE_INSTRUCTIONS="$MYCROFT_PROFILE_DIR/goose-mycroft.md"
 MYCROFT_SOUL_FILE="$MYCROFT_PROFILE_DIR/SOUL.md"
@@ -102,33 +102,49 @@ esac
 if command -v goose >/dev/null 2>&1; then ok_check "Goose CLI"; else bad_check "Goose CLI missing"; fi
 if command -v ok >/dev/null 2>&1; then ok_check "OpenKnowledge CLI"; else bad_check "OpenKnowledge CLI missing"; fi
 if command -v mycroft-fetch >/dev/null 2>&1; then ok_check "mycroft-fetch CLI"; else bad_check "mycroft-fetch CLI missing from PATH"; fi
-# Core acquisition checks. A missing preferred backend is allowed only when a
-# configured fallback actually exists; zero search or scrape paths is a failed
-# install, not a warning.
-FIRECRAWL_READY=0
-if command -v firecrawl >/dev/null 2>&1 && [ -n "${FIRECRAWL_API_KEY:-}" ] && \
-   firecrawl --version >/dev/null 2>&1; then
-  FIRECRAWL_READY=1
-fi
-
-if command -v crwl >/dev/null 2>&1; then
-  ok_check "scrape backend available (Crawl4AI)"
-elif command -v uvx >/dev/null 2>&1; then
-  ok_check "scrape backend available (Crawl4AI via uvx cold-start)"
-elif [ "$FIRECRAWL_READY" -eq 1 ]; then
-  ok_check "scrape backend available (Firecrawl fallback)"
+# Validate the selected policy before probing any acquisition backend.
+if ACQUISITION="$(MYCROFT_CONFIG="$MYCROFT_CONFIG" python3 "$MYCROFT_DIR/tools/acquisition_policy.py" 2>&1)"; then
+  read -r SEARCH_BACKEND SCRAPE_BACKEND FIRECRAWL_MODE <<< "$ACQUISITION"
+  FIRECRAWL_READY=0
+  if [ "$FIRECRAWL_MODE" = "fallback" ] && command -v firecrawl >/dev/null 2>&1 && \
+     [ -n "${FIRECRAWL_API_KEY:-}" ] && firecrawl --version >/dev/null 2>&1; then
+    FIRECRAWL_READY=1
+  fi
+  if [ "$SCRAPE_BACKEND" = "firecrawl" ]; then
+    if [ "$FIRECRAWL_READY" -eq 1 ]; then
+      ok_check "scrape backend available (Firecrawl)"
+    else
+      bad_check "scrape backend unavailable — configure the Firecrawl CLI and key"
+    fi
+  elif command -v crwl >/dev/null 2>&1; then
+    ok_check "scrape backend available (Crawl4AI)"
+  elif command -v uvx >/dev/null 2>&1; then
+    ok_check "scrape backend available (Crawl4AI via uvx cold-start)"
+  elif [ "$FIRECRAWL_READY" -eq 1 ]; then
+    ok_check "scrape backend available (Firecrawl fallback)"
+  else
+    bad_check "scrape backend unavailable — install Crawl4AI/uvx or explicitly enable Firecrawl fallback"
+  fi
+  if [ "$SEARCH_BACKEND" = "firecrawl" ]; then
+    if [ "$FIRECRAWL_READY" -eq 1 ]; then
+      ok_check "search backend available (Firecrawl)"
+    else
+      bad_check "search backend unavailable — configure the Firecrawl CLI and key"
+    fi
+  else
+    SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
+    if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
+      ok_check "search backend available (SearXNG at $SEARXNG_URL_CHECK)"
+    elif [ "$FIRECRAWL_READY" -eq 1 ]; then
+      ok_check "search backend available (Firecrawl fallback)"
+    else
+      bad_check "search backend unavailable — start SearXNG at $SEARXNG_URL_CHECK or explicitly enable Firecrawl fallback"
+    fi
+  fi
 else
-  bad_check "scrape backend unavailable — install Crawl4AI/uvx or configure the Firecrawl CLI and key"
+  bad_check "acquisition configuration invalid: $ACQUISITION"
 fi
 if command -v pdftotext >/dev/null 2>&1; then ok_check "pdftotext (PDF extract)"; else warn_check "pdftotext missing — PDF extraction unavailable"; fi
-SEARXNG_URL_CHECK="${SEARXNG_URL:-http://localhost:8899}"
-if command -v curl >/dev/null 2>&1 && curl -fsS --max-time 4 "$SEARXNG_URL_CHECK/search?q=ping&format=json" >/dev/null 2>&1; then
-  ok_check "search backend available (SearXNG at $SEARXNG_URL_CHECK)"
-elif [ "$FIRECRAWL_READY" -eq 1 ]; then
-  ok_check "search backend available (Firecrawl fallback)"
-else
-  bad_check "search backend unavailable — start SearXNG at $SEARXNG_URL_CHECK or configure the Firecrawl CLI and key"
-fi
 if command -v mycroft-safe >/dev/null 2>&1; then
   if mycroft-safe validate-url "https://example.org/ok" >/dev/null 2>&1; then
     ok_check "mycroft-safe CLI"

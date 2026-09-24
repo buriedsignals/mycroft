@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""Provenance-capturing web fetch/search — sovereign (Crawl4AI + SearXNG),
-Firecrawl fallback.
+"""Provenance-capturing web fetch/search using the installed acquisition policy.
 
 The command stores fetched content plus acquisition metadata as Mycroft evidence
 items. It deliberately records provenance; it does not certify that a claim is
@@ -24,6 +23,9 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
+from acquisition_policy import AcquisitionConfigError, load_acquisition
 
 FETCH_TIMEOUT = 90  # seconds; bound the headless-browser fetch so a hung crwl can't stall a recipe
 
@@ -219,14 +221,14 @@ def print_result(record: dict[str, Any], content: str, human: bool) -> None:
 
 
 def cmd_scrape(args: argparse.Namespace) -> int:
-    # Sovereign default: Crawl4AI. Firecrawl is the optional escape hatch, used only
-    # when Crawl4AI fails AND the firecrawl CLI is present. acquisition_method records
-    # the tool that actually acquired the evidence — chain of custody must not lie about
-    # provenance, so we track which rung of the ladder produced the content.
-    content, exit_code, command = run_crawl4ai_scrape(args.url)
-    method = "crawl4ai"
-    if exit_code != 0 and shutil.which("firecrawl"):
-        print(f"[crawl4ai failed] falling back to firecrawl:\n{content}", file=sys.stderr)
+    policy = load_acquisition()
+    method = policy["scrape"]
+    if method == "crawl4ai":
+        content, exit_code, command = run_crawl4ai_scrape(args.url)
+        if exit_code != 0 and policy["firecrawl"] == "fallback":
+            print(f"[crawl4ai failed] falling back to firecrawl:\n{content}", file=sys.stderr)
+            method = "firecrawl"
+    if method == "firecrawl":
         content, exit_code = run_firecrawl(["scrape", args.url, "--format", args.format])
         command = ["firecrawl", "scrape", args.url, "--format", args.format]
         method = "firecrawl"
@@ -247,14 +249,16 @@ def cmd_scrape(args: argparse.Namespace) -> int:
 
 
 def cmd_search(args: argparse.Namespace) -> int:
-    # Sovereign default: SearXNG. Firecrawl fallback only if SearXNG is unreachable
-    # and the firecrawl CLI is present. acquisition_method records the real provider.
-    content, exit_code, command = run_searxng_search(args.query, args.limit)
-    method = "searxng"
-    if exit_code != 0 and shutil.which("firecrawl"):
-        print(f"[searxng failed] falling back to firecrawl:\n{content}", file=sys.stderr)
-        content, exit_code = run_firecrawl(["search", args.query, "--limit", str(args.limit)])
-        command = ["firecrawl", "search", args.query, "--limit", str(args.limit)]
+    policy = load_acquisition()
+    method = policy["search"]
+    if method == "searxng":
+        content, exit_code, command = run_searxng_search(args.query, args.limit)
+        if exit_code != 0 and policy["firecrawl"] == "fallback":
+            print(f"[searxng failed] falling back to firecrawl:\n{content}", file=sys.stderr)
+            method = "firecrawl"
+    if method == "firecrawl":
+        content, exit_code = run_firecrawl(["search", args.query, "--limit", str(args.limit), "--json"])
+        command = ["firecrawl", "search", args.query, "--limit", str(args.limit), "--json"]
         method = "firecrawl"
     if exit_code != 0:
         print(f"Error: search failed\n{content}", file=sys.stderr)
@@ -350,7 +354,11 @@ def main() -> int:
     prov_show.set_defaults(func=cmd_provenance_show)
 
     args = parser.parse_args()
-    return args.func(args)
+    try:
+        return args.func(args)
+    except AcquisitionConfigError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 3
 
 
 if __name__ == "__main__":

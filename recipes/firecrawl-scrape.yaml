@@ -1,9 +1,9 @@
 version: "1.0.0"
 title: "Scrape — fetch a page"
-description: "Scrape a single URL to clean markdown via the Crawl4AI-backed scrape tool. Preferred primitive for fetching a known page."
+description: "Scrape a single URL to clean markdown via the configured acquisition backend. Preferred primitive for fetching a known page."
 
 instructions: |
-  Use the Crawl4AI-backed scrape tool. Never WebFetch, curl, or any other browser tool.
+  Use the configured scrape tool. Never WebFetch, curl, or any other browser tool.
 
 parameters:
   - key: url

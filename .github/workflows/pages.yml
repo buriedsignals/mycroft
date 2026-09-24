@@ -44,8 +44,11 @@ jobs:
         run: bash tests/install-sh-check.sh
       - name: Validate fresh-machine preflight
         run: bash tests/install-preflight-check.sh
-      - name: Validate doctor backend gates
-        run: bash tests/doctor-backends-check.sh
+      - name: Validate acquisition backend contracts
+        run: |
+          bash tests/doctor-backends-check.sh
+          python3 tests/acquisition-routing-check.py
+          python3 tests/install-contract-check.py
       - name: Validate grounding/provenance tooling
         run: python3 tests/grounding-provenance-check.py
       - name: Validate fact-check recipe and lookup tools

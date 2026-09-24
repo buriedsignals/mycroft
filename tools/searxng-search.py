@@ -5,15 +5,10 @@
     python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>" --json    # JSON for parsing
     python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>" --limit 15 --categories news --time-range month
 
-Queries a local, self-hosted SearXNG JSON endpoint (SEARXNG_URL, default
-http://localhost:8899). Paginates past the first page so obscure/long-tail
-sources stay reachable. If SearXNG is unreachable and the `firecrawl` CLI is
-present, falls back to it.
-
-SearXNG is optional at install time (`acquisition.search` is "searxng" or
-"firecrawl" in mycroft-config.json). On an install without SearXNG, Firecrawl
-is the only search provider and every query takes the fallback branch; the
-output states which provider answered.
+The installed acquisition policy selects local SearXNG (SEARXNG_URL, default
+http://localhost:8899) or Firecrawl directly. SearXNG paginates beyond the first
+page. Firecrawl fallback requires explicit configuration; CLI presence alone
+never enables cloud acquisition. Unmanaged tools default to local-only.
 
 Exit 0 on success; 3 if no provider can return results.
 """
@@ -22,11 +17,12 @@ from __future__ import annotations
 import argparse
 import json
 import os
-import shutil
 import subprocess
 import sys
 import urllib.parse
 import urllib.request
+
+from acquisition_policy import load_acquisition
 
 DEFAULT_URL = "http://localhost:8899"
 DEFAULT_PAGES = 3
@@ -88,7 +84,7 @@ def firecrawl(query: str, limit: int) -> list[dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="searxng-search.py", description="Sovereign web search (SearXNG default).")
+    ap = argparse.ArgumentParser(prog="searxng-search.py", description="Web search using the configured acquisition backend.")
     ap.add_argument("query")
     ap.add_argument("--limit", type=int, default=10)
     ap.add_argument("--categories", default=None, help="e.g. news")
@@ -97,18 +93,23 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
 
     try:
-        hits = searxng(args.query, args.limit, args.categories, args.time_range)
-    except ConnectionError as exc:
-        if shutil.which("firecrawl"):
-            print(f"[searxng down: {exc}] falling back to firecrawl", file=sys.stderr)
-            try:
-                hits = firecrawl(args.query, args.limit)
-            except Exception as fc_exc:  # noqa: BLE001
-                print(f"search failed (searxng + firecrawl): {fc_exc}", file=sys.stderr)
-                return 3
+        policy = load_acquisition()
+        provider = policy["search"]
+        if provider == "firecrawl":
+            hits = firecrawl(args.query, args.limit)
         else:
-            print(f"search failed: {exc}", file=sys.stderr)
-            return 3
+            try:
+                hits = searxng(args.query, args.limit, args.categories, args.time_range)
+            except ConnectionError as exc:
+                if policy["firecrawl"] != "fallback":
+                    raise
+                print(f"[searxng down: {exc}] falling back to firecrawl", file=sys.stderr)
+                hits = firecrawl(args.query, args.limit)
+                provider = "firecrawl"
+    except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired) as exc:
+        print(f"search failed: {exc}", file=sys.stderr)
+        return 3
+    print(f"search provider: {provider}", file=sys.stderr)
 
     if args.json:
         print(json.dumps(hits, indent=2))

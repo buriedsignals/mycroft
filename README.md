@@ -147,7 +147,7 @@ Shipped skill set is the engine-resolved list in
 | `scoutpost` | Hosted monitoring scouts |
 | `shell-safety` | Safe shell use with untrusted inbound text |
 | `story-pitch` | Pitch framing |
-| `web-acquisition` | Local search/scrape (SearXNG + Crawl4AI) |
+| `web-acquisition` | Configured local (SearXNG + Crawl4AI) or API (Firecrawl) search/scrape |
 
 ## Install
 
@@ -227,10 +227,11 @@ Mycroft is designed for privacy-sensitive reporting:
 - Local inference is available when you want on-device models.
 - **Web search and scrape**: with SearXNG enabled (needs Docker Desktop),
   search runs through SearXNG and scrape through Crawl4AI with no API key or
-  vendor account; otherwise search runs through Firecrawl with
-  `FIRECRAWL_API_KEY`. One of the two is required. An opt-in `--tor` fetch can
-  route scraping through Tor so a target of investigation never sees the operator's
-  IP. The Engine provisions this stack.
+  vendor account; otherwise both search and scrape run directly through Firecrawl
+  with `FIRECRAWL_API_KEY`, without SearXNG, Crawl4AI, or Chromium provisioning.
+  One of the two is required. With both enabled, local acquisition runs first
+  and Firecrawl is the explicitly configured fallback. Merely installing the
+  Firecrawl CLI or setting a key does not enable cloud acquisition.
 - Wiki, schedules, generated instructions, and fallback script secrets live on
   the user's machine.
 - API keys are stored locally through Goose or Mycroft config files, not in the
@@ -259,9 +260,9 @@ provider posture.
 - `wiki-sync`
 - `spotlight-case`
 
-**Source acquisition and parsing** — local where the install allows (Crawl4AI scrape, SearXNG search when enabled, `pdftotext`, `sitemap.py`); Firecrawl takes over search when SearXNG is not installed, and is the fallback otherwise when `FIRECRAWL_API_KEY` is set. The recipe filenames keep the `firecrawl-` prefix for now.
+**Source acquisition and parsing** — the installed acquisition policy selects SearXNG search + Crawl4AI scrape, or Firecrawl for both. Local acquisition uses Firecrawl fallback only when explicitly enabled. `pdftotext` and `sitemap.py` remain local utilities. The recipe filenames keep the `firecrawl-` prefix.
 
-- `firecrawl-scrape` — scrape a URL to markdown (Crawl4AI)
+- `firecrawl-scrape` — scrape a URL to markdown through the configured backend
 - `firecrawl-change-track` — snapshot + diff a page across runs
 - `firecrawl-pdf` — extract a civic PDF (pdftotext)
 - `firecrawl-batch` — scrape many URLs

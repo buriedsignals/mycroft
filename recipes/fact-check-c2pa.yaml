@@ -8,8 +8,8 @@ instructions: |
   Apply SIFT rigorously; each factual claim gets a specific verdict, never a vague hedge.
   Do not rewrite the draft; do not moralise. Report, let the journalist decide.
 
-  IMPORTANT: Use `mycroft-fetch` for all web fetches (sovereign default: Crawl4AI
-  scrape / SearXNG search, with Firecrawl as fallback) — never raw firecrawl,
+  IMPORTANT: Use `mycroft-fetch` for all web fetches through the installed acquisition
+  policy (local SearXNG/Crawl4AI or Firecrawl) — never raw firecrawl,
   curl, or WebFetch.
   This captures evidence records (URL, local artifact, SHA-256 hash, timestamp)
   for grounding and optional C2PA package signing.

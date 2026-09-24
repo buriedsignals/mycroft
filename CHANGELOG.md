@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+- Acquisition honors the installed provider policy for search, scraping, provenance,
+  diagnostics, and private-update provisioning. Firecrawl-only uses the API directly
+  without probing or installing local SearXNG/Crawl4AI/Chromium; cloud fallback for
+  local acquisition now requires explicit configuration. Invalid or explicitly
+  missing selected config fails closed.
 - Fact-check: claim-extraction rules and density gate, evidence route files, and primary-record
   lookup tools (`tools/evidence-lookup.py`, `tools/marketdata.py`), adapted from Big If True by Verso.
 - `mycroft-fetch` stores artifacts under `raw/`; a JSON search body no longer overwrites its own record.

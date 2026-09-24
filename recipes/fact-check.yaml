@@ -11,8 +11,8 @@ instructions: |
   and manifest generation for every fact-check, but do not fail the fact-check
   unless strict provenance is requested.
 
-  IMPORTANT: Use `mycroft-fetch` for web fetches (sovereign default: Crawl4AI
-  scrape / SearXNG search, with Firecrawl as fallback) — never raw firecrawl,
+  IMPORTANT: Use `mycroft-fetch` for web fetches through the installed acquisition
+  policy (local SearXNG/Crawl4AI or Firecrawl) — never raw firecrawl,
   curl, or WebFetch.
   This captures evidence records (URL, local artifact, SHA-256 hash, timestamp)
   for grounding and optional C2PA package signing.

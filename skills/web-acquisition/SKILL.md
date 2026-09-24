@@ -1,18 +1,22 @@
 ---
 name: web-acquisition
-description: Sovereign web search, scrape, and source preservation (SearXNG + Crawl4AI) for Mycroft and Spotlight workflows; Firecrawl is an optional fallback.
+description: Configured local (SearXNG + Crawl4AI) or API (Firecrawl) web search, scrape, and source preservation for Mycroft.
 ---
 
 # Web Acquisition
 
-Mycroft acquires web sources **sovereign by default** — no API key, no vendor account:
+Mycroft acquires sources using the installed acquisition policy:
 
-- **Search** → `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>"` (local SearXNG JSON API). Add `--limit N`, `--categories news`, or `--time-range month`.
-- **Scrape** → `python3 "$MYCROFT_DIR/tools/scrape.py" <url>` (Crawl4AI → clean markdown). Local PDFs: `python3 "$MYCROFT_DIR/tools/scrape.py" <file.pdf> --pdf` (pdftotext).
+- **Search** → `python3 "$MYCROFT_DIR/tools/searxng-search.py" "<query>"` (SearXNG or Firecrawl). Add `--limit N`; `--categories news` and `--time-range month` apply to SearXNG.
+- **Scrape** → `python3 "$MYCROFT_DIR/tools/scrape.py" <url>` (Crawl4AI or Firecrawl → clean markdown). Local PDFs: `python3 "$MYCROFT_DIR/tools/scrape.py" <file.pdf> --pdf` (pdftotext).
 - **Domain URL discovery** → `python3 "$MYCROFT_DIR/tools/sitemap.py" <domain>` (robots.txt / sitemap.xml enumeration).
 - **Provenance-captured fetch/search** (chain of custody for fact-check) → `mycroft-fetch scrape <url>` / `mycroft-fetch search "<query>"` — writes an evidence record with `acquisition_method` (`crawl4ai` / `searxng` / `firecrawl`), a SHA-256, and the access timestamp.
 
-**Firecrawl is the optional escape hatch**, reached only when `FIRECRAWL_API_KEY` is set and the sovereign tool can't do the job — a hard anti-bot target that defeats Crawl4AI (scrape), or an exhaustive search union. With no key, Mycroft runs pure-sovereign; the tools fall back to Firecrawl automatically when it is present.
+**Local acquisition** selects SearXNG search and Crawl4AI scrape, without an API key or vendor account. Firecrawl is used only after a local failure and only when `acquisition.firecrawl` is `fallback`. CLI presence or an API key alone never enables cloud fallback.
+
+**API-only acquisition** selects Firecrawl for both search and scrape and requires `FIRECRAWL_API_KEY`. It never probes SearXNG or starts/provisions Crawl4AI or Chromium. Content and queries are sent to Firecrawl; do not describe this route as local or sovereign.
+
+Tools load `MYCROFT_CONFIG` when set; otherwise they use `MYCROFT_PROFILE_DIR/mycroft-config.json`. The default profile is `<Goose config>/mycroft`: on Unix, `${XDG_CONFIG_HOME}/goose` when XDG is absolute, otherwise `~/.config/goose`; on Windows, `%APPDATA%/Block/goose/config` (or `~/AppData/Roaming/Block/goose/config`). Invalid config, an explicitly selected missing config/profile, or a missing config in an existing profile fails without contacting a provider. Only unmanaged tools with no default profile retain a local-only default; configure cloud fallback explicitly.
 
 ## Use Cases
 

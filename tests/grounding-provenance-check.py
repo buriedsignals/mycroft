@@ -62,10 +62,15 @@ def main() -> int:
         tmp = Path(raw_tmp)
         fake_bin = make_fake_firecrawl(tmp)
         prov_dir = tmp / "provenance"
+        config = tmp / "mycroft-config.json"
+        config.write_text(json.dumps({"acquisition": {
+            "search": "firecrawl", "scrape": "firecrawl", "firecrawl": "fallback",
+        }}), encoding="utf-8")
         env = {
             **os.environ,
             "PATH": f"{fake_bin}:{os.environ['PATH']}",
             "MYCROFT_PROV_DIR": str(prov_dir),
+            "MYCROFT_CONFIG": str(config),
         }
 
         fetch = run([str(ROOT / "scripts/mycroft-fetch"), "scrape", "https://example.org/source"], env=env)

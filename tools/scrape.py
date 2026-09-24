@@ -5,10 +5,9 @@
     python3 "$MYCROFT_DIR/tools/scrape.py" <url> --format html
     python3 "$MYCROFT_DIR/tools/scrape.py" <file.pdf> --pdf
 
-Sovereign default: Crawl4AI (open-source, no API key) via `uvx --from crawl4ai
-crwl`. On a Crawl4AI failure the optional Firecrawl escape hatch is used *only*
-if the `firecrawl` CLI is present. Local PDFs go through pdftotext. The ladder is
-Crawl4AI -> (optional) Firecrawl.
+The installed acquisition policy selects Crawl4AI or Firecrawl directly. Local
+acquisition uses Firecrawl only when fallback is explicitly enabled. Standalone
+tools without an installed config default to local-only. PDFs use pdftotext.
 
 Exit 0 on success; 3 on a fetch/parse failure with the error on stderr.
 """
@@ -18,6 +17,8 @@ import argparse
 import shutil
 import subprocess
 import sys
+
+from acquisition_policy import load_acquisition
 
 FETCH_TIMEOUT = 90  # seconds; shared budget for the crawl4ai and firecrawl subprocesses
 
@@ -59,7 +60,7 @@ def parse_pdf(path: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="scrape.py", description="Fetch a URL (or local PDF) to markdown (Crawl4AI default).")
+    ap = argparse.ArgumentParser(prog="scrape.py", description="Fetch a URL using the configured acquisition backend, or parse a local PDF.")
     ap.add_argument("target", help="URL, or a local .pdf path with --pdf")
     ap.add_argument("--format", default="markdown", help="markdown (default) | html | links")
     ap.add_argument("--pdf", action="store_true", help="treat target as a local PDF path")
@@ -69,14 +70,17 @@ def main(argv: list[str] | None = None) -> int:
         if args.pdf:
             out = parse_pdf(args.target)
         else:
-            try:
-                out = crawl4ai(args.target, args.format)
-            except Exception as exc:  # noqa: BLE001 - crawl4ai failed/blocked
-                if shutil.which("firecrawl"):
+            policy = load_acquisition()
+            if policy["scrape"] == "firecrawl":
+                out = firecrawl(args.target, args.format)
+            else:
+                try:
+                    out = crawl4ai(args.target, args.format)
+                except (OSError, RuntimeError, subprocess.TimeoutExpired) as exc:
+                    if policy["firecrawl"] != "fallback":
+                        raise
                     print(f"[crawl4ai failed: {exc}] falling back to firecrawl", file=sys.stderr)
                     out = firecrawl(args.target, args.format)
-                else:
-                    raise
     except Exception as exc:  # noqa: BLE001
         print(f"scrape failed: {exc}", file=sys.stderr)
         return 3
