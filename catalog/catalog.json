@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-22T13:59:05Z",
-  "release_sequence": 31,
+  "released_at": "2026-09-24T18:09:26Z",
+  "release_sequence": 32,
   "products": {
     "mycroft": {
       "version": "0.3.9",
       "repo": "buriedsignals/mycroft",
-      "ref": "2e8c98e1022b84ac2d7464e4b09d78b82445d3a2",
+      "ref": "5b0bc4bd049ca0dabb74b090107fac953db66e08",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "2e8c98e1022b84ac2d7464e4b09d78b82445d3a2",
-        "digest": "4aee042c8722345f11f1b955905b9e7fe70c5cee6c395e5f2102a3fde41076e2",
+        "source_commit": "5b0bc4bd049ca0dabb74b090107fac953db66e08",
+        "digest": "557843a89c8458697cb5f6efe3cd902032b831b60fd90016ad68b6b15b24fe30",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -194,7 +194,10 @@
                   ]
                 },
                 "scrape": {
-                  "const": "crawl4ai"
+                  "enum": [
+                    "crawl4ai",
+                    "firecrawl"
+                  ]
                 },
                 "searxng": {
                   "enum": [
@@ -397,7 +400,10 @@
                   ]
                 },
                 "scrape": {
-                  "const": "crawl4ai"
+                  "enum": [
+                    "crawl4ai",
+                    "firecrawl"
+                  ]
                 },
                 "firecrawl": {
                   "enum": [
@@ -624,11 +630,11 @@
     "spotlight": {
       "version": "2.2.1",
       "repo": "buriedsignals/spotlight",
-      "ref": "9a33b67f5bb8ff1d6731abcf57398261de1704ce",
+      "ref": "c52cc072008dbb8992010bd7fccadd8e8f956b3f",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "9a33b67f5bb8ff1d6731abcf57398261de1704ce",
+        "source_commit": "c52cc072008dbb8992010bd7fccadd8e8f956b3f",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -960,7 +966,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -988,6 +995,27 @@
       "kind": "coupled"
     },
     {
+      "id": "osint",
+      "name": "OSINT toolkit",
+      "audience": [
+        "journalist",
+        "researcher"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/osint",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
       "id": "follow-the-money",
       "name": "Follow the money",
       "audience": [
@@ -998,6 +1026,49 @@
       "path": "skills/follow-the-money",
       "requires_keys": [],
       "version": "2.0.0",
+      "products": [
+        "mycroft",
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "follow-the-money",
+      "name": "Follow the money",
+      "audience": [
+        "journalist",
+        "researcher"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/follow-the-money",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "web-archiving",
+      "name": "Web archiving",
+      "audience": [
+        "journalist",
+        "researcher"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/web-archiving",
+      "requires_keys": [],
+      "version": "2.1.0",
       "products": [
         "mycroft",
         "spotlight"
@@ -1021,12 +1092,11 @@
       "requires_keys": [],
       "version": "2.1.0",
       "products": [
-        "mycroft",
         "spotlight"
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1061,6 +1131,34 @@
       }
     },
     {
+      "id": "content-access",
+      "name": "Content access",
+      "audience": [
+        "journalist",
+        "researcher"
+      ],
+      "entitlement": "mycroft.core",
+      "path": "skills/content-access",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "goose"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled",
+      "upstream": {
+        "repo": "jamditis/claude-skills-journalism",
+        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
+        "path": "research-toolkit/skills/content-access",
+        "license": "MIT",
+        "author": "Joe Amditis"
+      }
+    },
+    {
       "id": "arbiter",
       "name": "Arbiter",
       "audience": [
@@ -1077,7 +1175,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1097,7 +1196,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1117,7 +1217,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1137,7 +1238,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1157,7 +1259,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1177,7 +1280,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1197,7 +1301,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1217,7 +1322,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1237,7 +1343,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1257,7 +1364,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1277,7 +1385,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
@@ -1304,7 +1413,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1324,7 +1434,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1344,7 +1455,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1364,7 +1476,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1384,7 +1497,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1405,7 +1519,8 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight"
+        "spotlight",
+        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
