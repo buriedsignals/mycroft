@@ -249,7 +249,7 @@ prompt: |
 
      ```bash
      python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir> \
-       --sign-endpoint "${NOOSPHERE_C2PA_URL:-http://localhost:5002/api/mycroft/provenance/sign}" \
+       --sign-endpoint "${NOOSPHERE_C2PA_URL:-https://platform.noosphere.tech/api/provenance/sign}" \
        --credential-id "${NOOSPHERE_C2PA_CREDENTIAL_ID:-}" \
        --artifact review.md
      ```

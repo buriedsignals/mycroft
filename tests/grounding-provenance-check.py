@@ -176,6 +176,10 @@ def main() -> int:
         assert manifest["status"] == "unsigned"
         assert manifest["evidence"][0]["sha256"] == source_hash
         assert any(item["kind"] == "source" and item["sha256"] == source_hash for item in manifest["artifacts"])
+        expected_input_set_hash = hashlib.sha256(
+            json.dumps(manifest["artifacts"], ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        assert manifest["input_set_hash"] == expected_input_set_hash
 
         sift_manifest["claims"][0]["confidence"] = "high"
         sift_manifest["claims"][0]["grounding"]["confidence_cap"] = "medium"
@@ -184,8 +188,50 @@ def main() -> int:
         if failed.returncode == 0 or "exceeds grounding cap" not in failed.stderr:
             raise AssertionError("validator did not reject confidence above cap")
 
+    check_sign_request_names_the_product()
     print("grounding/provenance checks: OK")
     return 0
+
+
+def check_sign_request_names_the_product() -> None:
+    """The signer files a request under the profile it names; a request without
+    one is recorded under the generic profile, which is what the August canary
+    showed."""
+    import importlib.util
+    import urllib.request
+
+    spec = importlib.util.spec_from_file_location(
+        "build_provenance_manifest", ROOT / "tools/build-provenance-manifest.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    captured = {}
+
+    class _Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self):
+            return b'{"status": "signed"}'
+
+    def fake_urlopen(request, timeout=None):
+        captured["body"] = json.loads(request.data.decode("utf-8"))
+        captured["headers"] = dict(request.header_items())
+        return _Response()
+
+    real_urlopen = urllib.request.urlopen
+    urllib.request.urlopen = fake_urlopen
+    try:
+        module.post_for_signing("http://localhost/sign", {"input_set_hash": "0" * 64},
+                                "review.html", None, "test-key")
+    finally:
+        urllib.request.urlopen = real_urlopen
+    assert captured["body"]["profile"] == "mycroft"
+    assert captured["body"]["provenance_manifest"]["input_set_hash"] == "0" * 64
+    assert captured["headers"].get("X-api-key") == "test-key"
 
 
 if __name__ == "__main__":

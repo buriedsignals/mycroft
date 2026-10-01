@@ -8,6 +8,7 @@
     "project",
     "generated_at",
     "status",
+    "input_set_hash",
     "signing",
     "artifacts",
     "claims",
@@ -18,12 +19,13 @@
     "project": { "type": "string" },
     "generated_at": { "type": "string", "format": "date-time" },
     "status": { "enum": ["unsigned", "signed", "signing_failed"] },
+    "input_set_hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "signing": {
       "type": "object",
       "required": ["profile", "requires_api_key", "requires_signing_credential", "credential_id", "endpoint"],
       "properties": {
         "profile": { "const": "noosphere-c2pa" },
-        "requires_api_key": { "const": false },
+        "requires_api_key": { "const": true },
         "requires_signing_credential": { "type": "boolean" },
         "credential_id": { "type": ["string", "null"] },
         "endpoint": { "type": ["string", "null"] },

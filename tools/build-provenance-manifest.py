@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import urllib.error
@@ -41,6 +42,13 @@ def sha256_file(path: Path) -> tuple[str, int]:
             digest.update(chunk)
             total += len(chunk)
     return digest.hexdigest(), total
+
+
+def canonical_hash(value: Any) -> str:
+    """SHA-256 over sorted, compact JSON."""
+    return hashlib.sha256(
+        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def rel_path(path: Path, base: Path) -> str:
@@ -131,36 +139,46 @@ def evidence_entries(base: Path, evidence_bundle: dict[str, Any]) -> list[dict[s
 def build_manifest(base: Path, credential_id: str | None, endpoint: str | None) -> dict[str, Any]:
     evidence_bundle = load_json(base / "data/evidence-bundle.json")
     sift_manifest = load_json(base / "data/sift-manifest.json")
+    artifacts = artifact_entries(base)
     return {
         "schema_version": "1.0",
         "project": evidence_bundle.get("project") or base.name,
         "generated_at": now_iso(),
         "status": "unsigned",
+        # Identifies the exact set of files this manifest describes. The signer
+        # carries it through unchanged, so a receipt can be matched to its inputs.
+        "input_set_hash": canonical_hash(artifacts),
         "signing": {
             "profile": "noosphere-c2pa",
-            "requires_api_key": False,
+            "requires_api_key": True,
             "requires_signing_credential": True,
             "credential_id": credential_id,
             "endpoint": endpoint,
         },
-        "artifacts": artifact_entries(base),
+        "artifacts": artifacts,
         "claims": claim_entries(sift_manifest),
         "evidence": evidence_entries(base, evidence_bundle),
     }
 
 
-def post_for_signing(endpoint: str, manifest: dict[str, Any], artifact_path: str | None, credential_id: str | None) -> dict[str, Any]:
+def post_for_signing(endpoint: str, manifest: dict[str, Any], artifact_path: str | None, credential_id: str | None, api_key: str | None = None) -> dict[str, Any]:
     payload = {
+        # The signer records the request under this product profile and echoes it
+        # back; without it the record falls back to the generic profile.
+        "profile": "mycroft",
         "artifact_path": artifact_path,
         "provenance_manifest": manifest,
         "credential_id": credential_id,
     }
     body = json.dumps(payload).encode("utf-8")
+    headers = {"Content-Type": "application/json", "User-Agent": "Mycroft-C2PA/1.0"}
+    if api_key:
+        headers["X-API-Key"] = api_key
     request = urllib.request.Request(
         endpoint,
         data=body,
         method="POST",
-        headers={"Content-Type": "application/json", "User-Agent": "Mycroft-C2PA/1.0"},
+        headers=headers,
     )
     with urllib.request.urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
@@ -172,6 +190,11 @@ def main() -> int:
     parser.add_argument("--output", help="Output path; defaults to data/provenance-manifest.json")
     parser.add_argument("--credential-id", default=None)
     parser.add_argument("--sign-endpoint", default=None)
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("NOOSPHERE_PROVENANCE_API_KEY"),
+        help="Noosphere signing API key (X-API-Key). Defaults to $NOOSPHERE_PROVENANCE_API_KEY",
+    )
     parser.add_argument("--artifact", default=None)
     parser.add_argument("--receipt-output", default=None)
     parser.add_argument("--skip-validation", action="store_true")
@@ -198,7 +221,7 @@ def main() -> int:
             else base / "data/provenance-signing-receipt.json"
         )
         try:
-            receipt = post_for_signing(args.sign_endpoint, manifest, args.artifact, args.credential_id)
+            receipt = post_for_signing(args.sign_endpoint, manifest, args.artifact, args.credential_id, args.api_key)
             receipt_path.parent.mkdir(parents=True, exist_ok=True)
             receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
             manifest["status"] = "signed"
