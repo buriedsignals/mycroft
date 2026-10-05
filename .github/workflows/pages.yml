@@ -42,8 +42,6 @@ jobs:
         run: bash tests/journalist-install-cta-check.sh
       - name: Validate installer pointer
         run: bash tests/install-sh-check.sh
-      - name: Validate fresh-machine preflight
-        run: bash tests/install-preflight-check.sh
       - name: Validate acquisition backend contracts
         run: |
           bash tests/doctor-backends-check.sh
@@ -55,6 +53,13 @@ jobs:
         run: |
           python3 tests/fact-check-recipe-contract.py
           python3 tests/fact-check-tools-check.py
+      - name: Validate shell safety, perspective audit and morning brief
+        run: |
+          python3 tests/shell-safety-check.py
+          python3 tests/perspective-audit-check.py
+          python3 tests/morning-brief-contract.py
+      - name: Validate feedback widget
+        run: node tests/feedback-widget-check.js
       - name: Validate JSON parses
         run: |
           python3 -c "

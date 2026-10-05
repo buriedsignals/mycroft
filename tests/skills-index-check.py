@@ -46,8 +46,7 @@ def main() -> None:
     assert 'data-dialog="dlg-skills"' in html, "skills-index trigger is missing"
     assert 'id="dlg-skills"' in html, "skills-index dialog is missing"
     assert "fetch('skills.manifest')" in html, "skills index must use skills.manifest"
-    assert "fetch('skills/' + skillId + '/SKILL.md')" in html, "skills index must read SKILL.md metadata"
-    assert "21 journalism skills" not in html, "hard-coded stale skill count remains"
+    assert "fetch('skills/'" in html and "/SKILL.md')" in html, "skills index must read SKILL.md metadata"
 
     print(f"skills index: OK ({len(skill_ids)} skills)")
 

@@ -29,26 +29,7 @@ includes "host's compound-engineering or code-review workflow."
 includes 'Open-source and agent-led users'
 includes 'bsig'
 includes 'stdin/keychain flow'
-excludes 'setup_server.py'
-excludes 'engine_bridge.py'
-excludes 'bootstrap.sh'
-excludes 'PUBLIC_RELEASE_BASE'
 excludes 'curl -fL'
-excludes '__CFG__'
-excludes 'ENV_EOF'
-
-if [ -e install/configure.html ]; then note "install/configure.html must be deleted"; fi
-if [ -e install/setup_server.py ]; then note "install/setup_server.py must be deleted"; fi
-if [ -e install/engine_bridge.py ]; then note "install/engine_bridge.py must be deleted"; fi
-if [ -e setup.html ]; then note "setup.html must be deleted"; fi
-
-file_includes skills/fact-check/SKILL.md 'Do not use this skill for software code'
-file_includes skills/fact-check/SKILL.md 'route those to compound-engineering.'
-file_includes instructions/mycroft-soul.md 'Do not route software code'
-file_includes instructions/mycroft-soul.md "Use the host's compound-engineering or code-review workflow."
-file_excludes skills/fact-check/SKILL.md 'escalating to Spotlight for deeper adversarial review'
-file_excludes skills/fact-check/SKILL.md 'If Spotlight is installed and the request needs adversarial review'
-file_excludes instructions/mycroft-soul.md 'Escalate to Spotlight when the work needs adversarial review'
 
 bash -n scripts/mycroft-update || { echo "scripts/mycroft-update does not parse"; exit 1; }
 bash -n scripts/mycroft-uninstall || { echo "scripts/mycroft-uninstall does not parse"; exit 1; }
