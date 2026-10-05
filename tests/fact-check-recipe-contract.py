@@ -45,6 +45,14 @@ def main() -> int:
     for route in ("markets-economy", "quotes-attribution", "web-social-archives", "science-studies", "companies-courts", "official-statistics"):
         assert (ROOT / f"skills/fact-check/references/routes/{route}.md").is_file(), f"missing route file {route}"
         assert route in skill, f"SKILL.md must name the {route} route"
+    soul = (ROOT / "instructions/mycroft-soul.md").read_text(encoding="utf-8")
+    assert "Do not use this skill for software code" in skill and "route those to compound-engineering." in skill, (
+        "fact-check must route software code review to compound-engineering"
+    )
+    assert "Do not route software code" in soul and "Use the host's compound-engineering or code-review workflow." in soul
+    for stale in ("escalating to Spotlight for deeper adversarial review", "If Spotlight is installed and the request needs adversarial review"):
+        assert stale not in skill, f"SKILL.md must not escalate code review to Spotlight: {stale}"
+    assert "Escalate to Spotlight when the work needs adversarial review" not in soul
     assert "verso.ink" in skill and "verso.ink/big-if-true" in (ROOT / "index.html").read_text(encoding="utf-8"), "Verso credit missing"
 
     print("fact-check recipe contract: OK")
