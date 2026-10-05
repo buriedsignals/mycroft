@@ -8,6 +8,9 @@ archive/
 .env
 .env.local
 *.pem
+# Public certificates only (C2PA trust list, Noosphere fixture chain); no keys.
+!tools/c2pa-trust-list.pem
+!tests/fixtures/noosphere/*/*/certificate-chain.pem
 *.key
 
 # Logs

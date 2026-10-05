@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
+import importlib.util
 import json
 import os
 import subprocess
 import sys
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -187,51 +190,257 @@ def main() -> int:
         failed = run([sys.executable, str(ROOT / "tools/validate-grounding.py"), str(package), "--strict-files"])
         if failed.returncode == 0 or "exceeds grounding cap" not in failed.stderr:
             raise AssertionError("validator did not reject confidence above cap")
+        sift_manifest["claims"][0]["confidence"] = "medium"
+        (data_dir / "sift-manifest.json").write_text(json.dumps(sift_manifest, indent=2) + "\n", encoding="utf-8")
 
-    check_sign_request_names_the_product()
+        check_signer_responses(package, tmp)
+
+    check_managed_key_origin()
+    check_noosphere_fixture()
     print("grounding/provenance checks: OK")
     return 0
 
 
-def check_sign_request_names_the_product() -> None:
-    """The signer files a request under the profile it names; a request without
-    one is recorded under the generic profile, which is what the August canary
-    showed."""
-    import importlib.util
-    import urllib.request
-
+def load_builder():
     spec = importlib.util.spec_from_file_location(
         "build_provenance_manifest", ROOT / "tools/build-provenance-manifest.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    return module
 
-    captured = {}
 
-    class _Response:
-        def __enter__(self):
-            return self
+def signer_record(request_body: dict) -> dict:
+    """The record Noosphere signs: Mycroft's manifest projected onto the
+    provider vocabulary (HASHING.md section 5), as in the vendor fixture."""
+    manifest = request_body["provenance_manifest"]
+    return {
+        "profile": request_body["profile"],
+        "input_set_hash": manifest["input_set_hash"],
+        "inventory": [{k: a[k] for k in ("kind", "path", "sha256", "bytes")} for a in manifest["artifacts"]],
+        "claims": [{"id": c["claim_id"], "text": c["claim_text"], "verdict": c["verdict"]} for c in manifest["claims"]],
+        "sources": [{"id": e["evidence_id"], "url": e["source_url"], "hash": e["sha256"]} for e in manifest["evidence"]],
+    }
 
-        def __exit__(self, *exc):
-            return False
 
-        def read(self):
-            return b'{"status": "signed"}'
+def signer_response(request_body: dict, record: dict | None = None, **overrides: object) -> dict:
+    """A response shaped like Noosphere's 1.3.0 contract for the request it answers."""
+    record = record if record is not None else signer_record(request_body)
+    record_bytes = json.dumps(record, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    response = {
+        "status": "signed",
+        "contract_version": "1.3.0",
+        "profile": request_body["profile"],
+        "manifest_id": "provenance_test.json",
+        "input_set_hash": request_body["provenance_manifest"]["input_set_hash"],
+        "content_hash": "sha256:" + hashlib.sha256(record_bytes).hexdigest(),
+        "record": record,
+        "record_b64": base64.b64encode(record_bytes).decode("ascii"),
+        "c2pa_manifest_b64": base64.b64encode(b"synthetic c2pa sidecar").decode("ascii"),
+        "signer": {"org_id": "org_test", "signing_source": "gcp-cloud-hsm"},
+        "certificate_chain": {"grade": "production"},
+        "signed_at": "2026-10-01T00:00:00Z",
+    }
+    response.update(overrides)
+    return response
 
-    def fake_urlopen(request, timeout=None):
-        captured["body"] = json.loads(request.data.decode("utf-8"))
-        captured["headers"] = dict(request.header_items())
-        return _Response()
 
-    real_urlopen = urllib.request.urlopen
-    urllib.request.urlopen = fake_urlopen
+def drop_evidence(body: dict) -> dict:
+    record = signer_record(body)
+    record["sources"] = []
+    return signer_response(body, record=record)
+
+
+HTTP_STATUS_CASES = {
+    "/http-401": (401, {}, "rejected the API key (401)"),
+    "/http-429": (429, {"Retry-After": "30"}, "rate limiting (429); retry after 30 s"),
+    "/http-503": (503, {}, "no production certificate chain (503)"),
+}
+
+SIGNER_CASES = {
+    # path: (response builder, expected error fragment or None for an accepted receipt)
+    "/ok": (lambda body: signer_response(body), None),
+    "/bare-success": (lambda body: {"status": "signed"}, "record_b64 is missing"),
+    "/development-chain": (
+        lambda body: signer_response(body, certificate_chain={"grade": "development"}),
+        "certificate chain grade is 'development'",
+    ),
+    "/tampered-hash": (
+        lambda body: signer_response(body, content_hash="sha256:" + "0" * 64),
+        "content_hash does not match",
+    ),
+    "/other-input-set": (
+        lambda body: signer_response(body, input_set_hash="1" * 64),
+        "input_set_hash does not match",
+    ),
+    "/generic-profile": (lambda body: signer_response(body, profile="provenance"), "profile is 'provenance'"),
+    "/dropped-evidence": (drop_evidence, "1 evidence item(s) missing or changed"),
+    "/redirect": (None, "redirects are refused"),
+    **{path: (None, message) for path, (_, _, message) in HTTP_STATUS_CASES.items()},
+}
+
+# Stands in for c2patool so the builder's signed/unsigned decision can be
+# exercised without a real production-signed sidecar.
+TRUSTED_VERIFIER = """#!/bin/sh
+if [ "$1" = "--version" ]; then echo "c2patool 0.27.22"; exit 0; fi
+echo '{"validation_state": "Trusted", "validation_results": {"activeManifest": {"failure": []}}}'
+"""
+
+
+def check_signer_responses(package: Path, tmp: Path) -> None:
+    """The builder names the mycroft profile, keeps a structurally sound
+    response as an unverified receipt, marks it signed only when the verifier
+    reports it Trusted, and refuses false success, mismatched hashes, dropped
+    evidence, a development chain, redirects and HTTP errors. Until this check,
+    any JSON response marked the package signed. A custom endpoint never
+    receives the managed key."""
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    seen: list[tuple[str, dict, dict]] = []
+
+    class Signer(BaseHTTPRequestHandler):
+        def log_message(self, *args: object) -> None:
+            pass
+
+        def send_json(self, value: object, status: int = 200, headers: dict | None = None) -> None:
+            data = json.dumps(value).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data)))
+            for name, header in (headers or {}).items():
+                self.send_header(name, header)
+            self.end_headers()
+            self.wfile.write(data)
+
+        def do_GET(self) -> None:
+            seen.append((self.path, {}, {}))
+            self.send_json({"status": "signed"})
+
+        def do_POST(self) -> None:
+            body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+            seen.append((self.path, {k.lower(): v for k, v in self.headers.items()}, body))
+            if self.path == "/redirect":
+                self.send_response(302)
+                self.send_header("Location", f"http://127.0.0.1:{self.server.server_port}/stolen")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return
+            if self.path in HTTP_STATUS_CASES:
+                status, headers, _ = HTTP_STATUS_CASES[self.path]
+                self.send_json({"error": "refused"}, status=status, headers=headers)
+                return
+            self.send_json(SIGNER_CASES[self.path.split("?")[0]][0](body))
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Signer)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    endpoint = f"http://127.0.0.1:{server.server_port}"
+    base_env = {**os.environ, "NOOSPHERE_PROVENANCE_API_KEY": "", "C2PATOOL": "/nonexistent/c2patool"}
+    manifest_path = package / "data" / "provenance-manifest.json"
+
+    def build(path: str, *extra: str, **env: str) -> dict:
+        result = run([sys.executable, str(ROOT / "tools/build-provenance-manifest.py"), str(package),
+                      "--sign-endpoint", endpoint + path, *extra], env={**base_env, **env})
+        assert_ok(result)
+        return json.loads(manifest_path.read_text(encoding="utf-8"))
+
     try:
-        module.post_for_signing("http://localhost/sign", {"input_set_hash": "0" * 64},
-                                "review.html", None, "test-key")
+        for path, (_, expected_error) in SIGNER_CASES.items():
+            manifest = build(path)
+            assert manifest["status"] != "signed", path
+            if expected_error is None:
+                assert manifest["status"] == "unsigned", path
+                assert manifest["signing"]["receipt_status"] == "received_unverified", path
+                assert manifest["signing"]["verification"]["verified"] is False, path
+            else:
+                assert manifest["status"] == "signing_failed", path
+                assert expected_error in manifest["signing"]["error"], (path, manifest["signing"]["error"])
+
+        verifier = tmp / "c2patool"
+        verifier.write_text(TRUSTED_VERIFIER, encoding="utf-8")
+        verifier.chmod(0o755)
+        manifest = build("/ok?trusted", C2PATOOL=str(verifier))
+        assert manifest["status"] == "signed", manifest["signing"]
+        assert manifest["signing"]["verification"]["validation_state"] == "Trusted"
+
+        manifest = build("/ok?keyed", NOOSPHERE_PROVENANCE_API_KEY="test-key")
+        assert manifest["status"] == "signing_failed"
+        assert "only sent to https://platform.noosphere.tech" in manifest["signing"]["error"]
+        assert "test-key" not in json.dumps(manifest)
+
+        flagged = run([sys.executable, str(ROOT / "tools/build-provenance-manifest.py"), str(package),
+                       "--api-key", "test-key"], env=base_env)
+        assert flagged.returncode == 2 and "unrecognized arguments: --api-key" in flagged.stderr
     finally:
-        urllib.request.urlopen = real_urlopen
-    assert captured["body"]["profile"] == "mycroft"
-    assert captured["body"]["provenance_manifest"]["input_set_hash"] == "0" * 64
-    assert captured["headers"].get("X-api-key") == "test-key"
+        server.shutdown()
+        server.server_close()
+
+    _, headers, body = next(entry for entry in seen if entry[0] == "/ok")
+    assert body["profile"] == "mycroft"
+    assert body["provenance_manifest"]["input_set_hash"]
+    assert "x-api-key" not in headers
+    assert not any(entry[0] in ("/stolen", "/ok?keyed") for entry in seen)
+
+
+def check_managed_key_origin() -> None:
+    """The managed key goes to platform.noosphere.tech as X-API-Key."""
+    builder = load_builder()
+    sent: list = []
+
+    class Opener:
+        def open(self, request, timeout):  # noqa: ARG002
+            sent.append(request)
+            raise builder.urllib.error.HTTPError(request.full_url, 401, "Unauthorized", {}, None)
+
+    original = builder.urllib.request.build_opener
+    builder.urllib.request.build_opener = lambda *handlers: Opener()
+    os.environ["NOOSPHERE_PROVENANCE_API_KEY"] = "managed-key"
+    try:
+        builder.post_for_signing(
+            "https://platform.noosphere.tech/api/provenance/sign", {"input_set_hash": "x"}, None, None)
+    except builder.SigningHTTPError as exc:
+        assert "rejected the API key (401)" in str(exc) and "managed-key" not in str(exc)
+    else:
+        raise AssertionError("a 401 must raise SigningHTTPError")
+    finally:
+        builder.urllib.request.build_opener = original
+        del os.environ["NOOSPHERE_PROVENANCE_API_KEY"]
+    assert sent and sent[0].get_header("X-api-key") == "managed-key"
+
+
+def check_noosphere_fixture() -> None:
+    """Noosphere's signed Mycroft fixture (contract 1.3.0, development CA)
+    keeps every artifact, claim and evidence item, and c2patool verifies its
+    sidecar: Trusted with the development CA pinned, untrusted against the
+    C2PA trust list, invalid after one record byte changes."""
+    if not shutil.which("c2patool") and not os.environ.get("C2PATOOL"):
+        if os.environ.get("CI"):
+            raise AssertionError("c2patool is required in CI")
+        print("SKIP check_noosphere_fixture: c2patool not installed")
+        return
+    builder = load_builder()
+    verify = builder.noosphere_verify
+    bundle = ROOT / "tests" / "fixtures" / "noosphere" / "dev-v1" / "mycroft"
+    request = json.loads((bundle / "request.json").read_text(encoding="utf-8"))
+    response = json.loads((bundle / "response.json").read_text(encoding="utf-8"))
+    assert builder.signing_response_problems(response, request["provenance_manifest"]) == [
+        "certificate chain grade is 'development', not 'production'"
+    ]
+    with tempfile.TemporaryDirectory() as raw_tmp:
+        dev_ca = Path(raw_tmp) / "dev-ca.pem"
+        chain = (bundle / "certificate-chain.pem").read_text(encoding="utf-8")
+        dev_ca.write_text("-----BEGIN CERTIFICATE-----" + chain.split("-----BEGIN CERTIFICATE-----")[2])
+        os.environ["NOOSPHERE_C2PA_TRUST_ANCHORS"] = str(dev_ca)
+        try:
+            trusted = verify.verify_sidecar(response)
+            record = bytearray(base64.b64decode(response["record_b64"]))
+            record[10] ^= 1
+            tampered = verify.verify_sidecar({**response, "record_b64": base64.b64encode(bytes(record)).decode()})
+        finally:
+            del os.environ["NOOSPHERE_C2PA_TRUST_ANCHORS"]
+        public = verify.verify_sidecar(response)
+    assert trusted["verified"] and trusted["validation_state"] == "Trusted", trusted
+    assert not public["verified"] and "signingCredential.untrusted" in public["failures"], public
+    assert not tampered["verified"] and "assertion.dataHash.mismatch" in tampered["failures"], tampered
 
 
 if __name__ == "__main__":

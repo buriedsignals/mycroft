@@ -49,6 +49,13 @@ jobs:
           bash tests/doctor-backends-check.sh
           python3 tests/acquisition-routing-check.py
           python3 tests/install-contract-check.py
+      - name: Install c2patool 0.27.22 (tests/grounding-provenance-check.py)
+        run: |
+          curl -fsSL -o /tmp/c2patool.tar.gz https://github.com/contentauth/c2pa-rs/releases/download/c2patool-v0.27.22/c2patool-v0.27.22-x86_64-unknown-linux-gnu.tar.gz
+          echo "6f138ad53da1a62f1cd6ee71c60727efa27d13b811f4c0ea8c2a8528968b358b  /tmp/c2patool.tar.gz" | sha256sum -c -
+          mkdir -p /tmp/c2patool && tar -xzf /tmp/c2patool.tar.gz -C /tmp/c2patool
+          sudo install -m 0755 "$(find /tmp/c2patool -type f -name c2patool | head -1)" /usr/local/bin/c2patool
+          c2patool --version
       - name: Validate grounding/provenance tooling
         run: python3 tests/grounding-provenance-check.py
       - name: Validate fact-check recipe and lookup tools
