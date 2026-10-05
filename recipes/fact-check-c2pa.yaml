@@ -222,7 +222,7 @@ prompt: |
        --artifact review.md
      ```
 
-     Report the signing status and receipt path. Do not say C2PA proves the claims are true; say the verification package is tamper-evident if signing succeeds.
+     Report the signing status and receipt path. The package is `signed` only when c2patool verified the C2PA sidecar locally; with `receipt_status: received_unverified`, say a signing receipt was received but not verified locally. Do not say C2PA proves the claims are true; say the verification package is tamper-evident if signing succeeds.
   {% endif %}
 
   Rules:
