@@ -24,8 +24,9 @@ The production landing site is GitHub Pages at
 `https://mycroft.buriedsignals.com/`. A push to `main` triggers
 `.github/workflows/pages.yml`, which validates the recipes, HTML, installer
 pointer, journalist CTAs, grounding/provenance tooling, and JSON before deploying the
-repository root through the `github-pages` environment. Do not use Render or a
-manual file upload for this site.
+repository root through the `github-pages` environment. Pull requests run the
+same validate job without deploying. Do not use Render or a manual file upload
+for this site.
 
 Before merging, run the checks relevant to the change. After merging, watch the
 `Deploy to GitHub Pages` workflow for the merged SHA (for example with
