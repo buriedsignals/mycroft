@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-09-29T17:30:25Z",
-  "release_sequence": 37,
+  "released_at": "2026-10-14T18:30:46Z",
+  "release_sequence": 38,
   "products": {
     "mycroft": {
-      "version": "0.3.9",
+      "version": "0.3.10",
       "repo": "buriedsignals/mycroft",
-      "ref": "5b0bc4bd049ca0dabb74b090107fac953db66e08",
+      "ref": "679af97f37ebe7b8e5e763822b60bbf6e905d632",
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "5b0bc4bd049ca0dabb74b090107fac953db66e08",
+        "source_commit": "679af97f37ebe7b8e5e763822b60bbf6e905d632",
         "digest": "557843a89c8458697cb5f6efe3cd902032b831b60fd90016ad68b6b15b24fe30",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -614,7 +614,7 @@
       "install_contract": {
         "schema_version": "splash-install-contract/v1",
         "source_commit": "265c89fdc5ad5e06dc5e1f5480a04efde677e259",
-        "digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "digest": "4396034ef5fdf7358453c9d24855f3c1fddb268a3d9a854eebcd9e4c7a60f9e2",
         "writer_mode": "engine_v2",
         "choice_schema": {
           "type": "object"
@@ -628,13 +628,13 @@
       }
     },
     "spotlight": {
-      "version": "2.3.2",
+      "version": "2.4.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "9bf141d38e976d7e64c9033f289422e9bc7f8689",
+      "ref": "9be470f76e9870633c497b04051e9128541e18b7",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "9bf141d38e976d7e64c9033f289422e9bc7f8689",
+        "source_commit": "9be470f76e9870633c497b04051e9128541e18b7",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
