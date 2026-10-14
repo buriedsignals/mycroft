@@ -30,6 +30,8 @@
         "credential_id": { "type": ["string", "null"] },
         "endpoint": { "type": ["string", "null"] },
         "receipt_path": { "type": "string" },
+        "receipt_status": { "const": "received_unverified" },
+        "verification": { "$ref": "#/definitions/verification" },
         "signed_at": { "type": "string", "format": "date-time" },
         "error": { "type": "string" }
       }
@@ -48,6 +50,21 @@
     }
   },
   "definitions": {
+    "verification": {
+      "description": "Local C2PA verification of the signing receipt. Only verified: true marks a package signed.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verifier", "verified"],
+      "properties": {
+        "verifier": { "const": "c2patool" },
+        "verified": { "type": "boolean" },
+        "version": { "type": "string" },
+        "validation_state": { "type": ["string", "null"] },
+        "failures": { "type": "array", "items": { "type": "string" } },
+        "trust_anchors": { "type": "string" },
+        "reason": { "type": "string" }
+      }
+    },
     "artifact": {
       "type": "object",
       "required": ["kind", "path", "sha256", "bytes"],
