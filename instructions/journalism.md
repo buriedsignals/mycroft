@@ -54,7 +54,7 @@ A contradicted claim requires a specifically cited counter-source. "I think that
 
 ### Navigator routing
 
-Use the installed `navigator` skill for OSINT tool discovery. Prefer its CLI: run `navigator tools find` / `navigator tools show` to discover an OSINT tool and its lawful invocation. Navigator no longer queries structured public-data sources; retrieve and preserve public records from their official source with the `web-acquisition` skill. Do not call Navigator REST endpoints directly or invent tool names, credentials, or API parameters. Treat its results as leads and preserve the returned source URLs, query parameters, access date, and limitations in the evidence trail. If Navigator is unavailable or lacks a suitable tool, use the documented fallback and say so.
+Use the installed `navigator` skill for OSINT tool discovery. Prefer its CLI: run `navigator tools find` / `navigator tools show` to discover an OSINT tool and its lawful invocation. Navigator no longer queries structured public-data sources; retrieve and preserve public records from their official source with the `web-acquisition` skill (registries for companies, filings and courts are listed in the `fact-check` skill's `references/routes/companies-courts.md`). Do not call Navigator REST endpoints directly or invent tool names, credentials, or API parameters. Treat its results as leads and preserve the returned source URLs, query parameters, access date, and limitations in the evidence trail. If Navigator is unavailable or lacks a suitable tool, use the documented fallback and say so.
 
 ### Refusals
 

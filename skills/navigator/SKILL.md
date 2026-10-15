@@ -36,9 +36,9 @@ navigator auth status
 ```
 
 If the command is unavailable or reports no verified connection, stop before
-calling Navigator and tell the operator to run `mycroft-navigator` (Mycroft) or
-`spotlight-navigator` (Spotlight). The base product and this skill remain usable
-for discovery even while Navigator is locked.
+calling Navigator and tell the operator to reconnect: `bsig auth login` on an
+Engine-managed install, otherwise `navigator auth login`. The base product and
+this skill remain usable for discovery even while Navigator is locked.
 
 The connection flow stores a revocable Navigator PAT in the OS keychain. Never
 ask the user to paste that token into a prompt, file, argv, or command.
@@ -64,5 +64,6 @@ retrieval time, and any documented limitations with the research plan.
 
 - CLI unavailable: use permitted web or local research tools; use Navigator's
   authenticated API only where the runtime explicitly supports that fallback.
-- Disconnected, expired, or revoked: ask the operator to use the installed
-  product's Navigator reconnect command. Do not request a credential value.
+- Disconnected, expired, or revoked: ask the operator to run `bsig auth login`
+  (Engine-managed install) or `navigator auth login`. Do not request a
+  credential value.
