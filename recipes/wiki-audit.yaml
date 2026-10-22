@@ -31,11 +31,11 @@ extensions:
 prompt: |
   Run a Mycroft wiki audit.
 
-  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
+  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health and frontmatter-schema problems, `search` for discovery, and `exec` for exact reads. When the OpenKnowledge server is running, `ok audit --json` from the developer extension reports broken internal links across the whole wiki in one pass; include its findings. Skip `.trash/` and binary files.
 
   Check:
 
-  1. Missing or malformed frontmatter.
+  1. Missing or malformed frontmatter, including notes whose `type` the wiki's schemas reject (see knowledge-primitives).
   2. Source notes without URLs, paths, access dates, or confidence.
   3. Claim notes without citations or verdicts.
   4. Orphaned files not linked from `_index.md`, story notes, or wiki notes.

@@ -34,17 +34,58 @@ The wiki also keeps:
 
 ## Minimum Frontmatter
 
+Every note except `index.md` and `log.md` claims its type with `type:`. The
+wiki's schemas check it (OpenKnowledge shows a problem when it is missing).
+
 ```yaml
 ---
 title: ""
 description: ""
-type: entity|source|method|claim|topic|story|context
+type: note|source
+kind: method|topic|story|context|claim   # for type: note
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 confidence: high|medium|low|partial|verified|unverified
 tags: []
 ---
 ```
+
+- Ordinary notes use `type: note`, with the old category kept as `kind`
+  (`method`, `topic`, `story`, `context`, `claim`). Older notes were retyped
+  this way once; write new ones the same way.
+- `type: claim` is reserved for Spotlight's claim notes under `spotlight/`.
+- Source notes use `type: source`.
+
+## Entities
+
+People, organisations, companies, places and contacts belong in one shared
+entity register, used by Mycroft, Spotlight and Scoutpost imports. The
+register sits at the root of the OpenKnowledge workspace (`wiki/entities/`,
+beside the `mycroft/` and `spotlight/` folders) and is written only through
+the wiki service (`bsig wiki`), which validates each entity and finds
+duplicates. Where the wiki service is not set up yet, keep writing entity
+notes in this project's own `wiki/entities/` with the same fields; they move
+into the register once, and their old paths become redirects.
+
+An entity note's `type` is its kind (`person`, `organization`, `company`,
+`place` or `contact`) and it carries:
+
+- `id` (the file name), `label` (its most common name) and `aliases` (every
+  other name, optionally `{name, lang}`);
+- `identifiers`: `email`, `phone`, `handle`, `company` (number and
+  jurisdiction), `lei`, `opencorporates`, `wikidata`;
+- `different_from` (entities it must never be merged with) and `seen_in`
+  (where it was seen: note, case or scout, date, source).
+
+Rules:
+
+- Look an entity up before creating one. Only an exact strong identifier
+  makes two mentions the same entity; a similar name is a candidate for the
+  journalist to judge, never a match.
+- Never merge entities yourself. Propose the merge with its evidence; the
+  journalist decides. A merged entity leaves a redirect note behind.
+- An entity marked as a protected source is never written into the wiki and
+  never named in anything sent to a cloud model.
 
 ## Post-Write Checks
 
