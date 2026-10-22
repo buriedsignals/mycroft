@@ -31,7 +31,7 @@ extensions:
 prompt: |
   Run a Mycroft wiki audit.
 
-  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health and frontmatter-schema problems, `search` for discovery, and `exec` for exact reads. When the OpenKnowledge server is running, `ok audit --json` from the developer extension reports broken internal links across the whole wiki in one pass; include its findings. Skip `.trash/` and binary files.
+  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health and frontmatter-schema problems, `search` for discovery, and `exec` for exact reads. Run `ok audit --json` through the developer shell to list broken internal links across the whole wiki in one pass; it needs the OpenKnowledge server running, so if it fails, rely on `links` alone and say so in the report. Skip `.trash/` and binary files.
 
   Check:
 

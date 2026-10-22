@@ -23,12 +23,11 @@ Use this skill when information should be stored as durable Mycroft knowledge.
 2. Identify the configured Mycroft OpenKnowledge project root.
 3. Preserve raw material under `sources/raw/` when applicable.
 4. Write cleaned extracts under `sources/processed/`.
-5. Create or update wiki notes under:
-   - `wiki/entities/`
-   - `wiki/sources/`
-   - `wiki/methods/`
-   - `wiki/claims/`
-   - `wiki/topics/`
+5. Create or update wiki notes, with the types in `knowledge-primitives`:
+   - entities: follow its Entities section (look up first, never merge);
+   - `wiki/sources/` (`type: source`);
+   - `wiki/methods/`, `wiki/claims/`, `wiki/topics/` (`type: note`, with
+     `kind: method`, `kind: claim` or `kind: topic`).
 6. Add story candidates under `stories/pitches/` only when there is a publishable angle.
 7. Update `index.md` and `log.md`.
 
@@ -38,7 +37,7 @@ When ingesting from Spotlight:
 
 - Read approved Spotlight projections under `spotlight/`, or active case data only through the read-only case adapter.
 - Keep links back to Spotlight `cases/{project}` and evidence files.
-- Promote only durable entities, sources, claims, methods, and story angles into Mycroft.
+- Promote only durable entities, sources, claims, methods, and story angles into Mycroft. A claim taken from Spotlight becomes a Mycroft note (`type: note`, `kind: claim`) that links back to Spotlight's own claim note; never copy Spotlight's `type: claim`.
 - Do not copy raw case clutter into Mycroft's project.
 
 ## Safety

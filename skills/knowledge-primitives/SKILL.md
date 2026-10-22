@@ -41,7 +41,7 @@ wiki's schemas check it (OpenKnowledge shows a problem when it is missing).
 ---
 title: ""
 description: ""
-type: note|source
+type: note|source                        # entities: see Entities below
 kind: method|topic|story|context|claim   # for type: note
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
@@ -51,9 +51,10 @@ tags: []
 ```
 
 - Ordinary notes use `type: note`, with the old category kept as `kind`
-  (`method`, `topic`, `story`, `context`, `claim`). Older notes were retyped
-  this way once; write new ones the same way.
-- `type: claim` is reserved for Spotlight's claim notes under `spotlight/`.
+  (`method`, `topic`, `story`, `context`, `claim`). Engine retyped older notes
+  this way once; write new ones the same way, and never retype notes yourself.
+- A Mycroft claim note is `type: note`, `kind: claim`. `type: claim` is
+  reserved for Spotlight's claim notes under `spotlight/`.
 - Source notes use `type: source`.
 
 ## Entities
@@ -63,9 +64,10 @@ entity register, used by Mycroft, Spotlight and Scoutpost imports. The
 register sits at the root of the OpenKnowledge workspace (`wiki/entities/`,
 beside the `mycroft/` and `spotlight/` folders) and is written only through
 the wiki service (`bsig wiki`), which validates each entity and finds
-duplicates. Where the wiki service is not set up yet, keep writing entity
-notes in this project's own `wiki/entities/` with the same fields; they move
-into the register once, and their old paths become redirects.
+duplicates. When the wiki service is not available to you (no `bsig wiki`
+tools or command), keep writing entity notes in this project's own
+`wiki/entities/` with the same fields. Engine moves them into the register
+once and leaves redirects; do not move them yourself.
 
 An entity note's `type` is its kind (`person`, `organization`, `company`,
 `place` or `contact`) and it carries:
