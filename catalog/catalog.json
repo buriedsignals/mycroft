@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.1.5",
-  "released_at": "2026-10-14T18:30:46Z",
-  "release_sequence": 38,
+  "released_at": "2026-10-22T15:15:06Z",
+  "release_sequence": 39,
   "products": {
     "mycroft": {
       "version": "0.3.10",
@@ -628,13 +628,13 @@
       }
     },
     "spotlight": {
-      "version": "2.4.0",
+      "version": "2.5.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "9be470f76e9870633c497b04051e9128541e18b7",
+      "ref": "d81e6cb0b65ce490aa0cfefe4f145ff30d859546",
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "9be470f76e9870633c497b04051e9128541e18b7",
+        "source_commit": "d81e6cb0b65ce490aa0cfefe4f145ff30d859546",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1182,13 +1182,13 @@
       "kind": "coupled"
     },
     {
-      "id": "phase-execution",
-      "name": "Phase execution",
+      "id": "phase-investigation",
+      "name": "Phase investigation",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/phase-execution",
+      "path": "skills/phase-investigation",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
@@ -1203,13 +1203,13 @@
       "kind": "coupled"
     },
     {
-      "id": "phase-gate1",
-      "name": "Phase gate 1",
+      "id": "phase-investigation-gate",
+      "name": "Phase investigation gate",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/phase-gate1",
+      "path": "skills/phase-investigation-gate",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
