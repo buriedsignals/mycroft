@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+- Add `recipes/apify-linkedin-dated.yaml` for LinkedIn post search bounded by a
+  date window (optional `johnvc/linkedin-post-search-api` and
+  `johnvc/linkedin-posts-api`). Leaves `apify-linkedin.yaml` unchanged.
 - Acquisition honors the installed provider policy for search, scraping, provenance,
   diagnostics, and private-update provisioning. Firecrawl-only uses the API directly
   without probing or installing local SearXNG/Crawl4AI/Chromium; cloud fallback for
