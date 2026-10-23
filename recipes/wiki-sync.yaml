@@ -10,7 +10,7 @@ parameters:
   - key: vault_path
     input_type: string
     requirement: required
-    description: "OpenKnowledge project root"
+    description: "Absolute path to the Mycroft OpenKnowledge project root"
   - key: project
     input_type: string
     requirement: optional
@@ -27,7 +27,8 @@ extensions:
   - type: stdio
     name: openknowledge
     cmd: ok
-    args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # --no-bundle-proxy: on macOS run the Engine-pinned OpenKnowledge server, not an installed OpenKnowledge.app of any version.
+    args: ["--cwd", "{{ vault_path }}", "mcp", "--no-bundle-proxy"]
     # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
     available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
@@ -38,8 +39,22 @@ prompt: |
   {{ findings }}
   ```
 
+  Wiki service reads go through Mycroft's wiki tool. Never build a command line from a value (the vault path, a query, a name, a claim):
+  - Send one JSON object on stdin in a quoted heredoc, which the shell leaves unexpanded: `vault_path` exactly as given below, and the tool's arguments under `args`, written with JSON string escaping. If the vault path contains a line break, stop.
+
+    ```sh
+    python3 "$MYCROFT_DIR/tools/wiki-service.py" resolve <<'WIKI_ARGS'
+    {"vault_path": "{{ vault_path }}", "args": {"name": "...", "type": "person"}}
+    WIKI_ARGS
+    ```
+
+  - Verbs: `search` (`query`), `read` (`path`), `resolve` (`name`, `type`), `check` (no args), `ok-audit` (no args; OpenKnowledge's own audit).
+  - The tool finds the wiki root, the OpenKnowledge project at or above the vault, and refuses a relative or missing path, `.`, and a root at `/` or the home folder. On a `wiki-root` error, stop and report it.
+  - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
+  - `wiki-service-unavailable` means an older Engine: look the entity up through OpenKnowledge instead: `search` for its names, then read the candidates under `wiki/entities/` with `exec`. Treat one as the same entity only when an exact strong identifier matches (knowledge-primitives); otherwise write a new entity note, list the similar ones in the report, and link nothing automatically.
+
   **Step 1 — Structure the findings** into:
-  - **Entities**: people, organizations, companies, places (one entity note each, following the Entities section of knowledge-primitives: look the entity up first, never merge)
+  - **Entities**: people, organizations, companies, places (one entity note each, following the Entities section of knowledge-primitives: look the entity up first with the wiki service's `resolve`, following the rules above, never merge)
   - **Sources**: documents, URLs, interviews (one note per source under `wiki/sources/`)
   - **Methodology**: techniques used, one note per technique under `wiki/methods/` (only if novel)
   - **Project notes**: if {{ project }} is set, per-project notes under `wiki/topics/{{ project }}/`
@@ -61,7 +76,7 @@ prompt: |
   ---
   ```
 
-  Body: concise. Wiki-links to related entities via `[[entity-name]]`. Evidence citations inline.
+  Body: concise. Wiki-links to register entities via `[[wiki/entities/<id>]]` (the id `resolve` returned), to other notes, and to entity notes written without `bsig wiki`, via their path. Evidence citations inline.
 
   **Step 3 — Write through OpenKnowledge**:
 

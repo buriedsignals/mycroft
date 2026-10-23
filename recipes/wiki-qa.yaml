@@ -4,7 +4,7 @@ description: "Answer a journalist's question grounded in their OpenKnowledge wik
 
 instructions: |
   Load the Mycroft journalism instructions (ethics, attribution, SIFT, no fabrication) as the session's system context.
-  Load the knowledge-workspace skill and use OpenKnowledge as the primary wiki interface.
+  Load the knowledge-workspace skill. Read the wiki through Mycroft's wiki tool (`tools/wiki-service.py`, the Engine wiki service); OpenKnowledge is its fallback.
   Answer from the journalist's wiki first; supplement with live web via the local search/scrape tools when the wiki is incomplete.
   Every factual claim must have a citation. If neither wiki nor web has it, say "not found in available sources".
 
@@ -30,7 +30,8 @@ extensions:
   - type: stdio
     name: openknowledge
     cmd: ok
-    args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # --no-bundle-proxy: on macOS run the Engine-pinned OpenKnowledge server, not an installed OpenKnowledge.app of any version.
+    args: ["--cwd", "{{ vault_path }}", "mcp", "--no-bundle-proxy"]
     # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
     available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
@@ -38,10 +39,26 @@ prompt: |
   Question: {{ question }}
   Wiki root: {{ vault_path }}
 
+  Wiki service reads go through Mycroft's wiki tool. Never build a command line from a value (the vault path, a query, a name, a claim):
+  - Send one JSON object on stdin in a quoted heredoc, which the shell leaves unexpanded: `vault_path` exactly as given below, and the tool's arguments under `args`, written with JSON string escaping. If the vault path contains a line break, stop.
+
+    ```sh
+    python3 "$MYCROFT_DIR/tools/wiki-service.py" search <<'WIKI_ARGS'
+    {"vault_path": "{{ vault_path }}", "args": {"query": "..."}}
+    WIKI_ARGS
+    ```
+
+  - Verbs: `search` (`query`), `read` (`path`), `resolve` (`name`, `type`), `check` (no args), `ok-audit` (no args; OpenKnowledge's own audit).
+  - The tool finds the wiki root, the OpenKnowledge project at or above the vault, and refuses a relative or missing path, `.`, and a root at `/` or the home folder. On a `wiki-root` error, stop and report it.
+  - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
+  - `wiki-service-unavailable` means an older Engine: use OpenKnowledge `search` and `exec` on the `mycroft/` namespace instead.
+
   Steps:
 
-  1. Search the `mycroft/` namespace with OpenKnowledge `search`, then read the most relevant notes exactly with `exec` (not summaries — you need direct quotes for citations).
-     - If OpenKnowledge reports unavailable or unready, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
+  1. Search the wiki through the wiki service in the developer shell (`search`, arguments `{"query": "..."}`), then read the most relevant notes exactly with `read` (arguments `{"path": "..."}`, not summaries — you need direct quotes for citations). Prefer notes under `mycroft/`; `spotlight/` notes are approved Spotlight material, read-only.
+     - For a person, organisation, company or place, look it up in the entity register with `resolve` (arguments `{"name": "...", "type": "person|organization|company|place|contact"}`). `candidates` are similar names, not matches; say so rather than picking one.
+     - On `wiki-service-unavailable`, use OpenKnowledge `search` and `exec` on the `mycroft/` namespace instead.
+     - If neither is available, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
 
   2. If wiki coverage is incomplete, use the local search/scrape tools for live web:
      - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "query"` for discovery (returns JSON; parse and pick relevant URLs)
