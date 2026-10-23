@@ -5,7 +5,7 @@ description: Search, read, link, audit, and maintain durable Mycroft knowledge t
 
 # Knowledge Workspace
 
-Treat portable Markdown as durable authority. Read through the wiki service (`bsig wiki`), with OpenKnowledge as its fallback; write through OpenKnowledge. Use direct Markdown only for explicit recovery reads.
+Treat portable Markdown as durable authority. Read through the wiki service (`bsig wiki`, via `tools/wiki-service.py`), with OpenKnowledge as its fallback; write through OpenKnowledge. Use direct Markdown only for explicit recovery reads.
 
 ## Route deterministically
 
@@ -15,11 +15,11 @@ Spotlight owns a separate configured OpenKnowledge workspace. Its approved `spot
 
 ## Read
 
-1. Search with the wiki service's `search`, read cited documents exactly with its `read` before quoting them, and look up people, organisations, companies, places and contacts in the entity register with `resolve`. Retain each resolved path and score.
-   - Wiki root: in a recipe with `vault_path`, the nearest folder at or above it that holds `.ok/config.yml`, passed as `--workspace "$root"`; otherwise give no `--workspace`, and the wiki service uses the workspace Engine recorded. With no such folder, stop.
-   - Send the JSON arguments on stdin through a quoted heredoc (`bsig --json wiki search --workspace "$root" <<'WIKI_ARGS'`, the JSON, then `WIKI_ARGS`); never put a query, name, path or claim on the command line.
+1. Search with the wiki service's `search`, read cited documents exactly with its `read` before quoting them, and look up people, organisations, companies, places and contacts in the entity register with `resolve`, all through Mycroft's wiki tool. Retain each resolved path and score.
+   - Never build a command line from a value. Send one JSON object on stdin in a quoted heredoc: `python3 "$MYCROFT_DIR/tools/wiki-service.py" search <<'WIKI_ARGS'`, then `{"vault_path": "<the recipe's vault_path>", "args": {"query": "..."}}`, then `WIKI_ARGS`. Leave out `vault_path` when there is none, and the wiki Engine recorded is used. A vault path with a line break: stop.
+   - The tool finds the wiki root (the OpenKnowledge project at or above the vault) and refuses a relative or missing path, `.`, and a root at `/` or the home folder; on a `wiki-root` error, stop.
    - The answer is `data.result` on the `"event":"result"` line. `resolve` answers `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Protected-source names come back as `[protected]`; that is expected.
-2. If `bsig wiki` is not available (an older Engine reports an unknown verb), check OpenKnowledge's health and search readiness, search through OpenKnowledge, and read documents exactly through its `exec`.
+2. On `wiki-service-unavailable` (an older Engine), check OpenKnowledge's health and search readiness, search through OpenKnowledge, and read documents exactly through its `exec`.
 3. Use OpenKnowledge links for backlinks, forward links, dead links, and graph audits.
 4. If neither is available or ready, use exact read-only Markdown search, label results `markdown_fallback`, and report degraded state. Never turn an unready empty result into “not found.”
 

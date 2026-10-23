@@ -81,9 +81,9 @@ An entity note's `type` is its kind (`person`, `organization`, `company`,
 
 Rules:
 
-- Look an entity up before creating one, with
-  `bsig --json wiki resolve '{"name":"...","type":"..."}'` (add
-  `"identifiers"` when you have one). Link a note to a register entity as
+- Look an entity up before creating one, with the wiki tool's `resolve`
+  (`tools/wiki-service.py`, arguments on stdin as the knowledge-workspace
+  skill describes; add `"identifiers"` when you have one). Link a note to a register entity as
   `[[wiki/entities/<id>]]`. Only an exact strong identifier
   makes two mentions the same entity; a similar name is a candidate for the
   journalist to judge, never a match.

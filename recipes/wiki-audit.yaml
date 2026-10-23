@@ -10,7 +10,7 @@ parameters:
   - key: vault_path
     input_type: string
     requirement: required
-    description: "Mycroft OpenKnowledge workspace path."
+    description: "Absolute path to the Mycroft OpenKnowledge workspace."
   - key: output_path
     input_type: string
     requirement: optional
@@ -32,25 +32,26 @@ extensions:
 prompt: |
   Run a Mycroft wiki audit.
 
-  Wiki service (`bsig wiki`) rules, for every call below:
-  - Find the wiki root once, the way OpenKnowledge finds its project: the nearest folder at or above `{{ vault_path }}` that holds `.ok/config.yml` (`root="{{ vault_path }}"; while [ ! -f "$root/.ok/config.yml" ] && [ "$root" != / ]; do root=$(dirname "$root"); done`). If `$root/.ok/config.yml` does not exist, stop and say the wiki could not be found. Pass `--workspace "$root"` on every call, so the wiki service and OpenKnowledge read the same wiki.
-  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+  Wiki service reads go through Mycroft's wiki tool. Never build a command line from a value (the vault path, a query, a name, a claim):
+  - Send one JSON object on stdin in a quoted heredoc, which the shell leaves unexpanded: `vault_path` exactly as given below, and the tool's arguments under `args`, written with JSON string escaping. If the vault path contains a line break, stop.
 
     ```sh
-    bsig --json wiki search --workspace "$root" <<'WIKI_ARGS'
-    {"query": "..."}
+    python3 "$MYCROFT_DIR/tools/wiki-service.py" check <<'WIKI_ARGS'
+    {"vault_path": "{{ vault_path }}", "args": {}}
     WIKI_ARGS
     ```
 
+  - Verbs: `search` (`query`), `read` (`path`), `resolve` (`name`, `type`), `check` (no args), `ok-audit` (no args; OpenKnowledge's own audit).
+  - The tool finds the wiki root, the OpenKnowledge project at or above the vault, and refuses a relative or missing path, `.`, and a root at `/` or the home folder. On a `wiki-root` error, stop and report it.
   - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
-  - If `bsig wiki` is not available (an older Engine reports an unknown verb), use the OpenKnowledge fallback this recipe names.
+  - `wiki-service-unavailable` means an older Engine: use OpenKnowledge `lint` for frontmatter-schema problems and say so in the report.
 
   Validate in two passes through the developer shell, both read-only:
 
-  - `bsig --json wiki check --workspace "$root"` (no arguments) runs the wiki service's validator over the whole wiki: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
-  - `ok --cwd "{{ vault_path }}" audit --json` lists broken internal links (findings with `source: links`) and OpenKnowledge's own frontmatter findings. Exit code 1 only means it found problems. It needs the OpenKnowledge server running; if it says the server is not running, use `links` with `kind: "dead"` instead and say so in the report.
+  - `check` runs the wiki service's validator over the whole wiki: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
+  - `ok-audit` (OpenKnowledge's `ok audit --json`) lists broken internal links (findings with `source: links`) and OpenKnowledge's own frontmatter findings. Exit code 1 only means it found problems. It needs the OpenKnowledge server running; if it says the server is not running, use `links` with `kind: "dead"` instead and say so in the report.
 
-  If `bsig wiki` is not available (an older Engine reports an unknown verb), use OpenKnowledge `lint` for frontmatter-schema problems and say so in the report. Use OpenKnowledge `links` for orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
+  Use OpenKnowledge `links` for orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
 
   Check:
 

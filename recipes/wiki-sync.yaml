@@ -10,7 +10,7 @@ parameters:
   - key: vault_path
     input_type: string
     requirement: required
-    description: "OpenKnowledge project root"
+    description: "Absolute path to the Mycroft OpenKnowledge project root"
   - key: project
     input_type: string
     requirement: optional
@@ -39,18 +39,19 @@ prompt: |
   {{ findings }}
   ```
 
-  Wiki service (`bsig wiki`) rules, for every call below:
-  - Find the wiki root once, the way OpenKnowledge finds its project: the nearest folder at or above `{{ vault_path }}` that holds `.ok/config.yml` (`root="{{ vault_path }}"; while [ ! -f "$root/.ok/config.yml" ] && [ "$root" != / ]; do root=$(dirname "$root"); done`). If `$root/.ok/config.yml` does not exist, stop and say the wiki could not be found. Pass `--workspace "$root"` on every call, so the wiki service and OpenKnowledge read the same wiki.
-  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+  Wiki service reads go through Mycroft's wiki tool. Never build a command line from a value (the vault path, a query, a name, a claim):
+  - Send one JSON object on stdin in a quoted heredoc, which the shell leaves unexpanded: `vault_path` exactly as given below, and the tool's arguments under `args`, written with JSON string escaping. If the vault path contains a line break, stop.
 
     ```sh
-    bsig --json wiki resolve --workspace "$root" <<'WIKI_ARGS'
-    {"name": "...", "type": "person"}
+    python3 "$MYCROFT_DIR/tools/wiki-service.py" resolve <<'WIKI_ARGS'
+    {"vault_path": "{{ vault_path }}", "args": {"name": "...", "type": "person"}}
     WIKI_ARGS
     ```
 
+  - Verbs: `search` (`query`), `read` (`path`), `resolve` (`name`, `type`), `check` (no args), `ok-audit` (no args; OpenKnowledge's own audit).
+  - The tool finds the wiki root, the OpenKnowledge project at or above the vault, and refuses a relative or missing path, `.`, and a root at `/` or the home folder. On a `wiki-root` error, stop and report it.
   - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
-  - If `bsig wiki` is not available (an older Engine reports an unknown verb), look the entity up through OpenKnowledge instead: `search` for its names, then read the candidates under `wiki/entities/` with `exec`. Treat one as the same entity only when an exact strong identifier matches (knowledge-primitives); otherwise write a new entity note, list the similar ones in the report, and link nothing automatically.
+  - `wiki-service-unavailable` means an older Engine: look the entity up through OpenKnowledge instead: `search` for its names, then read the candidates under `wiki/entities/` with `exec`. Treat one as the same entity only when an exact strong identifier matches (knowledge-primitives); otherwise write a new entity note, list the similar ones in the report, and link nothing automatically.
 
   **Step 1 — Structure the findings** into:
   - **Entities**: people, organizations, companies, places (one entity note each, following the Entities section of knowledge-primitives: look the entity up first with the wiki service's `resolve`, following the rules above, never merge)

@@ -56,6 +56,7 @@ jobs:
         run: |
           python3 tests/fact-check-recipe-contract.py
           python3 tests/fact-check-tools-check.py
+          python3 tests/wiki-service-check.py
       - name: Validate shell safety, perspective audit and morning brief
         run: |
           python3 tests/shell-safety-check.py

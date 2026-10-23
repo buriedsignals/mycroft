@@ -52,18 +52,18 @@ extensions:
 prompt: |
   SIFT fact-check with default provenance capture.
 
-  Wiki service (`bsig wiki`) rules, for every call below:
-  - The wiki is the workspace Engine recorded for Mycroft; `bsig wiki` uses it when no `--workspace` is given, so give none.
-  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+  Wiki service reads go through Mycroft's wiki tool. Never build a command line from a value (a query, a name, a claim):
+  - Send one JSON object on stdin in a quoted heredoc, which the shell leaves unexpanded, with the tool's arguments under `args`, written with JSON string escaping. With no `vault_path` the tool uses the wiki Engine recorded for Mycroft:
 
     ```sh
-    bsig --json wiki search <<'WIKI_ARGS'
-    {"query": "..."}
+    python3 "$MYCROFT_DIR/tools/wiki-service.py" search <<'WIKI_ARGS'
+    {"args": {"query": "..."}}
     WIKI_ARGS
     ```
 
+  - Verbs: `search` (`query`), `read` (`path`), `resolve` (`name`, `type`).
   - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
-  - If `bsig wiki` is not available (an older Engine reports an unknown verb), use the OpenKnowledge fallback this recipe names.
+  - Any error (`wiki-service-unavailable` on an older Engine included) means local wiki context is unavailable: say "local wiki context unavailable" in the report, set `vault_searched` to false, and verify from external sources only. Never search an unrelated folder instead.
 
   Apply the SIFT framework:
     - **S**top — don't accept claims at face value
@@ -87,7 +87,7 @@ prompt: |
      exit 1 means the list is thin, reopen extraction.
 
   2. Check local prior context before broad web search:
-     - Search durable Mycroft knowledge for prior source notes and earlier verdicts with the wiki service (`search`, then `read`), and look up named people, organisations, companies and places with `resolve`, following the wiki service rules above. Its OpenKnowledge fallback is the knowledge-workspace skill's Read section.
+     - Search durable Mycroft knowledge for prior source notes and earlier verdicts with the wiki service (`search`, then `read`), and look up named people, organisations, companies and places with `resolve`, following the wiki tool rules above.
      - If Spotlight is installed, read related active-case evidence through the direct, read-only case adapter described by the knowledge-workspace skill.
      - Treat prior context as evidence to inspect, not as automatic truth.
 
