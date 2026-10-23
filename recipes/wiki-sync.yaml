@@ -27,7 +27,8 @@ extensions:
   - type: stdio
     name: openknowledge
     cmd: ok
-    args: ["--cwd", "{{ vault_path }}", "mcp"]
+    # --no-bundle-proxy: on macOS run the Engine-pinned OpenKnowledge server, not an installed OpenKnowledge.app of any version.
+    args: ["--cwd", "{{ vault_path }}", "mcp", "--no-bundle-proxy"]
     # Goose advertises only the OpenKnowledge tools Mycroft uses (2026-09-14: 27 -> 15 tools, 27K -> 17K prompt tokens on this recipe).
     available_tools: ["search", "exec", "write", "edit", "links", "lint", "history", "move", "delete"]
 
