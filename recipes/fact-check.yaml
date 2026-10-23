@@ -52,6 +52,19 @@ extensions:
 prompt: |
   SIFT fact-check with default provenance capture.
 
+  Wiki service (`bsig wiki`) rules, for every call below:
+  - The wiki is the workspace Engine recorded for Mycroft; `bsig wiki` uses it when no `--workspace` is given, so give none.
+  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+
+    ```sh
+    bsig --json wiki search <<'WIKI_ARGS'
+    {"query": "..."}
+    WIKI_ARGS
+    ```
+
+  - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
+  - If `bsig wiki` is not available (an older Engine reports an unknown verb), use the OpenKnowledge fallback this recipe names.
+
   Apply the SIFT framework:
     - **S**top — don't accept claims at face value
     - **I**nvestigate the source — who, what track record, what interest
@@ -74,7 +87,7 @@ prompt: |
      exit 1 means the list is thin, reopen extraction.
 
   2. Check local prior context before broad web search:
-     - Search durable Mycroft knowledge for prior source notes and earlier verdicts with the wiki service (`bsig --json wiki search '{"query":"..."}'`, then `bsig --json wiki read '{"path":"..."}'`), and look up named people, organisations, companies and places with `bsig --json wiki resolve '{"name":"...","type":"..."}'` (`candidates` are similar names, not matches). If `bsig wiki` is not available (an older Engine reports an unknown verb), search through OpenKnowledge instead.
+     - Search durable Mycroft knowledge for prior source notes and earlier verdicts with the wiki service (`search`, then `read`), and look up named people, organisations, companies and places with `resolve`, following the wiki service rules above. Its OpenKnowledge fallback is the knowledge-workspace skill's Read section.
      - If Spotlight is installed, read related active-case evidence through the direct, read-only case adapter described by the knowledge-workspace skill.
      - Treat prior context as evidence to inspect, not as automatic truth.
 

@@ -39,10 +39,23 @@ prompt: |
   Question: {{ question }}
   Wiki root: {{ vault_path }}
 
+  Wiki service (`bsig wiki`) rules, for every call below:
+  - Find the wiki root once, the way OpenKnowledge finds its project: the nearest folder at or above `{{ vault_path }}` that holds `.ok/config.yml` (`root="{{ vault_path }}"; while [ ! -f "$root/.ok/config.yml" ] && [ "$root" != / ]; do root=$(dirname "$root"); done`). If `$root/.ok/config.yml` does not exist, stop and say the wiki could not be found. Pass `--workspace "$root"` on every call, so the wiki service and OpenKnowledge read the same wiki.
+  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+
+    ```sh
+    bsig --json wiki search --workspace "$root" <<'WIKI_ARGS'
+    {"query": "..."}
+    WIKI_ARGS
+    ```
+
+  - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
+  - If `bsig wiki` is not available (an older Engine reports an unknown verb), use the OpenKnowledge fallback this recipe names.
+
   Steps:
 
-  1. Search the wiki through the wiki service in the developer shell: `bsig --json wiki search '{"query":"..."}'`, then read the most relevant notes exactly with `bsig --json wiki read '{"path":"..."}'` (not summaries — you need direct quotes for citations). Prefer notes under `mycroft/`; `spotlight/` notes are approved Spotlight material, read-only.
-     - For a person, organisation, company or place, look it up in the entity register with `bsig --json wiki resolve '{"name":"...","type":"person|organization|company|place|contact"}'`. `candidates` are similar names, not matches; say so rather than picking one.
+  1. Search the wiki through the wiki service in the developer shell (`search`, arguments `{"query": "..."}`), then read the most relevant notes exactly with `read` (arguments `{"path": "..."}`, not summaries — you need direct quotes for citations). Prefer notes under `mycroft/`; `spotlight/` notes are approved Spotlight material, read-only.
+     - For a person, organisation, company or place, look it up in the entity register with `resolve` (arguments `{"name": "...", "type": "person|organization|company|place|contact"}`). `candidates` are similar names, not matches; say so rather than picking one.
      - If `bsig wiki` is not available (an older Engine reports an unknown verb), use OpenKnowledge `search` and `exec` on the `mycroft/` namespace instead.
      - If neither is available, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
 

@@ -32,9 +32,22 @@ extensions:
 prompt: |
   Run a Mycroft wiki audit.
 
+  Wiki service (`bsig wiki`) rules, for every call below:
+  - Find the wiki root once, the way OpenKnowledge finds its project: the nearest folder at or above `{{ vault_path }}` that holds `.ok/config.yml` (`root="{{ vault_path }}"; while [ ! -f "$root/.ok/config.yml" ] && [ "$root" != / ]; do root=$(dirname "$root"); done`). If `$root/.ok/config.yml` does not exist, stop and say the wiki could not be found. Pass `--workspace "$root"` on every call, so the wiki service and OpenKnowledge read the same wiki.
+  - Never put a query, name, path or claim on the command line. Send the tool's JSON arguments on stdin through a quoted heredoc, which the shell leaves unexpanded, and write them with JSON string escaping:
+
+    ```sh
+    bsig --json wiki search --workspace "$root" <<'WIKI_ARGS'
+    {"query": "..."}
+    WIKI_ARGS
+    ```
+
+  - The answer is `data.result` on the `"event":"result"` line; an `"event":"error"` line carries `data.failure`. `resolve` answers `status` `linked` (use its `entity_id`), `candidates` (similar names to judge, never a match) or `unknown`. Names of protected sources come back as `[protected]`; that is expected, never guess them.
+  - If `bsig wiki` is not available (an older Engine reports an unknown verb), use the OpenKnowledge fallback this recipe names.
+
   Validate in two passes through the developer shell, both read-only:
 
-  - `bsig --json wiki check` runs the wiki service's validator over the whole workspace Engine recorded: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
+  - `bsig --json wiki check --workspace "$root"` (no arguments) runs the wiki service's validator over the whole wiki: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
   - `ok --cwd "{{ vault_path }}" audit --json` lists broken internal links (findings with `source: links`) and OpenKnowledge's own frontmatter findings. Exit code 1 only means it found problems. It needs the OpenKnowledge server running; if it says the server is not running, use `links` with `kind: "dead"` instead and say so in the report.
 
   If `bsig wiki` is not available (an older Engine reports an unknown verb), use OpenKnowledge `lint` for frontmatter-schema problems and say so in the report. Use OpenKnowledge `links` for orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
