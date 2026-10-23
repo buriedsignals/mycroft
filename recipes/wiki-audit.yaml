@@ -31,7 +31,12 @@ extensions:
 prompt: |
   Run a Mycroft wiki audit.
 
-  Use OpenKnowledge `links` for dead/orphan checks, `lint` for Markdown health and frontmatter-schema problems, `search` for discovery, and `exec` for exact reads. Run `ok audit --json` through the developer shell to list broken internal links across the whole wiki in one pass; it needs the OpenKnowledge server running, so if it fails, rely on `links` alone and say so in the report. Skip `.trash/` and binary files.
+  Validate in two passes through the developer shell, both read-only:
+
+  - `bsig --json wiki check` runs the wiki service's validator over the whole workspace Engine recorded: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
+  - `ok --cwd "{{ vault_path }}" audit --json` lists broken internal links (findings with `source: links`) and OpenKnowledge's own frontmatter findings. Exit code 1 only means it found problems. It needs the OpenKnowledge server running; if it says the server is not running, use `links` with `kind: "dead"` instead and say so in the report.
+
+  If `bsig wiki` is not available (an older Engine reports an unknown verb), use OpenKnowledge `lint` for frontmatter-schema problems and say so in the report. Use OpenKnowledge `links` for orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
 
   Check:
 

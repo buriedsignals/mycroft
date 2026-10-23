@@ -74,7 +74,7 @@ prompt: |
      exit 1 means the list is thin, reopen extraction.
 
   2. Check local prior context before broad web search:
-     - Search durable Mycroft knowledge through OpenKnowledge for known entities, prior source notes, and earlier verdicts.
+     - Search durable Mycroft knowledge for prior source notes and earlier verdicts with the wiki service (`bsig --json wiki search '{"query":"..."}'`, then `bsig --json wiki read '{"path":"..."}'`), and look up named people, organisations, companies and places with `bsig --json wiki resolve '{"name":"...","type":"..."}'` (`candidates` are similar names, not matches). If `bsig wiki` is not available (an older Engine reports an unknown verb), search through OpenKnowledge instead.
      - If Spotlight is installed, read related active-case evidence through the direct, read-only case adapter described by the knowledge-workspace skill.
      - Treat prior context as evidence to inspect, not as automatic truth.
 

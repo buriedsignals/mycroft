@@ -39,7 +39,7 @@ prompt: |
   ```
 
   **Step 1 — Structure the findings** into:
-  - **Entities**: people, organizations, companies, places (one entity note each, following the Entities section of knowledge-primitives: look the entity up first, never merge)
+  - **Entities**: people, organizations, companies, places (one entity note each, following the Entities section of knowledge-primitives: look the entity up first with `bsig --json wiki resolve '{"name":"...","type":"..."}'` in the developer shell, never merge)
   - **Sources**: documents, URLs, interviews (one note per source under `wiki/sources/`)
   - **Methodology**: techniques used, one note per technique under `wiki/methods/` (only if novel)
   - **Project notes**: if {{ project }} is set, per-project notes under `wiki/topics/{{ project }}/`
@@ -61,7 +61,7 @@ prompt: |
   ---
   ```
 
-  Body: concise. Wiki-links to related entities via `[[entity-name]]`. Evidence citations inline.
+  Body: concise. Wiki-links to register entities via `[[wiki/entities/<id>]]` (the id `resolve` returned), to other notes, and to entity notes written without `bsig wiki`, via their path. Evidence citations inline.
 
   **Step 3 — Write through OpenKnowledge**:
 

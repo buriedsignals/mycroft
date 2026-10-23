@@ -40,8 +40,10 @@ prompt: |
 
   Steps:
 
-  1. Search the `mycroft/` namespace with OpenKnowledge `search`, then read the most relevant notes exactly with `exec` (not summaries — you need direct quotes for citations).
-     - If OpenKnowledge reports unavailable or unready, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
+  1. Search the wiki through the wiki service in the developer shell: `bsig --json wiki search '{"query":"..."}'`, then read the most relevant notes exactly with `bsig --json wiki read '{"path":"..."}'` (not summaries — you need direct quotes for citations). Prefer notes under `mycroft/`; `spotlight/` notes are approved Spotlight material, read-only.
+     - For a person, organisation, company or place, look it up in the entity register with `bsig --json wiki resolve '{"name":"...","type":"person|organization|company|place|contact"}'`. `candidates` are similar names, not matches; say so rather than picking one.
+     - If `bsig wiki` is not available (an older Engine reports an unknown verb), use OpenKnowledge `search` and `exec` on the `mycroft/` namespace instead.
+     - If neither is available, use `rg` only as explicit read-only recovery and label citations `markdown_fallback`.
 
   2. If wiki coverage is incomplete, use the local search/scrape tools for live web:
      - `python3 "$MYCROFT_DIR/tools/searxng-search.py" "query"` for discovery (returns JSON; parse and pick relevant URLs)
