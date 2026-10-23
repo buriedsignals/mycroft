@@ -42,7 +42,7 @@ wiki's schemas check it (OpenKnowledge shows a problem when it is missing).
 title: ""
 description: ""
 type: note|source                        # entities: see Entities below
-kind: method|topic|story|context|claim   # for type: note
+kind: method|topic|story|context|claim|fact   # for type: note
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
 confidence: high|medium|low|partial|verified|unverified
@@ -55,7 +55,24 @@ tags: []
   this way once; write new ones the same way, and never retype notes yourself.
 - A Mycroft claim note is `type: note`, `kind: claim`. `type: claim` is
   reserved for Spotlight's claim notes under `spotlight/`.
+- A fact (for example one imported from Scoutpost) is `type: note`,
+  `kind: fact`, with its source in `source_url` or `sources`.
 - Source notes use `type: source`.
+
+## Facts
+
+A claim or fact note states one fact in `statement` (else its `title`). The
+same fact from several sources becomes one canonical note:
+
+- `occurrences` lists where it was seen, as `{note, url}`;
+- `different_from` lists the paths of notes the journalist judged to be
+  different facts; they are never proposed again.
+
+Facts are merged only through `bsig wiki`: `fact-candidates` finds likely
+pairs and `propose-merge` records one, and nothing merges until the member
+approves it. The merged note becomes a redirect. Never merge or rewrite fact
+notes yourself, and never touch `spotlight/**`: Spotlight's claims are never
+merged.
 
 ## Entities
 
