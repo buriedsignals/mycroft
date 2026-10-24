@@ -48,7 +48,7 @@ prompt: |
 
   Validate in two passes through the developer shell, both read-only:
 
-  - `check` runs the wiki service's validator over the whole wiki: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path.
+  - `check` runs the wiki service's validator over the whole wiki: every note's type against the wiki's schemas, and the entity register's references. Report each problem it returns with its path. Exit code 1 (as for `ok-audit`) means it found problems, not that the check failed; the problems are in its result line.
   - `ok-audit` (OpenKnowledge's `ok audit --json`) lists broken internal links (findings with `source: links`) and OpenKnowledge's own frontmatter findings. Exit code 1 only means it found problems. It needs the OpenKnowledge server running; if it says the server is not running, use `links` with `kind: "dead"` instead and say so in the report.
 
   Use OpenKnowledge `links` for orphan checks, `lint` for Markdown health, `search` for discovery, and `exec` for exact reads. Skip `.trash/` and binary files.
