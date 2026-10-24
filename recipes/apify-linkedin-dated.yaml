@@ -1,0 +1,105 @@
+version: "1.0.0"
+title: "Apify social: LinkedIn post search with a date window"
+description: "Search LinkedIn posts by keyword or profile/company URL, bounded by a date window. Uses johnvc/linkedin-post-search-api and johnvc/linkedin-posts-api. No LinkedIn login."
+
+parameters:
+  - key: query
+    input_type: string
+    requirement: required
+    description: "Search query (exact phrase) OR a LinkedIn /in/ or /company/ URL"
+  - key: since
+    input_type: string
+    requirement: optional
+    description: "Inclusive start date YYYY-MM-DD (UTC). Ignored when window is set."
+  - key: until
+    input_type: string
+    requirement: optional
+    description: "Inclusive end date YYYY-MM-DD (UTC). Ignored when window is set."
+  - key: window
+    input_type: string
+    requirement: optional
+    description: "Relative window: day, week, month, or year. Overrides since/until when set."
+  - key: max_items
+    input_type: number
+    requirement: optional
+    description: "Max posts (capped 100)"
+    default: 30
+
+extensions:
+  - type: builtin
+    name: developer
+
+prompt: |
+  LinkedIn dated post search: {{ query }} (up to {{ max_items }}).
+  Optional window={{ window }}, since={{ since }}, until={{ until }}.
+
+  Honor the journalism posture (SIFT, attribution, no fabrication). Cite coverage limits in the output.
+
+  **Requires**: `APIFY_API_TOKEN`.
+
+  Cap items and build Actor input:
+
+  ```sh
+  CAP=$(( {{ max_items }} > 100 ? 100 : {{ max_items }} ))
+  Q='{{ query }}'
+  WINDOW='{{ window }}'
+  SINCE='{{ since }}'
+  UNTIL='{{ until }}'
+  OUT=/tmp/apify-linkedin-dated-$$.json
+
+  if echo "$Q" | grep -qE '^https?://'; then
+    if ! echo "$Q" | grep -qE 'linkedin\.com/(in|company)/'; then
+      echo "Only linkedin.com/in/ or linkedin.com/company/ URLs are supported." >&2
+      exit 1
+    fi
+    ACTOR='johnvc~linkedin-posts-api'
+    INPUT=$(printf '{"profileUrls":["%s"],"maxPostsPerProfile":%s}' "$Q" "$CAP")
+  else
+    ACTOR='johnvc~linkedin-post-search-api'
+    if [ -n "$WINDOW" ] && [ "$WINDOW" != "None" ] && [ "$WINDOW" != "" ]; then
+      case "$WINDOW" in
+        day|week|month|year)
+          INPUT=$(printf '{"keywords":["%s"],"maxPostsPerKeyword":%s,"postedWithin":"%s"}' "$Q" "$CAP" "$WINDOW")
+          ;;
+        *) echo "window must be day, week, month, or year" >&2; exit 1 ;;
+      esac
+    else
+      INPUT=$(printf '{"keywords":["%s"],"maxPostsPerKeyword":%s}' "$Q" "$CAP")
+      if [ -n "$SINCE" ] && [ "$SINCE" != "None" ] && [ "$SINCE" != "" ]; then
+        INPUT=$(printf '%s' "$INPUT" | jq --arg s "$SINCE" '. + {startDate:$s}')
+      fi
+      if [ -n "$UNTIL" ] && [ "$UNTIL" != "None" ] && [ "$UNTIL" != "" ]; then
+        INPUT=$(printf '%s' "$INPUT" | jq --arg u "$UNTIL" '. + {endDate:$u}')
+      fi
+    fi
+  fi
+
+  curl -sS -X POST "https://api.apify.com/v2/acts/${ACTOR}/run-sync-get-dataset-items?token=${APIFY_API_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "$INPUT" \
+    -o "$OUT"
+
+  jq 'length' "$OUT"
+  ```
+
+  Keep only rows where `resultType` is `post`. Normalize each to:
+  platform=linkedin, post_url=`postUrl`, author name=`authorName`,
+  author handle from `authorUrl`, timestamp=`datePosted`, text=`text`,
+  reactions=`numLikes`, comments=`numComments`, reshares=null
+  (these Actors do not return share counts).
+
+  If since/until or window was set, drop posts whose `datePosted` falls outside
+  the window (compare in UTC). Pass through `fromCache` when present.
+
+  **Coverage (state this in the output so it can be cited):**
+  - No LinkedIn login or cookies.
+  - Keyword search finds public posts that search engines have indexed. New
+    posts appear a few hours after publishing. Private accounts are not found.
+  - A person profile URL returns only the recent posts LinkedIn shows a
+    signed-out visitor (usually 3 to 8).
+
+  Return count + top 5 inline + file path. Flag runs over 50 items.
+
+activities:
+  - "Search LinkedIn for posts mentioning {{ query }} within a date window"
+  - "Get recent dated posts from LinkedIn profile {{ query }}"
