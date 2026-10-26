@@ -13,3 +13,4 @@ instructions
 recipes
 extensions
 .claude-plugin
+analyst
