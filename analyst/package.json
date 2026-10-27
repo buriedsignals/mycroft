@@ -1,0 +1,10 @@
+{
+  "name": "mycroft-analyst-runtime",
+  "private": true,
+  "description": "Pinned Pi and pi-acp for the Analyst in OpenKnowledge's Agents panel.",
+  "license": "MIT",
+  "dependencies": {
+    "@earendil-works/pi-coding-agent": "1.4.0",
+    "pi-acp": "0.0.34"
+  }
+}
