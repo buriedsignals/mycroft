@@ -1,17 +1,23 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.1.5",
-  "released_at": "2026-10-14T18:30:46Z",
-  "release_sequence": 38,
+  "min_engine_version": "0.1.8",
+  "released_at": "2026-10-27T19:17:20Z",
+  "release_sequence": 41,
   "products": {
     "mycroft": {
-      "version": "0.3.10",
+      "version": "0.3.11",
       "repo": "buriedsignals/mycroft",
-      "ref": "679af97f37ebe7b8e5e763822b60bbf6e905d632",
+      "ref": "d7b02e522101129c998742f1693cc2b41ccbd315",
+      "source": {
+        "url": "https://github.com/buriedsignals/mycroft/archive/d7b02e522101129c998742f1693cc2b41ccbd315.tar.gz",
+        "sha256": "ce75fdacc25f2268e297cf409c514f62791959b2b14c62497ecc0d5c791537aa",
+        "size_bytes": 1455916,
+        "prefix": "mycroft-d7b02e522101129c998742f1693cc2b41ccbd315"
+      },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "679af97f37ebe7b8e5e763822b60bbf6e905d632",
+        "source_commit": "d7b02e522101129c998742f1693cc2b41ccbd315",
         "digest": "557843a89c8458697cb5f6efe3cd902032b831b60fd90016ad68b6b15b24fe30",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -604,12 +610,34 @@
             }
           }
         }
+      },
+      "legacy_choices": {
+        "cloud_model": [
+          "deepseek-v4-flash",
+          "deepseek-v4-pro",
+          "gemini-flash-lite",
+          "mistral-large"
+        ],
+        "local_model": [
+          "gemma4-26b-a4b"
+        ],
+        "provider": [
+          "opencode-go",
+          "openrouter",
+          "other-subscription"
+        ]
       }
     },
     "splash": {
       "version": "0.1.3",
       "repo": "buriedsignals/splash",
       "ref": "265c89fdc5ad5e06dc5e1f5480a04efde677e259",
+      "source": {
+        "url": "https://github.com/buriedsignals/splash/archive/265c89fdc5ad5e06dc5e1f5480a04efde677e259.tar.gz",
+        "sha256": "6f171bb24665db7aff32a71f324efb7abbfbe1407576da0a0fa4da56079d938d",
+        "size_bytes": 694483603,
+        "prefix": "splash-265c89fdc5ad5e06dc5e1f5480a04efde677e259"
+      },
       "entitlement": "splash.core",
       "install_contract": {
         "schema_version": "splash-install-contract/v1",
@@ -625,16 +653,23 @@
         "template": {
           "document": {}
         }
-      }
+      },
+      "coming_soon": true
     },
     "spotlight": {
-      "version": "2.4.0",
+      "version": "2.14.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "9be470f76e9870633c497b04051e9128541e18b7",
+      "ref": "dc1e90d321c12205c9bb81631e7d7299a234de26",
+      "source": {
+        "url": "https://github.com/buriedsignals/spotlight/archive/dc1e90d321c12205c9bb81631e7d7299a234de26.tar.gz",
+        "sha256": "c9028fe2fe9ef0a2f04a334f4d3db15678a19baa2540831ae81da3d9c7a52e6d",
+        "size_bytes": 2023970,
+        "prefix": "spotlight-dc1e90d321c12205c9bb81631e7d7299a234de26"
+      },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "9be470f76e9870633c497b04051e9128541e18b7",
+        "source_commit": "dc1e90d321c12205c9bb81631e7d7299a234de26",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -646,7 +681,8 @@
         "template": {
           "document": {}
         }
-      }
+      },
+      "coming_soon": true
     }
   },
   "skills": [
@@ -949,7 +985,7 @@
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
-      "bundle_sha256": "63b45efa90012b2b6822937cc263c985f0ba2c59e50a8bc3e15381c15a53d55c"
+      "bundle_sha256": "eddae6befbba7120539805ee26e0ed9d6c7785fe14c20d678ad696caffe4381a"
     },
     {
       "id": "ingest",
@@ -1182,13 +1218,13 @@
       "kind": "coupled"
     },
     {
-      "id": "phase-execution",
-      "name": "Phase execution",
+      "id": "phase-investigation",
+      "name": "Phase investigation",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/phase-execution",
+      "path": "skills/phase-investigation",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
@@ -1203,13 +1239,13 @@
       "kind": "coupled"
     },
     {
-      "id": "phase-gate1",
-      "name": "Phase gate 1",
+      "id": "phase-investigation-gate",
+      "name": "Phase investigation gate",
       "audience": [
         "researcher"
       ],
       "entitlement": "spotlight.core",
-      "path": "skills/phase-gate1",
+      "path": "skills/phase-investigation-gate",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
@@ -1294,6 +1330,27 @@
       ],
       "entitlement": "spotlight.core",
       "path": "skills/phase-report",
+      "requires_keys": [],
+      "version": "2.0.0",
+      "products": [
+        "spotlight"
+      ],
+      "essential": false,
+      "runtimes": [
+        "spotlight",
+        "goose"
+      ],
+      "content_repo": "buriedsignals/spotlight",
+      "kind": "coupled"
+    },
+    {
+      "id": "phase-research",
+      "name": "Phase research",
+      "audience": [
+        "researcher"
+      ],
+      "entitlement": "spotlight.core",
+      "path": "skills/phase-research",
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
@@ -2010,11 +2067,6 @@
       "sha256": "34c746b1d50ab813e29cd46c4796e3f43c741901a582f93a67b55b9fc9687b35"
     },
     {
-      "id": "gemma4-31b-q4km",
-      "url": "https://huggingface.co/unsloth/gemma-4-31B-it-GGUF/resolve/12e99a2f1ca91c69897aba2472bc16db674b3cb1/gemma-4-31B-it-Q4_K_M.gguf",
-      "sha256": "9fdf3dc8b0384830b4402d151388c140bd8eb2abf8d60588d8224231198254a1"
-    },
-    {
       "id": "spotlight-gemma4-12b-q4km",
       "url": "https://huggingface.co/tomvaillant/gemma4-12b-spotlight-orchestrator-v5-GGUF/resolve/e7cd5ba3f0702974f89bf03e58582873de6d75b4/gemma-4-12b-spotlight-orchestrator-Q4_K_M.gguf",
       "sha256": "ac7082f922f16b87bc3ac17a0b661060375a61553ab82ebbce917036d82e4560"
@@ -2026,9 +2078,45 @@
     },
     {
       "id": "llamacpp-macos-arm64",
-      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9290/llama-b9290-bin-macos-arm64.tar.gz",
-      "sha256": "a21ef33fd78686c6e6b28fc601e60aee6be31abe451fa2cee1e28bb850ffdab2",
-      "size_bytes": 9758358
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11669/llama-b11669-bin-macos-arm64.tar.gz",
+      "sha256": "dbed55493d72bc1ba2babc8770d669c2289b5bc4ee9fb2a4dfc158d45b7d13fd",
+      "size_bytes": 12191582
+    },
+    {
+      "id": "llamacpp-windows-x64",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11669/llama-b11669-bin-win-cpu-x64.zip",
+      "sha256": "37b3efcf962847ca869745fd4ccf7f5e7e8dacfeff9fa3523b4ca8cdc66d632b",
+      "size_bytes": 19537886
+    },
+    {
+      "id": "anomaly-source-458d1425bea7b0152863b7260b9c983682b7bd36",
+      "url": "https://github.com/buriedsignals/Anomaly/releases/download/spotlight-pin-458d1425/anomaly-458d1425bea7b0152863b7260b9c983682b7bd36.tar.gz",
+      "sha256": "cf0a0286a59669fc03b5787f21b7515d80e57da16080884d21d7139b1dbce578",
+      "size_bytes": 723750
+    },
+    {
+      "id": "kev-source-2074cc44256200bb37540103fa4572901faa10f3",
+      "url": "https://github.com/jaredpalmer/kev/archive/2074cc44256200bb37540103fa4572901faa10f3.tar.gz",
+      "sha256": "d5dda4b2631afed7b458b77ce01084197b27dfdfa36dbb39dfe9b8108d8cf059",
+      "size_bytes": 140955321
+    },
+    {
+      "id": "osaurus-app-darwin-arm64",
+      "url": "https://github.com/osaurus-ai/osaurus/releases/download/0.25.28/Osaurus-0.25.28.dmg",
+      "sha256": "7999f9438f65105e34a026a7493b0991c4321047765e86d9e263c3ead22d901f",
+      "size_bytes": 85895633
+    },
+    {
+      "id": "embeddinggemma2-q8-0",
+      "url": "https://huggingface.co/ggml-org/embeddinggemma-2-GGUF/resolve/58faf90940886df2d62be555c8765d00dac362c5/embeddinggemma-2-Q8_0.gguf",
+      "sha256": "2188ac1deca4b77dffefd603c2776a9d76d9d74ec01841392982ebb840b09135",
+      "size_bytes": 309855456
+    },
+    {
+      "id": "embeddinggemma2-mmproj-q8-0",
+      "url": "https://huggingface.co/ggml-org/embeddinggemma-2-GGUF/resolve/58faf90940886df2d62be555c8765d00dac362c5/mmproj-embeddinggemma-2-Q8_0.gguf",
+      "sha256": "c4a8a52691ecef40618438928bdf9e68379b854e24166f292592353db0aab64f",
+      "size_bytes": 554821024
     },
     {
       "id": "gemma4-12b-qat-q4_0",
@@ -2068,14 +2156,24 @@
     }
   ],
   "dependencies": {
-    "@flue/cli": "1.0.0-beta.9",
-    "@inkeep/open-knowledge": "0.54.3",
+    "@inkeep/open-knowledge": "0.88.2",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
     "navigator-cli": "0.3.0",
     "scoutpost-cli": "0.1.22",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },
+  "runtime_packs": [
+    {
+      "version": "2026.10.23-1",
+      "os": "darwin",
+      "arch": "arm64",
+      "url": "https://github.com/buriedsignals/mycroft/releases/download/runtime-pack-2026.10.23-1/runtime-pack-2026.10.23-1-darwin-arm64.tar.gz",
+      "sha256": "6691b91e74b3388afb08e21bcac513b65c8f425fb0228d2a0f534205b06cad6c",
+      "size_bytes": 589403416,
+      "files_sha256": "7eec4763a1fd38e942c6defa77f7cd85fe41ccdb99ecaba03fc645fb7cd8ee91"
+    }
+  ],
   "providers": [
     {
       "id": "opencode-go",
@@ -2128,26 +2226,6 @@
           ],
           "zdr": true
         }
-      }
-    },
-    {
-      "id": "public-ai",
-      "display": "Public AI — Apertus 1.5 70B",
-      "base_url": "https://api.publicai.co/v1",
-      "api": "openai-chat",
-      "secret_id": "PUBLIC_AI_API_KEY",
-      "products": [
-        "mycroft"
-      ],
-      "adapters": [
-        "goose"
-      ],
-      "privacy": {
-        "tier": "confidential-cloud",
-        "enforcement": "provider-stated",
-        "disclosure": "Prompts leave this device through Engine's loopback invoke translator to Public AI; operational metadata remains outside this inference claim.",
-        "source_url": "https://publicai.co",
-        "verified_at": "2026-08-25"
       }
     }
   ],
@@ -2202,31 +2280,6 @@
             "cached_read": 0.03,
             "snapshot_date": "2026-09-11",
             "source_url": "https://openrouter.ai/api/v1/models"
-          }
-        }
-      ]
-    },
-    {
-      "id": "apertus-v15-70b",
-      "display": "Apertus 1.5 70B",
-      "products": [
-        "mycroft"
-      ],
-      "recommendation": "candidate",
-      "routes": [
-        {
-          "provider_id": "public-ai",
-          "remote_id": "swiss-ai/apertus-v1.5-70b",
-          "adapters": [
-            "goose"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 0.8,
-            "output": 0.8,
-            "snapshot_date": "2026-08-25",
-            "source_url": "https://publicai.co"
           }
         }
       ]
@@ -2307,25 +2360,6 @@
       "recommendation": "default"
     },
     {
-      "id": "gemma4-31b",
-      "display": "Gemma 4 31B",
-      "hf_repo": "",
-      "ollama_tag": "",
-      "ollama_alias": "",
-      "quant": "",
-      "min_ram_gb": 48,
-      "tier": "local-31b",
-      "stop_tokens": null,
-      "backend": "llamacpp",
-      "artifact_id": "gemma4-31b-q4km",
-      "filename": "gemma-4-31B-it-Q4_K_M.gguf",
-      "products": [
-        "mycroft"
-      ],
-      "context_tokens": 40960,
-      "recommendation": "advanced"
-    },
-    {
       "id": "gemma4-12b-qat",
       "display": "Gemma 4 12B QAT",
       "hf_repo": "",
@@ -2386,5 +2420,75 @@
       "sidecar": true
     }
   ],
-  "integrations": null
+  "integrations": null,
+  "osaurus": {
+    "min_version": "0.25.28",
+    "app_artifact": "osaurus-app-darwin-arm64",
+    "mycroft_model": "OsaurusAI/gemma-4-12B-it-qat-MXFP4",
+    "extract_model": "OsaurusAI/NuExtract3-JANG_6M",
+    "watson_models": [
+      "mistralai/mistral-large-4-0",
+      "mistralai/mistral-medium-3-5"
+    ],
+    "analyst": true
+  },
+  "anomaly": {
+    "ref": "458d1425bea7b0152863b7260b9c983682b7bd36",
+    "requirements": [
+      "anyio==4.15.1 --hash=sha256:6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101 --hash=sha256:9f28306018cbd6d329e64a36d58256edff76dd996fe423bc957326e578b82a94",
+      "certifi==2026.10.23 --hash=sha256:a9895e6e2758b371e0545e321a3a8fd1fcfd9829ada8824a936dfb16aaaf36cd --hash=sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1",
+      "duckdb==1.5.5 --hash=sha256:078e6a60dd8eedde5832f45422ca5c4a6b8c837aeabd8a56ca0b7d933f588053 --hash=sha256:0c42757cb34722144bd4dfb94b6f336339e7b2468f6813fa7fa9a319ba07bab4 --hash=sha256:179633a3fc6296c75d57c69c1e239fa9e5cdcb670fd1dbff88a02663f932905c --hash=sha256:1a925d06c2a4c3b64553d6cc1aced5028d376d4479bed689a7d47e9b1dccd80a --hash=sha256:1b543841b0ae18a9c982345cfa3987e9c065d3a4b0f067daa473d92d1e65f528 --hash=sha256:2725d2b9ace3a4e75d72fc5a239f6a44b502c580edadb8fb2676db772c5f9282 --hash=sha256:2e72f9e1a4f90a5c8483ad4d540e495bf0834ba61c360b52499a573d7ed62a3f --hash=sha256:33db46679b071f108d57139493dee2d37e1f5efcf5c5c039c2969eed11a6c8a7 --hash=sha256:49c963d9469373d7aba8d750d9ea565ab823e94166efed953f184dd9b169b98c --hash=sha256:63e48d4b74b15aeacd688976432a7225163df8c226eddeb8536bba2d4d4ff433 --hash=sha256:64078acfd16541132ac6e191eb81b2845554444a0305cc1aa581ba107e514aa8 --hash=sha256:6826504277dba513c0c5d71d828456c94d729c9d2482f94b2e289f90a9167e28 --hash=sha256:72f33ee57ca7595b23957671a2cc7f7fe2be0ecc2d68f63abedcfcaa3a5c1238 --hash=sha256:77bbc1e6ba12e1e06f9020117bdf848627ecfdf36f907550e62e008e6109dece --hash=sha256:7a6d2d11859d82a936ebdcb30ce3d8a1cbb3e990bff05c12abb9b54c44fa7bd1 --hash=sha256:8c11775cc99a447618d5f1840126db17f2652f3eae05529df4f81f40e2df7151 --hash=sha256:8e6413dd40facb7b8ab21bd844450cd8f549b29e138635be9cf090ef4d2049e2 --hash=sha256:9dc826c4b50e64f6c4e4d07a3a9cb075ef70ba3899dc43ec5493dc3d7b04b353 --hash=sha256:9f4287f97ccf0c1f3d471e7115be2b067cbf99627e2d34bffd462dd64703cddc --hash=sha256:a736217825461732b5442d05a220f3da2e23a0dae114efbf08c9bf171b53098a --hash=sha256:b9b6f86ed85d4ef5e0211eaebf75d057bd8bb520bba438a95dd0f4e42234bbfe --hash=sha256:baa9c5702002fabb559ded2a39008f9f421fcbc7237d388b8213eff1e08858de --hash=sha256:cd98829b67788609017e65c761bd42a5dd0f9129441bed8bda4d6881ccf819f0 --hash=sha256:d4dd65f8941a604b947e0b9b4b4f7165988e29a23ec0b69b4038520956d9933e --hash=sha256:ddfbdb096c11d51ee22492397d342c90a82e62c5d09961477895934d0a25372f --hash=sha256:f0b88535a5d86fdd63dba6ea02ab68c003dfb9e4892b11256ef24c4da208baae --hash=sha256:f316eae2323d9a851883fdf2dee91c1f9efe251ab33e14a2272f82a913422ed6 --hash=sha256:fbf0f2d48b43c6c304d00463b463c27ead6c4b01c3c1816b750f728decf71afe --hash=sha256:feead93c56679b79592d437c62975d39cb67adedffa7592c763baf8160ac7366",
+      "h11==0.16.0 --hash=sha256:4e35b956cf45792e4caa5885e69fba00bdbc6ffafbfa020300e549b208ee5ff1 --hash=sha256:63cf8bbe7522de3bf65932fda1d9c2772064ffb3dae62d55932da54b31cb6c86",
+      "httpcore==1.0.9 --hash=sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55 --hash=sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8",
+      "httpx==0.28.1 --hash=sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad",
+      "idna==3.20 --hash=sha256:a7db850025b95ded1eae8a46181a1a6c56c92c96f0e2b005d9ff8dc0210cab44 --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+      "pyarrow==25.0.1 --hash=sha256:0b726ad7e7b669be982b0c71c07fe4b037d654354130da79a7902a669e93a66b --hash=sha256:0befcf816e45a1af33ac775a9970b749e4868a230c7372f0ae5e932bee27039f --hash=sha256:0fe7c8b6c03969b49c8c66182e4a18e3819ab92d07cfab5d8370c531b9369ef0 --hash=sha256:119297a6dc197e45d9c6d4415f7814a67ffa36c180d26f68c154c58067ae782d --hash=sha256:169d3429d5be7c752125890620f75a60776d38b0035eddae939651640822332e --hash=sha256:25f8720bf6387d5dc2ebd2622112de630760419e4b66134405dd24110d15f37e --hash=sha256:31e49a7888fcdf3a835da33ae777f6bb9a866334e5a789282fc26dcf426f7f15 --hash=sha256:35935cd5de130aa5cf4dea052a63e6bf2e17006c35c3a468194242b9b2bf5956 --hash=sha256:38a9a4b4b9613380e200641891495a56c3d5a98a092db4a870af9975e220471d --hash=sha256:3f89685964f46e4216103c75483aac0c0692a5f72212d7ca835adba5ede56ce3 --hash=sha256:4288f27577352d608ca08553b0865e4a9b3aa14820c5d95b53337218d609835b --hash=sha256:4340f0ba6c1d2e13f21658de1d7c662ca2545018568d0030a1e9afca159d87e3 --hash=sha256:44a9120ce5bd81936b8ab9a88076e3fd47c2c6838e0e43630fed83626aca81d9 --hash=sha256:4facd65742a024a4a366328a1d2292062d72d6e023c1b7dda8d4c37544933a25 --hash=sha256:51093dd9e10325fbdb3c10a2ae7c4806e5c822d94e74ae4938b26524a3323fee --hash=sha256:5389cdf79447ed1515c9e31620e6e1e2302249564d603f2ad727d4f6d313e4c3 --hash=sha256:59a2de54c0cbd954da861eee4d1d330f8e909c45b53455baef696380f2c55033 --hash=sha256:6109c94d8b9f3b17a041daca16cacb2f651ad8f1ef70a4232c2c0f37a23da2a8 --hash=sha256:62cd0d785b8aa6675ee355f9fc02252a340f4441257c42674937826fd7594325 --hash=sha256:6943e2fe7954d29d84de45d29d34c8dc36ce96570e67d89aa9976e650a4a9138 --hash=sha256:6a1fdfc6659b6b19022f2e50627fb5cf7156a66c46bf4299379955cbe742382a --hash=sha256:880523be3d29efcf83d3998835d206118ccf35e3871dbd2fb60408cf6b007a80 --hash=sha256:8858d7bfc22e3f51529aeaa4077225029724623e4595dc9eff8c793935c34140 --hash=sha256:9150a83248bfed9813ea3c3af74c3856c1984d444aa28e58bf7733b9750ddf6a --hash=sha256:9171748cdf796972d85a4b60157c279913e242992e350c90c7450182a9838b2a --hash=sha256:aa0559502e1cd6254d6814614085dd9c5a3dd0419362978a936a3f68a9e5c3df --hash=sha256:b7a296aac7a71fa0886c08e155ddb6c636a50013f801f6178daafa0f9e726188 --hash=sha256:bf0b672390cdcb640d7288f96b826d71ff4e9abb254a86c89890baf51a29cee6 --hash=sha256:c7c534ec03c358a76ea3e505e74c1b6aef290af90c444dfd092dbfe23e755b85 --hash=sha256:cc4aa407fde9fc660be3939e49ea31f50f3e9fec17c0ec63159f7711edd3efc9 --hash=sha256:d51592cb7561e87877c506113e7adbf1342ab579e6c21f0ef44b8ba41cb74c80 --hash=sha256:dda9470024204d7bbf2042b47c6e8a0e47a3eeb8e34405882dfaea6577e0c153 --hash=sha256:df961f2e7ae9cf496459259d798652c70625f6c080650d6952f8c04053c58ee9 --hash=sha256:eb6203482ff3746a5632303a7279ae0b5a304c46985b49ed1378cb350ea6728d --hash=sha256:f3831aaa25c67a99f99dc8b05873cb9d64560390372e2aa197ce9dd4a3f06a44 --hash=sha256:f729cfdbd36fd99d543b67a914d2de044c84ebe45be8b34902b299b608c15c8f",
+      "pytz==2026.3.post1 --hash=sha256:2211d3fcf9a797d3405cac96ac7f61d80e6a644f72a3309607282fe8a2010c5d --hash=sha256:dd95840dd199baea12d9cc096a1d452caa6596a1c1e4b5f3dbd1541855d5e815",
+      "typing-extensions==4.16.0 ; python_full_version < '3.15' --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5"
+    ]
+  },
+  "decision_model": {
+    "repo": "tomvaillant/d1-2b-spotlight-r3",
+    "revision": "caf7aa098e34c1d91824866b2731eac797a9853d",
+    "files": {
+      "LICENSE": "4d28ca14dedc0b3d0fcc2b3339f0e79931faa33874f3d24f522183a8fc70068c",
+      "NOTICE": "0e3e05320598081c8018a9de737f80feaaf11e13b886613f9e3a21f67de1384d",
+      "README.md": "26f2238f618ecc70438c2128481a195eeb3e282dc205cc898e9605a22f25985a",
+      "api.py": "d57845b414b6766cd0410f0437080244320adebd4f9f031a03777acbec243d2a",
+      "attention.py": "2608cc3f48bc3f906b64244322df81de5a18cd1faa8243680713289d5540fd2c",
+      "box.py": "1a123160ce3c94c25074132407c41d553601a6d8cb7056c814397ad0718dd16f",
+      "calibration.json": "e534464458f485d800fe6cc896ac241590bbc8cd54f5af08f7b3064b0d884d69",
+      "calibration.py": "04243c3a2c1c727440184901dd60a4b4b04f72204dc577bd9f30b0ea3373d114",
+      "chat_template.jinja": "66f3050983faa01907ac9897dcb01827b669917badfb512e610449a9eab32041",
+      "config.json": "ffdc4c996152d23dbe8a2659a8c6aabe2992aa3fa3a41601dd0fca8771d6f332",
+      "configuration_lfm3.py": "cd9e8499d5e764e058c7aa1bb62234a0592acdf086126bea36770eb9e45e48cf",
+      "configuration_lfm3_vl.py": "d65e130693c7415a0b20b527e2c8df5322112cd8e7e4b3793348a2ddcd0343be",
+      "d1_serve.py": "940adcc6cd0dabbe5e57f3ffac4fcfde82df9ccd14c962462815d0425f7fa708",
+      "depthwise.py": "0e55c1d97227ebdb144503f1726b93693ea1232d8e9a98e4c60c044fbfdb6ce1",
+      "grid.py": "a5626b67094eda0a4a22d50e73346f3bc2f1b4b6eb6d95ba64333c6f71592eff",
+      "image_processing_lfm3_vl.py": "4f319e51f80051bce417db52df568a94ff3ea9a4527e1e0844f8ed3e21934b4b",
+      "integrations_lfm3.py": "4c443aab5945ef28298f7c4b58fb4c303dd9dec8fcb21adfca966b92e9caef00",
+      "json_spans.py": "91c4a6d585a58dfe7e06e4430f4516956f8143523a3e2de870bc8dd92ba20375",
+      "lfm3.py": "7e90cdc38526be73d435a120ef1722099538255622186be6caa9c84afa2bc180",
+      "media.py": "1b2c76ba9fa13e75bf8b66caa9294682e76fbf463fe56c13b4e1f47c96e81e8e",
+      "model.safetensors": "a3997156a61faa7bd70ce2af1f149096c3ef8c88d83b417decea0cba71320fe5",
+      "modeling_d1.py": "214d3477cef38e7831f2b4fb0250ace7fb1aeac5b02066fcfd5cc030c541fd72",
+      "modeling_d1_lfm3_vl.py": "68d71f38188f07d11ad8af7cb557c8edc87536eb0db20870b7c5e6ae58fe5f30",
+      "modeling_lfm3.py": "1617c42a7e3ccb97c810867536a8f6bb71f3543db00cafda9b3bd7a571ec72b9",
+      "modeling_lfm3_vl.py": "c61dd6d90425d126de8402a9aa0a2a9d0241910100b719b8ab2bfee65e5e974f",
+      "native_lfm3.py": "8c7e7533b406315546d7a4eaceb83c8a49bed4dac7cb29328a76fa9f972e8a19",
+      "native_lfm3_vl.py": "90574b978c7138f36ea9970fff4fb691ad9ccd472580ae20c4110de090ed4b94",
+      "parsing.py": "0f0a05e7f2eee037f2e5ce1fefc984ff34824e07e7999120d94563a82642b54a",
+      "pointer.py": "53e7b403d5f9d6f24e18a3f08b4dd9e93fea6da1da7eaeea92d07a4700cfedb3",
+      "processing_lfm3_vl.py": "f4198f935ff6474cb1f44d5bdf02248f800a11eb7fc782dc1a168889b0b53da8",
+      "processor_config.json": "37396ef3370083a04381ef25f9e1b50dec184b8cdcf08cf718feb8944ad8f3bc",
+      "prompt.py": "e5344f65481374da6b30e5ceda2a5ee398100b13ee69ed2ce52ac42713a7a048",
+      "requirements.lock": "47a575ff9f184de3fc77a81a38fa5bfcb75b31fae9799aad9536adb68b85234d",
+      "runner.py": "ac195b19f60f985a6081ccecc1a5c9f7c9fbe6711e8916c0e9835aaaac0bc2a2",
+      "slots.py": "67adea5fb377a79832827c43054b4ce94de0fa48f5ba0a39e6f2867b7e59f373",
+      "tokenizer.json": "a39eed58008cbcbc09e5b629b81338a654269c64cd13348aaa6090f4db75c7e7",
+      "tokenizer_config.json": "594a96e4caedd07536a595b48f5dc84655bd672b715b6ac891ca3d503d439f76",
+      "video_processing_lfm3_vl.py": "597ca93c1df97f746166b93f3431edec4da6d938a1b3a60a9bf9900e54ab4e93"
+    }
+  }
 }
