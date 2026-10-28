@@ -1,0 +1,9 @@
+Indicator Lab runtime pack
+
+SearXNG (AGPL-3.0-or-later) is included unmodified at commit 81371861f67226091d1c4df2e3908a11d3b54eb9.
+Its complete source: https://github.com/searxng/searxng/archive/81371861f67226091d1c4df2e3908a11d3b54eb9.tar.gz
+Python packages keep their own license files in python/lib/.../site-packages/*.dist-info.
+Python (PSF License): https://github.com/astral-sh/python-build-standalone
+Chromium (BSD-3-Clause and others) as built by Playwright: https://playwright.dev
+Node.js 22.23.4 (MIT and others, node/LICENSE): https://nodejs.org
+npm packages keep their own license files in node-tools/node_modules/*/.
