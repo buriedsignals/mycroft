@@ -674,7 +674,7 @@
       "package": {
         "distribution": "navigator-cli",
         "path": "app/static/navigator-skill.md",
-        "sha256": "909ad01b2e5e5a62eff7d77d5cd465744e39f04e31ae6ddb5e9a967d9ed0265b"
+        "sha256": "0fd015a9f3814ab44e0e8f983ca87f9068eaad2db98b0cbd026b297649f9aa66"
       }
     },
     {
@@ -2072,7 +2072,7 @@
     "@inkeep/open-knowledge": "0.54.3",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
-    "navigator-cli": "0.3.0",
+    "navigator-cli": "0.3.4",
     "scoutpost-cli": "0.1.22",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },

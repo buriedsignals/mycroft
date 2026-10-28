@@ -106,7 +106,7 @@ prompt: |
      - Strongest-supported claim(s)
      - Weakest/most-at-risk claim(s)
 
-  {% if emit_manifest %}
+  {% if emit_manifest | string | lower == "true" %}
   7. After the summary, emit an evidence bundle JSON block and a SIFT manifest JSON block:
 
      Evidence bundle:
@@ -225,7 +225,7 @@ prompt: |
      ```
   {% endif %}
 
-  {% if c2pa_sign %}
+  {% if c2pa_sign | string | lower == "true" %}
   8. After saving and validating the package, call the C2PA artifact service to sign:
 
      ```bash
