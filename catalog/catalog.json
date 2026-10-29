@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.1.8",
-  "released_at": "2026-10-27T19:17:20Z",
-  "release_sequence": 41,
+  "min_engine_version": "0.1.9",
+  "released_at": "2026-10-29T08:10:45Z",
+  "release_sequence": 42,
   "products": {
     "mycroft": {
       "version": "0.3.11",
       "repo": "buriedsignals/mycroft",
-      "ref": "d7b02e522101129c998742f1693cc2b41ccbd315",
+      "ref": "17e485d848503fdf20817768aa9b106f9ffd873a",
       "source": {
-        "url": "https://github.com/buriedsignals/mycroft/archive/d7b02e522101129c998742f1693cc2b41ccbd315.tar.gz",
-        "sha256": "ce75fdacc25f2268e297cf409c514f62791959b2b14c62497ecc0d5c791537aa",
-        "size_bytes": 1455916,
-        "prefix": "mycroft-d7b02e522101129c998742f1693cc2b41ccbd315"
+        "url": "https://github.com/buriedsignals/mycroft/archive/17e485d848503fdf20817768aa9b106f9ffd873a.tar.gz",
+        "sha256": "66172c7b1918de2a304bbab381969992625b913e76a27fe83b4482bf98147714",
+        "size_bytes": 1463624,
+        "prefix": "mycroft-17e485d848503fdf20817768aa9b106f9ffd873a"
       },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "d7b02e522101129c998742f1693cc2b41ccbd315",
+        "source_commit": "17e485d848503fdf20817768aa9b106f9ffd873a",
         "digest": "557843a89c8458697cb5f6efe3cd902032b831b60fd90016ad68b6b15b24fe30",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -696,7 +696,7 @@
       "entitlement": "navigator.core",
       "path": "app/static/navigator-skill.md",
       "requires_keys": [],
-      "version": "0.3.0",
+      "version": "0.3.4",
       "products": [
         "mycroft",
         "spotlight"
@@ -710,7 +710,7 @@
       "package": {
         "distribution": "navigator-cli",
         "path": "app/static/navigator-skill.md",
-        "sha256": "909ad01b2e5e5a62eff7d77d5cd465744e39f04e31ae6ddb5e9a967d9ed0265b"
+        "sha256": "0fd015a9f3814ab44e0e8f983ca87f9068eaad2db98b0cbd026b297649f9aa66"
       }
     },
     {
@@ -2159,7 +2159,7 @@
     "@inkeep/open-knowledge": "0.88.2",
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
-    "navigator-cli": "0.3.0",
+    "navigator-cli": "0.3.4",
     "scoutpost-cli": "0.1.22",
     "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
   },
