@@ -27,24 +27,23 @@ Please include:
 In-scope:
 
 - The landing page (`index.html`)
-- Indicator Labs / Engine key collection for Mycroft secrets
+- Indicator Lab / Engine key collection for Mycroft secrets
 - Skills, agent instructions, and the Osaurus bundle
-- Recipe YAML files and any executable paths they invoke
-- Provider configuration JSONs
-- Anything under `tools/`, `extensions/`, `scripts/`
+- The pinned Analyst runtime and its wiki integration
+- Install contract schemas, templates and signed catalogue handling
 
 Out-of-scope (report upstream):
 
 - Osaurus itself — https://github.com/osaurus-ai/osaurus/security
-- Firecrawl, Apify, AgentMail, Fireworks, Together, OpenRouter — their own disclosure channels
+- Connected cloud providers and services — their own disclosure channels
 - User-provided API keys handling on cloud provider sides
 
 ## Threat model summary
 
 Mycroft's privacy posture:
 
-- API keys are stored through Engine's operating-system credential broker. Managed users enter them through Indicator Labs' protected prompt; open-source users use Engine's protected `bsig` stdin/keychain flow and enter values through a private operating-system or terminal prompt outside agent chat. Keys never belong in argv, shell history, repository files, a hosted page, or a localhost Mycroft form.
-- Recipes call user-provided cloud APIs directly; prompts are not proxied through us.
-- Local-first mode routes LLM inference to the user's machine; zero network egress for that component.
+- API keys are stored through Engine's operating-system credential broker. Managed users enter them through Indicator Lab's protected prompt; manual users use Engine's protected `bsig` stdin/keychain flow and enter values through a private operating-system or terminal prompt outside agent chat. Keys never belong in argv, shell history, repository files, a hosted page, or a localhost Mycroft form.
+- Mycroft's model runs locally in Osaurus. Navigator and Scoutpost are hosted services; calls that send text to them require approval. Local inference does not mean that connected tools work offline.
+- Watson is a separate cloud research path with no wiki access. The Analyst proposes wiki writes for confirmation rather than silently changing notes.
 
 We treat as security-relevant: any path that could cause API keys, vault contents, or source identities to leak beyond the user's machine or the cloud providers they explicitly configured.

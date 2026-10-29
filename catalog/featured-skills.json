@@ -1,0 +1,20 @@
+[
+  {
+    "id": "fact-check",
+    "name": "fact-check",
+    "title": "Fact-checking",
+    "description": "Break reporting into checkable claims, trace evidence to original sources, and record a sourced verdict for each claim. A method reference from the earlier Mycroft pack; not included in the current Osaurus install.",
+    "status": "Method reference",
+    "href": "https://github.com/buriedsignals/mycroft/blob/30434172336805e3e0124cf1a70545b8f3778baf/skills/fact-check/SKILL.md",
+    "sources": [
+      {
+        "label": "Verso",
+        "url": "https://verso.ink/big-if-true/"
+      },
+      {
+        "label": "Buried Signals",
+        "url": "https://github.com/buriedsignals/mycroft"
+      }
+    ]
+  }
+]

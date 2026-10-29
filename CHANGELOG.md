@@ -6,6 +6,42 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Changed
+- Removed Navigator artifact delivery URLs from public setup documentation;
+  kept self-managed source use separate from Lab-tier managed installation.
+- Rewrote the README and contributor guide for the current Osaurus installation,
+  separated manual setup into `docs/install.md`, corrected skill notices and
+  removed obsolete Goose planning and unused website-installer bridge files.
+- Compacted all eight capability cards, kept foreground papers at the margins
+  below the hero, fitted mobile installer tabs, and strengthened secondary labels
+  and reference-skill availability without rewriting the page copy.
+- Enlarged matching hover frames to 460px, rounded product images and previews,
+  and placed the Skills heading and introduction side by side on desktop.
+- Matched image/video hover frame sizes and linked installation actions directly
+  to Indicator Lab with “Install with Indicator Lab” labels.
+- Set the page and social title to “Mycroft — The on-device investigator harness”.
+- Refined landing-page typography, spacing, inline pill alignment and contrast,
+  retaining one flowing hero paragraph with product marks and inline links
+  that reverse to ink on hover, without changing the pill shape.
+- Restored lively newspaper physics in the wide hero orbit, with a reversible
+  click-to-gather ball, spin transitions and a reduced-motion document view.
+  Opening or returning to the page resets the wide orbit.
+- Kept the hero CTA compact and made the bottom membership CTA prominent.
+- Added on-demand video and partner-image previews to the tool pills, without
+  player controls or extra preview buttons on the capability cards.
+- The catalogue puts the Verso/Buried Signals fact-checking reference first,
+  followed by three journalism methods with Joe Amditis credits; AI writing
+  detox is hidden from the catalogue.
+  Navigator and Scoutpost remain installed as tool skills.
+- Added a connected-knowledge diagram and described the Analyst as an on-device
+  model, without a pilot/planned label or an unshipped model claim.
+- Replaced the installer illustration with a 3× browser render of the supplied
+  HTML design export, removed the duplicate dark background, and simplified
+  diagram dividers. Footer credits now include the site’s technical libraries;
+  journalism author credits stay on skill cards.
+- Aligned membership pricing with the current join page and kept the 3D page
+  aligned after dynamic content and viewport changes.
+
 ### Removed
 - The Goose runtime. Mycroft now runs only in Osaurus, so the Goose recipes,
   extensions, memory seeds, scripts (`mycroft-doctor`, `mycroft-fetch` and the

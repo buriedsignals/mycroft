@@ -1,22 +1,12 @@
-## What this changes
+## Change
 
-<!-- One or two sentences. What's different after this PR merges? -->
+<!-- What changes for the user, and why? -->
 
-## Why
+## Verification
 
-<!-- Link to an issue, a user report, or explain the motivation. -->
+<!-- List relevant checks and include screenshots for layout changes. -->
 
-## Checklist
-
-- [ ] `python3 tools/validate-recipes.py` passes
-- [ ] HTML files parse (index.html, assets/logo/preview.html)
-- [ ] Journalist CTAs: `bash tests/journalist-install-cta-check.sh`
-- [ ] No API keys, no secrets, no PII in the diff
-- [ ] `CHANGELOG.md` updated under `[Unreleased]` if user-visible
-- [ ] Documentation touched if behaviour or architecture changed
-- [ ] For new recipes: the prompt cites the journalism posture (SIFT, attribution) without duplicating it
-- [ ] For plugin integration: `docs/plugin-authoring.md` + `extensions/manifest.json` updated
-
-## Screenshots / transcripts
-
-<!-- For UI changes (landing or configurator): include a screenshot. For recipe changes: include a sample run. -->
+- [ ] Relevant checks from CONTRIBUTING.md pass
+- [ ] No credentials, private wiki content or confidential source identities
+- [ ] Documentation and CHANGELOG.md updated where needed
+- [ ] Skill changes preserve upstream attribution and coordinate Engine install changes

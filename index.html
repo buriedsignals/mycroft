@@ -9,12 +9,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mycroft — local agents for investigators, built on Osaurus</title>
+<title>Mycroft — The on-device investigator harness</title>
 <meta name="description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta name="theme-color" content="#E8E0CF">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-50%20-50%20100%20100%22%3E%3Cg%20stroke%3D%22%23131013%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%22-20.5%22%20x2%3D%2212.7%22%20y2%3D%22-12.7%22%2F%3E%3Cline%20x1%3D%2232%22%20y1%3D%220%22%20x2%3D%2218%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2212.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%220%22%20y1%3D%2232%22%20x2%3D%220%22%20y2%3D%2218%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%2220.5%22%20x2%3D%22-12.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%22-32%22%20y1%3D%220%22%20x2%3D%22-18%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%22-20.5%22%20x2%3D%22-12.7%22%20y2%3D%22-12.7%22%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%220%22%20y1%3D%22-34%22%20x2%3D%220%22%20y2%3D%22-16%22%20stroke%3D%22%234A7363%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Mycroft — local agents for investigators, built on Osaurus">
+<meta property="og:title" content="Mycroft — The on-device investigator harness">
 <meta property="og:description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta property="og:image:secure_url" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
@@ -26,7 +26,7 @@
 <meta name="feedback-endpoint" content="https://api.buriedsignals.com/v1/feedback">
 <meta property="og:site_name" content="Mycroft">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Mycroft — local agents for investigators, built on Osaurus">
+<meta name="twitter:title" content="Mycroft — The on-device investigator harness">
 <meta name="twitter:description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta name="twitter:image:alt" content="Mycroft, local agents for investigators built on Osaurus">
@@ -85,8 +85,8 @@ addEventListener("load", () => window.scrollTo(0, 0));
   --pigment: #131013;
   --ink: #1a1a1f;
   --ink-soft: #4a4439;
-  --ink-dim: #8e8676;
-  --oxide: #4a7363;
+  --ink-dim: #625b4d;
+  --oxide: #3d6655;
   --oxide-active: #2b5247;
   --rule: #c8bfa8;
 
@@ -112,8 +112,8 @@ addEventListener("load", () => window.scrollTo(0, 0));
   --sp-10: 96px;
 
   --gut: clamp(20px, 4vw, 56px);
-  --sp-section-y: clamp(96px, 18vh, 200px);
-  --sp-section-yb: clamp(72px, 14vh, 160px);
+  --sp-section-y: clamp(64px, 9vh, 104px);
+  --sp-section-yb: clamp(56px, 7vh, 88px);
 
   /* layout */
   --shell-max: 1600px;
@@ -252,8 +252,8 @@ body > .site-head .site-head__bar {
    transformed element a containing block in a way that broke text-selection
    hit-testing on Safari/Firefox. Let CSS3DRenderer manage the visual
    placement; #page-3d keeps its `position: relative` from the rule above. */
-html.is-3d-lifted body {
-  overflow-x: hidden;
+body {
+  overflow-x: clip;
 }
 
 /* Belt-and-braces: ensure no global rule reaches inside the lifted page
@@ -632,7 +632,7 @@ body,
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--head-fg);
-  opacity: 0.6;
+  opacity: 0.85;
   transition:
     color var(--dur-3) var(--ease),
     opacity var(--dur-1) var(--ease);
@@ -648,8 +648,8 @@ body,
     gap: 4px;
   }
   .site-head__by {
-    font-size: 8px;
-    letter-spacing: 0.14em;
+    font-size: 11px;
+    letter-spacing: 0.06em;
     line-height: 1;
   }
 }
@@ -802,8 +802,7 @@ main,
   border-bottom: 0;
 }
 
-/* hero · always fits the viewport · vertically centred so big screens
-   don't push content past the fold */
+/* Hero: a clear center inside an oversized newspaper orbit. */
 .sec--hero {
   position: relative;
   min-height: calc(100svh - var(--head-h));
@@ -816,17 +815,29 @@ main,
   border-bottom: 0;
 }
 .hero__bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: clamp(24px, 4vh, 56px);
+  position: relative;
+  margin: auto 0;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding-left: var(--gut);
-  padding-right: var(--gut);
+  max-width: 780px;
+  padding: 20px 0;
 }
+.hero__bottom::before {
+  content: "";
+  position: absolute;
+  inset: -24% -20%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse, var(--vellum) 46%, transparent 74%);
+  transition: opacity 700ms var(--ease);
+}
+.sec--hero[data-paper-mode="ball"] .hero__bottom::before { opacity: 0; }
+.hero__play { position: absolute; left: 0; bottom: 8px; min-height: 40px; color: var(--ink-soft); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.hero__play[hidden] { display: none; }
+.hero__bottom .btn--solid { min-height: 40px; padding: 10px 20px; font-size: 12px; letter-spacing: 0.12em; }
 .hero__tag {
   font-family: var(--mono);
   font-size: var(--cap-sm);
@@ -868,6 +879,8 @@ main,
 }
 /* hero partner band · Osaurus first, OpenKnowledge second */
 .hero__partners {
+  position: relative;
+  isolation: isolate;
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
@@ -893,32 +906,34 @@ main,
 .hero__partner-logo--ok { height: 21px; }
 .hero__partners-amp { color: var(--ink-dim); }
 
-/* the big hero sentence */
+/* Supporting copy stays readable inside the orbit. */
 .hero__lede {
-  font-family: var(--serif);
-  font-weight: 200;
-  font-size: clamp(22px, 2.4vw, 34px);
-  line-height: 1.45;
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.65;
   color: var(--ink);
-  max-width: 46rem;
-  margin: 0 auto var(--sp-6);
+  max-width: 40rem;
+  margin: 0 auto 20px;
   text-wrap: balance;
 }
 
 /* pills · inline links on the wording itself */
 .pill {
-  display: inline-block;
-  padding: 0.14em 0.55em 0.2em;
+  display: inline;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0.04em 0.38em 0.1em;
   border: 1px solid var(--rule);
   border-radius: 999px;
   background: var(--vellum-bright);
   color: var(--ink);
   font: inherit;
   font-style: normal;
-  line-height: 1;
+  line-height: inherit;
   vertical-align: baseline;
   text-decoration: none;
-  white-space: nowrap;
+  white-space: normal;
   transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
 }
 a.pill:hover,
@@ -939,8 +954,25 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 .nw { white-space: nowrap; }
 .pill--soon { border-style: dashed; color: var(--ink-soft); }
 
+
+/* Inline pills keep the sentence rhythm; only the hovered link moves. */
+.hero__lede .pill {
+  --pill-mark-cutout: color-mix(in srgb, var(--oxide) 6%, var(--vellum-bright));
+  display: inline-block;
+  font-size: 0.94em;
+  font-weight: 500;
+  line-height: 1.1;
+  padding: 0.12em 0.46em 0.18em;
+  white-space: nowrap;
+  background: color-mix(in srgb, var(--oxide) 6%, var(--vellum-bright));
+  transition: transform 180ms var(--ease), border-color 180ms var(--ease), color 180ms var(--ease), background 180ms var(--ease);
+}
+.hero__lede .pill__mark { display: inline-block; width: 0.82em; height: 0.82em; margin-right: 0.3em; vertical-align: -0.08em; }
+.hero__lede .pill:hover, .hero__lede .pill:focus-visible { --pill-mark-cutout: var(--ink); transform: translateY(-2px); background: var(--ink); border-color: var(--ink); color: var(--vellum-bright); }
+@media (prefers-reduced-motion: reduce) { .hero__lede .pill:hover, .hero__lede .pill:focus-visible { transform: none; } }
+
 /* list variant of the day timeline · numbered, tighter rhythm */
-.day-timeline--list .day-frame { padding: clamp(28px, 6vh, 64px) 0; }
+.day-timeline--list .day-frame { padding: clamp(24px, 4vh, 40px) 0; }
 .day-timeline--list .card__title {
   font-style: normal;
   font-weight: 300;
@@ -963,7 +995,7 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 }
 .skills-catalogue {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: clamp(16px, 2vw, 28px);
 }
 .skills-catalogue .skills-index__item,
@@ -975,7 +1007,7 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
   display: flex;
   flex-direction: column;
 }
-.skills-catalogue .skills-index__name { font-size: clamp(26px, 2.6vw, 38px); }
+.skills-catalogue .skills-index__name { font-size: clamp(26px, 2.2vw, 32px); line-height: 1.12; }
 .skills-catalogue .skills-index__description { font-size: 15px; flex: 1; }
 .skills-catalogue .skills-index__link { align-self: flex-start; }
 @media (max-width: 980px) { .skills-catalogue { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
@@ -1553,14 +1585,14 @@ a.card-int:hover {
 }
 
 .display--hero {
-  font-size: clamp(40px, min(6vw, 10vh), 88px);
+  font-size: clamp(38px, min(5vw, 8vh), 72px);
   line-height: 0.98;
   letter-spacing: -0.025em;
   max-width: 18ch;
   margin: 0 auto var(--sp-5);
 }
 .display--section {
-  font-size: clamp(40px, 6.6vw, 108px);
+  font-size: clamp(36px, 4.6vw, 68px);
   line-height: 1;
   max-width: var(--col-h2);
 }
@@ -1934,6 +1966,7 @@ button.day-card.is-settled:focus-visible {
   color: var(--ink-dim);
   margin: 0 0 var(--sp-3);
 }
+.skills-index__availability { display: inline-block; width: fit-content; margin: 0 0 12px; padding: 5px 9px; border: 1px solid var(--oxide); border-radius: 4px; font-family: var(--sans); letter-spacing: 0; text-transform: none; font-size: 12px; font-weight: 500; color: var(--oxide-active); }
 .skills-index__number {
   color: var(--oxide);
 }
@@ -2605,30 +2638,110 @@ button.day-card.is-settled:focus-visible {
   border-top: var(--hairline-dashed);
 }
 
+
+.sec-head.skills-head { grid-template-columns: 1fr; gap: 20px; margin-bottom: 32px; }
+/* Keep the paper cards and every capability; spend less space between them. */
+.day-timeline--list .day-frame { padding: 16px 0; grid-template-columns: clamp(64px, 8vw, 112px) minmax(0, 1fr); gap: 24px; }
+.day-timeline--list .day-card { padding: clamp(24px, 2.5vw, 36px); max-width: 880px; }
+.day-timeline--list .card__kicker { margin-bottom: 16px; padding-bottom: 12px; }
+.day-timeline--list .card__title { margin-bottom: 0; max-width: 42ch; font-size: clamp(23px, 2vw, 30px); line-height: 1.35; }
+.day-timeline--list .card__body { margin: 12px 0 0; }
+.day-timeline--list .day-time__hour { font-size: clamp(48px, 6vw, 80px); }
+.stamp__foot, .skills-index__meta { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-soft); }
+.pill small { font-size: 11px; }
+@media (max-width: 760px) {
+  .day-timeline--list { padding-left: 30px; padding-right: 10px; }
+  .day-timeline--list .day-rail { left: 6px; }
+  .day-timeline--list .day-frame { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px 0; --offset: 0px !important; }
+  .day-timeline--list .day-card { padding: 22px; }
+  .day-timeline--list .day-time { padding-top: 0; }
+  .day-timeline--list .day-time__hour { font-size: 40px; }
+  .day-timeline--list .day-time::before { left: -29px; top: 12px; }
+  #install .surface-toggle { width: 100%; box-sizing: border-box; gap: 2px; padding: 4px; }
+  #install .surface-toggle__btn { flex: 1 1 auto; min-width: 0; padding: 0 6px; font-size: 11px; letter-spacing: 0; }
+}
+.skills-head .display { font-size: clamp(36px, 4vw, 56px); max-width: none; }
+.skills-head .sec-lede { font-family: var(--sans); font-weight: 400; font-size: 18px; line-height: 1.6; max-width: 46ch; margin: 4px 0 0; }
+@media (min-width: 980px) { .sec-head.skills-head { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); align-items: start; gap: clamp(32px, 5vw, 80px); } }
+
+/* Connected knowledge: sources converge, approved links return to memory. */
+.knowledge-map { display: grid; grid-template-columns: 1fr 64px 0.9fr 64px 1.15fr; align-items: center; margin: 0; padding: 0; }
+.knowledge-map h3 { font-family: var(--serif); font-weight: 200; font-size: clamp(26px, 2.3vw, 34px); line-height: 1.15; margin: 0 0 8px; }
+.knowledge-map p { font-size: 16px; line-height: 1.55; color: var(--ink-soft); margin: 0; }
+.knowledge-map__sources { display: grid; }
+.knowledge-map__source { min-height: 96px; padding: 16px 0; border-bottom: var(--hairline); }
+.knowledge-map__source:last-child { border: 0; }
+.knowledge-map__merge { width: 64px; height: 288px; }
+.knowledge-map__down { display: none; }
+.knowledge-map__arrow { width: 64px; }
+.knowledge-map svg { stroke: var(--oxide); stroke-width: 1.5; }
+.knowledge-map__analyst { padding: 24px 20px; border: 1px solid var(--rule); background: var(--vellum-bright); }
+.knowledge-map__label { display: block; font-size: 12px; line-height: 1.5; color: var(--ink-soft); margin-bottom: 12px; }
+.knowledge-map__approval { display: block; margin-top: 20px; padding-top: 12px; border-top: var(--hairline); font-size: 13px; color: var(--oxide-active); }
+.knowledge-map__wiki { padding: 24px; background: var(--vellum-bright); }
+.knowledge-map__links { display: grid; grid-template-columns: 1fr 1fr; margin: 20px 0; gap: 0 20px; }
+.knowledge-map__links span { padding: 8px 0; border-bottom: var(--hairline); font-size: 14px; color: var(--oxide-active); }
+.knowledge-map figcaption { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 16px 0; margin-top: 20px; font-size: 16px; line-height: 1.6; color: var(--ink-soft); }
+.knowledge-map figcaption svg { flex: 0 0 32px; width: 32px; height: 32px; }
+.knowledge-map figcaption strong { color: var(--ink); }
+.sec-lede a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.skills-index__credit { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 4px 0 16px; }
+.skills-index__credit a { color: var(--oxide-active); text-decoration: underline; text-underline-offset: 3px; }
+.skills-index__link { min-height: 44px; display: inline-flex; align-items: center; }
+.lab-grid .term__sub { font-family: var(--sans); font-style: normal; font-size: 18px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; }
+.lab-grid__price { font-size: 16px; color: var(--ink); margin: 0 0 8px; }
+.lab-grid .indicator-lab-link { min-height: 56px; height: auto; max-width: 100%; padding: 16px 28px; font-family: var(--sans); font-size: 18px; line-height: 1.25; letter-spacing: 0; text-transform: none; white-space: normal; text-align: center; justify-self: start; }
+.install-lede { color: var(--vellum); font-family: var(--sans); font-size: 18px; max-width: 65ch; }
+.partner-screen { margin: 0 auto; max-width: 1120px; }
+.partner-screen img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-radius: 16px; }
+.partner-screen figcaption { font-size: 14px; line-height: 1.6; color: var(--vellum); padding: 16px 0; }
+.partner-screen figcaption a { text-decoration: underline; text-underline-offset: 3px; }
+.surface-toggle__btn { min-height: 44px; }
+@media (max-width: 760px) {
+  .knowledge-map { grid-template-columns: 1fr; }
+  .knowledge-map__sources { gap: 12px; }
+  .knowledge-map__source { min-height: 0; padding: 16px; border: var(--hairline); }
+  .knowledge-map__source:last-child { border: var(--hairline); }
+  .knowledge-map__merge { display: none; }
+  .knowledge-map__down { display: block; width: 32px; height: 48px; justify-self: center; }
+  .knowledge-map__arrow { width: 32px; height: 48px; justify-self: center; transform: rotate(90deg); }
+  .knowledge-map__analyst, .knowledge-map__wiki { padding: 24px; }
+  .knowledge-map figcaption { align-items: flex-start; }
+}
+
+
+/* A shared top-layer preview keeps videos out of the animated page plane. */
+.tool-preview { position: fixed; inset: auto; width: min(460px, calc(100vw - 32px)); padding: 0; margin: 0; border: 1px solid var(--rule); border-radius: 16px; background: var(--vellum-bright); color: var(--ink); overflow: hidden; }
+.tool-preview img, .tool-preview video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-radius: inherit; background: var(--pigment); }
+.tool-preview img[hidden] { display: none; }
+.tool-preview video[hidden] { display: none; }
+.tool-preview.is-hover .tool-preview__foot { display: none; }
+.tool-preview__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 12px; font-size: 14px; }
+.tool-preview__close { min-width: 44px; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
+.tool-preview__error { padding: 12px; margin: 0; font-size: 14px; }
+
 /* ── 17 · Section dark + terminal (Install) ──────────────────── */
 .sec--dark {
   position: relative;
   padding: var(--sp-section-y) 0 var(--sp-section-yb);
   margin: 0 calc(var(--gut) * -1);
   padding-inline: var(--gut);
-  /* page-projection test · transparent so the 3D canvas is visible
-     through the section. The terminal keeps its own dark bg so the
-     code stays readable. */
   background: transparent;
   color: var(--vellum);
   border-bottom: 0;
 }
+html:not(.is-3d-lifted) .sec--dark { background: var(--pigment); }
 .sec--dark .num {
   color: rgba(232, 224, 207, 0.55);
 }
 .sec--dark .num__n {
-  color: var(--oxide);
+  color: var(--vellum);
 }
 .sec--dark .display {
   color: var(--vellum);
 }
 .sec--dark .display em {
-  color: var(--oxide);
+  color: var(--vellum);
 }
 .sec--dark .lead {
   color: rgba(232, 224, 207, 0.7);
@@ -3249,6 +3362,9 @@ html.js .is-in .tw__in {
   }
 }
 </script>
+<link rel="stylesheet" href="/shared/property-signal.css">
+<link rel="alternate" type="text/plain" href="/llms.txt" title="Machine-readable site index">
+<script src="/shared/property-signal.js" defer></script>
 </head>
 <body>
 
@@ -3274,7 +3390,7 @@ html.js .is-in .tw__in {
         <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
         Source
       </a>
-      <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
+      <a class="btn btn--solid btn--setup" href="https://indicator.media/indicator-lab">Install</a>
     </div>
 
   </div>
@@ -3298,16 +3414,20 @@ html.js .is-in .tw__in {
         Old-school reporting.<br><em>New-school machinery</em>
       </h1>
 
-      <p class="hero__lede" data-reveal style="--delay: 220ms">Mycroft is a local agent for investigators, built on <span class="nw"><a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a>.</span> Plan a case with <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> and run it with <span class="nw"><a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a>,</span> then keep watch with <span class="nw"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a>.</span> Everything you find goes into your own <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> wiki.</p>
+      <p class="hero__lede" data-reveal style="--delay: 220ms">Mycroft is a local agent for investigators, built on <span class="nw"><a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" class="pill__mark" viewBox="396 85 32 30" aria-hidden="true" focusable="false"><path fill-rule="evenodd" clip-rule="evenodd" d="M421.366 85.986C424.597 85.986 427.215 88.603 427.215 91.832V92.664C427.215 94.881 425.955 96.89 423.993 97.865 423.825 97.948 423.713 98.117 423.715 98.306L423.741 101.657C423.762 104.06 422.78 106.13 421.032 107.782L418.324 110.341V113.811C418.324 113.941 418.219 114.046 418.091 114.046H416.219C416.09 114.046 415.985 113.941 415.985 113.811V110.239C415.985 109.661 416.223 109.108 416.643 108.71L419.425 106.082C420.7 104.877 421.417 103.43 421.402 101.676L421.372 97.854C421.364 96.99 421.888 96.209 422.691 95.889L422.813 95.837C424.063 95.282 424.875 94.04 424.875 92.664V91.832C424.875 89.895 423.305 88.325 421.366 88.325H420.197C418.258 88.325 416.687 89.895 416.687 91.832V97.834C416.687 98.849 415.961 99.719 414.963 99.903L412.968 100.271C411.183 100.599 409.689 101.427 408.773 102.874L408.775 102.876C408.752 102.913 408.727 102.95 408.704 102.986 408.125 103.943 407.795 105.061 407.795 106.246V113.811C407.795 113.941 407.691 114.046 407.562 114.046H405.69C405.561 114.046 405.456 113.941 405.456 113.811 405.456 113.329 405.456 111.753 405.456 111.312 405.455 111.247 405.402 111.196 405.338 111.195 402.255 111.167 399.66 110.04 397.714 107.908 397.412 107.577 397.328 106.99 397.494 106.593 397.659 106.194 398.153 105.964 398.701 105.935 399.688 105.883 400.612 105.787 401.543 105.525 403.175 105.067 405.183 104.035 406.743 101.708 407.993 99.682 410.063 98.428 412.545 97.971L414.061 97.692C414.227 97.661 414.347 97.517 414.347 97.347V91.832C414.347 88.603 416.966 85.986 420.197 85.986H421.366ZM405.456 106.489C405.456 106.396 405.351 106.339 405.273 106.387 404.084 107.111 402.504 107.431 401.113 107.641 401.004 107.656 400.976 107.801 401.071 107.856 402.214 108.519 403.82 109.325 405.369 108.955 405.421 108.942 405.456 108.895 405.456 108.842V106.489Z" fill="currentColor" />
+          <path d="M420.664 91.13C421.311 91.13 421.834 91.654 421.834 92.299 421.834 92.945 421.311 93.468 420.664 93.468 420.018 93.468 419.495 92.945 419.495 92.299 419.495 91.654 420.018 91.13 420.664 91.13Z" fill="currentColor" />
+          <path d="M412.826 110.304C412.954 110.304 413.06 110.409 413.06 110.538V113.811C413.06 113.941 412.954 114.046 412.826 114.046H410.953C410.825 114.046 410.721 113.941 410.721 113.811V110.538C410.721 110.409 410.825 110.304 410.953 110.304H412.826Z" fill="currentColor" />
+          </svg>Osaurus</a>.</span> Plan with <span class="nw"><a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" class="pill__mark" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2" /><circle cx="12" cy="12" r="3" fill="currentColor" /></svg>Navigator</a>,</span> investigate with <span class="nw"><a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="pill__mark" aria-hidden="true" focusable="false"><path d="M6 2h4v4h-4zM10 2h4v4h-4zM14 2h4v4h-4zM6 6h4v4h-4zM6 10h4v4h-4zM14 10h4v4h-4zM14 14h4v4h-4zM6 18h4v4h-4zM10 18h4v4h-4zM14 18h4v4h-4z" /></svg>Spotlight</a>,</span> and keep watch with <span class="nw"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="pill__mark" aria-hidden="true" focusable="false"><circle cx="46" cy="54" r="30" fill="none" stroke="currentColor" stroke-width="6.5" /><line x1="46" y1="54" x2="82" y2="18" stroke="currentColor" stroke-width="3" stroke-linecap="round" /><circle cx="46" cy="54" r="3.5" fill="currentColor" /><circle cx="82" cy="18" r="4" fill="currentColor" /></svg>Scoutpost</a>.</span> Keep what you find in your <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer"><svg xmlns="http://www.w3.org/2000/svg" class="pill__mark" viewBox="0 0 226 227" aria-hidden="true" focusable="false"><path d="M109.438 208.318C84.1921 222.282 107.582 187.513 81.142 170.097C63.2778 158.333 43.248 143.697 35.2406 122.156C19.7257 80.4194 51.307 31.9562 90.7404 25.0115C132.179 17.7107 159.952 29.1703 180.332 58.092C190.7 72.8085 197.696 96.2618 194.083 114.821C186.26 155.036 143.512 189.466 109.438 208.318Z" fill="currentColor" /><path d="M154.195 85.8131C156.366 83.6428 159.884 83.6428 162.055 85.8131V85.8131C164.225 87.9834 164.225 91.5021 162.055 93.6724L144.061 111.666L136.202 103.807L154.195 85.8131Z" fill="var(--pill-mark-cutout)" /><path d="M162.054 113.942C164.224 116.112 164.224 119.631 162.054 121.801V121.801C159.883 123.971 156.365 123.971 154.194 121.801L136.201 103.807L144.06 95.9481L162.054 113.942Z" fill="var(--pill-mark-cutout)" /></svg>OpenKnowledge</a> wiki.</p>
 
       <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
-        <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
+        <a class="btn btn--solid btn--setup" href="https://indicator.media/indicator-lab">Install with Indicator Lab</a>
         <a class="btn btn--ghost btn--mono" href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">
           <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.71.08-.71 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.69.41.36.78 1.07.78 2.16v3.2c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
           GitHub
         </a>
       </div>
     </div>
+    <button class="hero__play" type="button" aria-pressed="false" hidden>Gather the papers</button>
   </section>
 
 
@@ -3328,7 +3448,7 @@ html.js .is-in .tw__in {
         <aside class="day-time"><span class="day-time__hour">01</span></aside>
         <div class="day-card">
           <p class="card__kicker"><span>§ Investigate · <strong>Spotlight</strong></span></p>
-          <h3 class="card__title">Run a full <a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight investigation</a> locally on <a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>.</h3>
+          <h3 class="card__title">Run a full <a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight investigation</a> locally in the <a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus desktop app</a>.</h3>
         </div>
       </article>
 
@@ -3368,7 +3488,7 @@ html.js .is-in .tw__in {
         <aside class="day-time"><span class="day-time__hour">06</span></aside>
         <div class="day-card">
           <p class="card__kicker"><span>§ File · <strong>Analyst</strong></span></p>
-          <h3 class="card__title">The <a class="pill" href="https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md" target="_blank" rel="noreferrer">Analyst <small>pilot</small></a> runs locally and files what Spotlight and Scoutpost find into your wiki.</h3>
+          <h3 class="card__title">The <a class="pill" href="https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md" target="_blank" rel="noreferrer">Analyst</a> uses an on-device model to connect Spotlight findings and Scoutpost alerts with the knowledge in your wiki.</h3>
         </div>
       </article>
 
@@ -3396,11 +3516,10 @@ html.js .is-in .tw__in {
   <section class="sec" id="skills" data-section="2">
     <header class="num" data-reveal><span class="num__n">03</span> Skills</header>
 
-    <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">The field's methods,<br><em>written down</em></h2>
+    <div class="sec-head skills-head" data-reveal style="--delay: 80ms">
+      <h2 class="display display--section">Expert skills,<br><em>for your investigations</em></h2>
+      <p class="sec-lede">We feature and adapt open-source skills from journalists, investigators and other experts to help you get more from Mycroft. Thank you to the community for sharing its tools and methods.</p>
     </div>
-
-    <p class="sec-lede" data-reveal style="--delay: 140ms">Each skill is a plain file Mycroft reads before it works, and each one credits the reporters and researchers it borrows from.</p>
 
     <p class="skills-index__status" id="skills-index-status" role="status">Loading the skills…</p>
     <div class="skills-catalogue" id="skills-index" role="list" data-reveal style="--delay: 180ms"></div>
@@ -3419,23 +3538,21 @@ html.js .is-in .tw__in {
       <h2 class="display display--section">Knowledge that<br><em>compounds</em></h2>
     </div>
 
-    <div class="know" data-cascade>
-      <article class="know__col" data-reveal style="--delay: 0ms">
-        <span class="term__pre">↳ memory</span>
-        <h3 class="know__title">Start from what you know</h3>
-        <p class="know__body">Every case leaves something behind. Mycroft keeps the people, companies and documents you've checked in one wiki, so the next case starts there.</p>
-      </article>
-      <article class="know__col" data-reveal style="--delay: 120ms">
-        <span class="term__pre">↳ links</span>
-        <h3 class="know__title">Connect findings and data</h3>
-        <p class="know__body">Notes link the way reporting does. A Scoutpost alert sits next to the Spotlight case it belongs to, and an extracted figure points back to its document.</p>
-      </article>
-      <article class="know__col" data-reveal style="--delay: 240ms">
-        <span class="term__pre">↳ storage</span>
-        <h3 class="know__title">Kept safely on-device</h3>
-        <p class="know__body">The wiki is plain markdown in <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> on your machine. Nothing syncs unless you choose to.</p>
-      </article>
-    </div>
+    <p class="sec-lede" data-reveal>Pick up where you left off. Bring past reporting, new findings and ongoing monitoring together, so the next investigation starts with what you already know.</p>
+
+    <figure class="knowledge-map" data-reveal aria-labelledby="knowledge-map-caption">
+      <div class="knowledge-map__sources">
+        <div class="knowledge-map__source"><h3>Your wiki</h3><p>People, documents, methods and past reporting</p></div>
+        <div class="knowledge-map__source"><h3>Spotlight</h3><p>Case findings, evidence and research trails</p></div>
+        <div class="knowledge-map__source"><h3>Scoutpost</h3><p>New alerts from the sources you monitor</p></div>
+      </div>
+      <svg class="knowledge-map__merge" viewBox="0 0 64 288" preserveAspectRatio="none" fill="none" aria-hidden="true"><path d="M0 48C40 48 24 144 64 144M0 144H64M0 240C40 240 24 144 64 144"/><path d="m56 138 8 6-8 6"/></svg>
+      <svg class="knowledge-map__down" viewBox="0 0 32 48" fill="none" aria-hidden="true"><path d="M16 0V46m-6-8 6 8 6-8"/></svg>
+      <div class="knowledge-map__analyst"><span class="knowledge-map__label">On-device model</span><h3>Analyst</h3><p>Connects findings to what you know. Proposes notes and links.</p><span class="knowledge-map__approval">You approve each write</span></div>
+      <svg class="knowledge-map__arrow" viewBox="0 0 64 32" fill="none" aria-hidden="true"><path d="M0 16H62m-8-6 8 6-8 6"/></svg>
+      <div class="knowledge-map__wiki"><span class="knowledge-map__label">OpenKnowledge · on your machine</span><h3>Connected knowledge</h3><div class="knowledge-map__links" aria-hidden="true"><span>People</span><span>Cases</span><span>Sources</span><span>Methods</span></div><p>Find the shared director. Revisit the original source. Follow a connection into the next case.</p></div>
+      <figcaption id="knowledge-map-caption"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7H7a4 4 0 0 0-4 4v4a4 4 0 0 0 4 4h10m-3-17 5 5-5 5"/></svg><span><strong>Each case gives the next one a head start.</strong> Approved notes and links become part of the wiki your agents can search again.</span></figcaption>
+    </figure>
   </section>
 
 
@@ -3503,8 +3620,10 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">06</span> Install</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Installed by Lab.<br><em>Running on your Mac</em></h2>
+      <h2 class="display display--section">Install with<br><em>Indicator Lab.</em></h2>
     </div>
+
+    <p class="sec-lede install-lede">Indicator Lab brings the setup together: <a href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a> runs your local agents and models; <a href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> holds your wiki.</p>
 
     <div class="surface-toggle" role="tablist" aria-label="View" data-reveal style="--delay: 100ms">
       <button class="surface-toggle__btn is-active" type="button" data-surface="installer" role="tab" aria-selected="true">Installer</button>
@@ -3514,132 +3633,17 @@ html.js .is-in .tw__in {
 
     <div class="surface-stage" data-reveal style="--delay: 140ms">
 
-    <!-- Installer · after the Indicator Lab Osaurus redesign canvas (Installing screen) -->
+    <!-- Supplied Indicator Lab installer screenshot, cropped to its top at 16:9. -->
     <div class="surface surface--app is-active" data-surface-view="installer">
-      <div class="goose-app is-on ui-installer">
-        <div class="goose-app__chrome" aria-hidden="true">
-          <span class="goose-app__dot goose-app__dot--r"></span>
-          <span class="goose-app__dot goose-app__dot--y"></span>
-          <span class="goose-app__dot goose-app__dot--g"></span>
-          <span class="goose-app__title">Indicator Lab</span>
-        </div>
-        <div class="ui-installer__body">
-          <div class="ui-installer__head">
-            <div>
-              <span class="ui-installer__kicker">Setting up Osaurus</span>
-              <strong class="ui-installer__step">Downloading Gemma 4 12B, about 7 GB</strong>
-            </div>
-            <span class="ui-installer__pct">46%</span>
-          </div>
-          <div class="ui-installer__bar" role="progressbar" aria-label="Install progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="46"><span style="width:46%"></span></div>
-          <ul class="ui-installer__models" aria-label="Models">
-            <li><span>Gemma 4 12B, for Mycroft</span><em>Downloading</em></li>
-            <li><span>LFM3, tuned for Spotlight</span><em class="is-next">Next</em></li>
-            <li><span>NuExtract3, for documents</span><em class="is-next">Next</em></li>
-            <li><span>Wiki search model</span><em class="is-done">Done</em></li>
-          </ul>
-          <ol class="ui-installer__steps">
-            <li class="is-done"><span></span>Osaurus</li>
-            <li class="is-now"><span></span>Models</li>
-            <li><span></span>Wiki</li>
-            <li><span></span>Agents</li>
-          </ol>
-        </div>
-        <div class="goose-app__foot">
-          <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-          <span class="goose-app__meta">Indicator Lab installs Osaurus, the models and Mycroft</span>
-        </div>
-      </div>
+      <figure class="partner-screen partner-screen--setup"><img src="assets/screenshots/indicator-lab-setup.jpg" width="2304" height="1296" loading="lazy" alt="Indicator Lab installer showing Ninja setup, Mycroft in Osaurus and Spotlight."><figcaption>Indicator Lab · installer preview</figcaption></figure>
     </div>
 
-    <!-- Osaurus · the runtime -->
+    <!-- Partner interface images from the Indicator workshop. -->
     <div class="surface surface--app" data-surface-view="osaurus" hidden>
-      <div class="goose-app">
-        <div class="goose-app__chrome" aria-hidden="true">
-          <span class="goose-app__dot goose-app__dot--r"></span>
-          <span class="goose-app__dot goose-app__dot--y"></span>
-          <span class="goose-app__dot goose-app__dot--g"></span>
-          <span class="goose-app__title">Osaurus · Mycroft</span>
-        </div>
-        <div class="goose-app__body">
-          <aside class="goose-app__side">
-            <div class="goose-app__side-h">Agents</div>
-            <ul class="goose-app__list">
-              <li class="is-active"><span class="goose-app__bullet">◐</span> Mycroft</li>
-              <li><span class="goose-app__bullet">◇</span> Spotlight</li>
-              <li><span class="goose-app__bullet">○</span> Watson</li>
-            </ul>
-          </aside>
-          <div class="goose-app__chat">
-            <div class="goose-app__chat-head">
-              <div class="goose-app__session">
-                <strong>Tender documents</strong>
-                <span>Gemma 4 12B · on-device</span>
-              </div>
-              <span class="goose-app__status">Local</span>
-            </div>
-            <div class="goose-app__thread">
-              <div class="goose-app__msg goose-app__msg--user">
-                Pull the contract value, award date and winning bidder out of tender-114.pdf.
-              </div>
-              <div class="goose-app__tool">extract document · NuExtract3 · on-device</div>
-              <div class="goose-app__msg goose-app__msg--bot">
-                <strong>Three fields found.</strong><br>
-                Value €4.2M · awarded 12 March · bidder Example Holdings SA.
-                <br><br>
-                <span class="goose-app__cite">wiki/sources/tender-114.pdf · extracted locally · example data</span>
-              </div>
-            </div>
-            <div class="goose-app__composer">
-              <span>Ask Mycroft to search your wiki, find a method or check your monitors…</span>
-              <span class="goose-app__send" aria-hidden="true">↑</span>
-            </div>
-          </div>
-        </div>
-        <div class="goose-app__foot">
-          <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-          <span class="goose-app__meta">Mycroft, Spotlight and Watson as Osaurus agents</span>
-        </div>
-      </div>
+      <figure class="partner-screen"><img src="assets/screenshots/osaurus.jpg" width="1120" height="700" loading="lazy" alt="Osaurus interface showing a local agent reviewing a document and citing a clause."><figcaption><a href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a> · Partner interface example. Mycroft runs as an agent inside Osaurus.</figcaption></figure>
     </div>
-
-    <!-- OpenKnowledge · the wiki, with the Analyst proposing a write -->
     <div class="surface surface--app" data-surface-view="wiki" hidden>
-      <div class="goose-app ui-ok">
-        <div class="goose-app__chrome" aria-hidden="true">
-          <span class="goose-app__dot goose-app__dot--r"></span>
-          <span class="goose-app__dot goose-app__dot--y"></span>
-          <span class="goose-app__dot goose-app__dot--g"></span>
-          <span class="goose-app__title">OpenKnowledge · Mycroft wiki</span>
-        </div>
-        <div class="ui-ok__body">
-          <aside class="ui-ok__tree" aria-label="Wiki files">
-            <p class="ui-ok__group">wiki/entities</p>
-            <p class="is-active">example-holdings-sa.md</p>
-            <p>city-procurement-office.md</p>
-            <p class="ui-ok__group">sources</p>
-            <p>tender-114.pdf</p>
-            <p class="ui-ok__group">cases</p>
-            <p>harbour-contracts</p>
-          </aside>
-          <div class="ui-ok__doc">
-            <p class="ui-ok__fm">type: entity · kind: company · sources: 3</p>
-            <h4 class="ui-ok__h">Example Holdings SA</h4>
-            <p>Won the harbour dredging tender in March, according to <u>tender-114.pdf</u>. Directors are listed in the <u>commercial register extract</u>.</p>
-            <p class="ui-ok__sub">Linked</p>
-            <p><u>harbour-contracts</u> · <u>city-procurement-office</u></p>
-          </div>
-          <aside class="ui-ok__agent" aria-label="Analyst">
-            <p class="ui-ok__agent-h">Analyst · local</p>
-            <p>A new Scoutpost alert names Example Holdings SA in a second tender. I propose adding it to this note and linking it to the case.</p>
-            <div class="ui-ok__actions"><span class="ui-ok__btn ui-ok__btn--yes">Approve</span><span class="ui-ok__btn">Deny</span></div>
-          </aside>
-        </div>
-        <div class="goose-app__foot">
-          <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-          <span class="goose-app__meta">Plain markdown on your machine · example data</span>
-        </div>
-      </div>
+      <figure class="partner-screen"><img src="assets/screenshots/openknowledge.jpg" width="1248" height="702" loading="lazy" alt="OpenKnowledge interface with an agent conversation beside an editable Markdown document."><figcaption><a href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> · Partner interface example. Your wiki stays in plain Markdown.</figcaption></figure>
     </div>
 
     </div><!-- /.surface-stage -->
@@ -3658,8 +3662,9 @@ html.js .is-in .tw__in {
       <div class="lab-grid__col">
         <span class="term__pre">↳ now open</span>
         <h3 class="term__name">Indicator Lab</h3>
-        <p class="term__sub"><em>The Buried Signals tool suite, a monthly live workshop and Lab Newsletter, office hours every two weeks, and the training course. $10/month add-on to Indicator membership.</em></p>
-        <a class="btn btn--solid btn--setup indicator-lab-link" href="https://buriedsignals.com/join">Join Indicator Lab <span class="btn__arr" aria-hidden="true">→</span></a>
+        <p class="term__sub">The Buried Signals tool suite, a monthly live workshop and Lab Newsletter, office hours every two weeks, and the training course.</p>
+        <p class="lab-grid__price">$22.95/month · billed monthly, cancel anytime.</p>
+        <a class="btn btn--solid btn--setup indicator-lab-link" href="https://indicator.media/indicator-lab">Install with Indicator Lab <span class="btn__arr" aria-hidden="true">→</span></a>
       </div>
       <div class="lab-grid__col">
           <div class="signup__newsletter-block">
@@ -3716,7 +3721,7 @@ html.js .is-in .tw__in {
       <li><a href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a> <span>— Liquid AI · Spotlight's on-device model</span></li>
       <li><a href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a> <span>— NuMind · on-device document extraction</span></li>
       <li><a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noreferrer">Pi</a> <span>— badlogic · the agent loop under the Analyst and Spotlight</span></li>
-      <li><a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">Joe Amditis</a> <span>— four journalism skills, adapted · MIT</span></li>
+      <li><a href="https://threejs.org/" target="_blank" rel="noreferrer">Three.js</a> <span>— WebGL and CSS3D rendering for this site</span></li>
     </ul>
   </section>
 
@@ -3751,7 +3756,7 @@ html.js .is-in .tw__in {
       <section class="colophon__col">
         <h3>Resources</h3>
         <ul role="list">
-          <li><a href="https://buriedsignals.com/join">Install</a></li>
+          <li><a href="https://indicator.media/indicator-lab">Install</a></li>
           <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">GitHub</a></li>
           <li><a href="https://huggingface.co/tomvaillant" target="_blank" rel="noreferrer">Hugging Face</a></li>
           <li><a href="https://docs.osaurus.ai/" target="_blank" rel="noreferrer">Osaurus docs</a></li>
@@ -3783,6 +3788,28 @@ html.js .is-in .tw__in {
     <span>© 2026 Buried Signals</span>
   </p>
 </footer>
+<!-- property-signal:start -->
+<!-- Shared Buried Signals property signature; synced by scripts/sync-property-signal.py. -->
+<aside class="bs-property-signal" aria-label="Buried Signals network" lang="en">
+  <div class="bs-property-signal__content">
+  <bs-property-radar class="bs-property-signal__radar" aria-hidden="true">
+    <svg viewBox="0 0 400 200" fill="none" aria-hidden="true">
+      <g stroke="currentColor" stroke-width="0.5" opacity="0.12">
+        <circle cx="200" cy="200" r="60"/><circle cx="200" cy="200" r="120"/>
+        <circle cx="200" cy="200" r="180"/><circle cx="200" cy="200" r="240"/>
+      </g>
+      <circle cx="200" cy="198" r="2.8" fill="#D4A853"/>
+    </svg>
+  </bs-property-radar>
+  <a class="bs-property-signal__owner" href="https://buriedsignals.com/">Buried Signals</a>
+  <nav class="bs-property-signal__switch" aria-label="Reading format">
+    <a href="/" aria-current="true"><span aria-hidden="true">◉</span> Human</a>
+    <a href="/llms.txt" rel="alternate" type="text/plain"><span aria-hidden="true">○</span> Machine</a>
+  </nav>
+  </div>
+</aside>
+<!-- property-signal:end -->
+
 
 </div><!-- /#page-3d -->
 
@@ -3858,7 +3885,7 @@ document.documentElement.classList.add("js");
 
   if (!REDUCED) {
     document
-      .querySelectorAll(".display, .card__title, .term__sub")
+      .querySelectorAll(".display")
       .forEach(splitTitle);
   }
 
@@ -3878,8 +3905,10 @@ document.documentElement.classList.add("js");
       });
       head.classList.toggle("is-on-dark", onDark);
     };
-    addEventListener("scroll", update, { passive: true });
-    addEventListener("resize", update);
+    // Read geometry after the CSS3D renderer has followed the scroll.
+    const scheduleUpdate = () => requestAnimationFrame(update);
+    addEventListener("scroll", scheduleUpdate, { passive: true });
+    addEventListener("resize", scheduleUpdate);
     update();
   }
 
@@ -3901,13 +3930,32 @@ document.documentElement.classList.add("js");
         });
       }
     };
-    surfaceBtns.forEach((btn) => {
+    surfaceBtns.forEach((btn, index) => {
+      const panel = document.querySelector(`[data-surface-view="${btn.dataset.surface}"]`);
+      btn.id = `surface-tab-${btn.dataset.surface}`;
+      btn.tabIndex = btn.getAttribute("aria-selected") === "true" ? 0 : -1;
+      panel.id = `surface-panel-${btn.dataset.surface}`;
+      panel.setAttribute("role", "tabpanel");
+      panel.setAttribute("aria-labelledby", btn.id);
+      btn.setAttribute("aria-controls", panel.id);
+      btn.addEventListener("keydown", (event) => {
+        let next;
+        if (event.key === "ArrowRight") next = (index + 1) % surfaceBtns.length;
+        else if (event.key === "ArrowLeft") next = (index + surfaceBtns.length - 1) % surfaceBtns.length;
+        else if (event.key === "Home") next = 0;
+        else if (event.key === "End") next = surfaceBtns.length - 1;
+        else return;
+        event.preventDefault();
+        surfaceBtns[next].focus();
+        surfaceBtns[next].click();
+      });
       btn.addEventListener("click", () => {
         const target = btn.dataset.surface;
         surfaceBtns.forEach((b) => {
           const on = b.dataset.surface === target;
           b.classList.toggle("is-active", on);
           b.setAttribute("aria-selected", on ? "true" : "false");
+          b.tabIndex = on ? 0 : -1;
         });
         document.querySelectorAll("[data-surface-view]").forEach((v) => {
           const on = v.dataset.surfaceView === target;
@@ -5575,7 +5623,9 @@ class PaperSphereScene {
     defaults = {},
     mouse = null,
     mirrorParent = null, // for split-half rendering across the HTML plane
+    projectPose = null, // hero-only projection; the physics keeps its original sphere
   }) {
+    this.projectPose = projectPose;
     this.anchor = anchor;
     this.mouse = mouse;
 
@@ -6370,7 +6420,8 @@ class PaperSphereScene {
     // ── PASS 7: write matrix + bend signal + fold ────────────────────
     for (let i = 0; i < N; i++) {
       const sh = this.sheets[i];
-      M.compose(sh.pos, sh.quat, SO);
+      if (this.projectPose) this.projectPose(sh, i, M);
+      else M.compose(sh.pos, sh.quat, SO);
       this.pool.setMatrix(sh.idx, M);
 
       // bend signal: combination of motion + drag + contact pressure +
@@ -8048,6 +8099,8 @@ function boot() {
   const pageEl = document.getElementById("page-3d");
   const sentinel = document.getElementById("scroll-sentinel");
   if (!pageEl || !sentinel) return;
+  // Keep a normal document and still imagery for reduced-motion readers.
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   // Mobile / low-power detection — used to scale particle counts and pixel
   // ratio so the CSS3D + paper sphere stack stays usable on phones.
@@ -8097,6 +8150,8 @@ function boot() {
     antialias: true,
   });
   const rendererHTML = new CSS3DRenderer();
+  // Keyboard focus must scroll the document, never the fixed renderer.
+  rendererHTML.domElement.style.overflow = "clip";
   const rendererFront = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true,
@@ -8224,7 +8279,8 @@ function boot() {
     const color = isDark ? PIGMENT : VELLUM;
     const mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1),
-      makeBgMaterial(color, isDark ? 0.016 : 0.04),
+      // Additive grain clips against near-black and looks like a gray overlay.
+      makeBgMaterial(color, isDark ? 0 : 0.04),
     );
     mesh.renderOrder = -1000;
     sceneBack.add(mesh);
@@ -8235,7 +8291,7 @@ function boot() {
       const h = el.offsetHeight;
       const cy = el.offsetTop + h / 2;
       mesh.scale.set(BG_WIDTH, h, 1);
-      mesh.position.set(0, -cy, -50);
+      mesh.position.set(0, -cy, 0);
     }
   }
   syncBgMeshes();
@@ -8292,33 +8348,102 @@ function boot() {
   // visualR/sphereR × RECEIPT_W (0.14) = paper px on screen.
   const SPHERE_VISUAL_R = 280;
   const SPHERE_R_MODEL = 1.0;
-  const SPHERE_HERO_COUNT = IS_MOBILE ? 140 : 240;
+  const HERO_ORBIT_COUNT = IS_MOBILE ? 80 : 140;
   const SPHERE_CLOSING_COUNT = IS_MOBILE ? 100 : 200;
 
-  // hero sphere — same paper-globe language as manifesto: centered on the
-  // headline, mirrorParent splits half front / half back of the HTML plane
-  // so papers swirl AROUND the letters. Greets every visitor at the top.
-  scenes.push(
-    new PaperSphereScene({
-      parent: anchorById("hero").front,
-      anchor: anchorById("hero"),
-      mirrorParent: anchorById("hero").back,
-      gui,
-      label: "Hero · sphere",
-      count: SPHERE_HERO_COUNT,
-      mouse: mouseRef,
-      defaults: {
-        anchorCorner: "CTR",
-        visualR: IS_MOBILE ? 390 : 560,
-        sphereR: 0.96,
-        marginX: 0,
-        marginY: 0,
-        offsetX: 0,
-        offsetY: IS_MOBILE ? 20 : 30,
-        offsetZ: 0,
-      },
-    }),
-  );
+  // Keep the original curl, flutter, collisions and mouse repulsion. Project
+  // its live poses into a loose orbit; gathering reveals the original ball.
+  const heroAnchor = anchorById("hero");
+  const heroEl = heroAnchor.el;
+  const paperPlay = heroEl.querySelector('.hero__play');
+  const projectedPosition = new THREE.Vector3();
+  const paperScale = new THREE.Vector3(1, 1, 1);
+  let gather = 0;
+  let gatherTarget = 0;
+  let spin = 0;
+  let spinVelocity = 0;
+  let paperTime = 0;
+  const heroSphere = new PaperSphereScene({
+    parent: heroAnchor.front,
+    anchor: heroAnchor,
+    mirrorParent: heroAnchor.back,
+    gui,
+    label: "Hero · paper play",
+    count: HERO_ORBIT_COUNT,
+    mouse: mouseRef,
+    defaults: {
+      anchorCorner: "CTR", visualR: viewportW < 768 ? 510 : 850, sphereR: 0.96,
+      marginX: 0, marginY: 0, offsetX: 0, offsetY: 0, offsetZ: 0,
+      rotXAmp: 0.12, rotZAmp: 0.1,
+    },
+    projectPose(sheet, index, matrix) {
+      const modelScale = heroSphere.params.visualR / heroSphere.params.sphereR;
+      const phase = index * 2.399963229728653;
+      const angle = Math.atan2(sheet.pos.y, sheet.pos.x) + Math.sin(phase + paperTime * 0.7) * 0.12;
+      const spread = 0.98 + Math.sin(phase + paperTime * 0.8) * 0.13 + Math.cos(phase * 0.7 + paperTime * 0.5) * 0.1;
+      projectedPosition.set(
+        Math.cos(angle) * viewportW * 0.62 * spread / modelScale,
+        Math.sin(angle) * heroAnchor.height * 0.58 * spread / modelScale,
+        sheet.pos.z * 0.4,
+      ).lerp(sheet.pos, gather);
+      const x = projectedPosition.x, y = projectedPosition.y;
+      projectedPosition.x = x * Math.cos(spin) - y * Math.sin(spin);
+      projectedPosition.y = x * Math.sin(spin) + y * Math.cos(spin);
+      matrix.compose(projectedPosition, sheet.quat, paperScale);
+    },
+  });
+  const setGather = (next) => {
+    if (next === gatherTarget) return;
+    gatherTarget = next;
+    const direction = next ? 1 : -1;
+    spinVelocity += direction * 10;
+    for (const sheet of heroSphere.sheets) {
+      sheet.vel.x -= sheet.pos.y * direction * 1.8;
+      sheet.vel.y += sheet.pos.x * direction * 1.8;
+      sheet.angVel.z += direction * 1.6;
+    }
+    heroEl.dataset.paperMode = next ? 'ball' : 'orbit';
+    paperPlay.setAttribute('aria-pressed', String(!!next));
+    paperPlay.textContent = next ? 'Release the papers' : 'Gather the papers';
+  };
+  paperPlay.hidden = false;
+  heroEl.dataset.paperMode = 'orbit';
+  paperPlay.addEventListener('click', () => setGather(gatherTarget ? 0 : 1));
+  heroEl.addEventListener('click', (event) => {
+    if (event.target.closest('a, button, input, textarea, select, [contenteditable]')) return;
+    if (getSelection()?.toString()) return;
+    if (!gatherTarget && event.target.closest('.hero__bottom, .hero__partners')) return;
+    setGather(gatherTarget ? 0 : 1);
+  });
+  addEventListener('keydown', (event) => { if (event.key === 'Escape') setGather(0); });
+  const heroOrbit = {
+    update(t, dt) {
+      paperTime = t;
+      gather += (gatherTarget - gather) * (1 - Math.exp(-5 * dt));
+      spin += spinVelocity * dt;
+      spinVelocity *= Math.exp(-3.2 * dt);
+      const mobile = viewportW < 768;
+      heroSphere.params.visualR = (mobile ? 510 : 850) * (1 - gather) + (mobile ? 390 : 560) * gather;
+      heroSphere.update(t, dt);
+    },
+  };
+  const resetHeroView = () => {
+    gather = 0;
+    gatherTarget = 0;
+    spin = 0;
+    spinVelocity = 0;
+    heroEl.dataset.paperMode = 'orbit';
+    paperPlay.setAttribute('aria-pressed', 'false');
+    paperPlay.textContent = 'Gather the papers';
+    // Initialize the projected poses before the first frame is drawn.
+    heroOrbit.update(paperTime, 0);
+  };
+  resetHeroView();
+  addEventListener('pageshow', resetHeroView);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resetHeroView();
+  });
+  scenes.push(heroOrbit);
 
   // closing sphere (manifesto) — centered, split half-front/half-back
   // across the HTML plane via the pool's mirrorParent feature.
@@ -8344,8 +8469,8 @@ function boot() {
     }),
   );
 
-  // floating papers — between hero bottom and closing top. Both layers stay
-  // behind the CSS3D HTML layer so editorial copy and cards remain readable.
+  // Floating papers share the foreground margin clip. Behind transparent HTML,
+  // even back-layer sheets would otherwise cross the reading column.
   const heroSec = sections.find((s) => s.el.id === "hero") || sections[0];
   const closingSec =
     sections.find((s) => s.el.id === "closing") || sections[sections.length - 1];
@@ -8356,7 +8481,7 @@ function boot() {
   const bandBottomY = -closingSec.top;
   scenes.push(
     new FloatingPapersScene({
-      parent: sceneBack,
+      parent: sceneFront,
       getViewport: () => ({
         w: viewportW,
         h: viewportH,
@@ -8376,7 +8501,7 @@ function boot() {
   );
   scenes.push(
     new FloatingPapersScene({
-      parent: sceneBack,
+      parent: sceneFront,
       getViewport: () => ({
         w: viewportW,
         h: viewportH,
@@ -8421,6 +8546,7 @@ function boot() {
   function onResize() {
     viewportW = window.innerWidth;
     viewportH = window.innerHeight;
+    pageEl.style.width = viewportW + "px";
     camera.aspect = viewportW / viewportH;
     camera.position.z = cameraDistanceFor(viewportH);
     camera.updateProjectionMatrix();
@@ -8443,6 +8569,8 @@ function boot() {
     onScroll();
   }
   window.addEventListener("resize", onResize);
+  // The fetched catalogue, partner images and tabs change the page height.
+  new ResizeObserver(onResize).observe(pageEl);
   rendererBack.setSize(viewportW, viewportH);
   rendererHTML.setSize(viewportW, viewportH);
   rendererFront.setSize(viewportW, viewportH);
@@ -8451,17 +8579,31 @@ function boot() {
   }
 
   /* ── 14. animation loop ─────────────────────────────────────── */
-  // Front-layer papers pass behind the hero title and sentence: cut those
-  // boxes out of the front canvas so only the back-layer papers show there.
-  // The partner band stays under the front layer.
-  const heroReadable = [".sec--hero .display--hero", ".sec--hero .hero__lede"]
+  // Protect the copy in the open orbit; the gathered ball can cover it.
+  const heroReadable = [".sec--hero .hero__bottom"]
     .map((sel) => document.querySelector(sel))
     .filter(Boolean);
+  const marginOnlySections = sections
+    .map(({ el }) => el)
+    .filter((el) => !el.classList.contains('sec--hero') && el.id !== 'closing');
   // One soft elliptical hole per element: each mask layer is transparent
   // inside its ellipse and opaque outside, and the layers intersect.
   let lastClip = "";
   function clipFrontLayer() {
     const H = innerHeight;
+    // Cut the reading column out of the foreground canvas below the hero.
+    // The hero and closing keep their full motion.
+    let marginClip = `M0 0 H${innerWidth} V${H} H0 Z`;
+    for (const el of marginOnlySections) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > H) continue;
+      const left = Math.max(12, Math.round(r.left - 8));
+      const right = Math.min(innerWidth - 12, Math.round(r.right + 8));
+      const top = Math.max(0, Math.round(r.top));
+      const bottom = Math.min(H, Math.round(r.bottom));
+      marginClip += ` M${left} ${top} H${right} V${bottom} H${left} Z`;
+    }
+    rendererFront.domElement.style.clipPath = `path(evenodd, "${marginClip}")`;
     const holes = [];
     for (const el of heroReadable) {
       const r = el.getBoundingClientRect();
@@ -8470,9 +8612,9 @@ function boot() {
       const cy = Math.round(r.top + r.height / 2);
       const rx = Math.round((r.width / 2) * 1.32);
       const ry = Math.round((r.height / 2) * 1.55);
-      holes.push(`radial-gradient(${rx}px ${ry}px at ${cx}px ${cy}px, transparent 0 62%, #000 100%)`);
+      holes.push(`radial-gradient(${rx}px ${ry}px at ${cx}px ${cy}px, transparent 0 84%, #000 100%)`);
     }
-    const mask = holes.length ? holes.join(", ") : "none";
+    const mask = gatherTarget ? "none" : (holes.length ? holes.join(", ") : "none");
     if (mask === lastClip) return;
     lastClip = mask;
     const st = rendererFront.domElement.style;
@@ -8764,9 +8906,11 @@ export {
       var meta = document.createElement('p');
       var number = document.createElement('span');
       var id = document.createElement('span');
-      var title = document.createElement('h4');
+      var title = document.createElement('h3');
       var description = document.createElement('p');
       var link = document.createElement('a');
+      var credit = document.createElement('p');
+      var source = document.createElement('a');
 
       item.className = 'skills-index__item';
       item.setAttribute('role', 'listitem');
@@ -8779,18 +8923,44 @@ export {
       description.className = 'skills-index__description';
       description.textContent = skill.description.replace(/`/g, '');
       link.className = 'skills-index__link';
-      link.href = 'https://github.com/buriedsignals/mycroft/blob/main/' + skillPath(skill.id) + '/SKILL.md';
+      link.href = skill.href || 'https://github.com/buriedsignals/mycroft/blob/main/' + skillPath(skill.id) + '/SKILL.md';
       link.target = '_blank';
       link.rel = 'noreferrer';
-      link.textContent = 'read the skill →';
+      link.textContent = skill.status ? 'read the method →' : 'read the skill →';
 
       meta.append(number, id);
-      item.append(meta, title, description, link);
+      credit.className = 'skills-index__credit';
+      // Only attach this credit when the skill's own attribution identifies the upstream.
+      var fromAmditis = (skill.attribution || '').indexOf('jamditis/claude-skills-journalism') !== -1;
+      source.href = 'https://github.com/jamditis/claude-skills-journalism/tree/master/journalism-core/skills/' + skill.id;
+      source.target = '_blank';
+      source.rel = 'noreferrer';
+      source.textContent = 'Joe Amditis';
+      if (skill.sources) {
+        credit.append('Adapted from ');
+        skill.sources.forEach(function (entry, index) {
+          if (index) credit.append(' + ');
+          var sourceLink = document.createElement('a');
+          sourceLink.href = entry.url;
+          sourceLink.textContent = entry.label;
+          sourceLink.target = '_blank';
+          sourceLink.rel = 'noreferrer';
+          credit.append(sourceLink);
+        });
+      } else if (fromAmditis) credit.append('Adapted from ', source, ' · MIT');
+      else credit.textContent = skill.attribution || 'Source and credits in the skill file.';
+      if (skill.status) {
+        var availability = document.createElement('span');
+        availability.className = 'skills-index__availability';
+        availability.textContent = skill.status;
+        item.append(availability);
+      }
+      item.append(meta, title, description, credit, link);
       index.append(item);
     });
 
     document.querySelectorAll('[data-skills-count]').forEach(function (node) {
-      node.textContent = skills.length + ' journalism skills';
+      node.textContent = skills.length + ' skills and methods';
     });
     status.hidden = true;
   }
@@ -8812,7 +8982,7 @@ export {
       })
       .then(function (manifest) {
         var ids = manifest.split(/\r?\n/).map(function (line) { return line.trim(); })
-          .filter(function (line) { return line && line.charAt(0) !== '#'; });
+          .filter(function (line) { return line && line.charAt(0) !== '#' && OSAURUS_COPIES.indexOf(line) === -1 && line !== 'ai-writing-detox'; });
         return Promise.all(ids.map(function (skillId) {
           if (!/^[a-z0-9][a-z0-9-]*$/.test(skillId)) throw new Error('Invalid skill id');
           return fetch(skillPath(skillId) + '/SKILL.md').then(function (response) {
@@ -8823,10 +8993,17 @@ export {
               id: skillId,
               name: frontmatterValue(markdown, 'name'),
               title: skillTitle(markdown, frontmatterValue(markdown, 'name')),
-              description: frontmatterValue(markdown, 'description')
+              description: frontmatterValue(markdown, 'description'),
+              attribution: frontmatterValue(markdown, 'attribution')
             };
           });
         }));
+      })
+      .then(function (skills) {
+        return fetch('catalog/featured-skills.json').then(function (response) {
+          if (!response.ok) throw new Error('Featured methods could not be loaded');
+          return response.json();
+        }).then(function (featured) { return featured.concat(skills); });
       })
       .then(function (skills) {
         renderSkills(skills);
@@ -8869,5 +9046,125 @@ export {
   });
 }());
 </script>
+
+<script>
+// Load one tool clip on demand; hovering never changes the destination link.
+(() => {
+  const tools = {
+    'https://spotlight.buriedsignals.com/': { id: 'spotlight', name: 'Spotlight' },
+    'https://scoutpost.ai/': { id: 'scoutpost', name: 'Scoutpost' },
+    'https://navigator.indicator.media/': { id: 'navigator', name: 'Navigator' },
+    'https://splash.buriedsignals.com/': { id: 'splash', name: 'Splash' },
+    'https://osaurus.ai/': { id: 'osaurus', name: 'Osaurus desktop app', image: 'assets/screenshots/osaurus.jpg', width: 1120, height: 700, alt: 'Osaurus interface with a local agent reviewing a document.' },
+    'https://openknowledge.ai/': { id: 'openknowledge', name: 'OpenKnowledge', image: 'assets/screenshots/openknowledge.jpg', width: 1248, height: 702, alt: 'OpenKnowledge interface showing an agent conversation beside a Markdown document.' }
+  };
+  const panel = document.createElement('aside');
+  panel.id = 'tool-preview';
+  panel.className = 'tool-preview';
+  panel.setAttribute('popover', 'manual');
+  panel.setAttribute('aria-label', 'Tool preview');
+  panel.innerHTML = '<video muted loop playsinline preload="none" aria-label="Tool introduction"></video><img hidden alt=""><p class="tool-preview__error" hidden>Preview unavailable. Follow the tool link to learn more.</p><div class="tool-preview__foot"><span></span><button class="tool-preview__close" type="button">Close</button></div>';
+  document.body.append(panel);
+  const video = panel.querySelector('video');
+  const image = panel.querySelector('img');
+  const label = panel.querySelector('.tool-preview__foot span');
+  const error = panel.querySelector('.tool-preview__error');
+  const close = panel.querySelector('button');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const hover = matchMedia('(hover: hover) and (pointer: fine)');
+  let active = null;
+  let hideTimer;
+  const keep = () => clearTimeout(hideTimer);
+  function hide(restoreFocus = false) {
+    keep();
+    video.pause();
+    if (panel.matches(':popover-open')) panel.hidePopover();
+    if (active) {
+      active.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) active.focus();
+    }
+    active = null;
+  }
+  function scheduleHide() {
+    keep();
+    hideTimer = setTimeout(() => {
+      if (!panel.matches(':hover') && !panel.contains(document.activeElement)) hide();
+    }, 180);
+  }
+  function position() {
+    if (!active) return;
+    const r = active.getBoundingClientRect();
+    const w = panel.offsetWidth;
+    const h = panel.offsetHeight;
+    panel.style.left = Math.max(16, Math.min(innerWidth - w - 16, r.left)) + 'px';
+    const below = r.bottom + 12;
+    panel.style.top = Math.max(16, Math.min(innerHeight - h - 16, below + h <= innerHeight - 16 ? below : r.top - h - 12)) + 'px';
+  }
+  function show(trigger, tool, play) {
+    keep();
+    if (active && active !== trigger) active.setAttribute('aria-expanded', 'false');
+    active = trigger;
+    panel.classList.toggle('is-hover', trigger.tagName === 'A');
+    active.setAttribute('aria-expanded', 'true');
+    video.pause();
+    panel.classList.toggle('is-image', !!tool.image);
+    panel.setAttribute('aria-label', tool.name + ' preview');
+    label.textContent = tool.name + (tool.image ? ' · interface example' : ' · short introduction');
+    error.hidden = true;
+    image.hidden = !tool.image;
+    video.hidden = !!tool.image;
+    if (tool.image) {
+      image.width = tool.width;
+      image.height = tool.height;
+      image.alt = tool.alt;
+      image.src = tool.image;
+    }
+    video.setAttribute('aria-label', tool.name + ' introduction');
+    if (!tool.image && video.dataset.tool !== tool.id) {
+      video.pause();
+      video.dataset.tool = tool.id;
+      video.poster = 'assets/previews/' + tool.id + '.jpg';
+      video.src = 'assets/previews/' + tool.id + '.mp4';
+      video.muted = true;
+      error.hidden = true;
+      video.hidden = false;
+    }
+    if (!panel.matches(':popover-open')) panel.showPopover();
+    position();
+    if (!tool.image && play && (!reduced.matches || trigger.tagName === 'BUTTON')) video.play().catch(() => {
+      error.hidden = false;
+    });
+  }
+  image.addEventListener('load', position);
+  image.addEventListener('error', () => {
+    if (!panel.classList.contains('is-image')) return;
+    image.hidden = true; error.hidden = false; position();
+  });
+  video.addEventListener('error', () => {
+    if (panel.classList.contains('is-image')) return;
+    video.hidden = true; error.hidden = false; position();
+  });
+  panel.addEventListener('pointerenter', keep);
+  panel.addEventListener('pointerleave', scheduleHide);
+  panel.addEventListener('focusout', scheduleHide);
+  close.addEventListener('click', () => hide(true));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') hide(panel.contains(document.activeElement)); });
+  document.addEventListener('pointerdown', e => { if (active && !panel.contains(e.target) && !active.contains(e.target)) hide(); });
+  addEventListener('scroll', () => hide(), { passive: true });
+  addEventListener('resize', () => hide());
+  reduced.addEventListener('change', () => { if (reduced.matches) video.pause(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); });
+  document.querySelectorAll('.pill[href]').forEach(link => {
+    const tool = tools[link.href];
+    if (!tool) return;
+    link.setAttribute('aria-controls', panel.id);
+    link.addEventListener('pointerenter', () => { if (hover.matches) show(link, tool, true); });
+    link.addEventListener('pointerleave', scheduleHide);
+    link.addEventListener('focus', () => show(link, tool, !reduced.matches));
+    link.addEventListener('blur', scheduleHide);
+  });
+})();
+</script>
+
 </body>
 </html>

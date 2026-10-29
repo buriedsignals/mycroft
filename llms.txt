@@ -1,8 +1,18 @@
 # Mycroft
 
-> Mycroft is a set of local agents for investigative journalists and investigators, built on Osaurus (the local AI app for Mac) with an OpenKnowledge wiki. Mycroft and Spotlight run on on-device models in Osaurus; the Analyst files Spotlight findings and Scoutpost results into the wiki; Watson does web research in the cloud only when the member asks, through OpenRouter routed to Mistral's EU endpoints with zero data retention, and never sees the wiki. Navigator plans methods and Scoutpost monitors sources; both are hosted services.
+> Local reporting agents for journalists and investigators. Mycroft works in Osaurus on your Mac, uses an OpenKnowledge wiki, and connects to tools for methods, monitoring, and investigations.
 
-Mycroft is installed through Buried Signals Engine. Indicator Labs submits the managed plan; open-source and agent-led users apply the same signed Engine plan directly. Provider keys stay in the macOS Keychain and enter through Indicator Labs' protected prompt or the public `bsig` stdin/keychain flow. No Mycroft localhost page collects credentials. No telemetry.
+Mycroft is installed through Buried Signals Engine. Indicator Lab submits the managed plan; open-source and agent-led users apply the same signed Engine plan directly. Provider keys stay in the macOS Keychain and enter through Indicator Lab' protected prompt or the public `bsig` stdin/keychain flow. No Mycroft localhost page collects credentials. 
+
+## What you use it for
+
+Use Mycroft as a local reporting assistant: ask questions of your wiki, find investigation methods, set up monitoring, and extract fields from documents. Launch Spotlight for a bounded investigation with editorial gates. The Analyst proposes additions to your wiki for you to confirm. Watson handles cloud web research only when selected.
+
+**Input:** your question, selected local material, and an explicit request for any connected service. **Output:** answers, proposed research or monitoring actions, investigation casework, or proposed wiki entries depending on the agent. Review evidence and proposed changes before relying on them.
+
+## Where the work runs
+
+Mycroft and Spotlight can run on-device in Osaurus; OpenKnowledge holds the wiki. Navigator and Scoutpost are hosted services, and Osaurus asks before calls that send text to them. Watson is a separate opt-in cloud path through OpenRouter, routed to Mistral's EU endpoints with zero data retention; it never sees the wiki. A local model does not make every connected tool local; consult each tool's contract before sending sensitive material.
 
 ## Core docs
 
@@ -23,5 +33,5 @@ Mycroft is installed through Buried Signals Engine. Indicator Labs submits the m
 
 ## Setup
 
-- [README](README.md#install): signed Engine setup for managed and open-source users
+- [Manual setup](docs/install.md): signed Engine setup for manual and agent-led users
 - [install.sh](install.sh): fail-closed pointer for retired curl|bash installs; it never collects credentials
