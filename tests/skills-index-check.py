@@ -43,8 +43,7 @@ def main() -> None:
         )
 
     html = (ROOT / "index.html").read_text(encoding="utf-8")
-    assert 'data-dialog="dlg-skills"' in html, "skills-index trigger is missing"
-    assert 'id="dlg-skills"' in html, "skills-index dialog is missing"
+    assert 'id="skills-index"' in html, "skills catalogue is missing"
     assert "fetch('skills.manifest')" in html, "skills index must use skills.manifest"
     assert "fetch('skills/'" in html and "/SKILL.md')" in html, "skills index must read SKILL.md metadata"
 

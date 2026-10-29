@@ -872,19 +872,25 @@ main,
   align-items: center;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px 14px;
+  gap: 10px 12px;
 }
 .hero__partners a.hero__partner {
-  border-bottom: 0;
-  padding-bottom: 0;
   display: inline-flex;
-  opacity: 0.85;
-  transition: opacity var(--dur-1) var(--ease);
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  min-width: 150px;
+  padding: 0 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--vellum-bright);
+  transition: border-color var(--dur-1) var(--ease);
 }
-.hero__partners a.hero__partner:hover { opacity: 1; }
+.hero__partners a.hero__partner:hover { border-color: var(--oxide); }
 .hero__partner-logo { display: block; width: auto; }
-.hero__partner-logo--osaurus { height: 22px; }
-.hero__partner-logo--ok { height: 18px; }
+.hero__partner-logo--osaurus { height: 17px; }
+.hero__partner-logo--ok { height: 21px; }
 .hero__partners-amp { color: var(--ink-dim); }
 
 /* the big hero sentence */
@@ -901,17 +907,16 @@ main,
 
 /* pills · inline links on the wording itself */
 .pill {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35em;
-  padding: 0.02em 0.55em 0.08em;
+  display: inline-block;
+  padding: 0.14em 0.55em 0.2em;
   border: 1px solid var(--rule);
   border-radius: 999px;
   background: var(--vellum-bright);
   color: var(--ink);
   font: inherit;
   font-style: normal;
-  line-height: 1.2;
+  line-height: 1;
+  vertical-align: baseline;
   text-decoration: none;
   white-space: nowrap;
   transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
@@ -933,7 +938,6 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 }
 .nw { white-space: nowrap; }
 .pill--soon { border-style: dashed; color: var(--ink-soft); }
-.term__role .pill { font-size: 0.95em; margin: 0 2px 6px 0; }
 
 /* list variant of the day timeline · numbered, tighter rhythm */
 .day-timeline--list .day-frame { padding: clamp(28px, 6vh, 64px) 0; }
@@ -946,38 +950,115 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
   max-width: 34ch;
   text-wrap: pretty;
 }
-.day-timeline--list .card__title .pill { padding: 0 0.5em 0.04em; line-height: 1.15; }
 
-/* findings flow · Scoutpost + Spotlight → Analyst → wiki */
-.flow {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  align-items: center;
-  gap: clamp(12px, 2vw, 28px);
-  max-width: 1040px;
-  margin: clamp(48px, 8vh, 96px) auto 0;
+/* skills catalogue · inline, three columns */
+.sec-lede {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.45;
+  color: var(--ink-soft);
+  max-width: 40rem;
+  margin: 0 0 var(--sp-8, 48px);
 }
-.flow__src { display: grid; gap: 12px; }
-.flow__node {
+.skills-catalogue {
   display: grid;
-  gap: 4px;
-  padding: 16px 20px;
-  background: #fbf6e8;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2vw, 28px);
+}
+.skills-catalogue .skills-index__item,
+.skills-catalogue .skills-index__item:nth-child(even) {
+  padding: clamp(24px, 2.6vw, 36px);
   border: 1px solid var(--rule);
   border-radius: var(--rad-sm);
-  color: inherit;
-  text-decoration: none;
+  background: #fbf6e8;
+  display: flex;
+  flex-direction: column;
 }
-a.flow__node:hover strong { color: var(--oxide-active); }
-.flow__node strong { font-family: var(--serif); font-weight: 400; font-size: 22px; }
-.flow__node span { font-size: 14px; color: var(--ink-soft); line-height: 1.4; }
-.flow__node--mid { background: var(--vellum-bright); border-color: var(--oxide); }
-.flow__logo { height: 20px; width: auto; }
-.flow__arrow { font-family: var(--mono); color: var(--oxide); font-size: 20px; }
+.skills-catalogue .skills-index__name { font-size: clamp(26px, 2.6vw, 38px); }
+.skills-catalogue .skills-index__description { font-size: 15px; flex: 1; }
+.skills-catalogue .skills-index__link { align-self: flex-start; }
+@media (max-width: 980px) { .skills-catalogue { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .skills-catalogue { grid-template-columns: 1fr; } }
+
+/* knowledge · three columns */
+.know {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: var(--hairline);
+  border-bottom: var(--hairline);
+}
+.know__col { padding: clamp(28px, 4vw, 56px) clamp(20px, 3vw, 44px); }
+.know__col + .know__col { border-left: var(--hairline); }
+.know__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 200;
+  font-size: clamp(28px, 2.8vw, 42px);
+  line-height: 1.05;
+  color: var(--ink);
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.know__body { font-size: 16px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
+.know__body .pill { font-size: 0.95em; }
+@media (max-width: 860px) {
+  .know { grid-template-columns: 1fr; }
+  .know__col + .know__col { border-left: 0; border-top: var(--hairline); }
+}
+
+/* installer mock · after the Indicator Lab Osaurus redesign canvas */
+.ui-installer__body { padding: 28px; display: grid; gap: 18px; background: #fdfcf9; }
+.ui-installer__head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.ui-installer__kicker { display: block; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--oxide); }
+.ui-installer__step { font-size: 20px; font-weight: 600; }
+.ui-installer__pct { font-size: 28px; font-weight: 600; color: var(--oxide); font-variant-numeric: tabular-nums; }
+.ui-installer__bar { height: 10px; border-radius: 999px; background: #ece6d8; overflow: hidden; }
+.ui-installer__bar span { display: block; height: 100%; border-radius: 999px; background: var(--oxide); }
+.ui-installer__models { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.ui-installer__models li { display: flex; justify-content: space-between; gap: 16px; padding-bottom: 8px; border-bottom: 1px dashed #e3dccb; }
+.ui-installer__models em { font-style: normal; font-weight: 600; color: var(--oxide); }
+.ui-installer__models em.is-next { font-weight: 400; color: var(--ink-dim); }
+.ui-installer__models em.is-done { color: #2b5247; }
+.ui-installer__steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; font-size: 13px; font-weight: 600; }
+.ui-installer__steps span { display: block; height: 4px; border-radius: 999px; background: #e3dccb; margin-bottom: 6px; }
+.ui-installer__steps .is-done span { background: #2b5247; }
+.ui-installer__steps .is-now span { background: var(--oxide); }
+
+/* OpenKnowledge mock · tree, note, Analyst panel */
+.ui-ok__body { display: grid; grid-template-columns: 190px 1fr 240px; min-height: 340px; background: #fdfcf9; font-size: 14px; }
+.ui-ok__tree { padding: 18px 16px; border-right: 1px solid #e3dccb; background: #f3eee3; }
+.ui-ok__tree p { margin: 0 0 8px; color: #4a4439; }
+.ui-ok__tree p.is-active { color: var(--ink); font-weight: 600; }
+.ui-ok__group { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim) !important; margin-top: 14px !important; }
+.ui-ok__doc { padding: 22px 26px; line-height: 1.6; }
+.ui-ok__doc p { margin: 0 0 12px; }
+.ui-ok__doc u { text-decoration-color: var(--oxide); text-underline-offset: 3px; }
+.ui-ok__fm { font-family: var(--mono); font-size: 11px; color: var(--ink-dim); }
+.ui-ok__h { font-family: var(--serif); font-weight: 400; font-size: 28px; margin: 4px 0 12px; }
+.ui-ok__sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-dim); margin-top: 18px !important; }
+.ui-ok__agent { padding: 18px; border-left: 1px solid #e3dccb; background: #f7f2e8; line-height: 1.5; }
+.ui-ok__agent p { margin: 0 0 12px; }
+.ui-ok__agent-h { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--oxide); }
+.ui-ok__actions { display: flex; gap: 8px; }
+.ui-ok__btn { padding: 6px 14px; border: 1px solid #d9d2c4; border-radius: 8px; font-size: 13px; font-weight: 600; }
+.ui-ok__btn--yes { background: var(--oxide); border-color: var(--oxide); color: #fff; }
 @media (max-width: 760px) {
-  .flow { grid-template-columns: 1fr; }
-  .flow__arrow { transform: rotate(90deg); justify-self: center; }
+  .ui-ok__body { grid-template-columns: 1fr; }
+  .ui-ok__tree, .ui-ok__agent { border: 0; }
 }
+
+/* Join the Lab · full width, two columns */
+.lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 96px);
+  padding-top: var(--sp-7, 40px);
+  border-top: var(--hairline);
+}
+.lab-grid__col { display: grid; gap: var(--sp-4); align-content: start; }
+.lab-grid .term__name { text-align: left; font-size: clamp(36px, 4.4vw, 76px); }
+.lab-grid .signup__newsletter-block { border-top: 0; padding-top: 0; }
+@media (max-width: 900px) { .lab-grid { grid-template-columns: 1fr; } }
 
 .ctas--center {
   justify-content: center;
@@ -3217,7 +3298,7 @@ html.js .is-in .tw__in {
         Old-school reporting.<br><em>New-school machinery</em>
       </h1>
 
-      <p class="hero__lede" data-reveal style="--delay: 220ms">Mycroft is a local agent for investigators, built on <span class="nw"><a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a>.</span> Plan a case with <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> and run it with <span class="nw"><a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a>,</span> then keep watch with <span class="nw"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a>.</span></p>
+      <p class="hero__lede" data-reveal style="--delay: 220ms">Mycroft is a local agent for investigators, built on <span class="nw"><a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a>.</span> Plan a case with <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> and run it with <span class="nw"><a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a>,</span> then keep watch with <span class="nw"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a>.</span> Everything you find goes into your own <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> wiki.</p>
 
       <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
         <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
@@ -3247,8 +3328,7 @@ html.js .is-in .tw__in {
         <aside class="day-time"><span class="day-time__hour">01</span></aside>
         <div class="day-card">
           <p class="card__kicker"><span>§ Investigate · <strong>Spotlight</strong></span></p>
-          <h3 class="card__title">Run a full <a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight investigation</a> locally on <span class="nw"><a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>.</span></h3>
-          <p class="card__body">You approve the method and the report.</p>
+          <h3 class="card__title">Run a full <a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight investigation</a> locally on <a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>.</h3>
         </div>
       </article>
 
@@ -3265,7 +3345,6 @@ html.js .is-in .tw__in {
         <div class="day-card">
           <p class="card__kicker"><span>§ Extract · <strong>Documents</strong></span></p>
           <h3 class="card__title">Use a small <a class="pill" href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">on-device extraction model</a> to pull figures from a document.</h3>
-          <p class="card__body">It can get a digit wrong, so check every number.</p>
         </div>
       </article>
 
@@ -3282,7 +3361,6 @@ html.js .is-in .tw__in {
         <div class="day-card">
           <p class="card__kicker"><span>§ Plan · <strong>Navigator</strong></span></p>
           <h3 class="card__title">Ask <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> how to trace the directors behind a shell company.</h3>
-          <p class="card__body">Navigator is hosted by Indicator.</p>
         </div>
       </article>
 
@@ -3291,7 +3369,6 @@ html.js .is-in .tw__in {
         <div class="day-card">
           <p class="card__kicker"><span>§ File · <strong>Analyst</strong></span></p>
           <h3 class="card__title">The <a class="pill" href="https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md" target="_blank" rel="noreferrer">Analyst <small>pilot</small></a> runs locally and files what Spotlight and Scoutpost find into your wiki.</h3>
-          <p class="card__body">You confirm every change.</p>
         </div>
       </article>
 
@@ -3308,96 +3385,63 @@ html.js .is-in .tw__in {
         <aside class="day-time"><span class="day-time__hour">08</span></aside>
         <div class="day-card">
           <p class="card__kicker"><span>§ Visualise · <strong>Splash</strong></span></p>
-          <h3 class="card__title"><span class="pill pill--soon">Splash <small>soon</small></span> will turn your findings into charts on an <span class="nw"><a class="pill" href="https://huggingface.co/LiquidAI/LFM3-VL-2B" target="_blank" rel="noreferrer">on-device visual model</a>.</span></h3>
+          <h3 class="card__title"><a class="pill pill--soon" href="https://splash.buriedsignals.com/" target="_blank" rel="noreferrer">Splash <small>soon</small></a> will turn your findings into charts on an <a class="pill" href="https://huggingface.co/LiquidAI/LFM3-VL-2B" target="_blank" rel="noreferrer">on-device visual model</a>.</h3>
         </div>
       </article>
     </div>
-
-    <div class="skills-index-cta" data-reveal>
-      <button class="btn btn--mono" type="button" data-dialog="dlg-skills">
-        See all skills <span class="btn__arr" aria-hidden="true">→</span>
-      </button>
-    </div>
-
-    <dialog class="skill-dialog skills-dialog" id="dlg-skills" aria-labelledby="dlg-skills-title" aria-describedby="dlg-skills-intro">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ Mycroft · installed skill set</p>
-        <h3 class="skill-dialog__title" id="dlg-skills-title">All <em>skills</em></h3>
-        <p class="skill-dialog__body skills-index__intro" id="dlg-skills-intro">The skills Mycroft installs, read directly from the metadata in each skill file.</p>
-        <p class="skills-index__status" id="skills-index-status" role="status">Loading the skills index…</p>
-        <div class="skills-index__grid" id="skills-index" role="list"></div>
-        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills" target="_blank" rel="noreferrer">browse the skills directory →</a></p>
-      </div>
-    </dialog>
-
   </section>
 
 
-  <!-- ────────── 03 · RUNTIME ────────── -->
-  <section class="sec" id="runtime" data-section="2">
-    <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
+  <!-- ────────── 03 · SKILLS ────────── -->
+  <section class="sec" id="skills" data-section="2">
+    <header class="num" data-reveal><span class="num__n">03</span> Skills</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Built on Osaurus.<br><em>Running on-device</em></h2>
+      <h2 class="display display--section">The field's methods,<br><em>written down</em></h2>
     </div>
 
-    <div class="equation" data-cascade>
-      <div class="term" style="--delay: 0ms">
-        <span class="term__pre">↳ runtime</span>
-        <h3 class="term__name"><a href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a></h3>
-        <span class="term__rule"></span>
-        <p class="term__role">local AI for your Mac</p>
-        <p class="term__spec">open source · runs the agents and models</p>
-      </div>
+    <p class="sec-lede" data-reveal style="--delay: 140ms">Each skill is a plain file Mycroft reads before it works, and each one credits the reporters and researchers it borrows from.</p>
 
-      <div class="term-op" style="--delay: 200ms"><span>+</span></div>
+    <p class="skills-index__status" id="skills-index-status" role="status">Loading the skills…</p>
+    <div class="skills-catalogue" id="skills-index" role="list" data-reveal style="--delay: 180ms"></div>
 
-      <div class="term" style="--delay: 140ms">
-        <span class="term__pre">↳ models</span>
-        <h3 class="term__name">On-device</h3>
-        <span class="term__rule"></span>
-        <p class="term__role">
-          <a class="pill" href="https://huggingface.co/OsaurusAI/gemma-4-12B-it-qat-MXFP4" target="_blank" rel="noreferrer">Gemma 4 12B</a>
-          <a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>
-          <a class="pill" href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a>
-        </p>
-        <p class="term__spec">Mycroft · Spotlight · extraction</p>
-      </div>
-
-      <div class="term-op" style="--delay: 340ms"><span>+</span></div>
-
-      <div class="term" style="--delay: 280ms">
-        <span class="term__pre">↳ wiki</span>
-        <h3 class="term__name"><a href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a></h3>
-        <span class="term__rule"></span>
-        <p class="term__role">your knowledge workspace</p>
-        <p class="term__spec">local · markdown · portable</p>
-      </div>
-    </div>
-
-    <div class="flow" data-reveal style="--delay: 160ms" aria-label="How findings reach your wiki">
-      <div class="flow__src">
-        <a class="flow__node" href="https://scoutpost.ai/" target="_blank" rel="noreferrer"><strong>Scoutpost</strong><span>what your monitors bring in</span></a>
-        <a class="flow__node" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer"><strong>Spotlight</strong><span>approved findings from your cases</span></a>
-      </div>
-      <span class="flow__arrow" aria-hidden="true">→</span>
-      <div class="flow__node flow__node--mid"><strong>Analyst</strong><span>files and links them locally, and you confirm each write</span></div>
-      <span class="flow__arrow" aria-hidden="true">→</span>
-      <a class="flow__node flow__node--ok" href="https://openknowledge.ai/" target="_blank" rel="noreferrer"><img src="assets/partners/openknowledge.svg" alt="OpenKnowledge" class="flow__logo"><span>one wiki, plain files</span></a>
-    </div>
-
-    <nav class="links-row" aria-label="Runtime resources" data-reveal style="--delay: 200ms">
-      <a href="https://docs.osaurus.ai/" target="_blank" rel="noreferrer">Osaurus docs →</a>
-      <a href="https://openknowledge.ai/docs" target="_blank" rel="noreferrer">OpenKnowledge docs →</a>
-      <a href="https://huggingface.co/OsaurusAI" target="_blank" rel="noreferrer">Osaurus models →</a>
+    <nav class="links-row" aria-label="Skills resources" data-reveal style="--delay: 200ms">
+      <a href="https://github.com/buriedsignals/mycroft/tree/main/skills" target="_blank" rel="noreferrer">Browse the skills on GitHub →</a>
     </nav>
   </section>
 
 
-  <!-- ────────── 04 · PRIVACY ────────── -->
-  <section class="sec" id="privacy" data-section="3">
-    <header class="num" data-reveal><span class="num__n">04</span> Sovereign</header>
+  <!-- ────────── 04 · KNOWLEDGE ────────── -->
+  <section class="sec" id="knowledge" data-section="3">
+    <header class="num" data-reveal><span class="num__n">04</span> Knowledge</header>
+
+    <div class="sec-head" data-reveal style="--delay: 80ms">
+      <h2 class="display display--section">Knowledge that<br><em>compounds</em></h2>
+    </div>
+
+    <div class="know" data-cascade>
+      <article class="know__col" data-reveal style="--delay: 0ms">
+        <span class="term__pre">↳ memory</span>
+        <h3 class="know__title">Start from what you know</h3>
+        <p class="know__body">Every case leaves something behind. Mycroft keeps the people, companies and documents you've checked in one wiki, so the next case starts there.</p>
+      </article>
+      <article class="know__col" data-reveal style="--delay: 120ms">
+        <span class="term__pre">↳ links</span>
+        <h3 class="know__title">Connect findings and data</h3>
+        <p class="know__body">Notes link the way reporting does. A Scoutpost alert sits next to the Spotlight case it belongs to, and an extracted figure points back to its document.</p>
+      </article>
+      <article class="know__col" data-reveal style="--delay: 240ms">
+        <span class="term__pre">↳ storage</span>
+        <h3 class="know__title">Kept safely on-device</h3>
+        <p class="know__body">The wiki is plain markdown in <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> on your machine. Nothing syncs unless you choose to.</p>
+      </article>
+    </div>
+  </section>
+
+
+  <!-- ────────── 05 · PRIVACY ────────── -->
+  <section class="sec" id="privacy" data-section="4">
+    <header class="num" data-reveal><span class="num__n">05</span> Sovereign</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
       <h2 class="display display--section">Research <em>privately</em></h2>
@@ -3454,77 +3498,63 @@ html.js .is-in .tw__in {
   </section>
 
 
-  <!-- ────────── 05 · THE SUITE ────────── -->
-  <section class="sec sec--integrations" id="integrations" data-section="4">
-    <header class="num" data-reveal><span class="num__n">05</span> The suite</header>
-
-    <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">
-        Connect to<br><em>the suite</em>
-      </h2>
-    </div>
-
-    <div class="cards-3" data-reveal style="--delay: 160ms">
-      <a class="card-int" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">
-        <div class="card-int__meta">
-          <span class="card-int__kind">Monitoring</span>
-        </div>
-        <h3 class="card-int__title"><em>Scoutpost</em></h3>
-        <p class="card-int__body">
-          Monitor pages, beats, social profiles, councils, PDFs, and source lists,
-          with 1,000 monthly credits.
-        </p>
-      </a>
-
-      <a class="card-int" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">
-        <div class="card-int__meta">
-          <span class="card-int__kind">Investigation</span>
-        </div>
-        <h3 class="card-int__title"><em>Spotlight</em></h3>
-        <p class="card-int__body">
-          Turn a lead into a structured, source-linked investigation with an
-          approved methodology, adversarial review, and human approval gates.
-        </p>
-      </a>
-
-      <a class="card-int" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">
-        <div class="card-int__meta">
-          <span class="card-int__kind">OSINT</span>
-        </div>
-        <h3 class="card-int__title"><em>OSINT Navigator</em></h3>
-        <p class="card-int__body">
-          Search more than 13,000 OSINT tools, use Indicator’s investigative skills,
-          and connect your agent. Lab members get higher daily limits and enhanced
-          answers grounded in the Indicator archives.
-        </p>
-      </a>
-
-      <article class="card-int card-int--coming">
-        <div class="card-int__meta">
-          <span class="card-int__access">Coming soon</span>
-          <span class="card-int__kind">Visual journalism</span>
-        </div>
-        <h3 class="card-int__title"><em>Splash</em></h3>
-        <p class="card-int__body">
-          Take source material and data through editorial framing, reviewed charts,
-          maps, scrollytelling, motion output, and delivery.
-        </p>
-      </article>
-    </div>
-  </section>
-
-
   <!-- ────────── 06 · INSTALL ────────── -->
   <section class="sec sec--dark" id="install" data-section="5">
     <header class="num" data-reveal><span class="num__n">06</span> Install</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Installed by Lab.<br><em>Running in Osaurus</em></h2>
+      <h2 class="display display--section">Installed by Lab.<br><em>Running on your Mac</em></h2>
+    </div>
+
+    <div class="surface-toggle" role="tablist" aria-label="View" data-reveal style="--delay: 100ms">
+      <button class="surface-toggle__btn is-active" type="button" data-surface="installer" role="tab" aria-selected="true">Installer</button>
+      <button class="surface-toggle__btn" type="button" data-surface="osaurus" role="tab" aria-selected="false">Osaurus</button>
+      <button class="surface-toggle__btn" type="button" data-surface="wiki" role="tab" aria-selected="false">OpenKnowledge</button>
     </div>
 
     <div class="surface-stage" data-reveal style="--delay: 140ms">
-    <div class="surface surface--app is-active" data-surface-view="app">
-      <div class="goose-app is-on">
+
+    <!-- Installer · after the Indicator Lab Osaurus redesign canvas (Installing screen) -->
+    <div class="surface surface--app is-active" data-surface-view="installer">
+      <div class="goose-app is-on ui-installer">
+        <div class="goose-app__chrome" aria-hidden="true">
+          <span class="goose-app__dot goose-app__dot--r"></span>
+          <span class="goose-app__dot goose-app__dot--y"></span>
+          <span class="goose-app__dot goose-app__dot--g"></span>
+          <span class="goose-app__title">Indicator Lab</span>
+        </div>
+        <div class="ui-installer__body">
+          <div class="ui-installer__head">
+            <div>
+              <span class="ui-installer__kicker">Setting up Osaurus</span>
+              <strong class="ui-installer__step">Downloading Gemma 4 12B, about 7 GB</strong>
+            </div>
+            <span class="ui-installer__pct">46%</span>
+          </div>
+          <div class="ui-installer__bar" role="progressbar" aria-label="Install progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="46"><span style="width:46%"></span></div>
+          <ul class="ui-installer__models" aria-label="Models">
+            <li><span>Gemma 4 12B, for Mycroft</span><em>Downloading</em></li>
+            <li><span>LFM3, tuned for Spotlight</span><em class="is-next">Next</em></li>
+            <li><span>NuExtract3, for documents</span><em class="is-next">Next</em></li>
+            <li><span>Wiki search model</span><em class="is-done">Done</em></li>
+          </ul>
+          <ol class="ui-installer__steps">
+            <li class="is-done"><span></span>Osaurus</li>
+            <li class="is-now"><span></span>Models</li>
+            <li><span></span>Wiki</li>
+            <li><span></span>Agents</li>
+          </ol>
+        </div>
+        <div class="goose-app__foot">
+          <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
+          <span class="goose-app__meta">Indicator Lab installs Osaurus, the models and Mycroft</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Osaurus · the runtime -->
+    <div class="surface surface--app" data-surface-view="osaurus" hidden>
+      <div class="goose-app">
         <div class="goose-app__chrome" aria-hidden="true">
           <span class="goose-app__dot goose-app__dot--r"></span>
           <span class="goose-app__dot goose-app__dot--y"></span>
@@ -3537,7 +3567,7 @@ html.js .is-in .tw__in {
             <ul class="goose-app__list">
               <li class="is-active"><span class="goose-app__bullet">◐</span> Mycroft</li>
               <li><span class="goose-app__bullet">◇</span> Spotlight</li>
-              <li><span class="goose-app__bullet">☁</span> Watson</li>
+              <li><span class="goose-app__bullet">○</span> Watson</li>
             </ul>
           </aside>
           <div class="goose-app__chat">
@@ -3555,7 +3585,7 @@ html.js .is-in .tw__in {
               <div class="goose-app__tool">extract document · NuExtract3 · on-device</div>
               <div class="goose-app__msg goose-app__msg--bot">
                 <strong>Three fields found.</strong><br>
-                Value €4.2M · awarded 12 March · bidder Example Holdings SA. Check each figure against page 3 before you use it.
+                Value €4.2M · awarded 12 March · bidder Example Holdings SA.
                 <br><br>
                 <span class="goose-app__cite">wiki/sources/tender-114.pdf · extracted locally · example data</span>
               </div>
@@ -3568,34 +3598,70 @@ html.js .is-in .tw__in {
         </div>
         <div class="goose-app__foot">
           <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-          <span class="goose-app__meta">Indicator Lab installs Osaurus, the models and Mycroft</span>
+          <span class="goose-app__meta">Mycroft, Spotlight and Watson as Osaurus agents</span>
         </div>
       </div>
     </div>
+
+    <!-- OpenKnowledge · the wiki, with the Analyst proposing a write -->
+    <div class="surface surface--app" data-surface-view="wiki" hidden>
+      <div class="goose-app ui-ok">
+        <div class="goose-app__chrome" aria-hidden="true">
+          <span class="goose-app__dot goose-app__dot--r"></span>
+          <span class="goose-app__dot goose-app__dot--y"></span>
+          <span class="goose-app__dot goose-app__dot--g"></span>
+          <span class="goose-app__title">OpenKnowledge · Mycroft wiki</span>
+        </div>
+        <div class="ui-ok__body">
+          <aside class="ui-ok__tree" aria-label="Wiki files">
+            <p class="ui-ok__group">wiki/entities</p>
+            <p class="is-active">example-holdings-sa.md</p>
+            <p>city-procurement-office.md</p>
+            <p class="ui-ok__group">sources</p>
+            <p>tender-114.pdf</p>
+            <p class="ui-ok__group">cases</p>
+            <p>harbour-contracts</p>
+          </aside>
+          <div class="ui-ok__doc">
+            <p class="ui-ok__fm">type: entity · kind: company · sources: 3</p>
+            <h4 class="ui-ok__h">Example Holdings SA</h4>
+            <p>Won the harbour dredging tender in March, according to <u>tender-114.pdf</u>. Directors are listed in the <u>commercial register extract</u>.</p>
+            <p class="ui-ok__sub">Linked</p>
+            <p><u>harbour-contracts</u> · <u>city-procurement-office</u></p>
+          </div>
+          <aside class="ui-ok__agent" aria-label="Analyst">
+            <p class="ui-ok__agent-h">Analyst · local</p>
+            <p>A new Scoutpost alert names Example Holdings SA in a second tender. I propose adding it to this note and linking it to the case.</p>
+            <div class="ui-ok__actions"><span class="ui-ok__btn ui-ok__btn--yes">Approve</span><span class="ui-ok__btn">Deny</span></div>
+          </aside>
+        </div>
+        <div class="goose-app__foot">
+          <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
+          <span class="goose-app__meta">Plain markdown on your machine · example data</span>
+        </div>
+      </div>
+    </div>
+
     </div><!-- /.surface-stage -->
   </section>
 
 
-  <!-- ────────── 07 · TEAM ────────── -->
-  <section class="sec" id="team" data-section="6">
+  <!-- ────────── 07 · LAB ────────── -->
+  <section class="sec sec--lab" id="team" data-section="6">
     <header class="num" data-reveal><span class="num__n">07</span> Membership</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Work with <em>me</em></h2>
+      <h2 class="display display--section">Join the <em>Lab</em></h2>
     </div>
 
-    <div class="equation equation--studio" data-cascade>
-      <div class="term term--studio" style="--delay: 0ms">
+    <div class="lab-grid" data-reveal style="--delay: 140ms">
+      <div class="lab-grid__col">
         <span class="term__pre">↳ now open</span>
         <h3 class="term__name">Indicator Lab</h3>
-        <span class="term__rule"></span>
-
-        <div class="term__body">
-          <div class="indicator-lab-summary">
-            <p class="term__sub"><em>The Buried Signals tool suite, a monthly live workshop and Lab Newsletter, office hours every two weeks, and the training course. $10/month add-on to Indicator membership.</em></p>
-            <a class="btn btn--solid btn--setup indicator-lab-link" href="https://buriedsignals.com/join">Join Indicator Lab <span class="btn__arr" aria-hidden="true">→</span></a>
-          </div>
-
+        <p class="term__sub"><em>The Buried Signals tool suite, a monthly live workshop and Lab Newsletter, office hours every two weeks, and the training course. $10/month add-on to Indicator membership.</em></p>
+        <a class="btn btn--solid btn--setup indicator-lab-link" href="https://buriedsignals.com/join">Join Indicator Lab <span class="btn__arr" aria-hidden="true">→</span></a>
+      </div>
+      <div class="lab-grid__col">
           <div class="signup__newsletter-block">
             <p class="signup__error hidden" id="mycroft-newsletter-error" role="alert"></p>
             <p class="signup__success hidden" id="mycroft-newsletter-success" role="status">
@@ -3627,33 +3693,6 @@ html.js .is-in .tw__in {
               <button class="btn btn--solid btn--setup signup__submit" type="submit" id="mycroft-newsletter-submit">Subscribe</button>
             </form>
           </div>
-        </div>
-      </div>
-
-      <div class="term term--studio" style="--delay: 140ms">
-        <span class="term__pre">↳ on request</span>
-        <h3 class="term__name">Hire me</h3>
-        <span class="term__rule"></span>
-
-        <div class="term__body">
-          <p class="term__sub"><em>I train newsrooms to investigate with AI. Talks, workshops, custom tooling, and investigation collaborations.</em></p>
-
-          <ul class="client-list" role="list">
-            <li>Le Temps</li>
-            <li>Al Jazeera</li>
-            <li>MAZ Journalistenschule</li>
-            <li>Republik</li>
-            <li>20 Minuten</li>
-            <li>SRF</li>
-            <li>MediaStorm</li>
-            <li>The New Humanitarian</li>
-          </ul>
-
-          <div class="term__actions">
-            <a class="btn btn--solid btn--setup" href="mailto:tom@buriedsignals.com">Get in touch</a>
-            <a class="btn btn--ghost" href="https://buriedsignals.com/consulting" target="_blank" rel="noreferrer">Case studies →</a>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -3736,6 +3775,8 @@ html.js .is-in .tw__in {
           <li><a href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a></li>
           <li><a href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a></li>
           <li><a href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">OSINT Navigator</a></li>
+          <li><a href="https://splash.buriedsignals.com/" target="_blank" rel="noreferrer">Splash</a></li>
+          <li><a href="https://indicator.media/indicator-lab" target="_blank" rel="noreferrer">Indicator Lab</a></li>
         </ul>
       </section>
     </nav>
@@ -8743,8 +8784,11 @@ export {
         return response.text();
       })
       .then(function (manifest) {
+        // The site shows the skills Mycroft's Osaurus install ships
+        // (engine bsig/internal/products/mycroft/osaurus.go, osaurusSkills).
+        var shown = ['navigator', 'scoutpost', 'foia-requests', 'interview-prep', 'story-pitch', 'ai-writing-detox'];
         var ids = manifest.split(/\r?\n/).map(function (line) { return line.trim(); })
-          .filter(function (line) { return line && line.charAt(0) !== '#'; });
+          .filter(function (line) { return line && line.charAt(0) !== '#' && shown.indexOf(line) !== -1; });
         return Promise.all(ids.map(function (skillId) {
           if (!/^[a-z0-9][a-z0-9-]*$/.test(skillId)) throw new Error('Invalid skill id');
           return fetch('skills/' + skillId + '/SKILL.md').then(function (response) {
@@ -8770,8 +8814,7 @@ export {
     return skillsPromise;
   }
 
-  var skillsButton = document.querySelector('[data-dialog="dlg-skills"]');
-  if (skillsButton) skillsButton.addEventListener('click', loadSkills);
+  if (document.getElementById('skills-index')) loadSkills();
 
   document.querySelectorAll('[data-dialog]').forEach(function (btn) {
     btn.addEventListener('click', function () {
