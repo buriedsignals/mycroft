@@ -8462,6 +8462,36 @@ function boot() {
   }
 
   /* ── 14. animation loop ─────────────────────────────────────── */
+  // Front-layer papers pass behind the hero title and sentence: cut those
+  // boxes out of the front canvas so only the back-layer papers show there.
+  // The partner band stays under the front layer.
+  const heroReadable = [".sec--hero .display--hero", ".sec--hero .hero__lede"]
+    .map((sel) => document.querySelector(sel))
+    .filter(Boolean);
+  // One soft elliptical hole per element: each mask layer is transparent
+  // inside its ellipse and opaque outside, and the layers intersect.
+  let lastClip = "";
+  function clipFrontLayer() {
+    const H = innerHeight;
+    const holes = [];
+    for (const el of heroReadable) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > H) continue;
+      const cx = Math.round(r.left + r.width / 2);
+      const cy = Math.round(r.top + r.height / 2);
+      const rx = Math.round((r.width / 2) * 1.32);
+      const ry = Math.round((r.height / 2) * 1.55);
+      holes.push(`radial-gradient(${rx}px ${ry}px at ${cx}px ${cy}px, transparent 0 62%, #000 100%)`);
+    }
+    const mask = holes.length ? holes.join(", ") : "none";
+    if (mask === lastClip) return;
+    lastClip = mask;
+    const st = rendererFront.domElement.style;
+    st.webkitMaskImage = st.maskImage = mask;
+    st.webkitMaskComposite = holes.length > 1 ? "source-in" : "";
+    st.maskComposite = holes.length > 1 ? "intersect" : "";
+  }
+
   const clock = new THREE.Clock();
   let lastT = 0;
 
@@ -8478,6 +8508,7 @@ function boot() {
     rendererBack.render(sceneBack, camera);
     rendererHTML.render(sceneHTML, camera);
     rendererFront.render(sceneFront, camera);
+    clipFrontLayer();
 
     requestAnimationFrame(tick);
   }
