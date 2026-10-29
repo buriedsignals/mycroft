@@ -57,7 +57,7 @@ Each becomes a slash command on Mycroft.
 **Buried Signals Engine (`bsig`) is Mycroft's only installation authority.**
 Indicator Labs submits the same Engine plans while adding guided setup,
 credential prompts, repair, and automatic updates for
-[members](https://buriedsignals.com/join).
+[members](https://indicator.media/indicator-lab).
 
 For agent-led manual setup, fetch the signed Engine descriptor at:
 
