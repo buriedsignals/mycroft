@@ -31,7 +31,7 @@ def main() -> int:
     assert parameter_default(recipe, "c2pa_sign") == "false"
     assert "Provenance is default but not mandatory" in recipe
     assert "If provenance validation or manifest generation fails" in recipe
-    assert "continue the fact-check unless `strict_provenance` is true" in recipe
+    assert "Strict provenance is on." in recipe and "continue the fact-check. Preserve the markdown verdict table" in recipe
     assert "C2PA signing is optional and off by default" in recipe
     assert "build-provenance-manifest.py" in recipe
     assert "NOOSPHERE_C2PA_URL" in recipe

@@ -128,7 +128,7 @@ prompt: |
        - `signed` when the signer returns a receipt
        - `signing_failed` when signing fails but the unsigned package remains usable
 
-  {% if emit_manifest %}
+  {% if emit_manifest | string | lower == "true" %}
   7. After the summary, create a fact-check package directory and save:
 
      - `data/evidence-bundle.json`
@@ -248,16 +248,18 @@ prompt: |
      python3 "$MYCROFT_DIR/tools/build-provenance-manifest.py" <package-dir>
      ```
 
-     If provenance validation or manifest generation fails, continue the fact-check unless `strict_provenance` is true. Preserve the markdown verdict table and report:
+     {% if strict_provenance | string | lower == "true" %}
+     Strict provenance is on. If provenance validation or manifest generation fails, stop and report the provenance failure before presenting the fact-check as complete.
+     {% else %}
+     If provenance validation or manifest generation fails, continue the fact-check. Preserve the markdown verdict table and report:
      - exact command that failed
      - short error
      - "provenance incomplete"
      - whether claim verdicts remain usable as cited, unsigned editorial review output
-
-     If `strict_provenance` is true, stop and report the provenance failure before presenting the fact-check as complete.
+     {% endif %}
   {% endif %}
 
-  {% if c2pa_sign %}
+  {% if c2pa_sign | string | lower == "true" %}
   8. C2PA signing is optional and off by default. If signing is requested, call the configured Noosphere/C2PA signer only after local validation succeeds:
 
      ```bash

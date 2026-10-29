@@ -11,6 +11,7 @@ Usage: python3 tools/validate-recipes.py
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -69,6 +70,8 @@ def validate_recipe(path: Path) -> list[str]:
             if k not in param:
                 errs.append(f"parameter missing required field {k!r}: {param.get('key', param)}")
 
+    errs.extend(validate_parameter_use(data))
+
     if path.name == "spotlight-case.yaml":
         rendered = "\n".join(str(data.get(k, "")) for k in ("instructions", "prompt"))
         for required in (
@@ -83,6 +86,27 @@ def validate_recipe(path: Path) -> list[str]:
             if required not in rendered:
                 errs.append(f"Spotlight case safety contract missing: {required}")
 
+    return errs
+
+
+def validate_parameter_use(data: dict) -> list[str]:
+    """Mirror Goose's template checks: every declared parameter must be used
+    (Goose rejects "Unnecessary parameter definitions"), and since Goose passes
+    every value as a string, a boolean tested bare is true for "false"."""
+    fields = [data.get("instructions"), data.get("prompt"), *(data.get("activities") or [])]
+    text = "\n".join(str(f) for f in fields if f)
+    expressions = " ".join(re.findall(r"\{\{.*?\}\}|\{%.*?%\}", text, re.S))
+    errs: list[str] = []
+    for param in data.get("parameters", []) or []:
+        key = param.get("key") if isinstance(param, dict) else None
+        if not key:
+            continue
+        if not re.search(rf"\b{re.escape(key)}\b", expressions):
+            errs.append(f"parameter {key!r} is declared but never used in a template")
+        elif param.get("input_type") == "boolean" and re.search(
+            rf"\bif\s+(?:not\s+)?{re.escape(key)}\b(?!\s*\|\s*string\s*\|\s*lower\s*==\s*\"true\")", expressions
+        ):
+            errs.append(f'boolean parameter {key!r} is tested bare; Goose passes "false" as a string, so compare `{key} | string | lower == "true"`')
     return errs
 
 

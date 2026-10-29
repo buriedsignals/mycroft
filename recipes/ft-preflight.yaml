@@ -53,7 +53,7 @@ prompt: |
   ## Step 2 — Get classification proposal (dry-run)
 
   ```
-  ft classify --dry-run --json {{ "--re-classify" if re_triage else "" }}
+  ft classify --dry-run --json {{ "--re-classify" if re_triage | string | lower == "true" else "" }}
   ```
 
   Parse the JSON output. Extract:
@@ -92,7 +92,7 @@ prompt: |
   ## Step 4 — Apply based on response
 
   **If (a) Yes — apply:**
-  Run: `ft classify {{ "--re-classify" if re_triage else "" }}`
+  Run: `ft classify {{ "--re-classify" if re_triage | string | lower == "true" else "" }}`
   Report: "Classified N bookmarks into K categories."
 
   **If (b) Edit:**
