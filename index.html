@@ -9,27 +9,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mycroft — Goose, configured for journalism</title>
-<meta name="description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a local Gemma runtime.">
+<title>Mycroft — local agents for investigators, built on Osaurus</title>
+<meta name="description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta name="theme-color" content="#E8E0CF">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%22-50%20-50%20100%20100%22%3E%3Cg%20stroke%3D%22%23131013%22%20stroke-width%3D%226%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%22-20.5%22%20x2%3D%2212.7%22%20y2%3D%22-12.7%22%2F%3E%3Cline%20x1%3D%2232%22%20y1%3D%220%22%20x2%3D%2218%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%2220.5%22%20y1%3D%2220.5%22%20x2%3D%2212.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%220%22%20y1%3D%2232%22%20x2%3D%220%22%20y2%3D%2218%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%2220.5%22%20x2%3D%22-12.7%22%20y2%3D%2212.7%22%2F%3E%3Cline%20x1%3D%22-32%22%20y1%3D%220%22%20x2%3D%22-18%22%20y2%3D%220%22%2F%3E%3Cline%20x1%3D%22-20.5%22%20y1%3D%22-20.5%22%20x2%3D%22-12.7%22%20y2%3D%22-12.7%22%2F%3E%3C%2Fg%3E%3Cline%20x1%3D%220%22%20y1%3D%22-34%22%20x2%3D%220%22%20y2%3D%22-16%22%20stroke%3D%22%234A7363%22%20stroke-width%3D%227%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Mycroft — Goose, configured for journalism">
-<meta property="og:description" content="An opinionated extension pack for Goose — the open-source agent runtime. Recipes, providers, and a local Gemma runtime.">
+<meta property="og:title" content="Mycroft — local agents for investigators, built on Osaurus">
+<meta property="og:description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta property="og:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta property="og:image:secure_url" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Mycroft, a Goose setup for investigative journalism">
+<meta property="og:image:alt" content="Mycroft, local agents for investigators built on Osaurus">
 <meta property="og:url" content="https://mycroft.buriedsignals.com/">
 <meta name="feedback-endpoint" content="https://api.buriedsignals.com/v1/feedback">
 <meta property="og:site_name" content="Mycroft">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Mycroft — Goose, configured for journalism">
-<meta name="twitter:description" content="An opinionated extension pack for Goose — the open-source agent runtime.">
+<meta name="twitter:title" content="Mycroft — local agents for investigators, built on Osaurus">
+<meta name="twitter:description" content="Mycroft is a local agent for investigators, built on Osaurus. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.">
 <meta name="twitter:image" content="https://mycroft.buriedsignals.com/assets/og/mycroft-og-1200.jpg">
-<meta name="twitter:image:alt" content="Mycroft, a Goose setup for investigative journalism">
+<meta name="twitter:image:alt" content="Mycroft, local agents for investigators built on Osaurus">
 <script>
 /* Always start at top on refresh — disable browser's scroll restoration
    so reloads don't drop the user back into the middle of the orb. */
@@ -866,6 +866,119 @@ main,
   margin: 0 auto var(--sp-6);
   text-wrap: pretty;
 }
+/* hero partner band · Osaurus first, OpenKnowledge second */
+.hero__partners {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 14px;
+}
+.hero__partners a.hero__partner {
+  border-bottom: 0;
+  padding-bottom: 0;
+  display: inline-flex;
+  opacity: 0.85;
+  transition: opacity var(--dur-1) var(--ease);
+}
+.hero__partners a.hero__partner:hover { opacity: 1; }
+.hero__partner-logo { display: block; width: auto; }
+.hero__partner-logo--osaurus { height: 22px; }
+.hero__partner-logo--ok { height: 18px; }
+.hero__partners-amp { color: var(--ink-dim); }
+
+/* the big hero sentence */
+.hero__lede {
+  font-family: var(--serif);
+  font-weight: 200;
+  font-size: clamp(22px, 2.4vw, 34px);
+  line-height: 1.45;
+  color: var(--ink);
+  max-width: 46rem;
+  margin: 0 auto var(--sp-6);
+  text-wrap: balance;
+}
+
+/* pills · inline links on the wording itself */
+.pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  padding: 0.02em 0.55em 0.08em;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--vellum-bright);
+  color: var(--ink);
+  font: inherit;
+  font-style: normal;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color var(--dur-1) var(--ease), color var(--dur-1) var(--ease), background var(--dur-1) var(--ease);
+}
+a.pill:hover,
+a.pill:focus-visible {
+  border-color: var(--oxide);
+  color: var(--oxide-active);
+  background: var(--vellum-glow);
+}
+a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
+.pill small {
+  font-family: var(--mono);
+  font-size: 0.42em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  transform: translateY(-0.2em);
+}
+.nw { white-space: nowrap; }
+.pill--soon { border-style: dashed; color: var(--ink-soft); }
+.term__role .pill { font-size: 0.95em; margin: 0 2px 6px 0; }
+
+/* list variant of the day timeline · numbered, tighter rhythm */
+.day-timeline--list .day-frame { padding: clamp(28px, 6vh, 64px) 0; }
+.day-timeline--list .card__title {
+  font-style: normal;
+  font-weight: 300;
+  font-size: clamp(24px, 2.3vw, 34px);
+  line-height: 1.45;
+  letter-spacing: -0.005em;
+  max-width: 34ch;
+  text-wrap: pretty;
+}
+.day-timeline--list .card__title .pill { padding: 0 0.5em 0.04em; line-height: 1.15; }
+
+/* findings flow · Scoutpost + Spotlight → Analyst → wiki */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: clamp(12px, 2vw, 28px);
+  max-width: 1040px;
+  margin: clamp(48px, 8vh, 96px) auto 0;
+}
+.flow__src { display: grid; gap: 12px; }
+.flow__node {
+  display: grid;
+  gap: 4px;
+  padding: 16px 20px;
+  background: #fbf6e8;
+  border: 1px solid var(--rule);
+  border-radius: var(--rad-sm);
+  color: inherit;
+  text-decoration: none;
+}
+a.flow__node:hover strong { color: var(--oxide-active); }
+.flow__node strong { font-family: var(--serif); font-weight: 400; font-size: 22px; }
+.flow__node span { font-size: 14px; color: var(--ink-soft); line-height: 1.4; }
+.flow__node--mid { background: var(--vellum-bright); border-color: var(--oxide); }
+.flow__logo { height: 20px; width: auto; }
+.flow__arrow { font-family: var(--mono); color: var(--oxide); font-size: 20px; }
+@media (max-width: 760px) {
+  .flow { grid-template-columns: 1fr; }
+  .flow__arrow { transform: rotate(90deg); justify-self: center; }
+}
+
 .ctas--center {
   justify-content: center;
   flex-wrap: wrap;
@@ -3092,14 +3205,19 @@ html.js .is-in .tw__in {
 
   <!-- ────────── 01 · HERO ────────── -->
   <section class="sec sec--hero" id="hero" data-section="0">
-    <p class="hero__tag" data-reveal style="--delay: 0ms"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a> · configured for journalism</p>
+    <p class="hero__tag hero__partners" data-reveal style="--delay: 0ms">
+      <span class="hero__partners-label">In partnership with</span>
+      <a class="hero__partner" href="https://osaurus.ai/" target="_blank" rel="noreferrer"><img src="assets/partners/osaurus.svg" alt="Osaurus" class="hero__partner-logo hero__partner-logo--osaurus"></a>
+      <span class="hero__partners-amp" aria-hidden="true">&amp;</span>
+      <a class="hero__partner" href="https://openknowledge.ai/" target="_blank" rel="noreferrer"><img src="assets/partners/openknowledge.svg" alt="OpenKnowledge" class="hero__partner-logo hero__partner-logo--ok"></a>
+    </p>
 
     <div class="hero__bottom">
       <h1 class="display display--hero" data-reveal style="--delay: 120ms">
         Old-school reporting.<br><em>New-school machinery</em>
       </h1>
 
-      <p class="hero__desc" data-reveal style="--delay: 220ms">A Goose extension pack with <span data-skills-count>journalism skills</span>, a local searchable wiki, and an optional on-device model — connected to Splash, Spotlight, Navigator, and Scoutpost.</p>
+      <p class="hero__lede" data-reveal style="--delay: 220ms">Mycroft is a local agent for investigators, built on <span class="nw"><a class="pill" href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a>.</span> Plan a case with <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> and run it with <span class="nw"><a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight</a>,</span> then keep watch with <span class="nw"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a>.</span></p>
 
       <div class="ctas ctas--center" data-reveal style="--delay: 380ms">
         <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
@@ -3117,72 +3235,81 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">02</span> What it does</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">An example <em>day</em></h2>
+      <h2 class="display display--section">What you can <em>do</em></h2>
     </div>
 
-    <div class="day-timeline">
+    <div class="day-timeline day-timeline--list">
       <span class="day-rail" aria-hidden="true">
         <span class="day-rail__fill"></span>
       </span>
 
-      <article class="day-frame" style="--tilt:-1.6deg; --offset:-3vw; --delay: 0ms">
-        <aside class="day-time">
-          <span class="day-time__hour">07</span><span class="day-time__ampm">am</span>
-        </aside>
-        <button class="day-card" type="button" data-dialog="dlg-brief">
-          <p class="card__kicker"><span>§ Brief · <strong>Automation</strong></span></p>
-          <h3 class="card__title">Your morning brief, <em>before coffee</em></h3>
-          <p class="card__body">A digest in your notes: overnight signals ranked by editorial value. Every claim cited.</p>
-          <p class="card__foot">8 items · cited · written locally <span class="card__more">→ how it works</span></p>
-        </button>
+      <article class="day-frame" style="--tilt:-1.4deg; --offset:-2.5vw; --delay: 0ms">
+        <aside class="day-time"><span class="day-time__hour">01</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Investigate · <strong>Spotlight</strong></span></p>
+          <h3 class="card__title">Run a full <a class="pill" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer">Spotlight investigation</a> locally on <span class="nw"><a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>.</span></h3>
+          <p class="card__body">You approve the method and the report.</p>
+        </div>
       </article>
 
-      <article class="day-frame" style="--tilt:1.3deg; --offset:3vw; --delay: 80ms">
-        <aside class="day-time">
-          <span class="day-time__hour">09</span><span class="day-time__ampm">am</span>
-        </aside>
-        <button class="day-card" type="button" data-dialog="dlg-foia">
-          <p class="card__kicker"><span>§ Request · <strong>FOIA</strong></span></p>
-          <h3 class="card__title">Your records request, <em>drafted</em></h3>
-          <p class="card__body">A public-records request written for the right agency — tracked from filing to deadline, with appeal language ready.</p>
-          <p class="card__foot">drafted · tracked · appealable <span class="card__more">→ how it works</span></p>
-        </button>
+      <article class="day-frame" style="--tilt:1.2deg; --offset:2.5vw; --delay: 60ms">
+        <aside class="day-time"><span class="day-time__hour">02</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Search · <strong>Wiki</strong></span></p>
+          <h3 class="card__title">Search your <a class="pill" href="https://openknowledge.ai/" target="_blank" rel="noreferrer">wiki</a> locally, so notes on protected sources never leave your machine.</h3>
+        </div>
       </article>
 
-      <article class="day-frame" style="--tilt:-0.9deg; --offset:-2vw; --delay: 160ms">
-        <aside class="day-time">
-          <span class="day-time__hour">10</span><span class="day-time__ampm">am</span>
-        </aside>
-        <button class="day-card" type="button" data-dialog="dlg-verify">
-          <p class="card__kicker"><span>§ Verify · <strong>SIFT</strong></span></p>
-          <h3 class="card__title">Your fact-check, <em>in minutes</em></h3>
-          <p class="card__body">Per-claim verdicts via SIFT — verified, unverified, contradicted, mischaracterized.</p>
-          <p class="card__foot">sift · per-claim · 4 verdicts <span class="card__more">→ how it works</span></p>
-        </button>
+      <article class="day-frame" style="--tilt:-0.9deg; --offset:-2vw; --delay: 120ms">
+        <aside class="day-time"><span class="day-time__hour">03</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Extract · <strong>Documents</strong></span></p>
+          <h3 class="card__title">Use a small <a class="pill" href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">on-device extraction model</a> to pull figures from a document.</h3>
+          <p class="card__body">It can get a digit wrong, so check every number.</p>
+        </div>
       </article>
 
-      <article class="day-frame" style="--tilt:1.1deg; --offset:2.5vw; --delay: 240ms">
-        <aside class="day-time">
-          <span class="day-time__hour">12</span><span class="day-time__ampm">pm</span>
-        </aside>
-        <button class="day-card" type="button" data-dialog="dlg-interview">
-          <p class="card__kicker"><span>§ Prep · <strong>Interviews</strong></span></p>
-          <h3 class="card__title">Your interview, <em>prepped</em></h3>
-          <p class="card__body">A background dossier, question frames, and attribution ground rules — built from your wiki before you dial.</p>
-          <p class="card__foot">dossier · questions · attribution <span class="card__more">→ how it works</span></p>
-        </button>
+      <article class="day-frame" style="--tilt:1.1deg; --offset:2vw; --delay: 180ms">
+        <aside class="day-time"><span class="day-time__hour">04</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Monitor · <strong>Scoutpost</strong></span></p>
+          <h3 class="card__title"><a class="pill" href="https://scoutpost.ai/" target="_blank" rel="noreferrer">Scoutpost</a> runs your monitors in the cloud, and Mycroft tells you what they found.</h3>
+        </div>
       </article>
 
-      <article class="day-frame" style="--tilt:-1.2deg; --offset:-2.5vw; --delay: 320ms">
-        <aside class="day-time">
-          <span class="day-time__hour">02</span><span class="day-time__ampm">pm</span>
-        </aside>
-        <button class="day-card" type="button" data-dialog="dlg-vault">
-          <p class="card__kicker"><span>§ Workspace · <strong>OpenKnowledge</strong></span></p>
-          <h3 class="card__title">Your research, <em>stored locally</em></h3>
-          <p class="card__body">Everything above lands in one local OpenKnowledge workspace. Sources, claims, briefs — searchable, linked, and yours.</p>
-          <p class="card__foot">markdown · linked · yours <span class="card__more">→ see the wiki</span></p>
-        </button>
+      <article class="day-frame" style="--tilt:-1.2deg; --offset:-2.5vw; --delay: 240ms">
+        <aside class="day-time"><span class="day-time__hour">05</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Plan · <strong>Navigator</strong></span></p>
+          <h3 class="card__title">Ask <a class="pill" href="https://navigator.indicator.media/" target="_blank" rel="noreferrer">Navigator</a> how to trace the directors behind a shell company.</h3>
+          <p class="card__body">Navigator is hosted by Indicator.</p>
+        </div>
+      </article>
+
+      <article class="day-frame" style="--tilt:0.9deg; --offset:2.5vw; --delay: 300ms">
+        <aside class="day-time"><span class="day-time__hour">06</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ File · <strong>Analyst</strong></span></p>
+          <h3 class="card__title">The <a class="pill" href="https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md" target="_blank" rel="noreferrer">Analyst <small>pilot</small></a> runs locally and files what Spotlight and Scoutpost find into your wiki.</h3>
+          <p class="card__body">You confirm every change.</p>
+        </div>
+      </article>
+
+      <article class="day-frame" style="--tilt:-1.1deg; --offset:-2vw; --delay: 360ms">
+        <aside class="day-time"><span class="day-time__hour">07</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Research · <strong>Watson</strong></span></p>
+          <h3 class="card__title"><a class="pill" href="https://openrouter.ai/mistralai/mistral-large-4-0" target="_blank" rel="noreferrer">Watson</a> does web research in the cloud, only when you ask.</h3>
+          <p class="card__body">It uses Mistral's EU servers with zero data retention and never sees your wiki.</p>
+        </div>
+      </article>
+
+      <article class="day-frame" style="--tilt:1.3deg; --offset:2.5vw; --delay: 420ms">
+        <aside class="day-time"><span class="day-time__hour">08</span></aside>
+        <div class="day-card">
+          <p class="card__kicker"><span>§ Visualise · <strong>Splash</strong></span></p>
+          <h3 class="card__title"><span class="pill pill--soon">Splash <small>soon</small></span> will turn your findings into charts on an <span class="nw"><a class="pill" href="https://huggingface.co/LiquidAI/LFM3-VL-2B" target="_blank" rel="noreferrer">on-device visual model</a>.</span></h3>
+        </div>
       </article>
     </div>
 
@@ -3204,86 +3331,6 @@ html.js .is-in .tw__in {
       </div>
     </dialog>
 
-    <dialog class="skill-dialog" id="dlg-brief" aria-labelledby="dlg-brief-title">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ recipe · morning-brief</p>
-        <h3 class="skill-dialog__title" id="dlg-brief-title">The morning brief</h3>
-        <p class="skill-dialog__body">Overnight, stories pile up. When you sit down, one command builds the brief: Mycroft reads the posts you bookmarked, the newsletters in your inbox, and what happened on your beats while you slept. It picks the eight items most worth your time — ranked by news value, not volume — and files a short, readable digest into your notes. Every line says where it came from, so checking a claim is one click, not a hunt.</p>
-        <ul class="skill-dialog__list" role="list">
-          <li>Ranked by what matters to your beat, not what's loudest</li>
-          <li>Every item links back to its source</li>
-          <li>Optional: read aloud while you make the coffee</li>
-        </ul>
-        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/blob/main/recipes/morning-brief.yaml" target="_blank" rel="noreferrer">the recipe file →</a></p>
-      </div>
-    </dialog>
-
-    <dialog class="skill-dialog" id="dlg-foia" aria-labelledby="dlg-foia-title">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ skill · foia-requests</p>
-        <h3 class="skill-dialog__title" id="dlg-foia-title">Records requests</h3>
-        <p class="skill-dialog__body">Public-records requests are won on paperwork. Tell Mycroft what you're after and it drafts the letter — addressed to the right agency, citing the right statute, phrased so there's nothing to reject on a technicality. It keeps a tracker note beside it, so the filing date and the agency's legal deadline don't have to live in your head. And when an agency goes quiet or says no, the follow-up and the appeal are already written.</p>
-        <ul class="skill-dialog__list" role="list">
-          <li>The letter, drafted in the agency's own terms</li>
-          <li>Filing dates and legal deadlines, tracked in your notes</li>
-          <li>Appeals and follow-ups, ready when the clock runs out</li>
-        </ul>
-        <p class="skill-dialog__credit">Skill adapted from <a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">claude-skills-journalism</a> by Joe Amditis · Center for Cooperative Media · MIT</p>
-        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/foia-requests" target="_blank" rel="noreferrer">the skill file →</a></p>
-      </div>
-    </dialog>
-
-    <dialog class="skill-dialog" id="dlg-verify" aria-labelledby="dlg-verify-title">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ skill · fact-check</p>
-        <h3 class="skill-dialog__title" id="dlg-verify-title">The fact-check</h3>
-        <p class="skill-dialog__body">Paste a draft, a quote, or a claim doing the rounds. Mycroft splits it into individual claims and checks each one the way a verification desk would, using SIFT — the method Mike Caulfield teaches fact-checkers: stop, check who's behind the source, look for better coverage, trace everything back to its original context. Each claim comes back with a verdict and the evidence behind it. When something needs more than a desk check, the case hands off to Spotlight, the investigation tool.</p>
-        <ul class="skill-dialog__list" role="list">
-          <li>Four honest verdicts: verified · unverified · contradicted · mischaracterized</li>
-          <li>Every verdict links to the evidence behind it</li>
-          <li>Optional: a tamper-evident record of the check (C2PA)</li>
-        </ul>
-        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/fact-check" target="_blank" rel="noreferrer">the skill file →</a></p>
-      </div>
-    </dialog>
-
-    <dialog class="skill-dialog" id="dlg-interview" aria-labelledby="dlg-interview-title">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ skill · interview-prep</p>
-        <h3 class="skill-dialog__title" id="dlg-interview-title">Interview prep</h3>
-        <p class="skill-dialog__body">Give it a name and your story angle. Mycroft gathers what your own notes already hold on the person, adds fresh research from the open web, and hands you a one-page dossier. It then drafts question frames to fit the conversation you're actually having — an accountability sit-down reads differently from an expert explainer — and keeps the ground rules straight before you hit record.</p>
-        <ul class="skill-dialog__list" role="list">
-          <li>A dossier from your notes plus fresh research</li>
-          <li>Question frames matched to the interview type</li>
-          <li>On record, on background, off — kept explicit</li>
-        </ul>
-        <p class="skill-dialog__credit">Skill adapted from <a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">claude-skills-journalism</a> by Joe Amditis · Center for Cooperative Media · MIT</p>
-        <p class="skill-dialog__links"><a href="https://github.com/buriedsignals/mycroft/tree/main/skills/interview-prep" target="_blank" rel="noreferrer">the skill file →</a></p>
-      </div>
-    </dialog>
-
-    <dialog class="skill-dialog" id="dlg-vault" aria-labelledby="dlg-vault-title">
-      <div class="skill-dialog__inner">
-        <button class="skill-dialog__close" type="button" data-close aria-label="Close">×</button>
-        <p class="skill-dialog__kicker">§ skill · knowledge-workspace</p>
-        <h3 class="skill-dialog__title" id="dlg-vault-title">The wiki</h3>
-        <p class="skill-dialog__body">The workspace is the point. Everything Mycroft produces — briefs, source records, claims, findings — is journaled through <a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge</a> on your own computer. Notes link to each other the way reporting actually connects: this source gave that quote, that claim rests on this document. Over weeks it becomes your beat, mapped. Nothing syncs anywhere unless you decide it should, and the underlying Markdown remains portable.</p>
-        <ul class="skill-dialog__list" role="list">
-          <li>Plain text files — readable in anything, forever</li>
-          <li>Notes link sources ↔ claims ↔ stories</li>
-          <li>Search it offline · grep it, sync it, archive it — it's yours</li>
-        </ul>
-        <p class="skill-dialog__links">
-          <a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge →</a>
-          <a href="https://github.com/buriedsignals/mycroft/tree/main/skills/knowledge-primitives" target="_blank" rel="noreferrer">the wiki structure →</a>
-        </p>
-      </div>
-    </dialog>
-
   </section>
 
 
@@ -3292,43 +3339,58 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">03</span> The runtime</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Any subscription.<br><em>Prepared to run local</em></h2>
+      <h2 class="display display--section">Built on Osaurus.<br><em>Running on-device</em></h2>
     </div>
 
     <div class="equation" data-cascade>
       <div class="term" style="--delay: 0ms">
         <span class="term__pre">↳ runtime</span>
-        <h3 class="term__name"><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose</a></h3>
+        <h3 class="term__name"><a href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a></h3>
         <span class="term__rule"></span>
-        <p class="term__role">the agent loop</p>
-        <p class="term__spec">Block · MIT · open-source</p>
+        <p class="term__role">local AI for your Mac</p>
+        <p class="term__spec">open source · runs the agents and models</p>
       </div>
 
       <div class="term-op" style="--delay: 200ms"><span>+</span></div>
 
       <div class="term" style="--delay: 140ms">
-        <span class="term__pre">↳ model</span>
-        <h3 class="term__name">Your choice</h3>
+        <span class="term__pre">↳ models</span>
+        <h3 class="term__name">On-device</h3>
         <span class="term__rule"></span>
-        <p class="term__role">any subscription · or on-device</p>
-        <p class="term__spec">cloud providers · optional local weights</p>
+        <p class="term__role">
+          <a class="pill" href="https://huggingface.co/OsaurusAI/gemma-4-12B-it-qat-MXFP4" target="_blank" rel="noreferrer">Gemma 4 12B</a>
+          <a class="pill" href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a>
+          <a class="pill" href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a>
+        </p>
+        <p class="term__spec">Mycroft · Spotlight · extraction</p>
       </div>
 
       <div class="term-op" style="--delay: 340ms"><span>+</span></div>
 
       <div class="term" style="--delay: 280ms">
-        <span class="term__pre">↳ workspace</span>
-        <h3 class="term__name"><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge</a></h3>
+        <span class="term__pre">↳ wiki</span>
+        <h3 class="term__name"><a href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a></h3>
         <span class="term__rule"></span>
         <p class="term__role">your knowledge workspace</p>
-        <p class="term__spec">local · searchable · portable</p>
+        <p class="term__spec">local · markdown · portable</p>
       </div>
     </div>
 
+    <div class="flow" data-reveal style="--delay: 160ms" aria-label="How findings reach your wiki">
+      <div class="flow__src">
+        <a class="flow__node" href="https://scoutpost.ai/" target="_blank" rel="noreferrer"><strong>Scoutpost</strong><span>what your monitors bring in</span></a>
+        <a class="flow__node" href="https://spotlight.buriedsignals.com/" target="_blank" rel="noreferrer"><strong>Spotlight</strong><span>approved findings from your cases</span></a>
+      </div>
+      <span class="flow__arrow" aria-hidden="true">→</span>
+      <div class="flow__node flow__node--mid"><strong>Analyst</strong><span>files and links them locally, and you confirm each write</span></div>
+      <span class="flow__arrow" aria-hidden="true">→</span>
+      <a class="flow__node flow__node--ok" href="https://openknowledge.ai/" target="_blank" rel="noreferrer"><img src="assets/partners/openknowledge.svg" alt="OpenKnowledge" class="flow__logo"><span>one wiki, plain files</span></a>
+    </div>
+
     <nav class="links-row" aria-label="Runtime resources" data-reveal style="--delay: 200ms">
-      <a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs →</a>
-      <a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge →</a>
-      <a href="https://huggingface.co/unsloth/gemma-4-31B-it-GGUF" target="_blank" rel="noreferrer">Optional local model →</a>
+      <a href="https://docs.osaurus.ai/" target="_blank" rel="noreferrer">Osaurus docs →</a>
+      <a href="https://openknowledge.ai/docs" target="_blank" rel="noreferrer">OpenKnowledge docs →</a>
+      <a href="https://huggingface.co/OsaurusAI" target="_blank" rel="noreferrer">Osaurus models →</a>
     </nav>
   </section>
 
@@ -3349,36 +3411,36 @@ html.js .is-in .tw__in {
     <div class="stamps">
       <article class="stamp" style="--delay: 0ms; --tilt: -1.4deg">
         <span class="stamp__seal" style="--seal-tilt: -8deg"><span>Default</span></span>
-        <h3 class="stamp__title">Zero data retention</h3>
-        <p class="stamp__body">OpenRouter with GLM-5.2 is the recommended cloud default, with ZDR enforced per request and at the account level.</p>
-        <p class="stamp__foot">OpenRouter · GLM-5.2</p>
+        <h3 class="stamp__title">On-device by default</h3>
+        <p class="stamp__body">Mycroft, Spotlight, the Analyst and document extraction run on local models in Osaurus.</p>
+        <p class="stamp__foot">Osaurus · on-device</p>
       </article>
 
       <article class="stamp" style="--delay: 100ms; --tilt: 1.1deg">
-        <span class="stamp__seal" style="--seal-tilt: 6deg"><span>Toggle</span></span>
-        <h3 class="stamp__title">Local-first mode</h3>
-        <p class="stamp__body">One toggle. Inference on your machine via Ollama or llama-server. Zero model-provider egress.</p>
-        <p class="stamp__foot">Ollama · llama-server</p>
+        <span class="stamp__seal" style="--seal-tilt: 6deg"><span>Choice</span></span>
+        <h3 class="stamp__title">Watson only when you ask</h3>
+        <p class="stamp__body">Web research goes through OpenRouter to Mistral's EU servers with zero data retention. Watson never sees your wiki.</p>
+        <p class="stamp__foot">OpenRouter · Mistral EU · ZDR</p>
       </article>
 
       <article class="stamp" style="--delay: 200ms; --tilt: -0.7deg">
-        <span class="stamp__seal" style="--seal-tilt: -4deg"><span>Yours</span></span>
-        <h3 class="stamp__title">Your keys, your machine</h3>
-        <p class="stamp__body">Keys stay in Engine’s operating-system credential broker. Indicator Labs provides the managed prompt; open-source users use the protected bsig stdin/keychain path. This site never collects them.</p>
-        <p class="stamp__foot">Engine · OS keychain</p>
+        <span class="stamp__seal" style="--seal-tilt: -4deg"><span>Asks</span></span>
+        <h3 class="stamp__title">Hosted tools ask first</h3>
+        <p class="stamp__body">Osaurus asks you before any call that sends your text to Navigator or Scoutpost.</p>
+        <p class="stamp__foot">Navigator · Scoutpost · hosted</p>
       </article>
 
       <article class="stamp" style="--delay: 300ms; --tilt: 1.6deg">
-        <span class="stamp__seal" style="--seal-tilt: 9deg"><span>Only</span></span>
-        <h3 class="stamp__title">Local scraping</h3>
-        <p class="stamp__body">SearXNG search and Crawl4AI scraping work without an account. Firecrawl is an optional fallback.</p>
-        <p class="stamp__foot">SearXNG · Crawl4AI · optional Firecrawl</p>
+        <span class="stamp__seal" style="--seal-tilt: 9deg"><span>Yours</span></span>
+        <h3 class="stamp__title">Your keys, your machine</h3>
+        <p class="stamp__body">Keys stay in your login Keychain, and Osaurus only reads the ones Lab hands it. Open-source users use the protected bsig stdin/keychain path, and this site never collects keys.</p>
+        <p class="stamp__foot">macOS Keychain</p>
       </article>
 
       <article class="stamp" style="--delay: 400ms; --tilt: -1.2deg">
         <span class="stamp__seal" style="--seal-tilt: -6deg"><span>On disk</span></span>
-        <h3 class="stamp__title">Workspace stays local</h3>
-        <p class="stamp__body">Findings write to your OpenKnowledge workspace. Nothing syncs unless you choose it.</p>
+        <h3 class="stamp__title">Wiki stays local</h3>
+        <p class="stamp__body">Findings write to your OpenKnowledge wiki as plain files. Nothing syncs unless you choose it.</p>
         <p class="stamp__foot">OpenKnowledge · Local</p>
       </article>
 
@@ -3439,7 +3501,7 @@ html.js .is-in .tw__in {
 
       <article class="card-int card-int--coming">
         <div class="card-int__meta">
-          <span class="card-int__access">Coming September 1st</span>
+          <span class="card-int__access">Coming soon</span>
           <span class="card-int__kind">Visual journalism</span>
         </div>
         <h3 class="card-int__title"><em>Splash</em></h3>
@@ -3457,110 +3519,56 @@ html.js .is-in .tw__in {
     <header class="num" data-reveal><span class="num__n">06</span> Install</header>
 
     <div class="sec-head" data-reveal style="--delay: 80ms">
-      <h2 class="display display--section">Same Mycroft.<br><em>CLI or desktop</em></h2>
-    </div>
-
-    <!-- Surface toggle: CLI terminal vs Desktop (Goose app) view -->
-    <div class="surface-toggle" role="tablist" aria-label="View" data-reveal style="--delay: 100ms">
-      <button class="surface-toggle__btn is-active" type="button" data-surface="cli" role="tab" aria-selected="true">CLI</button>
-      <button class="surface-toggle__btn" type="button" data-surface="app" role="tab" aria-selected="false">Desktop</button>
+      <h2 class="display display--section">Installed by Lab.<br><em>Running in Osaurus</em></h2>
     </div>
 
     <div class="surface-stage" data-reveal style="--delay: 140ms">
-    <div class="surface surface--cli is-active" data-surface-view="cli">
-    <div class="terminal" data-arm>
-      <div class="terminal__bar" aria-hidden="true">
-        <span></span><span></span><span></span>
-        <span class="terminal__label">Goose · Mycroft</span>
-      </div>
-
-      <div class="terminal__body">
-        <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">i.</span> After install, open a Goose session in the terminal.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">goose</span> <span class="t-arg">session</span></p>
-          <p class="t-line t-line--out">Mycroft skills loaded · local vault attached</p>
-        </div>
-
-        <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">ii.</span> Run a recipe from the shell — same pack the desktop app uses.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">$</span> <span class="t-cmd">goose</span> <span class="t-arg">run --recipe morning-brief</span></p>
-          <p class="t-line t-line--out">8 items · cited · written to vault</p>
-        </div>
-
-        <div class="t-block">
-          <p class="t-line t-line--cmt"><span class="t-rn">iii.</span> Switch to Desktop above for the same session in the Goose app.</p>
-          <p class="t-line t-line--cmd"><span class="t-prompt">↳</span> <span class="t-arg">same recipes · same keys · same wiki</span></p>
-          <p class="t-line t-line--out">CLI and desktop are two surfaces, not two products</p>
-        </div>
-
-        <div class="t-divider" aria-hidden="true"></div>
-
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> goose runtime · <span class="t-arg">ready</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> <span data-skills-count>journalism skills</span> · <span class="t-arg">available</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> local searchable wiki · <span class="t-arg">attached</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> optional on-device model · <span class="t-arg">if you want it</span></p>
-        <p class="t-line t-line--ok"><span class="t-tick">✓</span> sibling tools · <span class="t-arg">Spotlight · Scoutpost · Navigator · Splash</span></p>
-        <p class="t-line t-line--ok t-line--ok-final"><span class="t-tick">✓</span> Mycroft is ready — <span class="t-arg">CLI or desktop.</span></p>
-      </div>
-
-      <div class="terminal__foot">
-        <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-        <span class="terminal__meta">Indicator Lab includes install · CLI and desktop both work</span>
-      </div>
-    </div>
-    </div><!-- /.surface--cli -->
-
-    <!-- Desktop / App surface — same conversation, native UI feel. -->
-    <div class="surface surface--app" data-surface-view="app" hidden>
-      <div class="goose-app">
+    <div class="surface surface--app is-active" data-surface-view="app">
+      <div class="goose-app is-on">
         <div class="goose-app__chrome" aria-hidden="true">
           <span class="goose-app__dot goose-app__dot--r"></span>
           <span class="goose-app__dot goose-app__dot--y"></span>
           <span class="goose-app__dot goose-app__dot--g"></span>
-          <span class="goose-app__title">Goose · Mycroft</span>
+          <span class="goose-app__title">Osaurus · Mycroft</span>
         </div>
         <div class="goose-app__body">
           <aside class="goose-app__side">
-            <div class="goose-app__side-h">Goose</div>
+            <div class="goose-app__side-h">Agents</div>
             <ul class="goose-app__list">
-              <li><span class="goose-app__bullet">⌂</span> Home</li>
-              <li class="is-active"><span class="goose-app__bullet">◐</span> Chat</li>
-              <li><span class="goose-app__bullet">▦</span> Recipes</li>
-              <li><span class="goose-app__bullet">◇</span> Apps</li>
-              <li><span class="goose-app__bullet">◷</span> Scheduler</li>
-              <li><span class="goose-app__bullet">✱</span> Extensions</li>
-              <li><span class="goose-app__bullet">⚙</span> Settings</li>
+              <li class="is-active"><span class="goose-app__bullet">◐</span> Mycroft</li>
+              <li><span class="goose-app__bullet">◇</span> Spotlight</li>
+              <li><span class="goose-app__bullet">☁</span> Watson</li>
             </ul>
           </aside>
           <div class="goose-app__chat">
             <div class="goose-app__chat-head">
               <div class="goose-app__session">
-                <strong>Mycroft morning brief</strong>
-                <span>local model · local wiki</span>
+                <strong>Tender documents</strong>
+                <span>Gemma 4 12B · on-device</span>
               </div>
-              <span class="goose-app__status">Running</span>
+              <span class="goose-app__status">Local</span>
             </div>
             <div class="goose-app__thread">
               <div class="goose-app__msg goose-app__msg--user">
-                Brief me on the housing-policy beat for this morning.
+                Pull the contract value, award date and winning bidder out of tender-114.pdf.
               </div>
-              <div class="goose-app__tool">running recipe · morning brief</div>
+              <div class="goose-app__tool">extract document · NuExtract3 · on-device</div>
               <div class="goose-app__msg goose-app__msg--bot">
-                <strong>Three signals overnight.</strong><br>
-                · <em>Le Monde</em> reports a draft amendment on rent caps · <em>Mediapart</em> publishes a leaked memo from the prefecture of Île-de-France · ANCT data shows a 9% drop in social-housing starts (Q1 2026).
+                <strong>Three fields found.</strong><br>
+                Value €4.2M · awarded 12 March · bidder Example Holdings SA. Check each figure against page 3 before you use it.
                 <br><br>
-                <span class="goose-app__cite">3 sources · cached locally · 2 follow-ups suggested</span>
+                <span class="goose-app__cite">wiki/sources/tender-114.pdf · extracted locally · example data</span>
               </div>
             </div>
             <div class="goose-app__composer">
-              <span>Ask goose to inspect a source, run a recipe, or open a follow-up...</span>
+              <span>Ask Mycroft to search your wiki, find a method or check your monitors…</span>
               <span class="goose-app__send" aria-hidden="true">↑</span>
             </div>
           </div>
         </div>
         <div class="goose-app__foot">
           <a class="btn btn--solid btn--setup" href="https://buriedsignals.com/join">Install</a>
-          <span class="goose-app__meta">CLI or desktop · same recipes · same vault</span>
+          <span class="goose-app__meta">Indicator Lab installs Osaurus, the models and Mycroft</span>
         </div>
       </div>
     </div>
@@ -3654,8 +3662,8 @@ html.js .is-in .tw__in {
   <!-- ────────── 08 · CLOSING ────────── -->
   <section class="sec sec--closing" id="closing" data-section="7">
     <p class="closing__tag" data-reveal>Manifesto</p>
-    <h2 class="display display--section" data-reveal style="--delay: 100ms">Bring the notebook.<br><em>Send the Goose</em></h2>
-    <p class="closing__line" data-reveal style="--delay: 220ms">Local knowledge · Optional on-device model · Wired into the suite</p>
+    <h2 class="display display--section" data-reveal style="--delay: 100ms">Bring the notebook.<br><em>Keep it on-device</em></h2>
+    <p class="closing__line" data-reveal style="--delay: 220ms">On-device models · Local wiki · Wired into the suite</p>
   </section>
 
 
@@ -3663,7 +3671,12 @@ html.js .is-in .tw__in {
   <section class="sec sec--ack" id="acknowledgements">
     <p class="closing__tag" data-reveal>Standing on open work</p>
     <ul class="ack-list" role="list" data-reveal style="--delay: 120ms">
-      <li><a href="https://github.com/block/goose" target="_blank" rel="noreferrer">Goose</a> <span>— Block · the open-source runtime Mycroft is built on</span></li>
+      <li><a href="https://osaurus.ai/" target="_blank" rel="noreferrer">Osaurus</a> <span>— the local AI app Mycroft runs in · partner</span></li>
+      <li><a href="https://openknowledge.ai/" target="_blank" rel="noreferrer">OpenKnowledge</a> <span>— Inkeep · the local wiki and agent workspace · partner</span></li>
+      <li><a href="https://huggingface.co/OsaurusAI/gemma-4-12B-it-qat-MXFP4" target="_blank" rel="noreferrer">Gemma 4</a> <span>— Google · Mycroft's on-device model</span></li>
+      <li><a href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a> <span>— Liquid AI · Spotlight's on-device model</span></li>
+      <li><a href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a> <span>— NuMind · on-device document extraction</span></li>
+      <li><a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noreferrer">Pi</a> <span>— badlogic · the agent loop under the Analyst and Spotlight</span></li>
       <li><a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">Joe Amditis</a> <span>— five journalism skills, adapted · MIT</span></li>
       <li><a href="https://hapgood.us/2019/06/19/sift-the-four-moves/" target="_blank" rel="noreferrer">Mike Caulfield</a> <span>— the SIFT verification method</span></li>
       <li><a href="https://verso.ink/big-if-true/" target="_blank" rel="noreferrer">Verso</a> <span>— Big If True · claim extraction and evidence routes in the fact-check</span></li>
@@ -3672,11 +3685,9 @@ html.js .is-in .tw__in {
       <li><a href="https://github.com/unclecode/crawl4ai" target="_blank" rel="noreferrer">Crawl4AI</a> <span>— unclecode · the sovereign scraper</span></li>
       <li><a href="https://playwright.dev/" target="_blank" rel="noreferrer">Playwright</a> <span>— browser automation under the scraper</span></li>
       <li><a href="https://poppler.freedesktop.org/" target="_blank" rel="noreferrer">Poppler</a> <span>— pdftotext · PDF extraction</span></li>
-      <li><a href="https://github.com/ggml-org/llama.cpp" target="_blank" rel="noreferrer">llama.cpp</a> <span>— ggml · local inference inside Goose</span></li>
       <li><a href="https://www.torproject.org/" target="_blank" rel="noreferrer">Tor Project</a> <span>— opt-in anonymous scraping</span></li>
       <li><a href="https://github.com/openai/whisper" target="_blank" rel="noreferrer">Whisper</a> <span>— open-weight local dictation</span></li>
       <li><a href="https://github.com/rany2/edge-tts" target="_blank" rel="noreferrer">Edge TTS</a> <span>— rany2 · spoken briefings</span></li>
-      <li><a href="https://github.com/inkeep/open-knowledge" target="_blank" rel="noreferrer">OpenKnowledge</a> <span>— local knowledge, search, and agent workspace</span></li>
       <li><a href="https://c2pa.org/" target="_blank" rel="noreferrer">C2PA</a> <span>— content-provenance standard behind SIFT manifests</span></li>
     </ul>
   </section>
@@ -3715,7 +3726,7 @@ html.js .is-in .tw__in {
           <li><a href="https://buriedsignals.com/join">Install</a></li>
           <li><a href="https://github.com/buriedsignals/mycroft" target="_blank" rel="noreferrer">GitHub</a></li>
           <li><a href="https://huggingface.co/tomvaillant" target="_blank" rel="noreferrer">Hugging Face</a></li>
-          <li><a href="https://goose-docs.ai/" target="_blank" rel="noreferrer">Goose docs</a></li>
+          <li><a href="https://docs.osaurus.ai/" target="_blank" rel="noreferrer">Osaurus docs</a></li>
         </ul>
       </section>
 
