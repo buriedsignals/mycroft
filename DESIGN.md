@@ -13,10 +13,10 @@ colors:
   # ink
   primary: "#1a1a1f"
   ink-soft: "#4a4439"
-  ink-dim: "#8e8676"
+  ink-dim: "#625b4d"
   on-surface: "#1a1a1f"
   # accent
-  secondary: "#4a7363"
+  secondary: "#3d6655"
   secondary-active: "#2b5247"
   # structural
   rule: "#c8bfa8"
@@ -31,13 +31,13 @@ typography:
     letterSpacing: -0.02em
   display-xl:
     fontFamily: Migra
-    fontSize: 108px
+    fontSize: 72px
     fontWeight: 200
     lineHeight: 1
     letterSpacing: -0.02em
   headline-lg:
     fontFamily: Migra
-    fontSize: 88px
+    fontSize: 68px
     fontWeight: 200
     lineHeight: 1.05
     letterSpacing: -0.01em
@@ -102,7 +102,7 @@ spacing:
   3xl: 96px
   gutter: 32px
   shell-max: 1600px
-  section-y: 160px
+  section-y: 104px
   reading-column: 50ch
 
 components:
@@ -182,8 +182,8 @@ The palette is rooted in **parchment** (vellum) and **pigment** (deep ink), with
 - **Pigment (`#131013`)** — near-black with a faint plum tint. The deepest ink in the system; reserved for inverted dark sections.
 - **Ink (`#1a1a1f`)** — primary text on vellum. Not pure black — it sits more comfortably on warm paper.
 - **Ink-soft (`#4a4439`)** — long-form body, leads, secondary copy.
-- **Ink-dim (`#8e8676`)** — metadata, timestamps, dimmed labels, hairline rules at small scale.
-- **Oxide (`#4a7363`)** — the only accent. Used for the single primary action, live indicators, link underlines on dark backgrounds, focus rings, and selection. Treat it as scarce.
+- **Ink-dim (`#625b4d`)** — metadata, timestamps, dimmed labels, hairline rules at small scale.
+- **Oxide (`#3d6655`)** — the only accent. Used for the single primary action, live indicators, link underlines on dark backgrounds, focus rings, and selection. Treat it as scarce.
 - **Oxide-active (`#2b5247`)** — pressed/active state for the primary action. Never used as a static color.
 - **Rule (`#c8bfa8`)** — structural hairlines (1px borders, dividers, table rules). Always 1px, never thicker.
 
@@ -203,11 +203,11 @@ A `<code>` element inherits the size of its surrounding text and switches to Jet
 
 ## Layout
 
-A single shell, mobile-first, with three breakpoints: 600 / 980 / 1100px. The shell maxes at 1600px; the reading column stays at 50ch regardless. Sections breathe — vertical padding is `clamp(96px, 18vh, 200px)` at the top, slightly less at the bottom.
+A single shell, mobile-first, with three breakpoints: 600 / 980 / 1100px. The shell maxes at 1600px; the reading column stays at 50ch regardless. Sections breathe — vertical padding is `clamp(64px, 9vh, 104px)` at the top, slightly less at the bottom.
 
 - **Spacing scale** (4px base, geometric-ish): 4, 8, 12, 16, 22, 28, 36, 48, 64, 96.
 - **Gutter**: `clamp(20px, 4vw, 56px)` — the horizontal page padding.
-- **Section padding-y**: `clamp(96px, 18vh, 200px)` top, `clamp(72px, 14vh, 160px)` bottom.
+- **Section padding-y**: `clamp(64px, 9vh, 104px)` top, `clamp(56px, 7vh, 88px)` bottom.
 - **Header height**: 72px on mobile, 96px from 980px up.
 - **Reading column**: 50ch — the line length the system optimizes around.
 - **Headline column**: 16ch — display headlines wrap at this width to feel like a pull quote, not a banner.
@@ -280,14 +280,85 @@ Text selection paints oxide / vellum. Keyboard focus is a 2px solid oxide outlin
 - **Do** keep oxide scarce. One primary action per view. A page with two oxide buttons is a page with no primary action.
 - **Don't** introduce a third color. The palette is vellum / ink / oxide, with tonal variants only. New accents go through a system change, not a one-off.
 - **Do** trust the hairline. A 1px `--rule` border is enough — resist 2px, dashed-everywhere, or accent-tinted dividers.
-- **Don't** add shadows, glows, or blur backdrops. The system is flat. If something needs to feel above, swap to vellum-bright and add a hairline.
-- **Do** pair sharp frames with pill controls. The contrast is intentional.
+- **Don't** add glows or blur backdrops. Paper capability cards retain their soft paper shadows; other surfaces stay flat.
+- **Do** pair sharp paper cards with pill controls. Product screenshots and hover media use consistent 16px corners.
 - **Don't** mix radii within the same element family. All buttons are pills; all cards are sharp (or 4px). Never round one card and not its neighbor.
-- **Do** use Migra Extralight at 200 for display, Extrabold (800) only for the brand mark. Intermediate weights are off-system.
+- **Do** use Migra Extrabold (800) for primary italic display lines, paired with Extralight (200) emphasis. Capability sentences use the lighter upright treatment.
 - **Don't** set body copy in Migra. It is a display face — at 15–18px it loses its character and gets fragile.
 - **Do** uppercase mono labels at 0.22em (or 0.18em for meta). Sentence-case mono looks like a code listing, not a label.
 - **Don't** put oxide on body text or on hairlines. Oxide is for action and presence, not for decoration.
-- **Do** maintain WCAG AA contrast — ink (#1a1a1f) on vellum (#e8e0cf) clears 4.5:1; ink-dim (#8e8676) on vellum is below AA and is reserved for non-essential metadata only.
+- **Do** maintain WCAG AA contrast — ink (#1a1a1f) on vellum (#e8e0cf) clears 4.5:1; ink-dim (#625b4d) is used for supporting metadata with AA contrast on vellum.
 - **Don't** narrow the reading column below 45ch or widen it past 60ch. 50ch is the target; long-form readability is a primary goal, not a "nice to have."
 - **Do** invert whole sections to pigment when the content calls for it (install, footer). Never invert single elements — half-inverted UIs read as broken.
 - **Don't** animate beyond the system's vocabulary: 180–900ms with `cubic-bezier(0.16, 1, 0.3, 1)`. No bouncing, no springs, no parallax outside the dedicated 3D hero stack.
+
+## Landing page refinements
+
+Hero titles cap at 72px; section titles cap at 68px. Supporting hero text uses
+the body sans. The hero action is 40px tall; the bottom membership action is
+56px tall. Inline pills share the surrounding baseline and can wrap.
+
+The hero reuses the original newspaper physics: curl, flutter, collisions and
+mouse repulsion. Its default projection is a wide, irregular orbit. Clicking
+the paper area outside the copy or the Gather control adds a spin impulse and
+gathers the papers into the original covering ball. A second click releases
+them; Escape returns to the orbit. Page open/return resets to the wide
+orbit, and clicks on the copy do not gather it accidentally. Copy protection applies only in orbit
+mode. The partnership banner has no paper mask. Reduced-motion readers get
+a normal document with the animation control hidden.
+
+Tool pills reveal a single top-layer preview on hover or keyboard focus.
+Video introductions load on demand, play muted, have no player controls, and
+pause on dismissal. Reduced motion prevents automatic playback. Osaurus and
+OpenKnowledge use partner interface images. Image and video hovers share the
+same 460px-wide, 16:9 frame, with 16px corners. Images fill the frame without
+distortion or exposed letterboxed corners. Product screenshots also have 16px
+corners. No
+preview buttons appear under
+the capability cards.
+
+The public catalogue hides AI writing detox and tool connector skills, and
+places fact-checking first. It combines the installed journalism metadata with
+`catalog/featured-skills.json`. Installed skill cards credit Joe Amditis.
+Fact-checking credits Verso and Buried Signals and is explicitly a historical
+method reference, not a claim that the old Goose workflow ships in Osaurus.
+The installation manifest remains unchanged.
+
+Knowledge flows from the wiki, Spotlight and Scoutpost through the Analyst's
+proposed writes into connected notes. The Analyst is described as an on-device
+model; approval stays explicit. The diagram becomes vertical on phones.
+
+The Installer tab uses the supplied Indicator Lab screenshot, cropped to its
+top at 16:9. All three installer/partner image views use the same landscape
+frame. The installation section has a single, flat dark 3D background plane
+without additive grain or a second HTML layer, with a static
+CSS fallback when 3D is inactive. Asset provenance lives beside the images.
+
+The hero keeps the shortened copy in one flowing paragraph, with five inline
+linked pills and no authored line breaks. Their existing capsule shape and
+padding stay intact. Small monochrome product marks are derived from the
+existing partner wordmarks and bureau technology icons. Hover/focus fills the
+pill with ink, reverses its text and mark, adds a small lift, and opens the
+existing preview; reduced motion keeps the color change only.
+The knowledge diagram keeps its internal structure and a single section
+separator, without extra rules around its caption.
+
+The installer preview is a 2304×1296 native browser render of the supplied
+HTML design export. Footer acknowledgements cover partners, models, runtimes,
+Three.js; journalism authors remain credited on the skill cards.
+
+Installation actions use “Install with Indicator Lab” and link directly to
+`https://indicator.media/indicator-lab`. The compact header/footer labels stay
+“Install”. The longer hero label uses tighter tracking; the larger bottom
+action uses the body sans and can wrap on small screens.
+
+The Skills heading and introduction sit side by side from 980px. Its heading
+caps at 56px, with 18px sans-serif introduction copy; phones stack the two.
+
+All eight capability paper cards remain, with tighter padding, smaller numbers
+and gaps, and wider desktop sentences. Mobile cards reserve room for their tilt
+and drop lateral offsets. Installer tabs fit within the phone reading column.
+Below the hero, foreground newspapers stay outside the section reading column;
+the hero orbit/gather interaction and closing sphere retain their full motion.
+Functional secondary labels use at least 11px. Reference-only skill availability
+is a separate outlined badge rather than quiet catalogue metadata.

@@ -1,5 +1,10 @@
 # Indicator Lab runtime packs
 
+This is a release record, not the current installation manifest. Engine's
+signed catalogue selects the runtime-pack version for an installation. The
+download below remains available for that historical release; use
+[current setup instructions](../docs/install.md) to install Mycroft.
+
 Indicator Lab installs its local runtimes (Python with SearXNG, Crawl4AI and LiteParse, Playwright's Chromium, and Node.js with the Lab's command-line tools) from one runtime pack per operating system and processor. The app downloads the pack itself and checks it against the SHA-256 in its signed catalog, so nobody needs to download these files by hand.
 
 Each pack is published as a release of this repository, because a pack is too large to keep in git.

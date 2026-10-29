@@ -14,14 +14,14 @@ For landing bugs: attach a screenshot of index.html.
 -->
 
 **Environment**
-- macOS / Linux version:
+- macOS version (or browser and operating system for website issues):
 - Osaurus version: Osaurus › About
-- Mycroft commit: `(cd ~/.mycroft && git rev-parse --short HEAD)`
+- Mycroft version / commit, if known:
 - Agent: Mycroft / Spotlight / Analyst / Watson
 
 **Logs / output**
 ```
-<!-- Paste any terminal output, error messages, or failing recipe output here. Redact API keys. -->
+<!-- Paste relevant errors. Remove credentials, private notes and source identities. -->
 ```
 
 **Security-sensitive?**

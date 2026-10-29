@@ -1,51 +1,65 @@
 # Contributing to Mycroft
 
-Mycroft is a set of local agents and skills for investigative journalists, built on [Osaurus](https://osaurus.ai/) with an [OpenKnowledge](https://openknowledge.ai/) wiki. Contributions welcome: skills, agent instructions, documentation and bug fixes.
+Contributions can improve the website, agent instructions, skills or documentation.
+Read the [README](README.md) and the [Mycroft system instructions](instructions/osaurus-system.md)
+first. For visual changes, follow [DESIGN.md](DESIGN.md).
 
-## Before you start
-
-- Read [`README.md`](README.md) for the agents and the skills the Osaurus install ships.
-- Read [`instructions/osaurus-system.md`](instructions/osaurus-system.md) for the editorial rules every skill must respect.
-- Check open issues to avoid duplicate work.
-
-## Development setup
+## Preview the website
 
 ```sh
 git clone https://github.com/buriedsignals/mycroft.git
 cd mycroft
-python3 -m http.server 8765   # preview the landing page at http://127.0.0.1:8765/
-python3 tests/skills-index-check.py
+python3 -m http.server 8765
 ```
 
-No build step. The repo is static files: HTML, JSON, SVG and Markdown.
+Open `http://127.0.0.1:8765/`. The site is static HTML, JavaScript, CSS and media;
+there is no build or npm install step. The `analyst/package.json` belongs to
+the installed Analyst runtime, not the website.
 
-## Adding a skill
+## Change a skill
 
-1. Add `skills/<id>/SKILL.md` with `name` and a single-line `description` in its frontmatter, plus a `#` heading.
-2. Add the id to [`skills.manifest`](skills.manifest).
-3. Engine decides which skills the Osaurus install ships (`osaurusSkills` in Engine's Mycroft module), so add it there too.
-4. Run `python3 tests/skills-index-check.py`.
+1. Add `skills/<id>/SKILL.md` with `name` and a single-line `description` in its
+   frontmatter, plus a `#` heading. Preserve upstream attribution and licences.
+2. For an installed skill, add the id to [`skills.manifest`](skills.manifest)
+   and coordinate the matching `osaurusSkills` change in Engine's Mycroft module.
+   Osaurus-specific connector copies live in `skills/osaurus/` and use Engine's
+   `osaurusSkillOverrides` mapping.
+3. The public website filters out `navigator`, `scoutpost` and `ai-writing-detox`.
+   Website-only references belong in [`catalog/featured-skills.json`](catalog/featured-skills.json),
+   with an explicit status, source link and credits. A listing does not install a skill.
+4. Run the skills-index check below.
 
-## Commits
+Do not hand-edit signed catalogue content or its signature. Engine owns release
+pins, model selection and install plans. Contract edits under `install/contracts/`
+also require coordinated Engine validation and updated contract digests.
 
-Conventional style appreciated:
+## Checks
 
-- `feat(skills): add records-appeal skill`
-- `fix(setup): correct shell escape in vault-path echo`
-- `docs(architecture): clarify plugin install order`
+Run the checks relevant to your change; these are the website's CI checks:
 
-## PR checklist
+```sh
+python3 tests/skills-index-check.py
+bash tests/journalist-install-cta-check.sh
+bash tests/install-sh-check.sh
+node tests/feedback-widget-check.js
+```
 
-- [ ] `python3 tests/skills-index-check.py` passes
-- [ ] HTML and journalist CTAs validate (`bash tests/install-sh-check.sh && bash tests/journalist-install-cta-check.sh`)
-- [ ] No API keys, no PII, no secrets in the diff
-- [ ] `CHANGELOG.md` updated under `[Unreleased]` if user-visible
-- [ ] For plugin integration changes, [`docs/plugin-authoring.md`](docs/plugin-authoring.md) updated
+CI also parses `index.html` and catalogue/install-contract JSON. For layout
+changes, inspect desktop and phone widths, keyboard focus and reduced motion.
+Do not submit real feedback or newsletter forms as a test.
 
-## Code of Conduct
+## Pull requests
 
-This project follows the [Contributor Covenant](CODE_OF_CONDUCT.md). By participating, you agree to uphold it.
+Explain the user-visible change and what you checked. Include screenshots for
+layout changes, preserve source-protection rules, and update [CHANGELOG.md](CHANGELOG.md)
+for user-visible changes. Never include keys, private wiki content or confidential
+source identities. Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
-## License
+The [GitHub Pages workflow](.github/workflows/pages.yml) validates pull requests;
+a push to `main` validates and deploys the repository root to
+`https://mycroft.buriedsignals.com/`. Deployment does not publish a new Engine
+catalogue or update installed agents. After a site release, check the workflow
+and the changed production page.
 
-By contributing, you agree your work is licensed under the project's [MIT License](LICENSE).
+Contributions are covered by the [MIT licence](LICENSE) and
+[Code of Conduct](CODE_OF_CONDUCT.md).
