@@ -44,6 +44,19 @@ bash tests/install-sh-check.sh
 node tests/feedback-widget-check.js
 ```
 
+For scroll/rendering changes, run the browser regression check against the local
+preview server. It checks phone/tablet scrolling independently of animation
+frames, overflow, desktop paper controls, resizing and reduced motion:
+
+```sh
+npm install --prefix /tmp/mycroft-browser-qa playwright@1.58.2
+/tmp/mycroft-browser-qa/node_modules/.bin/playwright install chromium
+NODE_PATH=/tmp/mycroft-browser-qa/node_modules node tests/mobile-scroll-check.cjs
+```
+
+Set `SITE_URL` for another preview URL, or `CHROME_PATH` to use an existing
+Chrome executable. Screenshots are written to `/tmp/mycroft-*.png`.
+
 CI also parses `index.html` and catalogue/install-contract JSON. For layout
 changes, inspect desktop and phone widths, keyboard focus and reduced motion.
 Do not submit real feedback or newsletter forms as a test.

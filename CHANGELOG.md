@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 ## [Unreleased]
 
 ### Changed
+- Kept mobile content in native document flow so scrolling does not wait for
+  the 3D paper animation; stabilized viewport spacing and contained the hero glow.
 - Removed Navigator artifact delivery URLs from public setup documentation;
   kept self-managed source use separate from Lab-tier managed installation.
 - Rewrote the README and contributor guide for the current Osaurus installation,
