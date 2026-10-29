@@ -1,631 +1,34 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.1.9",
-  "released_at": "2026-10-29T08:10:45Z",
-  "release_sequence": 42,
+  "min_engine_version": "0.2.0",
+  "released_at": "2026-10-29T12:40:53Z",
+  "release_sequence": 43,
   "products": {
     "mycroft": {
-      "version": "0.3.11",
+      "version": "0.4.0",
       "repo": "buriedsignals/mycroft",
-      "ref": "17e485d848503fdf20817768aa9b106f9ffd873a",
+      "ref": "1951573352bf219b90c1ffe34c7809cf7e41bcc5",
       "source": {
-        "url": "https://github.com/buriedsignals/mycroft/archive/17e485d848503fdf20817768aa9b106f9ffd873a.tar.gz",
-        "sha256": "66172c7b1918de2a304bbab381969992625b913e76a27fe83b4482bf98147714",
-        "size_bytes": 1463624,
-        "prefix": "mycroft-17e485d848503fdf20817768aa9b106f9ffd873a"
+        "url": "https://github.com/buriedsignals/mycroft/archive/1951573352bf219b90c1ffe34c7809cf7e41bcc5.tar.gz",
+        "sha256": "e08033914a43e667ab776e97d052467505a362a65526228b239de66cc779c2f5",
+        "size_bytes": 1243246,
+        "prefix": "mycroft-1951573352bf219b90c1ffe34c7809cf7e41bcc5"
       },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "17e485d848503fdf20817768aa9b106f9ffd873a",
-        "digest": "557843a89c8458697cb5f6efe3cd902032b831b60fd90016ad68b6b15b24fe30",
+        "source_commit": "1951573352bf219b90c1ffe34c7809cf7e41bcc5",
+        "digest": "8a632c8bc4563b9b27d9a533a853b85285170edff95401dbadaf8ed317dc1477",
         "writer_mode": "engine_v2",
         "choice_schema": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://mycroft.buriedsignals.com/schemas/install-choices-v3.json",
-          "title": "Mycroft normalized install choices",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "schema_version",
-            "runtime",
-            "provider",
-            "knowledge",
-            "enable_schedules",
-            "integrations",
-            "acquisition"
-          ],
-          "properties": {
-            "schema_version": {
-              "const": "mycroft-install/v3"
-            },
-            "runtime": {
-              "const": "goose"
-            },
-            "provider": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "id",
-                "model"
-              ],
-              "properties": {
-                "id": {
-                  "enum": [
-                    "openrouter",
-                    "other-subscription",
-                    "local-9b",
-                    "local-27b"
-                  ]
-                },
-                "model": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              }
-            },
-            "knowledge": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "backend",
-                "workspace_path",
-                "project_mode",
-                "sync",
-                "semantic_search",
-                "legacy_read"
-              ],
-              "properties": {
-                "backend": {
-                  "enum": [
-                    "openknowledge"
-                  ]
-                },
-                "workspace_path": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 4096
-                },
-                "project_mode": {
-                  "enum": [
-                    "existing",
-                    "create"
-                  ]
-                },
-                "sync": {
-                  "enum": [
-                    "local_only",
-                    "private_git"
-                  ]
-                },
-                "semantic_search": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "enabled",
-                    "provider_mode",
-                    "base_url",
-                    "model",
-                    "dimensions",
-                    "allow_external_fallback"
-                  ],
-                  "properties": {
-                    "enabled": {
-                      "type": "boolean"
-                    },
-                    "provider_mode": {
-                      "enum": [
-                        "local_device",
-                        "newsroom_internal",
-                        "external_opt_in"
-                      ]
-                    },
-                    "base_url": {
-                      "type": "string"
-                    },
-                    "model": {
-                      "type": "string"
-                    },
-                    "model_digest": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "dimensions": {
-                      "type": "integer",
-                      "minimum": 1
-                    },
-                    "allow_external_fallback": {
-                      "const": false
-                    }
-                  }
-                },
-                "legacy_read": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "enabled",
-                    "routes"
-                  ],
-                  "properties": {
-                    "enabled": {
-                      "type": "boolean"
-                    },
-                    "routes": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "enable_schedules": {
-              "type": "boolean"
-            },
-            "integrations": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "spotlight",
-                "scoutpost"
-              ],
-              "properties": {
-                "spotlight": {
-                  "type": "boolean"
-                },
-                "scoutpost": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "acquisition": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "search",
-                "scrape",
-                "searxng",
-                "firecrawl"
-              ],
-              "properties": {
-                "search": {
-                  "enum": [
-                    "searxng",
-                    "firecrawl"
-                  ]
-                },
-                "scrape": {
-                  "enum": [
-                    "crawl4ai",
-                    "firecrawl"
-                  ]
-                },
-                "searxng": {
-                  "enum": [
-                    "disabled",
-                    "enabled"
-                  ]
-                },
-                "firecrawl": {
-                  "enum": [
-                    "disabled",
-                    "fallback"
-                  ]
-                }
-              }
-            }
-          }
+          "type": "object"
         },
         "config_schema": {
-          "$schema": "https://json-schema.org/draft/2020-12/schema",
-          "$id": "https://mycroft.buriedsignals.com/schemas/mycroft-config-v2.json",
-          "title": "Mycroft runtime configuration",
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "schema_version",
-            "product",
-            "paths",
-            "goose",
-            "provider",
-            "skills",
-            "vaults",
-            "acquisition",
-            "sovereignty",
-            "plugins"
-          ],
-          "properties": {
-            "schema_version": {
-              "const": "mycroft-config/v2"
-            },
-            "product": {
-              "const": "mycroft"
-            },
-            "paths": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "profile",
-                "data",
-                "source",
-                "plugins"
-              ],
-              "properties": {
-                "profile": {
-                  "type": "string"
-                },
-                "data": {
-                  "type": "string"
-                },
-                "source": {
-                  "type": "string"
-                },
-                "plugins": {
-                  "type": "string"
-                }
-              }
-            },
-            "goose": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "config_dir",
-                "custom_providers_dir",
-                "hints_file",
-                "recipe_path",
-                "instructions_file",
-                "soul_file",
-                "generated_recipes",
-                "schedules"
-              ],
-              "properties": {
-                "config_dir": {
-                  "type": "string"
-                },
-                "custom_providers_dir": {
-                  "type": "string"
-                },
-                "hints_file": {
-                  "type": "string"
-                },
-                "recipe_path": {
-                  "type": "string"
-                },
-                "instructions_file": {
-                  "type": "string"
-                },
-                "soul_file": {
-                  "type": "string"
-                },
-                "generated_recipes": {
-                  "type": "string"
-                },
-                "schedules": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "morning_brief",
-                    "wiki_audit"
-                  ],
-                  "properties": {
-                    "morning_brief": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "wiki_audit": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  }
-                }
-              }
-            },
-            "provider": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "id",
-                "model"
-              ],
-              "properties": {
-                "id": {
-                  "type": "string"
-                },
-                "model": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              }
-            },
-            "skills": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "registry",
-                "directory"
-              ],
-              "properties": {
-                "registry": {
-                  "type": "string"
-                },
-                "directory": {
-                  "type": "string"
-                }
-              }
-            },
-            "vaults": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "mycroft",
-                "spotlight",
-                "spotlight_ingest_target"
-              ],
-              "properties": {
-                "mycroft": {
-                  "type": "string"
-                },
-                "spotlight": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                },
-                "spotlight_ingest_target": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              }
-            },
-            "acquisition": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "search",
-                "scrape",
-                "firecrawl"
-              ],
-              "properties": {
-                "search": {
-                  "enum": [
-                    "searxng",
-                    "firecrawl"
-                  ]
-                },
-                "scrape": {
-                  "enum": [
-                    "crawl4ai",
-                    "firecrawl"
-                  ]
-                },
-                "firecrawl": {
-                  "enum": [
-                    "disabled",
-                    "fallback"
-                  ]
-                }
-              }
-            },
-            "sovereignty": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "local_only",
-                "local_model"
-              ],
-              "properties": {
-                "local_only": {
-                  "type": "boolean"
-                },
-                "local_model": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
-                }
-              }
-            },
-            "plugins": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "spotlight",
-                "scoutpost"
-              ],
-              "properties": {
-                "spotlight": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "enabled",
-                    "path",
-                    "inherits_mycroft_sovereignty"
-                  ],
-                  "properties": {
-                    "enabled": {
-                      "type": "boolean"
-                    },
-                    "path": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "inherits_mycroft_sovereignty": {
-                      "const": false
-                    }
-                  }
-                },
-                "scoutpost": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "enabled",
-                    "mode",
-                    "api_base"
-                  ],
-                  "properties": {
-                    "enabled": {
-                      "type": "boolean"
-                    },
-                    "mode": {
-                      "const": "hosted"
-                    },
-                    "api_base": {
-                      "const": "https://www.scoutpost.ai/api/v1"
-                    }
-                  }
-                }
-              }
-            }
-          }
+          "type": "object"
         },
         "template": {
-          "schema_version": "mycroft-template/v1",
-          "output_schema": "mycroft-config/v2",
-          "document": {
-            "schema_version": "mycroft-config/v2",
-            "product": "mycroft",
-            "paths": {
-              "profile": {
-                "$input": "paths.profile"
-              },
-              "data": {
-                "$input": "paths.data"
-              },
-              "source": {
-                "$input": "paths.source"
-              },
-              "plugins": {
-                "$input": "paths.plugins"
-              }
-            },
-            "goose": {
-              "config_dir": {
-                "$input": "goose.config_dir"
-              },
-              "custom_providers_dir": {
-                "$input": "goose.custom_providers_dir"
-              },
-              "hints_file": {
-                "$input": "goose.hints_file"
-              },
-              "recipe_path": {
-                "$input": "goose.recipe_path"
-              },
-              "instructions_file": {
-                "$input": "goose.instructions_file"
-              },
-              "soul_file": {
-                "$input": "goose.soul_file"
-              },
-              "generated_recipes": {
-                "$input": "goose.generated_recipes"
-              },
-              "schedules": {
-                "morning_brief": {
-                  "$input": "goose.schedules.morning_brief"
-                },
-                "wiki_audit": {
-                  "$input": "goose.schedules.wiki_audit"
-                }
-              }
-            },
-            "provider": {
-              "id": {
-                "$input": "provider.id"
-              },
-              "model": {
-                "$input": "provider.model"
-              }
-            },
-            "skills": {
-              "registry": {
-                "$input": "skills.registry"
-              },
-              "directory": {
-                "$input": "skills.directory"
-              }
-            },
-            "vaults": {
-              "mycroft": {
-                "$input": "vaults.mycroft"
-              },
-              "spotlight": {
-                "$input": "vaults.spotlight"
-              },
-              "spotlight_ingest_target": {
-                "$input": "vaults.spotlight_ingest_target"
-              }
-            },
-            "acquisition": {
-              "search": {
-                "$input": "acquisition.search"
-              },
-              "scrape": {
-                "$input": "acquisition.scrape"
-              },
-              "firecrawl": {
-                "$input": "acquisition.firecrawl"
-              }
-            },
-            "sovereignty": {
-              "local_only": {
-                "$input": "sovereignty.local_only"
-              },
-              "local_model": {
-                "$input": "sovereignty.local_model"
-              }
-            },
-            "plugins": {
-              "spotlight": {
-                "enabled": {
-                  "$input": "plugins.spotlight.enabled"
-                },
-                "path": {
-                  "$input": "plugins.spotlight.path"
-                },
-                "inherits_mycroft_sovereignty": false
-              },
-              "scoutpost": {
-                "enabled": {
-                  "$input": "plugins.scoutpost.enabled"
-                },
-                "mode": "hosted",
-                "api_base": "https://www.scoutpost.ai/api/v1"
-              }
-            }
-          }
+          "document": {}
         }
-      },
-      "legacy_choices": {
-        "cloud_model": [
-          "deepseek-v4-flash",
-          "deepseek-v4-pro",
-          "gemini-flash-lite",
-          "mistral-large"
-        ],
-        "local_model": [
-          "gemma4-26b-a4b"
-        ],
-        "provider": [
-          "opencode-go",
-          "openrouter",
-          "other-subscription"
-        ]
       }
     },
     "splash": {
@@ -714,234 +117,6 @@
       }
     },
     {
-      "id": "bsig-engine",
-      "name": "Indicator Engine",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/bsig-engine",
-      "requires_keys": [],
-      "version": "0.1.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "copywriting",
-      "name": "Copywriting",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/copywriting",
-      "requires_keys": [],
-      "version": "0.2.1",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "apify-social",
-      "name": "Apify social-media collection",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/apify-social",
-      "requires_keys": [
-        "APIFY_API_TOKEN"
-      ],
-      "version": "0.1.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "fact-check",
-      "name": "Fact-check",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/fact-check",
-      "requires_keys": [],
-      "version": "0.2.1",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "perspective-audit",
-      "name": "Perspective audit",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/perspective-audit",
-      "requires_keys": [],
-      "version": "0.1.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "web-acquisition",
-      "name": "Web acquisition (SearXNG + Crawl4AI)",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/web-acquisition",
-      "requires_keys": [],
-      "version": "0.3.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "knowledge-primitives",
-      "name": "Knowledge primitives",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/knowledge-primitives",
-      "requires_keys": [],
-      "version": "0.2.2",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "knowledge-workspace",
-      "name": "Knowledge Workspace",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/knowledge-workspace",
-      "requires_keys": [],
-      "version": "0.1.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "mycroft-maintenance",
-      "name": "Mycroft maintenance",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/mycroft-maintenance",
-      "requires_keys": [],
-      "version": "0.2.1",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "knowledge-ingest",
-      "name": "Knowledge ingest",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/knowledge-ingest",
-      "requires_keys": [],
-      "version": "0.3.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
-      "id": "scoutpost",
-      "name": "Scoutpost monitoring",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/scoutpost",
-      "requires_keys": [
-        "SCOUTPOST_API_KEY"
-      ],
-      "version": "0.2.1",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable"
-    },
-    {
       "id": "epistemic-grounding",
       "name": "Epistemic grounding",
       "audience": [
@@ -953,7 +128,6 @@
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
-        "mycroft",
         "spotlight"
       ],
       "essential": false,
@@ -976,7 +150,6 @@
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
-        "mycroft",
         "spotlight"
       ],
       "essential": false,
@@ -1002,29 +175,6 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
-      ],
-      "content_repo": "buriedsignals/spotlight",
-      "kind": "coupled"
-    },
-    {
-      "id": "osint",
-      "name": "OSINT toolkit",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/osint",
-      "requires_keys": [],
-      "version": "2.0.0",
-      "products": [
-        "mycroft",
-        "spotlight"
-      ],
-      "essential": false,
-      "runtimes": [
         "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
@@ -1042,28 +192,6 @@
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
-        "spotlight"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/spotlight",
-      "kind": "coupled"
-    },
-    {
-      "id": "follow-the-money",
-      "name": "Follow the money",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/follow-the-money",
-      "requires_keys": [],
-      "version": "2.0.0",
-      "products": [
-        "mycroft",
         "spotlight"
       ],
       "essential": false,
@@ -1089,28 +217,6 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/spotlight",
-      "kind": "coupled"
-    },
-    {
-      "id": "web-archiving",
-      "name": "Web archiving",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/web-archiving",
-      "requires_keys": [],
-      "version": "2.1.0",
-      "products": [
-        "mycroft",
-        "spotlight"
-      ],
-      "essential": false,
-      "runtimes": [
         "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
@@ -1132,7 +238,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1149,40 +255,11 @@
       "requires_keys": [],
       "version": "2.0.0",
       "products": [
-        "mycroft",
         "spotlight"
       ],
       "essential": false,
       "runtimes": [
         "spotlight"
-      ],
-      "content_repo": "buriedsignals/spotlight",
-      "kind": "coupled",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "research-toolkit/skills/content-access",
-        "license": "MIT",
-        "author": "Joe Amditis"
-      }
-    },
-    {
-      "id": "content-access",
-      "name": "Content access",
-      "audience": [
-        "journalist",
-        "researcher"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/content-access",
-      "requires_keys": [],
-      "version": "2.0.0",
-      "products": [
-        "spotlight"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled",
@@ -1211,8 +288,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1232,8 +308,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1253,8 +328,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1274,8 +348,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1295,8 +368,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1316,8 +388,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1337,8 +408,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1358,8 +428,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "coupled"
@@ -1379,8 +448,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1400,8 +468,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1421,8 +488,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1442,8 +508,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
@@ -1470,8 +535,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1491,8 +555,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1512,8 +575,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1533,8 +595,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1554,8 +615,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable"
@@ -1576,8 +636,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "spotlight",
-        "goose"
+        "spotlight"
       ],
       "content_repo": "buriedsignals/spotlight",
       "kind": "portable",
@@ -1587,141 +646,6 @@
         "path": "techniques",
         "license": "MIT with Ethical Use Addendum",
         "author": "Hieu Ngo / chongluadao.vn"
-      }
-    },
-    {
-      "id": "foia-requests",
-      "name": "FOIA requests",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/foia-requests",
-      "requires_keys": [],
-      "version": "1.2.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "journalism-core/skills/foia-requests",
-        "license": "MIT",
-        "author": "Joe Amditis"
-      }
-    },
-    {
-      "id": "interview-prep",
-      "name": "Interview prep",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/interview-prep",
-      "requires_keys": [],
-      "version": "1.2.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "journalism-core/skills/interview-prep",
-        "license": "MIT",
-        "author": "Joe Amditis"
-      }
-    },
-    {
-      "id": "story-pitch",
-      "name": "Story pitch",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/story-pitch",
-      "requires_keys": [],
-      "version": "1.2.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "journalism-core/skills/story-pitch",
-        "license": "MIT",
-        "author": "Joe Amditis"
-      }
-    },
-    {
-      "id": "photo-metadata",
-      "name": "Photo metadata",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/photo-metadata",
-      "requires_keys": [],
-      "version": "1.2.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "journalism-core/skills/photo-metadata",
-        "license": "MIT",
-        "author": "Joe Amditis"
-      }
-    },
-    {
-      "id": "ai-writing-detox",
-      "name": "AI writing detox",
-      "audience": [
-        "journalist"
-      ],
-      "entitlement": "mycroft.core",
-      "path": "skills/ai-writing-detox",
-      "requires_keys": [],
-      "version": "1.2.0",
-      "products": [
-        "mycroft"
-      ],
-      "essential": false,
-      "runtimes": [
-        "goose"
-      ],
-      "content_repo": "buriedsignals/mycroft",
-      "kind": "portable",
-      "upstream": {
-        "repo": "jamditis/claude-skills-journalism",
-        "ref": "2097d218c6f38a8e7be77ce5f0ff6c2e39671f13",
-        "path": "journalism-core/skills/ai-writing-detox",
-        "license": "MIT",
-        "author": "Joe Amditis"
       }
     },
     {
@@ -1739,7 +663,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1759,7 +683,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1779,7 +703,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1799,7 +723,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1819,7 +743,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1839,7 +763,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1859,7 +783,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1879,7 +803,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1899,7 +823,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1919,7 +843,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1939,7 +863,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1959,7 +883,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1979,7 +903,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -1999,7 +923,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -2019,7 +943,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -2039,7 +963,7 @@
       ],
       "essential": false,
       "runtimes": [
-        "goose"
+        "any"
       ],
       "content_repo": "buriedsignals/splash",
       "kind": "portable"
@@ -2047,24 +971,9 @@
   ],
   "artifacts": [
     {
-      "id": "goose-desktop-windows-amd64",
-      "url": "https://github.com/aaif-goose/goose/releases/download/v1.50.0/Goose-win32-x64.zip",
-      "sha256": "26a30ee0239ff6e86a0581da9f2c76bf24f06c8fac946f2fc70223c3f6ca3623"
-    },
-    {
-      "id": "goose-desktop-darwin-arm64",
-      "url": "https://github.com/aaif-goose/goose/releases/download/v1.50.0/Goose.zip",
-      "sha256": "a0e738e94b24d45101aedbc8081196ac9ae60df377c5dc909f526b2c47b06176"
-    },
-    {
       "id": "homebrew-pkg",
       "url": "https://github.com/Homebrew/brew/releases/download/6.0.16/Homebrew.pkg",
       "sha256": "37c043dec2741810d2516666f00afebdeca304c63fa2f9cc1241d3dbed675b0f"
-    },
-    {
-      "id": "gemma4-26b-a4b-q4km",
-      "url": "https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF/resolve/c462057f7ed65ccdb7f7e0778fae67894d425d92/gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
-      "sha256": "34c746b1d50ab813e29cd46c4796e3f43c741901a582f93a67b55b9fc9687b35"
     },
     {
       "id": "spotlight-gemma4-12b-q4km",
@@ -2119,12 +1028,6 @@
       "size_bytes": 554821024
     },
     {
-      "id": "gemma4-12b-qat-q4_0",
-      "url": "https://huggingface.co/google/gemma-4-12B-it-qat-q4_0-gguf/resolve/29d097773436b69ff9feafd636ab4cf873786537/gemma-4-12b-it-qat-q4_0.gguf",
-      "sha256": "93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b",
-      "size_bytes": 6975879296
-    },
-    {
       "id": "dev-browser-0.2.8-darwin-arm64",
       "url": "https://github.com/SawyerHood/dev-browser/releases/download/v0.2.8/dev-browser-darwin-arm64",
       "sha256": "cea00c638e2d4c37576051e1b06f355b355230975c3d619e0547b1d0e57f81e7",
@@ -2174,212 +1077,7 @@
       "files_sha256": "7eec4763a1fd38e942c6defa77f7cd85fe41ccdb99ecaba03fc645fb7cd8ee91"
     }
   ],
-  "providers": [
-    {
-      "id": "opencode-go",
-      "display": "OpenCode Go",
-      "base_url": "https://opencode.ai/zen/go/v1",
-      "api": "openai-chat",
-      "secret_id": "OPENCODE_API_KEY",
-      "products": [
-        "mycroft"
-      ],
-      "adapters": [
-        "goose",
-        "pi"
-      ],
-      "privacy": {
-        "tier": "confidential-cloud",
-        "enforcement": "provider-stated",
-        "disclosure": "Prompts leave this device. OpenCode states zero retention and no training; service metadata and networked tools remain outside this inference claim.",
-        "source_url": "https://opencode.ai/docs/go/",
-        "verified_at": "2026-07-17"
-      }
-    },
-    {
-      "id": "openrouter",
-      "display": "OpenRouter — zero data retention",
-      "base_url": "https://openrouter.ai/api/v1",
-      "api": "openai-chat",
-      "secret_id": "OPENROUTER_API_KEY",
-      "products": [
-        "mycroft"
-      ],
-      "adapters": [
-        "goose",
-        "pi"
-      ],
-      "privacy": {
-        "tier": "confidential-cloud",
-        "enforcement": "request-enforced",
-        "disclosure": "Prompts leave this device. Every request carries provider.zdr=true, data_collection=deny and provider.only=[mistral, google-vertex, google-ai-studio], so OpenRouter routes Mistral models only to Mistral SAS in France and Gemini only to Google, and only to endpoints that do not retain prompts; a provider that cannot retain data also cannot train on it. Routing, host and retention are enforced per request; OpenRouter itself (New York) relays the request without storing it; third-party plugins such as web search have their own policies and are outside this claim.",
-        "source_url": "https://openrouter.ai/docs/guides/features/zdr",
-        "verified_at": "2026-09-14"
-      },
-      "request_body": {
-        "provider": {
-          "data_collection": "deny",
-          "only": [
-            "mistral",
-            "google-vertex",
-            "google-ai-studio"
-          ],
-          "zdr": true
-        }
-      }
-    }
-  ],
-  "cloud_models": [
-    {
-      "id": "mistral-large",
-      "display": "Mistral Large — France",
-      "products": [
-        "mycroft"
-      ],
-      "context_tokens": 262144,
-      "recommendation": "default",
-      "routes": [
-        {
-          "provider_id": "openrouter",
-          "remote_id": "mistralai/mistral-large-2512",
-          "adapters": [
-            "goose"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 0.5,
-            "output": 1.5,
-            "cached_read": 0.05,
-            "snapshot_date": "2026-09-03",
-            "source_url": "https://openrouter.ai/api/v1/models"
-          }
-        }
-      ]
-    },
-    {
-      "id": "gemini-flash-lite",
-      "display": "Gemini 3.5 Flash Lite — United States",
-      "products": [
-        "mycroft"
-      ],
-      "context_tokens": 1048576,
-      "recommendation": "candidate",
-      "routes": [
-        {
-          "provider_id": "openrouter",
-          "remote_id": "google/gemini-3.5-flash-lite",
-          "adapters": [
-            "goose"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 0.3,
-            "output": 2.5,
-            "cached_read": 0.03,
-            "snapshot_date": "2026-09-11",
-            "source_url": "https://openrouter.ai/api/v1/models"
-          }
-        }
-      ]
-    },
-    {
-      "id": "deepseek-v4-flash",
-      "display": "DeepSeek V4 Flash",
-      "products": [
-        "mycroft"
-      ],
-      "recommendation": "candidate",
-      "routes": [
-        {
-          "provider_id": "opencode-go",
-          "remote_id": "deepseek-v4-flash",
-          "adapters": [
-            "goose",
-            "pi"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 0.14,
-            "output": 0.28,
-            "cached_read": 0.0028,
-            "snapshot_date": "2026-07-17",
-            "source_url": "https://opencode.ai/docs/go/"
-          }
-        }
-      ]
-    },
-    {
-      "id": "deepseek-v4-pro",
-      "display": "DeepSeek V4 Pro",
-      "products": [
-        "mycroft"
-      ],
-      "recommendation": "advanced",
-      "routes": [
-        {
-          "provider_id": "opencode-go",
-          "remote_id": "deepseek-v4-pro",
-          "adapters": [
-            "goose",
-            "pi"
-          ],
-          "pricing": {
-            "currency": "USD",
-            "unit": "per_million_tokens",
-            "input": 1.74,
-            "output": 3.48,
-            "cached_read": 0.0145,
-            "snapshot_date": "2026-07-17",
-            "source_url": "https://opencode.ai/docs/go/"
-          }
-        }
-      ]
-    }
-  ],
   "models": [
-    {
-      "id": "gemma4-26b-a4b",
-      "display": "Gemma 4 26B-A4B MoE",
-      "hf_repo": "",
-      "ollama_tag": "",
-      "ollama_alias": "",
-      "quant": "",
-      "min_ram_gb": 32,
-      "tier": "local-26b",
-      "stop_tokens": null,
-      "backend": "llamacpp",
-      "artifact_id": "gemma4-26b-a4b-q4km",
-      "filename": "gemma-4-26B-A4B-it-UD-Q4_K_M.gguf",
-      "products": [
-        "mycroft"
-      ],
-      "context_tokens": 40960,
-      "recommendation": "default"
-    },
-    {
-      "id": "gemma4-12b-qat",
-      "display": "Gemma 4 12B QAT",
-      "hf_repo": "",
-      "ollama_tag": "",
-      "ollama_alias": "",
-      "quant": "",
-      "min_ram_gb": 24,
-      "tier": "local-12b",
-      "stop_tokens": null,
-      "backend": "llamacpp",
-      "artifact_id": "gemma4-12b-qat-q4_0",
-      "filename": "gemma-4-12b-it-qat-q4_0.gguf",
-      "products": [
-        "mycroft"
-      ],
-      "context_tokens": 40960,
-      "recommendation": "advanced",
-      "experimental": true,
-      "disclaimer": "Experimental — Still being evaluated for Mycroft. Responses may be slow or unreliable. Operation on 24 GB Macs has not yet been validated."
-    },
     {
       "id": "spotlight-gemma4-12b",
       "display": "Gemma 4 12B — Spotlight tuned",
