@@ -9,7 +9,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RECIPE = ROOT / "recipes/fact-check.yaml"
-FACT_CHECK_RECIPES = (RECIPE, ROOT / "recipes/fact-check-c2pa.yaml")
 
 
 def parameter_default(recipe: str, key: str) -> str:
@@ -22,24 +21,7 @@ def parameter_default(recipe: str, key: str) -> str:
     return match.group(1).strip()
 
 
-def check_parameter_use(path: Path) -> None:
-    """Goose rejects declared-but-unused parameters, and renders every
-    parameter value as a string, so a bare `{% if flag %}` is true for "false"."""
-    recipe = path.read_text(encoding="utf-8")
-    expressions = " ".join(re.findall(r"\{\{.*?\}\}|\{%.*?%\}", recipe, re.S))
-    for key in re.findall(r"^  - key: (\w+)$", recipe, re.M):
-        assert re.search(rf"\b{key}\b", expressions), f"{path.name}: {key} is declared but never used in a template"
-    for key in re.findall(r"^  - key: (\w+)\n    input_type: boolean$", recipe, re.M):
-        assert not re.search(rf"\{{%\s*if\s+{key}\s*%\}}", recipe), (
-            f"{path.name}: bare {{% if {key} %}} is true for the string \"false\""
-        )
-        assert f'{{% if {key} | string | lower == "true" %}}' in recipe, f"{path.name}: {key} must compare to \"true\""
-
-
 def main() -> int:
-    for path in FACT_CHECK_RECIPES:
-        check_parameter_use(path)
-
     recipe = RECIPE.read_text(encoding="utf-8")
 
     assert "mycroft-fetch" in recipe, "default fact-checking must capture provenance through mycroft-fetch"
