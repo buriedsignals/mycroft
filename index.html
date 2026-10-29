@@ -834,6 +834,15 @@ main,
   background: radial-gradient(ellipse, var(--vellum) 46%, transparent 74%);
   transition: opacity 700ms var(--ease);
 }
+@media (max-width: 767px), (pointer: coarse) {
+  /* Keep the decorative glow inside the phone's reading column. */
+  .hero__bottom::before { left: 0; right: 0; }
+  :root {
+    --sp-section-y: clamp(64px, 9svh, 104px);
+    --sp-section-yb: clamp(56px, 7svh, 88px);
+  }
+  .sec--hero { padding-block: clamp(24px, 4svh, 56px); }
+}
 .sec--hero[data-paper-mode="ball"] .hero__bottom::before { opacity: 0; }
 .hero__play { position: absolute; left: 0; bottom: 8px; min-height: 40px; color: var(--ink-soft); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
 .hero__play[hidden] { display: none; }
@@ -8149,9 +8158,9 @@ function boot() {
     alpha: true,
     antialias: true,
   });
-  const rendererHTML = new CSS3DRenderer();
+  const rendererHTML = IS_MOBILE ? null : new CSS3DRenderer();
   // Keyboard focus must scroll the document, never the fixed renderer.
-  rendererHTML.domElement.style.overflow = "clip";
+  if (rendererHTML) rendererHTML.domElement.style.overflow = "clip";
   const rendererFront = new THREE.WebGLRenderer({
     alpha: true,
     antialias: true,
@@ -8171,7 +8180,7 @@ function boot() {
       z: 1,
       interactive: false,
     },
-    { id: "layer-html", dom: rendererHTML.domElement, z: 2, interactive: true },
+    ...(rendererHTML ? [{ id: "layer-html", dom: rendererHTML.domElement, z: 2, interactive: true }] : []),
     {
       id: "layer-front",
       dom: rendererFront.domElement,
@@ -8196,28 +8205,31 @@ function boot() {
   }
   // CSS3DRenderer's inner cameraElement hard-codes pointer-events:none —
   // that breaks text selection. Patch it back to auto.
-  const cameraEl = rendererHTML.domElement.firstElementChild;
+  const cameraEl = rendererHTML?.domElement.firstElementChild;
   if (cameraEl) {
     cameraEl.style.pointerEvents = "auto";
     cameraEl.style.userSelect = "text";
     cameraEl.style.webkitUserSelect = "text";
   }
 
-  /* ── 4. lift the HTML page into a CSS3DObject ────────────────── */
-  pageEl.style.pointerEvents = "auto";
-  pageEl.style.width = pageWidth + "px";
-  pageEl.style.willChange = "transform";
-
-  const pageObject = new CSS3DObject(pageEl);
-  pageObject.position.set(0, -pageHeight / 2, 0);
-  sceneHTML.add(pageObject);
-
-  // CSS3DObject constructor sets userSelect:'none' inline; override.
-  pageEl.style.userSelect = "text";
-  pageEl.style.webkitUserSelect = "text";
-
-  document.documentElement.classList.add("is-3d-lifted");
-  sentinel.style.height = pageHeight + "px";
+  /* ── 4. keep phone content in native document flow ─────────── */
+  // The browser scrolls phone text independently of animation/physics frames.
+  // Only desktop content rides the CSS3D camera; both keep the paper scenes.
+  let pageObject = null;
+  if (rendererHTML) {
+    pageEl.style.pointerEvents = "auto";
+    pageEl.style.width = pageWidth + "px";
+    pageEl.style.willChange = "transform";
+    pageObject = new CSS3DObject(pageEl);
+    pageObject.position.set(0, -pageHeight / 2, 0);
+    sceneHTML.add(pageObject);
+    pageEl.style.userSelect = "text";
+    pageEl.style.webkitUserSelect = "text";
+    document.documentElement.classList.add("is-3d-lifted");
+    sentinel.style.height = pageHeight + "px";
+  } else {
+    pageEl.style.zIndex = "2";
+  }
 
   /* ── 5. section bg planes (vellum, with PIGMENT on .sec--dark) ── */
   const VELLUM = new THREE.Color("#e8e0cf");
@@ -8546,18 +8558,20 @@ function boot() {
   function onResize() {
     viewportW = window.innerWidth;
     viewportH = window.innerHeight;
-    pageEl.style.width = viewportW + "px";
+    if (pageObject) pageEl.style.width = viewportW + "px";
     camera.aspect = viewportW / viewportH;
     camera.position.z = cameraDistanceFor(viewportH);
     camera.updateProjectionMatrix();
 
     rendererBack.setSize(viewportW, viewportH);
-    rendererHTML.setSize(viewportW, viewportH);
+    rendererHTML?.setSize(viewportW, viewportH);
     rendererFront.setSize(viewportW, viewportH);
 
     const newH = pageEl.offsetHeight || pageHeight;
-    sentinel.style.height = newH + "px";
-    pageObject.position.y = -newH / 2;
+    if (pageObject) {
+      sentinel.style.height = newH + "px";
+      pageObject.position.y = -newH / 2;
+    }
     syncBgMeshes();
     for (const a of anchors) {
       const cy = a.el.offsetTop + a.el.offsetHeight / 2;
@@ -8572,7 +8586,7 @@ function boot() {
   // The fetched catalogue, partner images and tabs change the page height.
   new ResizeObserver(onResize).observe(pageEl);
   rendererBack.setSize(viewportW, viewportH);
-  rendererHTML.setSize(viewportW, viewportH);
+  rendererHTML?.setSize(viewportW, viewportH);
   rendererFront.setSize(viewportW, viewportH);
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(() => onResize());
@@ -8637,7 +8651,7 @@ function boot() {
     for (const s of scenes) s.update(t, dt);
 
     rendererBack.render(sceneBack, camera);
-    rendererHTML.render(sceneHTML, camera);
+    rendererHTML?.render(sceneHTML, camera);
     rendererFront.render(sceneFront, camera);
     clipFrontLayer();
 
