@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Mycroft Vellum
-description: Editorial design system for Mycroft — a Goose extension pack for investigative journalists. Parchment canvas, pigment ink, copper-oxide accent.
+description: Editorial design system for Mycroft — local agents for investigative journalists, built on Osaurus. Parchment canvas, pigment ink, copper-oxide accent.
 
 colors:
   # surface
@@ -163,7 +163,7 @@ components:
 
 # Mycroft Vellum
 
-A design system for Mycroft, a Goose extension pack configured for investigative journalism. It treats the screen like a printed manuscript: warm parchment ground, dense pigment headlines, copper-oxide accents reserved for action. Editorial restraint over decoration. Calm, archival, evidence-first.
+A design system for Mycroft, local agents for investigative journalism built on Osaurus. It treats the screen like a printed manuscript: warm parchment ground, dense pigment headlines, copper-oxide accents reserved for action. Editorial restraint over decoration. Calm, archival, evidence-first.
 
 ## Overview
 

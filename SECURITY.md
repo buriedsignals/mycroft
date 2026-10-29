@@ -28,14 +28,14 @@ In-scope:
 
 - The landing page (`index.html`)
 - Indicator Labs / Engine key collection for Mycroft secrets
-- Recipes, skills, and the local Goose projection
+- Skills, agent instructions, and the Osaurus bundle
 - Recipe YAML files and any executable paths they invoke
 - Provider configuration JSONs
 - Anything under `tools/`, `extensions/`, `scripts/`
 
 Out-of-scope (report upstream):
 
-- Goose itself — https://github.com/aaif-goose/goose/security
+- Osaurus itself — https://github.com/osaurus-ai/osaurus/security
 - Firecrawl, Apify, AgentMail, Fireworks, Together, OpenRouter — their own disclosure channels
 - User-provided API keys handling on cloud provider sides
 

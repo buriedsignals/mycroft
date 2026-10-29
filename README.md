@@ -2,15 +2,13 @@
 
 # Mycroft
 
-### Goose extension pack for investigative journalists
+### Local agents for investigative journalists and investigators, built on Osaurus
 
-**Newsroom memory, recurring editorial workflows, and source-grounded fact-checking — 19 skills, open-weight and local-capable, ZDR cloud optional.**
+**Mycroft runs on your Mac inside [Osaurus](https://osaurus.ai/) and keeps what you know in an [OpenKnowledge](https://openknowledge.ai/) wiki. It plans with Navigator, investigates with Spotlight and monitors with Scoutpost.**
 
-[Install](#install) | [First Run](#first-run) | [Core Workflows](#core-workflows) | [Skills](#skills) | [Recipes](#shipping-recipes) | [Website](https://mycroft.buriedsignals.com/)
+[Website](https://mycroft.buriedsignals.com/) | [Install](#install) | [Agents](#agents) | [Skills](#skills)
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![19 Skills](https://img.shields.io/badge/skills-19-0080ff?style=for-the-badge&logo=bookstack&logoColor=white)](https://github.com/buriedsignals/mycroft/tree/main/skills)[![Privacy](https://img.shields.io/badge/privacy-local_or_ZDR_cloud-00bfa5?style=for-the-badge&logo=shield&logoColor=white)](#privacy-and-providers)
-
-[![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)
 
 Built by [**Buried Signals**](https://buriedsignals.com/) • [tom@buriedsignals.com](mailto:tom@buriedsignals.com)
 
@@ -18,136 +16,41 @@ Built by [**Buried Signals**](https://buriedsignals.com/) • [tom@buriedsignals
 
 ---
 
-Mycroft is a Goose extension pack for newsroom memory, recurring editorial
-workflows, source-grounded fact-checking, and connections to the rest of the
-Buried Signals suite.
+Mycroft is a set of agents, skills and models that Indicator Lab installs into
+[Osaurus](https://osaurus.ai/), the local AI app for Mac. Our partners are
+Osaurus, which runs the agents and the on-device models, and
+[OpenKnowledge](https://openknowledge.ai/), which holds the wiki.
 
-It gives an investigative journalist a durable local OpenKnowledge wiki, a set
-of Goose recipes for common reporting work, and a privacy-conscious provider
-setup that can run with ZDR cloud models or local inference.
+## Agents
 
-## What Mycroft Does
-
-- Maintains an OpenKnowledge journalism wiki for sources, notes, methods,
-  story material, and promoted Spotlight findings.
-- Ingests links, PDFs, newsletters, pasted notes, documents, and folders into
-  structured local knowledge.
-- Answers questions over that wiki with citations.
-- Runs SIFT-style source checks and draft fact-checks.
-- Produces morning briefs and recurring wiki audits.
-- Helps set up beats, watchlists, source-monitoring profiles, and story
-  triggers.
-- Connects to Scoutpost monitoring and Spotlight investigations when those
-  sibling products are installed.
-- Keeps provider and workspace configuration local to the user's machine.
-
-## Core Workflows
-
-| Workflow | What it does | Main recipe |
+| Agent | Where it runs | What it does |
 |---|---|---|
-| Start | First-run menu for beats, knowledge ingest, morning brief, scouts, lead investigation, or demo flow. | `start` |
-| Wiki Q&A | Answers questions over local newsroom memory and live sources with citations. | `wiki-qa` |
-| Knowledge ingest | Turns links, notes, files, PDFs, folders, and newsletters into structured knowledge. | `wiki-sync`, `newsletter-summarize` |
-| Fact-check | Checks article drafts or claims with SIFT-style verdicts and optional provenance packaging. | `fact-check` |
-| Perspective audit | Traces observed viewpoints from source passages through summaries and an optional draft. | `perspective-audit` |
-| Source verification | Evaluates a single source's credibility and evidence value. | `source-verify` |
-| Morning brief | Builds a cited digest from the selected web/RSS sources, wiki material and approved newsletter senders. | `morning-brief` |
-| Wiki audit | Finds weak claims, missing frontmatter, orphaned sources, and stale promoted Spotlight findings. | `wiki-audit` |
-| Browser acquisition | Opens a journalist-controlled browser session for portals, forms, downloads, and authenticated source capture. | `dev-browser` |
-| Scoutpost | Sets up or queries hosted monitoring scouts and information units. | `scoutpost` skill |
-| Spotlight case | Reads an existing Spotlight case read-only, or launches Spotlight for a new lead (Spotlight owns the brief gate). | `spotlight-case` |
+| Mycroft | Osaurus, on-device (Gemma 4 12B) | Searches your wiki, finds OSINT methods with Navigator, sets up and reads Scoutpost monitors, and pulls fields from documents with an on-device extraction model (NuExtract3). |
+| Spotlight | Osaurus, on-device | Runs a full investigation locally, with your approval on the method and the report. |
+| Analyst (pilot) | OpenKnowledge's Agents panel, on-device | Files what Spotlight and Scoutpost find into your wiki. Every write is a proposal you confirm. |
+| Watson | Cloud, only when you choose it | Web research through OpenRouter, routed only to Mistral's EU endpoints with zero data retention. It never sees your wiki. |
 
-## Mycroft, Spotlight, Scoutpost
+Navigator and Scoutpost are hosted services. Osaurus asks before any call that
+sends your text to them.
 
-These are **sibling products**. Indicator Lab can install several of them on one
-machine; Mycroft does **not** install Spotlight (or Scoutpost) for you.
-
-- **Mycroft** — durable knowledge and publishing support: source records, wiki
-  notes, claim checks, methods, story pitches, drafts, briefings.
-- **Spotlight** — active OSINT casework: briefs, methodology, research cycles,
-  evidence, review, exports. Own installer, own workspace, own update path —
-  including its own brief approval gate.
-- **Scoutpost** — hosted monitoring: page/beat/social scouts and alerts.
-
-When both Mycroft and Spotlight are present, Mycroft records Spotlight’s paths
-so it can (1) launch Spotlight with a lead and let Spotlight brief the case, or
-(2) read an existing case read-only without copying live files into the wiki
-(`spotlight-case`). Material you choose to keep long-term can be promoted into
-Mycroft under `handoff/from-spotlight/`.
-
-Typical loop: Scoutpost surfaces leads → Spotlight investigates → Mycroft keeps
-the durable notes and supports publication.
-
-## First Run
-
-When the installer finishes it opens a personalized getting-started guide in
-the browser — example prompts and first workflows, written to
-`~/.config/goose/mycroft/getting-started.html`. Mycroft also
-opens Goose and writes `START_HERE.md` into the wiki. The first-run menu
-offers:
-
-- Set up my beat.
-- Add material to my knowledge base.
-- Create my morning brief.
-- Investigate a lead.
-- Set up scouts.
-- Show me a demo workflow.
-
-If the wiki is empty and the journalist already has material, start with
-knowledge ingest. If the journalist already knows the beat, start with the
-morning brief preflight. If the lead needs active OSINT work and Spotlight is
-installed, launch Spotlight (`spotlight-case` with action `launch`) and let it
-run its brief gate.
-
-See [docs/first-run.md](docs/first-run.md).
-
-## OpenKnowledge wiki
-
-Mycroft’s durable memory is an OpenKnowledge workspace. Default location:
-`~/Documents/OpenKnowledge/Mycroft`.
-
-```text
-_schema/
-sources/raw/
-sources/processed/
-wiki/
-stories/
-context/
-handoff/from-spotlight/
-_audits/
-```
-
-Spotlight uses a **separate** workspace / case root for active investigations.
-Mycroft never mixes live case state into its wiki; it only reads cases
-read-only (`spotlight-case`), and only keeps what you promote under
-`handoff/from-spotlight/`.
+The agents' instructions live in [`instructions/`](instructions/):
+[`osaurus-system.md`](instructions/osaurus-system.md) for Mycroft and
+[`analyst-system.md`](instructions/analyst-system.md) for the Analyst.
+[`analyst/`](analyst/) pins the Pi runtime the Analyst runs on.
 
 ## Skills
 
-Shipped skill set is the engine-resolved list in
-[`skills.manifest`](skills.manifest) (19 skills):
+[`skills.manifest`](skills.manifest) lists the skills the Osaurus install ships.
+Each becomes a slash command on Mycroft.
 
 | Skill | Role |
 |---|---|
-| `ai-writing-detox` | Strip AI-sounding patterns from drafts |
-| `apify-social` | Social collection through Apify actors (per-platform recipes, REST fallback) |
-| `bsig-engine` | Talk to the Buried Signals Engine / Indicator Labs stack |
-| `copywriting` | Editorial copy help |
-| `epistemic-grounding` | Confidence, sourcing, and claim discipline |
-| `fact-check` | SIFT-style claim checking |
+| `navigator` | Find OSINT tools and methods with Navigator ([`skills/osaurus/navigator`](skills/osaurus/navigator)) |
+| `scoutpost` | Turn research into page and social monitors and read what they find ([`skills/osaurus/scoutpost`](skills/osaurus/scoutpost)) |
 | `foia-requests` | Public-records request drafting and tracking |
-| `interview-prep` | Dossiers, question frames, attribution rules |
-| `knowledge-ingest` | Bring material into the wiki |
-| `knowledge-primitives` | Note types, frontmatter, link structure |
-| `knowledge-workspace` | OpenKnowledge as the primary wiki interface |
-| `mycroft-maintenance` | Doctor, update, and repair helpers |
-| `navigator` | OSINT Navigator connection (membership unlocks) |
-| `perspective-audit` | Trace viewpoints through sources and drafts |
-| `photo-metadata` | Caption / IPTC / EXIF workflows |
-| `scoutpost` | Hosted monitoring scouts |
-| `shell-safety` | Safe shell use with untrusted inbound text |
+| `interview-prep` | Dossiers, question frames and attribution rules |
 | `story-pitch` | Pitch framing |
-| `web-acquisition` | Configured local (SearXNG + Crawl4AI) or API (Firecrawl) search/scrape |
+| `ai-writing-detox` | Strip AI-sounding patterns from drafts |
 
 ## Install
 
@@ -186,149 +89,21 @@ commands; it is not another installer. Contributors may clone
 [`buriedsignals/mycroft`](https://github.com/buriedsignals/mycroft), but Engine
 installs the catalog-pinned public commit for journalists.
 
-## Install from source (agents)
-
-Engine is the supported path above. An agent pointed at this repository can
-install the runtime set without cloning the whole repository: `install-set.txt`
-names the directories a runtime needs; everything else is the site, catalog, and
-documentation. Scripts use the Python 3 standard library only.
-
-```bash
-git clone --filter=blob:none --sparse https://github.com/buriedsignals/mycroft.git mycroft
-cd mycroft
-git sparse-checkout set $(grep -v '^#' install-set.txt)
-```
-
-Then link the skills into your agent's skills directory (Windows: use
-`New-Item -ItemType Junction` in place of `ln -s`):
-
-| Agent | Link |
-|---|---|
-| Goose, Cursor, Codex, Gemini (shared agents store) | `mkdir -p ~/.agents/skills/mycroft && for s in skills/*/; do ln -s "$PWD/$s" ~/.agents/skills/mycroft/$(basename "$s"); done` |
-| Claude Code | `ln -s "$PWD" ~/.claude/skills/mycroft` |
-
-These are the same links Engine creates; a later Engine install adopts or
-replaces them. Provider keys are never read from this checkout.
-
-## Privacy And Providers
-
-Mycroft is designed for privacy-sensitive reporting:
-
-- ZDR providers are the default cloud posture.
-- The Engine catalog offers three cloud providers; pick one in
-  `bsig configure describe mycroft` or Indicator Labs:
-  - **OpenRouter** — Goose's built-in provider with `OPENROUTER_PARAMETERS`
-    fixed to `provider.zdr=true` + `data_collection=deny`, so every request is
-    routed only to endpoints that keep nothing. Default model: Mistral Large.
-  - **Public AI** — Swiss-hosted Apertus 1.5 70B. Goose reaches it through the
-    Engine's loopback adapter, so it works through Indicator Labs or
-    `bsig run mycroft` from a terminal.
-  - **OpenCode Go** — provider-stated zero retention, no training.
-- Local inference is available when you want on-device models.
-- **Web search and scrape**: with SearXNG enabled (needs Docker Desktop),
-  search runs through SearXNG and scrape through Crawl4AI with no API key or
-  vendor account; otherwise both search and scrape run directly through Firecrawl
-  with `FIRECRAWL_API_KEY`, without SearXNG, Crawl4AI, or Chromium provisioning.
-  One of the two is required. With both enabled, local acquisition runs first
-  and Firecrawl is the explicitly configured fallback. Merely installing the
-  Firecrawl CLI or setting a key does not enable cloud acquisition.
-- Wiki, schedules, generated instructions, and fallback script secrets live on
-  the user's machine.
-- API keys are stored locally through Goose or Mycroft config files, not in the
-  wiki.
-- Source acquisition and fact-check recipes preserve local evidence trails where
-  tooling is available.
-
-Model choice belongs in provider/runtime docs, not the product overview. The
-important contract is that Mycroft can operate with the newsroom's chosen
-provider posture.
-
-## Shipping Recipes
-
-**Core journalism**
-
-- `start`
-- `wiki-qa`
-- `fact-check`
-- `fact-check-c2pa`
-- `perspective-audit`
-- `source-verify`
-- `morning-brief`
-- `morning-brief-preflight`
-- `wiki-audit`
-- `newsletter-summarize`
-- `wiki-sync`
-- `spotlight-case`
-
-**Source acquisition and parsing** — the installed acquisition policy selects SearXNG search + Crawl4AI scrape, or Firecrawl for both. Local acquisition uses Firecrawl fallback only when explicitly enabled. `pdftotext` and `sitemap.py` remain local utilities. The recipe filenames keep the `firecrawl-` prefix.
-
-- `firecrawl-scrape` — scrape a URL to markdown through the configured backend
-- `firecrawl-change-track` — snapshot + diff a page across runs
-- `firecrawl-pdf` — extract a civic PDF (pdftotext)
-- `firecrawl-batch` — scrape many URLs
-- `firecrawl-map` — enumerate a domain's URL space (sitemap.py)
-- `dev-browser`
-- `liteparse`
-
-**Social and optional workflows**
-
-- `apify-select-actor`
-- `apify-instagram`
-- `apify-x`
-- `apify-facebook`
-- `apify-tiktok`
-- `apify-instagram-comments`
-- `apify-linkedin`
-- `voice-setup`
-- `update-mycroft`
-- `ft-preflight`
-
-## Documentation
-
-- [Architecture](docs/architecture.md) — how Mycroft layers onto Goose.
-- [First run](docs/first-run.md) — what happens after setup.
-- [Grounding and provenance](docs/grounding-provenance-spec.md) — evidence
-  bundles, claim grounding, and optional C2PA signing.
-- [Schedules](docs/schedules.md) — morning brief, wiki audit, and updater
-  schedules.
-- [Plugin authoring](docs/plugin-authoring.md) — adding workflows and plugins.
-- [Troubleshooting](docs/troubleshooting.md) — common install and runtime
-  failures.
-- [Security policy](SECURITY.md) — disclosure process.
-- [Contributing](CONTRIBUTING.md) — contribution guidance.
-- [Changelog](CHANGELOG.md) — release history.
-
-## What To Do Next
-
-Start Goose with the Mycroft profile and choose one action from the first-run
-menu. Use Mycroft for durable knowledge and publishing support. Use Spotlight
-when a lead needs active investigation. Use Scoutpost when something should be
-monitored over time.
-
 ## Acknowledgements
 
-Mycroft stands on open work — community-maintained open-source projects and
-open methods. A sincere thank-you to every project below — the pack would not
-exist without them. *(Listing does not imply affiliation or endorsement.)*
+Mycroft stands on open work. *(Listing does not imply affiliation or endorsement.)*
 
 | Category | Projects we're grateful to |
 |----------|----------------------------|
-| **Agent runtime** | [Goose](https://github.com/block/goose) (Block, Apache-2.0 — the open-source runtime Mycroft is built on) |
-| **Journalism skills & methods** | [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism) (Joe Amditis, MIT) · [SIFT](https://hapgood.us/2019/06/19/sift-the-four-moves/) (Mike Caulfield) |
-| **Local search & scraping** | [SearXNG](https://github.com/searxng/searxng) (AGPL-3.0) · [Crawl4AI](https://github.com/unclecode/crawl4ai) (unclecode, Apache-2.0) · [Playwright](https://playwright.dev/) (browser automation) · [Poppler](https://poppler.freedesktop.org/) (`pdftotext` — PDF extraction) · [Tor](https://www.torproject.org/) (opt-in anonymous scraping) |
-| **Local inference** | [llama.cpp](https://github.com/ggml-org/llama.cpp) (ggml, MIT) |
-| **Media & metadata** | [ExifTool](https://exiftool.org/) (Phil Harvey — powers photo-metadata) |
-| **Voice** | [Whisper](https://github.com/openai/whisper) (MIT — open-weight local dictation) · [Edge TTS](https://github.com/rany2/edge-tts) (rany2, LGPL-3.0 — spoken briefings) |
-| **Knowledge workspace** | [OpenKnowledge](https://github.com/inkeep/open-knowledge) (local knowledge app, CLI, search, and agent workspace) |
-| **Provenance** | [C2PA](https://c2pa.org/) (content-provenance standard behind SIFT manifests) |
-
-> Built something here we should credit, or want a listing changed or removed?
-> Open an issue or PR — we'll fix it fast.
+| **Partners** | [Osaurus](https://osaurus.ai/) (the local AI app Mycroft runs in) · [OpenKnowledge](https://github.com/inkeep/open-knowledge) (the local wiki and agent workspace) |
+| **On-device models** | [Gemma 4](https://huggingface.co/OsaurusAI/gemma-4-12B-it-qat-MXFP4) (Google) · [LFM3](https://huggingface.co/LiquidAI/LFM3-1.7B) (Liquid AI) · [NuExtract3](https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M) (NuMind) |
+| **Agent runtime** | [Pi](https://github.com/badlogic/pi-mono) (the agent loop under the Analyst) |
+| **Journalism skills** | [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism) (Joe Amditis, MIT) |
 
 ### Vendored skills
 
-Five of Mycroft's journalism skills — `foia-requests`, `interview-prep`,
-`story-pitch`, `photo-metadata`, and `ai-writing-detox` — are adapted from
+Four of Mycroft's journalism skills — `foia-requests`, `interview-prep`,
+`story-pitch` and `ai-writing-detox` — are adapted from
 [claude-skills-journalism](https://github.com/jamditis/claude-skills-journalism)
 by [Joe Amditis](https://skills.amditis.tech/) (Center for Cooperative Media,
 Montclair State University), MIT licensed. Each skill carries its attribution

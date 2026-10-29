@@ -3716,18 +3716,7 @@ html.js .is-in .tw__in {
       <li><a href="https://huggingface.co/LiquidAI/LFM3-1.7B" target="_blank" rel="noreferrer">LFM3</a> <span>— Liquid AI · Spotlight's on-device model</span></li>
       <li><a href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a> <span>— NuMind · on-device document extraction</span></li>
       <li><a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noreferrer">Pi</a> <span>— badlogic · the agent loop under the Analyst and Spotlight</span></li>
-      <li><a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">Joe Amditis</a> <span>— five journalism skills, adapted · MIT</span></li>
-      <li><a href="https://hapgood.us/2019/06/19/sift-the-four-moves/" target="_blank" rel="noreferrer">Mike Caulfield</a> <span>— the SIFT verification method</span></li>
-      <li><a href="https://verso.ink/big-if-true/" target="_blank" rel="noreferrer">Verso</a> <span>— Big If True · claim extraction and evidence routes in the fact-check</span></li>
-      <li><a href="https://exiftool.org/" target="_blank" rel="noreferrer">exiftool</a> <span>— Phil Harvey · powers photo-metadata</span></li>
-      <li><a href="https://github.com/searxng/searxng" target="_blank" rel="noreferrer">SearXNG</a> <span>— self-hosted search behind sovereign mode · AGPL</span></li>
-      <li><a href="https://github.com/unclecode/crawl4ai" target="_blank" rel="noreferrer">Crawl4AI</a> <span>— unclecode · the sovereign scraper</span></li>
-      <li><a href="https://playwright.dev/" target="_blank" rel="noreferrer">Playwright</a> <span>— browser automation under the scraper</span></li>
-      <li><a href="https://poppler.freedesktop.org/" target="_blank" rel="noreferrer">Poppler</a> <span>— pdftotext · PDF extraction</span></li>
-      <li><a href="https://www.torproject.org/" target="_blank" rel="noreferrer">Tor Project</a> <span>— opt-in anonymous scraping</span></li>
-      <li><a href="https://github.com/openai/whisper" target="_blank" rel="noreferrer">Whisper</a> <span>— open-weight local dictation</span></li>
-      <li><a href="https://github.com/rany2/edge-tts" target="_blank" rel="noreferrer">Edge TTS</a> <span>— rany2 · spoken briefings</span></li>
-      <li><a href="https://c2pa.org/" target="_blank" rel="noreferrer">C2PA</a> <span>— content-provenance standard behind SIFT manifests</span></li>
+      <li><a href="https://github.com/jamditis/claude-skills-journalism" target="_blank" rel="noreferrer">Joe Amditis</a> <span>— four journalism skills, adapted · MIT</span></li>
     </ul>
   </section>
 
@@ -8790,7 +8779,7 @@ export {
       description.className = 'skills-index__description';
       description.textContent = skill.description.replace(/`/g, '');
       link.className = 'skills-index__link';
-      link.href = 'https://github.com/buriedsignals/mycroft/blob/main/skills/' + encodeURIComponent(skill.id) + '/SKILL.md';
+      link.href = 'https://github.com/buriedsignals/mycroft/blob/main/' + skillPath(skill.id) + '/SKILL.md';
       link.target = '_blank';
       link.rel = 'noreferrer';
       link.textContent = 'read the skill →';
@@ -8806,6 +8795,13 @@ export {
     status.hidden = true;
   }
 
+  // Navigator and Scoutpost ship Osaurus-specific copies under skills/osaurus/
+  // (engine osaurusSkillOverrides); the rest live at skills/<id>.
+  var OSAURUS_COPIES = ['navigator', 'scoutpost'];
+  function skillPath(skillId) {
+    return (OSAURUS_COPIES.indexOf(skillId) !== -1 ? 'skills/osaurus/' : 'skills/') + skillId;
+  }
+
   function loadSkills() {
     if (skillsPromise) return skillsPromise;
     var status = document.getElementById('skills-index-status');
@@ -8815,14 +8811,11 @@ export {
         return response.text();
       })
       .then(function (manifest) {
-        // The site shows the skills Mycroft's Osaurus install ships
-        // (engine bsig/internal/products/mycroft/osaurus.go, osaurusSkills).
-        var shown = ['navigator', 'scoutpost', 'foia-requests', 'interview-prep', 'story-pitch', 'ai-writing-detox'];
         var ids = manifest.split(/\r?\n/).map(function (line) { return line.trim(); })
-          .filter(function (line) { return line && line.charAt(0) !== '#' && shown.indexOf(line) !== -1; });
+          .filter(function (line) { return line && line.charAt(0) !== '#'; });
         return Promise.all(ids.map(function (skillId) {
           if (!/^[a-z0-9][a-z0-9-]*$/.test(skillId)) throw new Error('Invalid skill id');
-          return fetch('skills/' + skillId + '/SKILL.md').then(function (response) {
+          return fetch(skillPath(skillId) + '/SKILL.md').then(function (response) {
             if (!response.ok) throw new Error(skillId + ' could not be loaded');
             return response.text();
           }).then(function (markdown) {

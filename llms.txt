@@ -1,42 +1,27 @@
 # Mycroft
 
-> Mycroft is an opinionated extension pack for [Goose](https://goose-docs.ai/), the open-source AI agent runtime — built for investigative journalists. It ships a curated recipe library (morning briefs, SIFT fact-check, vault Q&A, social scraping, investigations), Engine-catalog cloud providers with zero data retention (OpenRouter ZDR-routed to Mistral Large, Public AI's Swiss-hosted Apertus, OpenCode Go), and optional sovereign-mode local inference (Gemma 4 31B, or a fine-tuned Qwen) on Ollama or llama-server. Public Spotlight and the Scoutpost monitoring skill ship alongside. The Navigator skill stays locked for anonymous installs and unlocks OSINT tool discovery for Pro. Splash for Visual Journalism is coming in September 2026.
+> Mycroft is a set of local agents for investigative journalists and investigators, built on Osaurus (the local AI app for Mac) with an OpenKnowledge wiki. Mycroft and Spotlight run on on-device models in Osaurus; the Analyst files Spotlight findings and Scoutpost results into the wiki; Watson does web research in the cloud only when the member asks, through OpenRouter routed to Mistral's EU endpoints with zero data retention, and never sees the wiki. Navigator plans methods and Scoutpost monitors sources; both are hosted services.
 
-Mycroft is local-first and installed through Buried Signals Engine. Indicator Labs submits the managed plan; open-source and agent-led users apply the same signed Engine plan directly. Provider keys stay in Engine's operating-system credential broker and enter through either Indicator Labs' protected prompt or the public `bsig` stdin/keychain flow. No Mycroft localhost page collects credentials. No telemetry, no surveillance.
+Mycroft is installed through Buried Signals Engine. Indicator Labs submits the managed plan; open-source and agent-led users apply the same signed Engine plan directly. Provider keys stay in the macOS Keychain and enter through Indicator Labs' protected prompt or the public `bsig` stdin/keychain flow. No Mycroft localhost page collects credentials. No telemetry.
 
 ## Core docs
 
-- [README](README.md): top-level overview, install paths, what's shipping
-- [docs/architecture.md](docs/architecture.md): how recipes, providers, plugins, and Goose fit together
-- [docs/plugin-authoring.md](docs/plugin-authoring.md): how to add a new plugin to Mycroft
-- [docs/troubleshooting.md](docs/troubleshooting.md): common failure modes + fixes
+- [README](README.md): agents, skills, install, acknowledgements
 - [CHANGELOG.md](CHANGELOG.md): version history
 - [SECURITY.md](SECURITY.md): security disclosure process
 - [CONTRIBUTING.md](CONTRIBUTING.md): how to contribute
 
-## Journalism posture
+## Agents
 
-- [instructions/journalism.md](instructions/journalism.md): SIFT framework, attribution rules, source protection, tone — loaded into every recipe as system context
+- [instructions/osaurus-system.md](instructions/osaurus-system.md): Mycroft's system prompt in Osaurus
+- [instructions/analyst-system.md](instructions/analyst-system.md): the Analyst's system prompt in OpenKnowledge
+
+## Skills
+
+- [skills.manifest](skills.manifest): the skills the Osaurus install ships
+- [skills/osaurus/](skills/osaurus/): Navigator and Scoutpost skills written for Osaurus's tool servers
 
 ## Setup
 
 - [README](README.md#install): signed Engine setup for managed and open-source users
 - [install.sh](install.sh): fail-closed pointer for retired curl|bash installs; it never collects credentials
-
-## Recipes
-
-- [recipes/](recipes/): Goose Recipe YAML files — morning-brief, fact-check, perspective-audit, wiki-qa, source-verify, newsletter-summarize, wiki-sync, firecrawl-*, apify-*, dev-browser, liteparse, voice-setup, ft-preflight
-
-## Providers
-
-
-## Optional
-
-- [extensions/manifest.json](extensions/manifest.json): declared MCP dependencies and install hooks
-- [tools/validate-recipes.py](tools/validate-recipes.py): schema validator for the recipe library
-
-## External
-
-- [Goose](https://goose-docs.ai/): upstream agent runtime
-- [Spotlight](https://github.com/buriedsignals/spotlight): OSINT investigation plugin
-- [Scoutpost](https://github.com/buriedsignals/scoutpost-os): beat-monitoring plugin

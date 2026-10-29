@@ -14,16 +14,16 @@ This policy is non-negotiable. Accuracy and the best achievable result take prio
 - When creating an independent repository or workspace, copy this section into its root `AGENTS.md`; do not rely on parent-directory inheritance.
 
 
-Mycroft is the Goose extension pack for newsroom memory, recurring editorial
-workflows, source-grounded fact-checking, and handoffs between monitoring,
-investigation, and publishing.
+Mycroft is a set of local agents, skills and models for investigative
+journalists, installed into Osaurus with an OpenKnowledge wiki. The Goose
+runtime was removed on 2026-10-29.
 
 ## Landing site deployment
 
 The production landing site is GitHub Pages at
 `https://mycroft.buriedsignals.com/`. A push to `main` triggers
-`.github/workflows/pages.yml`, which validates the recipes, HTML, installer
-pointer, journalist CTAs, grounding/provenance tooling, and JSON before deploying the
+`.github/workflows/pages.yml`, which validates the HTML, skills index, installer
+pointer, journalist CTAs, feedback widget, and JSON before deploying the
 repository root through the `github-pages` environment. Pull requests run the
 same validate job without deploying. Do not use Render or a manual file upload
 for this site.
@@ -37,8 +37,8 @@ cache before diagnosing stale production HTML.
 
 ## Working rules
 
-- Read the relevant local skill or recipe before changing it; the shipped
-  `skills/` and `recipes/` content is the product surface.
+- Read the relevant local skill or agent instruction before changing it; the
+  shipped `skills/` and `instructions/` content is the product surface.
 - Keep knowledge-vault paths, provider configuration, and credentials local;
   never commit secrets or personal vault data.
 - Preserve source-grounded citations and the separation between Mycroft's

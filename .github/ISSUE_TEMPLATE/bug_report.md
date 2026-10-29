@@ -9,16 +9,15 @@ labels: bug
 
 **Reproduce**
 <!--
-Steps to trigger the bug. Include the recipe, the command, or the page URL.
+Steps to trigger the bug. Include the agent, the prompt, or the page URL.
 For landing bugs: attach a screenshot of index.html.
 -->
 
 **Environment**
 - macOS / Linux version:
-- Goose version: `goose --version`
+- Osaurus version: Osaurus › About
 - Mycroft commit: `(cd ~/.mycroft && git rev-parse --short HEAD)`
-- Provider(s) configured: Fireworks / Together / Goose Local Inference (built-in llama.cpp) / other
-- Sovereignty mode: cloud / local
+- Agent: Mycroft / Spotlight / Analyst / Watson
 
 **Logs / output**
 ```

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Removed
+- The Goose runtime. Mycroft now runs only in Osaurus, so the Goose recipes,
+  extensions, memory seeds, scripts (`mycroft-doctor`, `mycroft-fetch` and the
+  rest), fact-check and provenance tooling (`tools/`, `schemas/`,
+  `integration/sift-c2pa`), the Goose-only instructions and their checks are gone.
+- Skills the Osaurus install doesn't ship: bsig-engine, fact-check,
+  web-acquisition, apify-social, copywriting, epistemic-grounding,
+  knowledge-ingest, knowledge-primitives, knowledge-workspace,
+  mycroft-maintenance, perspective-audit, photo-metadata, shell-safety, and the
+  Goose copies of navigator and scoutpost. `skills.manifest` now lists the six
+  Osaurus skills.
+
+### Changed
+- The landing site describes Mycroft on Osaurus, with Osaurus and OpenKnowledge
+  as partners.
+
 - Acquisition honors the installed provider policy for search, scraping, provenance,
   diagnostics, and private-update provisioning. Firecrawl-only uses the API directly
   without probing or installing local SearXNG/Crawl4AI/Chromium; cloud fallback for

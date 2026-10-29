@@ -18,7 +18,7 @@ repository file.
 
 There is no localhost configure.html server and no curl|bash public installer.
 
-Do not use Mycroft fact-check or Spotlight for software code, architecture,
+Do not use Mycroft or Spotlight for software code, architecture,
 PRDs, or threat models. Use the host's compound-engineering or code-review workflow.
 EOF
 exit 1

@@ -265,7 +265,7 @@ If readers think "AI wrote this," you've already lost their trust.
 
 *Good writing is invisible. If readers notice the writing, it's getting in the way of the content.*
 
-*Optional (Claude Code only): the upstream repo ships an automated companion hook, [`hooks/ai-slop-detector.md`](https://github.com/jamditis/claude-skills-journalism/tree/master/hooks). Goose does not support hooks; Mycroft users can ignore this.*
+*Optional (Claude Code only): the upstream repo ships an automated companion hook, [`hooks/ai-slop-detector.md`](https://github.com/jamditis/claude-skills-journalism/tree/master/hooks). Osaurus does not run hooks; Mycroft users can ignore this.*
 
 ## Credits
 

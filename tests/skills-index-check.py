@@ -8,6 +8,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
+OSAURUS_COPIES = {"navigator", "scoutpost"}
 
 
 def frontmatter(path: Path) -> dict:
@@ -30,7 +31,9 @@ def main() -> None:
 
     for skill_id in skill_ids:
         assert re.fullmatch(r"[a-z0-9][a-z0-9-]*", skill_id), f"invalid skill ID: {skill_id}"
-        path = ROOT / "skills" / skill_id / "SKILL.md"
+        # Navigator and Scoutpost ship Osaurus copies (engine osaurusSkillOverrides).
+        base = ROOT / "skills" / "osaurus" if skill_id in OSAURUS_COPIES else ROOT / "skills"
+        path = base / skill_id / "SKILL.md"
         assert path.is_file(), f"missing skill file: {path}"
         data = frontmatter(path)
         assert data.get("name") == skill_id, f"{path}: name must match skills.manifest"
@@ -45,7 +48,7 @@ def main() -> None:
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     assert 'id="skills-index"' in html, "skills catalogue is missing"
     assert "fetch('skills.manifest')" in html, "skills index must use skills.manifest"
-    assert "fetch('skills/'" in html and "/SKILL.md')" in html, "skills index must read SKILL.md metadata"
+    assert "'/SKILL.md')" in html, "skills index must read SKILL.md metadata"
 
     print(f"skills index: OK ({len(skill_ids)} skills)")
 
