@@ -7,8 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 ## [Unreleased]
 
 ### Changed
-- Kept foreground newspapers visible through empty section padding while
-  protecting headings and capability cards from overlap.
+- Simplified skill cards to a linked title, summary and attribution, removing
+  repeated identifiers, separate read links and the standalone reference badge.
+- Removed section masks from the shared foreground canvas and rendered hero
+  and drifting newspapers behind the HTML, eliminating cut-off sheets.
 - Centered mobile partner logos, removed their top rule and the paper-gathering
   controls, added tap-to-preview links, and shortened the website skill summaries.
 - Anchored the mobile network footer to the viewport bottom during its reveal.
