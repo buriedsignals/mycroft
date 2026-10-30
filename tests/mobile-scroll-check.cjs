@@ -42,11 +42,7 @@ const { chromium } = require('playwright');
       assert.ok(result.scrollWidth <= result.width, mode.name + ': horizontal overflow');
       await page.setViewportSize({ width: mode.width, height: 700 });
       await page.waitForTimeout(150);
-      if (!mode.reduced) {
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await page.locator('.hero__play').click();
-        await page.waitForFunction(() => document.querySelector('.hero__play').getAttribute('aria-pressed') === 'true');
-      }
+      assert.equal(await page.getByRole('button', { name: /gather|release the papers/i }).count(), 0);
       assert.deepEqual(errors, [], mode.name + ': browser errors');
       await page.waitForTimeout(1200);
       await page.screenshot({ path: '/tmp/mycroft-' + mode.name.replaceAll(' ', '-') + '.png' });

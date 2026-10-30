@@ -52,10 +52,14 @@ frames, overflow, desktop paper controls, resizing and reduced motion:
 npm install --prefix /tmp/mycroft-browser-qa playwright@1.58.2
 /tmp/mycroft-browser-qa/node_modules/.bin/playwright install chromium
 NODE_PATH=/tmp/mycroft-browser-qa/node_modules node tests/mobile-scroll-check.cjs
+NODE_PATH=/tmp/mycroft-browser-qa/node_modules node tests/mobile-details-check.cjs
 ```
 
 Set `SITE_URL` for another preview URL, or `CHROME_PATH` to use an existing
-Chrome executable. Screenshots are written to `/tmp/mycroft-*.png`.
+Chrome executable. Website-only skill summaries live in `catalog/skill-summaries.json`;
+installed skill instructions and upstream credits remain in the skill files.
+Screenshots are written to `/tmp/mycroft-*.png`. Set `BROWSER_ENGINE=webkit` and
+`BROWSER_PATH` to an installed WebKit runner to repeat the details check there.
 
 CI also parses `index.html` and catalogue/install-contract JSON. For layout
 changes, inspect desktop and phone widths, keyboard focus and reduced motion.

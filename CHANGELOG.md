@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 ## [Unreleased]
 
 ### Changed
+- Centered mobile partner logos, removed their top rule and the paper-gathering
+  controls, added tap-to-preview links, and shortened the website skill summaries.
+- Anchored the mobile network footer to the viewport bottom during its reveal.
 - Kept mobile content in native document flow so scrolling does not wait for
   the 3D paper animation; stabilized viewport spacing and contained the hero glow.
 - Removed Navigator artifact delivery URLs from public setup documentation;
