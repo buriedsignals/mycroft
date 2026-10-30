@@ -2,6 +2,7 @@
 """Validate the landing-page skills index's canonical metadata inputs."""
 
 from pathlib import Path
+import json
 import re
 
 import yaml
@@ -44,6 +45,15 @@ def main() -> None:
         assert re.search(r"^#\s+\S", path.read_text(encoding="utf-8"), re.MULTILINE), (
             f"{path}: a display heading is required for the website"
         )
+
+    featured = json.loads((ROOT / "catalog/featured-skills.json").read_text())
+    summaries = json.loads((ROOT / "catalog/skill-summaries.json").read_text())
+    display_ids = set(skill_ids) - OSAURUS_COPIES - {"ai-writing-detox"}
+    display_ids.update(skill["id"] for skill in featured)
+    assert set(summaries) == display_ids, "Every displayed skill needs a website summary"
+    assert all(isinstance(text, str) and 15 < len(text) <= 140 for text in summaries.values()), (
+        "Website summaries must be concise (16–140 characters)"
+    )
 
     html = (ROOT / "index.html").read_text(encoding="utf-8")
     assert 'id="skills-index"' in html, "skills catalogue is missing"

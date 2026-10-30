@@ -843,9 +843,6 @@ main,
   }
   .sec--hero { padding-block: clamp(24px, 4svh, 56px); }
 }
-.sec--hero[data-paper-mode="ball"] .hero__bottom::before { opacity: 0; }
-.hero__play { position: absolute; left: 0; bottom: 8px; min-height: 40px; color: var(--ink-soft); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
-.hero__play[hidden] { display: none; }
 .hero__bottom .btn--solid { min-height: 40px; padding: 10px 20px; font-size: 12px; letter-spacing: 0.12em; }
 .hero__tag {
   font-family: var(--mono);
@@ -895,6 +892,8 @@ main,
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px 12px;
+  border-top: 0;
+  padding-top: 0;
 }
 .hero__partners a.hero__partner {
   display: inline-flex;
@@ -914,6 +913,12 @@ main,
 .hero__partner-logo--osaurus { height: 17px; }
 .hero__partner-logo--ok { height: 21px; }
 .hero__partners-amp { color: var(--ink-dim); }
+@media (max-width: 767px) {
+  .hero__partners { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(100%, 360px); }
+  .hero__partners-label { grid-column: 1 / -1; text-align: center; }
+  .hero__partners-amp { display: none; }
+  .hero__partners a.hero__partner { min-width: 0; padding-inline: 10px; }
+}
 
 /* Supporting copy stays readable inside the orbit. */
 .hero__lede {
@@ -2724,6 +2729,7 @@ button.day-card.is-settled:focus-visible {
 .tool-preview img, .tool-preview video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; object-position: top; border-radius: inherit; background: var(--pigment); }
 .tool-preview img[hidden] { display: none; }
 .tool-preview video[hidden] { display: none; }
+.tool-preview__destination { display: block; }
 .tool-preview.is-hover .tool-preview__foot { display: none; }
 .tool-preview__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 12px; font-size: 14px; }
 .tool-preview__close { min-width: 44px; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
@@ -3436,7 +3442,6 @@ html.js .is-in .tw__in {
         </a>
       </div>
     </div>
-    <button class="hero__play" type="button" aria-pressed="false" hidden>Gather the papers</button>
   </section>
 
 
@@ -8108,15 +8113,20 @@ function boot() {
   const pageEl = document.getElementById("page-3d");
   const sentinel = document.getElementById("scroll-sentinel");
   if (!pageEl || !sentinel) return;
-  // Keep a normal document and still imagery for reduced-motion readers.
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
   // Mobile / low-power detection — used to scale particle counts and pixel
   // ratio so the CSS3D + paper sphere stack stays usable on phones.
   const IS_MOBILE =
     window.innerWidth < 768 ||
     matchMedia("(pointer: coarse)").matches ||
     (navigator.hardwareConcurrency || 8) < 4;
+  const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // The shared footer detects a normal document outside the CSS3D wrapper.
+  // Use its viewport-anchored reveal on phones and in reduced-motion mode.
+  if (IS_MOBILE || REDUCED_MOTION) {
+    const signature = pageEl.querySelector('.bs-property-signal');
+    if (signature) document.body.append(signature);
+  }
+  if (REDUCED_MOTION) return;
   const SPHERE_COUNT = IS_MOBILE ? 220 : 600;
   const MAX_DPR = IS_MOBILE ? 1.25 : 2;
 
@@ -8131,8 +8141,6 @@ function boot() {
   }));
   const pageHeight = pageEl.offsetHeight;
   const pageWidth = pageEl.offsetWidth;
-  const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
   /* ── 2. scenes + camera ──────────────────────────────────────── */
   const sceneBack = new THREE.Scene();
   const sceneHTML = new THREE.Scene();
@@ -8364,16 +8372,10 @@ function boot() {
   const SPHERE_CLOSING_COUNT = IS_MOBILE ? 100 : 200;
 
   // Keep the original curl, flutter, collisions and mouse repulsion. Project
-  // its live poses into a loose orbit; gathering reveals the original ball.
+  // its live poses into a loose orbit around the reading column.
   const heroAnchor = anchorById("hero");
-  const heroEl = heroAnchor.el;
-  const paperPlay = heroEl.querySelector('.hero__play');
   const projectedPosition = new THREE.Vector3();
   const paperScale = new THREE.Vector3(1, 1, 1);
-  let gather = 0;
-  let gatherTarget = 0;
-  let spin = 0;
-  let spinVelocity = 0;
   let paperTime = 0;
   const heroSphere = new PaperSphereScene({
     parent: heroAnchor.front,
@@ -8397,64 +8399,18 @@ function boot() {
         Math.cos(angle) * viewportW * 0.62 * spread / modelScale,
         Math.sin(angle) * heroAnchor.height * 0.58 * spread / modelScale,
         sheet.pos.z * 0.4,
-      ).lerp(sheet.pos, gather);
-      const x = projectedPosition.x, y = projectedPosition.y;
-      projectedPosition.x = x * Math.cos(spin) - y * Math.sin(spin);
-      projectedPosition.y = x * Math.sin(spin) + y * Math.cos(spin);
+      );
       matrix.compose(projectedPosition, sheet.quat, paperScale);
     },
   });
-  const setGather = (next) => {
-    if (next === gatherTarget) return;
-    gatherTarget = next;
-    const direction = next ? 1 : -1;
-    spinVelocity += direction * 10;
-    for (const sheet of heroSphere.sheets) {
-      sheet.vel.x -= sheet.pos.y * direction * 1.8;
-      sheet.vel.y += sheet.pos.x * direction * 1.8;
-      sheet.angVel.z += direction * 1.6;
-    }
-    heroEl.dataset.paperMode = next ? 'ball' : 'orbit';
-    paperPlay.setAttribute('aria-pressed', String(!!next));
-    paperPlay.textContent = next ? 'Release the papers' : 'Gather the papers';
-  };
-  paperPlay.hidden = false;
-  heroEl.dataset.paperMode = 'orbit';
-  paperPlay.addEventListener('click', () => setGather(gatherTarget ? 0 : 1));
-  heroEl.addEventListener('click', (event) => {
-    if (event.target.closest('a, button, input, textarea, select, [contenteditable]')) return;
-    if (getSelection()?.toString()) return;
-    if (!gatherTarget && event.target.closest('.hero__bottom, .hero__partners')) return;
-    setGather(gatherTarget ? 0 : 1);
-  });
-  addEventListener('keydown', (event) => { if (event.key === 'Escape') setGather(0); });
   const heroOrbit = {
     update(t, dt) {
       paperTime = t;
-      gather += (gatherTarget - gather) * (1 - Math.exp(-5 * dt));
-      spin += spinVelocity * dt;
-      spinVelocity *= Math.exp(-3.2 * dt);
       const mobile = viewportW < 768;
-      heroSphere.params.visualR = (mobile ? 510 : 850) * (1 - gather) + (mobile ? 390 : 560) * gather;
+      heroSphere.params.visualR = mobile ? 510 : 850;
       heroSphere.update(t, dt);
     },
   };
-  const resetHeroView = () => {
-    gather = 0;
-    gatherTarget = 0;
-    spin = 0;
-    spinVelocity = 0;
-    heroEl.dataset.paperMode = 'orbit';
-    paperPlay.setAttribute('aria-pressed', 'false');
-    paperPlay.textContent = 'Gather the papers';
-    // Initialize the projected poses before the first frame is drawn.
-    heroOrbit.update(paperTime, 0);
-  };
-  resetHeroView();
-  addEventListener('pageshow', resetHeroView);
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) resetHeroView();
-  });
   scenes.push(heroOrbit);
 
   // closing sphere (manifesto) — centered, split half-front/half-back
@@ -8593,7 +8549,7 @@ function boot() {
   }
 
   /* ── 14. animation loop ─────────────────────────────────────── */
-  // Protect the copy in the open orbit; the gathered ball can cover it.
+  // Protect the copy inside the open orbit.
   const heroReadable = [".sec--hero .hero__bottom"]
     .map((sel) => document.querySelector(sel))
     .filter(Boolean);
@@ -8628,7 +8584,7 @@ function boot() {
       const ry = Math.round((r.height / 2) * 1.55);
       holes.push(`radial-gradient(${rx}px ${ry}px at ${cx}px ${cy}px, transparent 0 84%, #000 100%)`);
     }
-    const mask = gatherTarget ? "none" : (holes.length ? holes.join(", ") : "none");
+    const mask = holes.length ? holes.join(", ") : "none";
     if (mask === lastClip) return;
     lastClip = mask;
     const st = rendererFront.domElement.style;
@@ -8910,7 +8866,7 @@ export {
     return match ? match[1].trim() : fallback;
   }
 
-  function renderSkills(skills) {
+  function renderSkills(skills, summaries) {
     var index = document.getElementById('skills-index');
     var status = document.getElementById('skills-index-status');
     if (!index || !status) return;
@@ -8935,7 +8891,7 @@ export {
       title.className = 'skills-index__name';
       title.textContent = skill.title;
       description.className = 'skills-index__description';
-      description.textContent = skill.description.replace(/`/g, '');
+      description.textContent = (summaries[skill.id] || skill.description).replace(/`/g, '');
       link.className = 'skills-index__link';
       link.href = skill.href || 'https://github.com/buriedsignals/mycroft/blob/main/' + skillPath(skill.id) + '/SKILL.md';
       link.target = '_blank';
@@ -9020,8 +8976,13 @@ export {
         }).then(function (featured) { return featured.concat(skills); });
       })
       .then(function (skills) {
-        renderSkills(skills);
-        return skills;
+        return fetch('catalog/skill-summaries.json').then(function (response) {
+          if (!response.ok) throw new Error('Skill summaries could not be loaded');
+          return response.json();
+        }).then(function (summaries) {
+          renderSkills(skills, summaries);
+          return skills;
+        });
       })
       .catch(function () {
         if (status) status.textContent = 'The skills index could not be loaded. Use the GitHub directory below.';
@@ -9072,13 +9033,19 @@ export {
     'https://osaurus.ai/': { id: 'osaurus', name: 'Osaurus desktop app', image: 'assets/screenshots/osaurus.jpg', width: 1120, height: 700, alt: 'Osaurus interface with a local agent reviewing a document.' },
     'https://openknowledge.ai/': { id: 'openknowledge', name: 'OpenKnowledge', image: 'assets/screenshots/openknowledge.jpg', width: 1248, height: 702, alt: 'OpenKnowledge interface showing an agent conversation beside a Markdown document.' }
   };
+  // Model and agent references use an example of the interface they run in.
+  tools['https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M'] = { ...tools['https://osaurus.ai/'], name: 'Document extraction in Osaurus' };
+  tools['https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md'] = { ...tools['https://openknowledge.ai/'], name: 'Analyst in OpenKnowledge' };
+  tools['https://openrouter.ai/mistralai/mistral-large-4-0'] = { ...tools['https://osaurus.ai/'], name: 'Watson in Osaurus' };
+  tools['https://huggingface.co/LiquidAI/LFM3-VL-2B'] = { ...tools['https://osaurus.ai/'], name: 'Splash visual model', image: 'assets/previews/splash.jpg', alt: 'Splash interface preview.' };
   const panel = document.createElement('aside');
   panel.id = 'tool-preview';
   panel.className = 'tool-preview';
   panel.setAttribute('popover', 'manual');
   panel.setAttribute('aria-label', 'Tool preview');
-  panel.innerHTML = '<video muted loop playsinline preload="none" aria-label="Tool introduction"></video><img hidden alt=""><p class="tool-preview__error" hidden>Preview unavailable. Follow the tool link to learn more.</p><div class="tool-preview__foot"><span></span><button class="tool-preview__close" type="button">Close</button></div>';
+  panel.innerHTML = '<a class="tool-preview__destination" target="_blank" rel="noreferrer"><video muted loop playsinline preload="none" aria-label="Tool introduction"></video><img hidden alt=""><p class="tool-preview__error" hidden>Preview unavailable. Visit the website to learn more.</p></a><div class="tool-preview__foot"><span></span><button class="tool-preview__close" type="button">Close</button></div>';
   document.body.append(panel);
+  const destination = panel.querySelector('.tool-preview__destination');
   const video = panel.querySelector('video');
   const image = panel.querySelector('img');
   const label = panel.querySelector('.tool-preview__foot span');
@@ -9093,11 +9060,12 @@ export {
     keep();
     video.pause();
     if (panel.matches(':popover-open')) panel.hidePopover();
-    if (active) {
-      active.setAttribute('aria-expanded', 'false');
-      if (restoreFocus) active.focus();
-    }
+    const trigger = active;
     active = null;
+    if (trigger) {
+      trigger.setAttribute('aria-expanded', 'false');
+      if (restoreFocus) trigger.focus({ preventScroll: true });
+    }
   }
   function scheduleHide() {
     keep();
@@ -9118,7 +9086,9 @@ export {
     keep();
     if (active && active !== trigger) active.setAttribute('aria-expanded', 'false');
     active = trigger;
-    panel.classList.toggle('is-hover', trigger.tagName === 'A');
+    panel.classList.toggle('is-hover', hover.matches);
+    destination.href = trigger.href;
+    destination.setAttribute('aria-label', 'Visit ' + tool.name + ' website');
     active.setAttribute('aria-expanded', 'true');
     video.pause();
     panel.classList.toggle('is-image', !!tool.image);
@@ -9145,7 +9115,7 @@ export {
     }
     if (!panel.matches(':popover-open')) panel.showPopover();
     position();
-    if (!tool.image && play && (!reduced.matches || trigger.tagName === 'BUTTON')) video.play().catch(() => {
+    if (!tool.image && play && (!reduced.matches || !hover.matches)) video.play().catch(() => {
       error.hidden = false;
     });
   }
@@ -9168,13 +9138,19 @@ export {
   addEventListener('resize', () => hide());
   reduced.addEventListener('change', () => { if (reduced.matches) video.pause(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden) hide(); });
-  document.querySelectorAll('.pill[href]').forEach(link => {
+  document.querySelectorAll('.pill[href], .hero__partner[href]').forEach(link => {
     const tool = tools[link.href];
     if (!tool) return;
     link.setAttribute('aria-controls', panel.id);
     link.addEventListener('pointerenter', () => { if (hover.matches) show(link, tool, true); });
     link.addEventListener('pointerleave', scheduleHide);
-    link.addEventListener('focus', () => show(link, tool, !reduced.matches));
+    link.addEventListener('focus', event => { if (hover.matches && event.relatedTarget !== close) show(link, tool, !reduced.matches); });
+    link.addEventListener('click', event => {
+      if (hover.matches || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      show(link, tool, true);
+      close.focus({ preventScroll: true });
+    });
     link.addEventListener('blur', scheduleHide);
   });
 })();
