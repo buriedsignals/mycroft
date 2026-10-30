@@ -997,7 +997,7 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
   text-wrap: pretty;
 }
 
-/* skills catalogue · inline, three columns */
+/* skills catalogue */
 .sec-lede {
   font-family: var(--serif);
   font-weight: 200;
@@ -1014,7 +1014,7 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 }
 .skills-catalogue .skills-index__item,
 .skills-catalogue .skills-index__item:nth-child(even) {
-  padding: clamp(24px, 2.6vw, 36px);
+  padding: clamp(20px, 2vw, 28px);
   border: 1px solid var(--rule);
   border-radius: var(--rad-sm);
   background: #fbf6e8;
@@ -1023,7 +1023,6 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 }
 .skills-catalogue .skills-index__name { font-size: clamp(26px, 2.2vw, 32px); line-height: 1.12; }
 .skills-catalogue .skills-index__description { font-size: 15px; flex: 1; }
-.skills-catalogue .skills-index__link { align-self: flex-start; }
 @media (max-width: 980px) { .skills-catalogue { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .skills-catalogue { grid-template-columns: 1fr; } }
 
@@ -1969,21 +1968,6 @@ button.day-card.is-settled:focus-visible {
   padding-left: var(--sp-5);
   border-left: var(--hairline);
 }
-.skills-index__meta {
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-3);
-  font-family: var(--mono);
-  font-size: var(--cap-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-dim);
-  margin: 0 0 var(--sp-3);
-}
-.skills-index__availability { display: inline-block; width: fit-content; margin: 0 0 12px; padding: 5px 9px; border: 1px solid var(--oxide); border-radius: 4px; font-family: var(--sans); letter-spacing: 0; text-transform: none; font-size: 12px; font-weight: 500; color: var(--oxide-active); }
-.skills-index__number {
-  color: var(--oxide);
-}
 .skills-index__name {
   font-family: var(--serif);
   font-size: clamp(22px, 2.4vw, 30px);
@@ -2000,15 +1984,20 @@ button.day-card.is-settled:focus-visible {
   margin: 0 0 var(--sp-4);
 }
 .skills-index__link {
-  font-family: var(--mono);
-  font-size: var(--cap-sm);
-  letter-spacing: 0.05em;
-  color: var(--oxide);
-  border-bottom: 1px solid var(--rule);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+  text-decoration: none;
 }
 .skills-index__link:hover {
   color: var(--oxide-active);
-  border-bottom-color: var(--oxide-active);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.skills-index__link:focus-visible {
+  outline: 2px solid var(--oxide);
+  outline-offset: 4px;
 }
 
 .card__kicker {
@@ -2661,7 +2650,7 @@ button.day-card.is-settled:focus-visible {
 .day-timeline--list .card__title { margin-bottom: 0; max-width: 42ch; font-size: clamp(23px, 2vw, 30px); line-height: 1.35; }
 .day-timeline--list .card__body { margin: 12px 0 0; }
 .day-timeline--list .day-time__hour { font-size: clamp(48px, 6vw, 80px); }
-.stamp__foot, .skills-index__meta { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-soft); }
+.stamp__foot { font-size: 11px; letter-spacing: 0.08em; color: var(--ink-soft); }
 .pill small { font-size: 11px; }
 @media (max-width: 760px) {
   .day-timeline--list { padding-left: 30px; padding-right: 10px; }
@@ -2699,9 +2688,8 @@ button.day-card.is-settled:focus-visible {
 .knowledge-map figcaption svg { flex: 0 0 32px; width: 32px; height: 32px; }
 .knowledge-map figcaption strong { color: var(--ink); }
 .sec-lede a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-.skills-index__credit { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 4px 0 16px; }
+.skills-index__credit { font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 0; }
 .skills-index__credit a { color: var(--oxide-active); text-decoration: underline; text-underline-offset: 3px; }
-.skills-index__link { min-height: 44px; display: inline-flex; align-items: center; }
 .lab-grid .term__sub { font-family: var(--sans); font-style: normal; font-size: 18px; line-height: 1.65; color: var(--ink-soft); max-width: 46ch; }
 .lab-grid__price { font-size: 16px; color: var(--ink); margin: 0 0 8px; }
 .lab-grid .indicator-lab-link { min-height: 56px; height: auto; max-width: 100%; padding: 16px 28px; font-family: var(--sans); font-size: 18px; line-height: 1.25; letter-spacing: 0; text-transform: none; white-space: normal; text-align: center; justify-self: start; }
@@ -8378,9 +8366,9 @@ function boot() {
   const paperScale = new THREE.Vector3(1, 1, 1);
   let paperTime = 0;
   const heroSphere = new PaperSphereScene({
-    parent: heroAnchor.front,
+    // The HTML owns occlusion; never cut an entire paper canvas around copy.
+    parent: heroAnchor.back,
     anchor: heroAnchor,
-    mirrorParent: heroAnchor.back,
     gui,
     label: "Hero · paper play",
     count: HERO_ORBIT_COUNT,
@@ -8437,8 +8425,7 @@ function boot() {
     }),
   );
 
-  // Floating papers share the foreground margin clip. Behind transparent HTML,
-  // even back-layer sheets would otherwise cross the reading column.
+  // Drifting papers belong behind the document, so cards occlude them naturally.
   const heroSec = sections.find((s) => s.el.id === "hero") || sections[0];
   const closingSec =
     sections.find((s) => s.el.id === "closing") || sections[sections.length - 1];
@@ -8449,7 +8436,7 @@ function boot() {
   const bandBottomY = -closingSec.top;
   scenes.push(
     new FloatingPapersScene({
-      parent: sceneFront,
+      parent: sceneBack,
       getViewport: () => ({
         w: viewportW,
         h: viewportH,
@@ -8469,7 +8456,7 @@ function boot() {
   );
   scenes.push(
     new FloatingPapersScene({
-      parent: sceneFront,
+      parent: sceneBack,
       getViewport: () => ({
         w: viewportW,
         h: viewportH,
@@ -8549,54 +8536,6 @@ function boot() {
   }
 
   /* ── 14. animation loop ─────────────────────────────────────── */
-  // Protect the copy inside the open orbit.
-  const heroReadable = [".sec--hero .hero__bottom"]
-    .map((sel) => document.querySelector(sel))
-    .filter(Boolean);
-  const marginOnlySections = sections
-    .map(({ el }) => el)
-    .filter((el) => !el.classList.contains('sec--hero') && el.id !== 'closing');
-  // One soft elliptical hole per element: each mask layer is transparent
-  // inside its ellipse and opaque outside, and the layers intersect.
-  let lastClip = "";
-  function clipFrontLayer() {
-    const H = innerHeight;
-    // Cut the reading column out of the foreground canvas below the hero.
-    // The hero and closing keep their full motion.
-    let marginClip = `M0 0 H${innerWidth} V${H} H0 Z`;
-    for (const el of marginOnlySections) {
-      const r = el.getBoundingClientRect();
-      const style = getComputedStyle(el);
-      // Protect the content, leaving section padding open to passing papers.
-      const contentTop = r.top + parseFloat(style.paddingTop) - 12;
-      const contentBottom = r.bottom - parseFloat(style.paddingBottom) + 12;
-      if (contentBottom < 0 || contentTop > H) continue;
-      const left = Math.max(12, Math.round(r.left - 8));
-      const right = Math.min(innerWidth - 12, Math.round(r.right + 8));
-      const top = Math.max(0, Math.round(contentTop));
-      const bottom = Math.min(H, Math.round(contentBottom));
-      marginClip += ` M${left} ${top} H${right} V${bottom} H${left} Z`;
-    }
-    rendererFront.domElement.style.clipPath = `path(evenodd, "${marginClip}")`;
-    const holes = [];
-    for (const el of heroReadable) {
-      const r = el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > H) continue;
-      const cx = Math.round(r.left + r.width / 2);
-      const cy = Math.round(r.top + r.height / 2);
-      const rx = Math.round((r.width / 2) * 1.32);
-      const ry = Math.round((r.height / 2) * 1.55);
-      holes.push(`radial-gradient(${rx}px ${ry}px at ${cx}px ${cy}px, transparent 0 84%, #000 100%)`);
-    }
-    const mask = holes.length ? holes.join(", ") : "none";
-    if (mask === lastClip) return;
-    lastClip = mask;
-    const st = rendererFront.domElement.style;
-    st.webkitMaskImage = st.maskImage = mask;
-    st.webkitMaskComposite = holes.length > 1 ? "source-in" : "";
-    st.maskComposite = holes.length > 1 ? "intersect" : "";
-  }
-
   const clock = new THREE.Clock();
   let lastT = 0;
 
@@ -8613,7 +8552,6 @@ function boot() {
     rendererBack.render(sceneBack, camera);
     rendererHTML?.render(sceneHTML, camera);
     rendererFront.render(sceneFront, camera);
-    clipFrontLayer();
 
     requestAnimationFrame(tick);
   }
@@ -8875,11 +8813,8 @@ export {
     var status = document.getElementById('skills-index-status');
     if (!index || !status) return;
 
-    skills.forEach(function (skill, position) {
+    skills.forEach(function (skill) {
       var item = document.createElement('article');
-      var meta = document.createElement('p');
-      var number = document.createElement('span');
-      var id = document.createElement('span');
       var title = document.createElement('h3');
       var description = document.createElement('p');
       var link = document.createElement('a');
@@ -8888,22 +8823,18 @@ export {
 
       item.className = 'skills-index__item';
       item.setAttribute('role', 'listitem');
-      meta.className = 'skills-index__meta';
-      number.className = 'skills-index__number';
-      number.textContent = String(position + 1).padStart(2, '0');
-      id.textContent = skill.id;
       title.className = 'skills-index__name';
-      title.textContent = skill.title;
       description.className = 'skills-index__description';
       description.textContent = (summaries[skill.id] || skill.description).replace(/`/g, '');
       link.className = 'skills-index__link';
       link.href = skill.href || 'https://github.com/buriedsignals/mycroft/blob/main/' + skillPath(skill.id) + '/SKILL.md';
       link.target = '_blank';
       link.rel = 'noreferrer';
-      link.textContent = skill.status ? 'read the method →' : 'read the skill →';
+      link.textContent = skill.title + ' →';
+      title.append(link);
 
-      meta.append(number, id);
       credit.className = 'skills-index__credit';
+      if (skill.status) credit.append(skill.status, ' · ');
       // Only attach this credit when the skill's own attribution identifies the upstream.
       var fromAmditis = (skill.attribution || '').indexOf('jamditis/claude-skills-journalism') !== -1;
       source.href = 'https://github.com/jamditis/claude-skills-journalism/tree/master/journalism-core/skills/' + skill.id;
@@ -8922,14 +8853,8 @@ export {
           credit.append(sourceLink);
         });
       } else if (fromAmditis) credit.append('Adapted from ', source, ' · MIT');
-      else credit.textContent = skill.attribution || 'Source and credits in the skill file.';
-      if (skill.status) {
-        var availability = document.createElement('span');
-        availability.className = 'skills-index__availability';
-        availability.textContent = skill.status;
-        item.append(availability);
-      }
-      item.append(meta, title, description, credit, link);
+      else credit.append(skill.attribution || 'Source and credits in the skill file.');
+      item.append(title, description, credit);
       index.append(item);
     });
 

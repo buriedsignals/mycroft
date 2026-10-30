@@ -44,6 +44,19 @@ const { chromium } = require('playwright');
       await page.waitForTimeout(150);
       assert.equal(await page.getByRole('button', { name: /gather|release the papers/i }).count(), 0);
       assert.deepEqual(errors, [], mode.name + ': browser errors');
+      if (!mode.reduced) {
+        await page.evaluate(() => scrollBy(0, document.querySelector('#what').getBoundingClientRect().top - 120));
+        await page.waitForTimeout(1200);
+        // Freeze the live scene so removing a transparent layer is pixel-stable.
+        await page.evaluate(() => { window.requestAnimationFrame = () => 0; });
+        await page.waitForTimeout(100);
+        const withForeground = await page.screenshot({ animations: 'disabled' });
+        await page.locator('#layer-front').evaluate(el => { el.style.visibility = 'hidden'; });
+        const withoutForeground = await page.screenshot({ animations: 'disabled' });
+        assert.ok(withForeground.equals(withoutForeground),
+          mode.name + ': hero/body newspapers must render behind the document, without section masks');
+        await page.locator('#layer-front').evaluate(el => { el.style.visibility = ''; });
+      }
       await page.waitForTimeout(1200);
       await page.screenshot({ path: '/tmp/mycroft-' + mode.name.replaceAll(' ', '-') + '.png' });
       await page.close();

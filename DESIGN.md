@@ -303,8 +303,9 @@ mouse repulsion. Its default projection is a wide, irregular orbit. Clicking
 the paper area outside the copy or the Gather control adds a spin impulse and
 gathers the papers into the original covering ball. A second click releases
 them; Escape returns to the orbit. Page open/return resets to the wide
-orbit, and clicks on the copy do not gather it accidentally. Copy protection applies only in orbit
-mode. The partnership banner has no paper mask. Reduced-motion readers get
+orbit, and clicks on the copy do not gather it accidentally. Hero and drifting
+papers render behind the HTML; section rectangles never mask the shared canvas.
+The closing sphere retains its split front/back depth effect. Reduced-motion readers get
 a normal document with the animation control hidden.
 
 Tool pills reveal a single top-layer preview on hover or keyboard focus.
@@ -358,7 +359,7 @@ caps at 56px, with 18px sans-serif introduction copy; phones stack the two.
 All eight capability paper cards remain, with tighter padding, smaller numbers
 and gaps, and wider desktop sentences. Mobile cards reserve room for their tilt
 and drop lateral offsets. Installer tabs fit within the phone reading column.
-Below the hero, foreground newspapers stay outside the section reading column;
+The HTML keeps text and cards above hero and drifting newspapers;
 the hero orbit/gather interaction and closing sphere retain their full motion.
-Functional secondary labels use at least 11px. Reference-only skill availability
-is a separate outlined badge rather than quiet catalogue metadata.
+Functional secondary labels use at least 11px. Skill cards use a linked title,
+one summary and one attribution line; reference-only status sits with the attribution.
