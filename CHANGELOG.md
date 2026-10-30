@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 ## [Unreleased]
 
 ### Changed
+- Kept foreground newspapers visible through empty section padding while
+  protecting headings and capability cards from overlap.
 - Centered mobile partner logos, removed their top rule and the paper-gathering
   controls, added tap-to-preview links, and shortened the website skill summaries.
 - Anchored the mobile network footer to the viewport bottom during its reveal.

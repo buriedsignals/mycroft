@@ -8566,11 +8566,15 @@ function boot() {
     let marginClip = `M0 0 H${innerWidth} V${H} H0 Z`;
     for (const el of marginOnlySections) {
       const r = el.getBoundingClientRect();
-      if (r.bottom < 0 || r.top > H) continue;
+      const style = getComputedStyle(el);
+      // Protect the content, leaving section padding open to passing papers.
+      const contentTop = r.top + parseFloat(style.paddingTop) - 12;
+      const contentBottom = r.bottom - parseFloat(style.paddingBottom) + 12;
+      if (contentBottom < 0 || contentTop > H) continue;
       const left = Math.max(12, Math.round(r.left - 8));
       const right = Math.min(innerWidth - 12, Math.round(r.right + 8));
-      const top = Math.max(0, Math.round(r.top));
-      const bottom = Math.min(H, Math.round(r.bottom));
+      const top = Math.max(0, Math.round(contentTop));
+      const bottom = Math.min(H, Math.round(contentBottom));
       marginClip += ` M${left} ${top} H${right} V${bottom} H${left} Z`;
     }
     rendererFront.domElement.style.clipPath = `path(evenodd, "${marginClip}")`;
