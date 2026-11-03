@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.0",
-  "released_at": "2026-10-29T12:40:53Z",
-  "release_sequence": 43,
+  "released_at": "2026-11-03T20:10:30Z",
+  "release_sequence": 45,
   "products": {
     "mycroft": {
       "version": "0.4.0",
@@ -1075,6 +1075,15 @@
       "sha256": "6691b91e74b3388afb08e21bcac513b65c8f425fb0228d2a0f534205b06cad6c",
       "size_bytes": 589403416,
       "files_sha256": "7eec4763a1fd38e942c6defa77f7cd85fe41ccdb99ecaba03fc645fb7cd8ee91"
+    },
+    {
+      "version": "2026.11.03-1",
+      "os": "darwin",
+      "arch": "arm64",
+      "url": "https://github.com/buriedsignals/mycroft/releases/download/runtime-pack-2026.11.03-1/runtime-pack-2026.11.03-1-darwin-arm64.tar.gz",
+      "sha256": "1030c992cc7f680af2c0bb7df892689e1a99818a9015c4eee127caf4102432d1",
+      "size_bytes": 589286931,
+      "files_sha256": "9296e550ad3c432810f60dd959017ad7b00e752ba3f959efe5489fc719762db1"
     }
   ],
   "models": [
@@ -1128,7 +1137,28 @@
       "mistralai/mistral-large-4-0",
       "mistralai/mistral-medium-3-5"
     ],
-    "analyst": true
+    "analyst": true,
+    "windows": {
+      "min_version": "0.1.9",
+      "mycroft_model": {
+        "repo": "google/gemma-4-12B-it-qat-q4_0-gguf",
+        "revision": "29d097773436b69ff9feafd636ab4cf873786537",
+        "files": [
+          "gemma-4-12b-it-qat-q4_0.gguf",
+          "mmproj-gemma-4-12b-it-qat-q4_0.gguf"
+        ],
+        "size_bytes": 7150994912
+      },
+      "extract_model": {
+        "repo": "numind/NuExtract3-GGUF",
+        "revision": "28a1aae6288c5d50bdf999ca2e572240966d669b",
+        "files": [
+          "NuExtract3-Q4_K_M.gguf",
+          "mmproj-NuExtract3-BF16.gguf"
+        ],
+        "size_bytes": 3459015168
+      }
+    }
   },
   "anomaly": {
     "ref": "458d1425bea7b0152863b7260b9c983682b7bd36",
