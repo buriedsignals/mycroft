@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.0",
-  "released_at": "2026-11-04T07:52:58Z",
-  "release_sequence": 46,
+  "released_at": "2026-11-04T09:59:29Z",
+  "release_sequence": 47,
   "products": {
     "mycroft": {
       "version": "0.4.0",
@@ -1139,7 +1139,7 @@
     ],
     "analyst": true,
     "windows": {
-      "min_version": "0.1.9",
+      "min_version": "0.1.10",
       "mycroft_model": {
         "repo": "google/gemma-4-12B-it-qat-q4_0-gguf",
         "revision": "29d097773436b69ff9feafd636ab4cf873786537",
