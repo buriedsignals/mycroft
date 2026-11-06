@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.2.1",
-  "released_at": "2026-11-05T13:23:12Z",
-  "release_sequence": 48,
+  "min_engine_version": "0.2.2",
+  "released_at": "2026-11-06T15:50:33Z",
+  "release_sequence": 49,
   "products": {
     "mycroft": {
       "version": "0.4.0",
@@ -60,19 +60,19 @@
       "coming_soon": true
     },
     "spotlight": {
-      "version": "2.15.0",
+      "version": "2.32.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "fa1c38c1a7ab8a7e4aad86b9bdf6f148988d3f7f",
+      "ref": "2b1886f5a8f86bacbe9d374a1d25c4dd3085244f",
       "source": {
-        "url": "https://github.com/buriedsignals/spotlight/archive/fa1c38c1a7ab8a7e4aad86b9bdf6f148988d3f7f.tar.gz",
-        "sha256": "fadb3e86bbfe0b0160968632f7849727d92627c3f7ad03e6f2fead0c2df1ec91",
-        "size_bytes": 2361629,
-        "prefix": "spotlight-fa1c38c1a7ab8a7e4aad86b9bdf6f148988d3f7f"
+        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.32.0/spotlight-2b1886f5a8f86bacbe9d374a1d25c4dd3085244f.tar.gz",
+        "sha256": "06f6461524889881bdfb1b30f864f04fa7e7a73ecdf433ef21323078a79cd5b5",
+        "size_bytes": 2429286,
+        "prefix": "spotlight-2b1886f5a8f86bacbe9d374a1d25c4dd3085244f"
       },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "fa1c38c1a7ab8a7e4aad86b9bdf6f148988d3f7f",
+        "source_commit": "2b1886f5a8f86bacbe9d374a1d25c4dd3085244f",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1141,12 +1141,13 @@
     "min_version": "0.25.28",
     "app_artifact": "osaurus-app-darwin-arm64",
     "mycroft_model": "OsaurusAI/gemma-4-12B-it-qat-MXFP4",
-    "spotlight_model": "tomvaillant/qwen3.5-9b-spotlight-r3-mlx",
+    "spotlight_model": "tomvaillant/qwen3.5-9b-spotlight-r3-optiq-mlx",
+    "spotlight_model_size_bytes": 8032502266,
     "spotlight_model_files": {
       "chat_template.jinja": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
-      "config.json": "5df4241608513d85d46e9b000b6686e45c8ad811b5934cea015b35071e5691e0",
-      "model-00001-of-00002.safetensors": "0d3c921bdee40017d7df158265df1a6973f1061b2fdb830ae743212ffda3fd8f",
-      "model-00002-of-00002.safetensors": "bdad79fd0870d802567a1225325409c6e0ea2abf0249f7b0d5fc5500715cd3ad",
+      "config.json": "8b477b020b54f260118c745e19d7dd36017c1cf44b6e830b19db876ce70487bb",
+      "model-00001-of-00002.safetensors": "924f1878d5dd056c0b141e11aacdd0c432befbe2d4162102798beacaca30fb86",
+      "model-00002-of-00002.safetensors": "2c05ffaf8dfa8b33868238de6b13530a87dc83ebad68b05e5f60e61ab3fbf5a5",
       "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
       "processor_config.json": "45fc17c8dd2474af6b493b52483c26c0584b0082d368c480f9fa611e73070040",
       "tokenizer.json": "5f9e4d4901a92b997e463c1f46055088b6cca5ca61a6522d1b9f64c4bb81cb42",
