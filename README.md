@@ -1,14 +1,26 @@
+<div align="center">
+
 # Mycroft
 
-**The on-device investigator harness.**
+### The on-device investigator harness
+
+[Website](https://mycroft.buriedsignals.com/) |
+[Install with Indicator Lab](https://indicator.media/indicator-lab) |
+[Manual setup](docs/install.md) | [Contributing](CONTRIBUTING.md)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-00c853?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](LICENSE)[![4 Agents](https://img.shields.io/badge/agents-4-0080ff?style=for-the-badge&logo=probot&logoColor=white)](#agents)[![6 Skills](https://img.shields.io/badge/skills-6-aa00ff?style=for-the-badge&logo=bookstack&logoColor=white)](#skills)[![On-device](https://img.shields.io/badge/on--device-Osaurus_on_macOS-00bfa5?style=for-the-badge&logo=apple&logoColor=white)](#install)
+
+[![Stars](https://img.shields.io/github/stars/buriedsignals/mycroft?style=flat-square&logo=github&label=Stars)](https://github.com/buriedsignals/mycroft/stargazers)[![Issues](https://img.shields.io/github/issues/buriedsignals/mycroft?style=flat-square&logo=github&label=Issues)](https://github.com/buriedsignals/mycroft/issues)[![Last Commit](https://img.shields.io/github/last-commit/buriedsignals/mycroft?style=flat-square&logo=github&label=Last%20Commit)](https://github.com/buriedsignals/mycroft/commits)[![Contributors](https://img.shields.io/github/contributors/buriedsignals/mycroft?style=flat-square&logo=github&label=Contributors)](https://github.com/buriedsignals/mycroft/graphs/contributors)
+
+Built by [**Buried Signals**](https://buriedsignals.com/) • [tom@buriedsignals.com](mailto:tom@buriedsignals.com)
+
+</div>
+
+---
 
 Mycroft runs in [Osaurus](https://osaurus.ai/) on your Mac. Plan research with
 Navigator, investigate with Spotlight, keep watch with Scoutpost, and connect
 what you find in your [OpenKnowledge](https://openknowledge.ai/) wiki.
-
-[Website](https://mycroft.buriedsignals.com/) ·
-[Install with Indicator Lab](https://indicator.media/indicator-lab) ·
-[Manual setup](docs/install.md) · [Contributing](CONTRIBUTING.md)
 
 ## Install
 
