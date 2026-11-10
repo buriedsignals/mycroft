@@ -32,6 +32,8 @@ jobs:
           "
       - name: Validate skills index
         run: python3 tests/skills-index-check.py
+      - name: Validate Osaurus prompt
+        run: python3 tests/osaurus-prompt-check.py
       - name: Validate journalist install CTAs
         run: bash tests/journalist-install-cta-check.sh
       - name: Validate installer pointer
