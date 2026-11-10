@@ -17,6 +17,8 @@ def main() -> None:
     assert "Never ask for a screenshot or a page image of a PDF that is attached" in PROMPT, "prompt must tell Mycroft to read attached PDFs directly"
     assert "Use it only for a file named by path" in PROMPT, "extract tool must be limited to files named by path"
     assert "The Analyst cannot see this chat or its attachments" in PROMPT, "handoff must carry attachment content in the Analyst's input"
+    assert "Transcribe what the pages show, faithfully and in full, whatever they contain" in PROMPT, "prompt must tell Mycroft to transcribe page images faithfully (a 12B model called a test page placeholder text and refused)"
+    assert "Never call `wiki_extract_document` with the bare file name of an attachment" in PROMPT, "prompt must forbid extracting an attachment by bare file name"
     for tool in ("wiki_search", "wiki_read", "wiki_resolve_entity", "spawn_agent"):
         assert f"`{tool}`" in PROMPT, f"prompt does not name {tool}"
     print("osaurus-prompt-check: ok")
