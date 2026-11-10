@@ -321,9 +321,9 @@ the capability cards.
 The public catalogue hides AI writing detox and tool connector skills, and
 places fact-checking first. It combines the installed journalism metadata with
 `catalog/featured-skills.json`. Installed skill cards credit Joe Amditis.
-Fact-checking credits Verso and Buried Signals and is explicitly a historical
-method reference, not a claim that the old Goose workflow ships in Osaurus.
-The installation manifest remains unchanged.
+Fact-checking credits Verso and Buried Signals. Its card links to the installed
+Osaurus edition, which works without web access or a shell; it is not a claim
+that the old Goose workflow ships in Osaurus.
 
 Knowledge flows from the wiki, Spotlight and Scoutpost through the Analyst's
 proposed writes into connected notes. The Analyst is described as an on-device

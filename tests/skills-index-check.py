@@ -9,7 +9,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OSAURUS_COPIES = {"navigator", "scoutpost"}
+OSAURUS_COPIES = {"navigator", "scoutpost", "fact-check"}
 
 
 def frontmatter(path: Path) -> dict:
@@ -32,7 +32,7 @@ def main() -> None:
 
     for skill_id in skill_ids:
         assert re.fullmatch(r"[a-z0-9][a-z0-9-]*", skill_id), f"invalid skill ID: {skill_id}"
-        # Navigator and Scoutpost ship Osaurus copies (engine osaurusSkillOverrides).
+        # Navigator, Scoutpost and fact-check ship Osaurus copies (engine osaurusSkillOverrides).
         base = ROOT / "skills" / "osaurus" if skill_id in OSAURUS_COPIES else ROOT / "skills"
         path = base / skill_id / "SKILL.md"
         assert path.is_file(), f"missing skill file: {path}"

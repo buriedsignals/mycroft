@@ -16,8 +16,10 @@ against the pinned upstream commit recorded in the skill catalog.
 Tool clips and partner interface images have provenance records in
 [`assets/previews/README.md`](assets/previews/README.md) and
 [`assets/screenshots/README.md`](assets/screenshots/README.md).
-The fact-checking method links to an archived skill and credits Verso and
-Buried Signals; it is not bundled in the installation.
+The fact-checking skill adapts claim extraction and evidence routes from
+[Big If True](https://verso.ink/big-if-true/) by Verso (MIT, © 2026 Verso Lab
+LLC) and credits Verso and Buried Signals. Its Osaurus edition is bundled in the
+installation (`skills/osaurus/fact-check/`).
 
 The website imports Three.js and lil-gui; the Analyst pins Pi and pi-acp in
 `analyst/package.json` and its lockfile. These projects retain their own licences.
