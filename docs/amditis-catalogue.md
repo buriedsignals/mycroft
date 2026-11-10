@@ -22,6 +22,7 @@ remains installed but is not featured.
 The earlier selection notes and Goose-specific integration checklists remain
 in version history, not in the current setup documentation.
 
-The fact-checking card is a separate, archived Mycroft method reference credited
-to Verso and Buried Signals. It is not an Amditis skill and is not installed.
-Its pinned source is in [featured-skills.json](../catalog/featured-skills.json).
+The fact-checking card is a separate Mycroft skill credited to Verso and Buried
+Signals. It is not an Amditis skill, though its media triage, right-of-response
+and corrections sections adapt two of his. Its Osaurus edition is installed;
+its card is in [featured-skills.json](../catalog/featured-skills.json).

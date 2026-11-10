@@ -8864,9 +8864,9 @@ export {
     status.hidden = true;
   }
 
-  // Navigator and Scoutpost ship Osaurus-specific copies under skills/osaurus/
+  // Navigator, Scoutpost and fact-check ship Osaurus-specific copies under skills/osaurus/
   // (engine osaurusSkillOverrides); the rest live at skills/<id>.
-  var OSAURUS_COPIES = ['navigator', 'scoutpost'];
+  var OSAURUS_COPIES = ['navigator', 'scoutpost', 'fact-check'];
   function skillPath(skillId) {
     return (OSAURUS_COPIES.indexOf(skillId) !== -1 ? 'skills/osaurus/' : 'skills/') + skillId;
   }

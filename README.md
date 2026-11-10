@@ -64,13 +64,14 @@ catalogue rather than this README.
 
 The installation and the website catalogue serve different purposes.
 
-[`skills.manifest`](skills.manifest) lists **six installed skills**, each exposed
+[`skills.manifest`](skills.manifest) lists **seven installed skills**, each exposed
 as a slash command on Mycroft:
 
 | Skill | Purpose |
 |---|---|
 | [`navigator`](skills/osaurus/navigator/SKILL.md) | Find OSINT tools and methods |
 | [`scoutpost`](skills/osaurus/scoutpost/SKILL.md) | Set up monitors and read their findings |
+| [`fact-check`](skills/osaurus/fact-check/SKILL.md) | List a draft's checkable claims, check them against the wiki and supplied documents, and say where the original record is |
 | [`foia-requests`](skills/foia-requests/SKILL.md) | Draft and track public-records requests |
 | [`interview-prep`](skills/interview-prep/SKILL.md) | Prepare questions, background and attribution rules |
 | [`story-pitch`](skills/story-pitch/SKILL.md) | Frame a story pitch |
@@ -78,9 +79,12 @@ as a slash command on Mycroft:
 
 The **website features four skills and methods**: fact-checking, public-records
 requests, interview preparation and story pitches. It omits the tool-connection
-skills and AI-writing cleanup. Fact-checking is an archived method reference,
-credited to Verso and Buried Signals; it is **not included in the current
-Osaurus installation**. Its source and status are recorded in
+skills and AI-writing cleanup. Fact-checking is credited to Verso and Buried
+Signals. The installed skill is its Osaurus edition: Mycroft has no web access
+or shell in Osaurus, so it checks claims against the member's wiki and the
+documents they supply, and names the original record for the rest. The full
+edition, which fetched evidence through a shell, is in the repository history
+at commit `30434172`. The website card is recorded in
 [`catalog/featured-skills.json`](catalog/featured-skills.json).
 
 The four installed journalism skills are adapted from Joe Amditis's

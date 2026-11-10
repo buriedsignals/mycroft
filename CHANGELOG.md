@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Added
+- Fact-checking is an installed skill again: `skills/osaurus/fact-check/`, the
+  Osaurus edition of the skill removed with the Goose runtime on 2026-10-29.
+  Claim extraction and the six evidence routes are restored from commit
+  `30434172` (adapted from Big If True by Verso, MIT), with a note in each that
+  the shell commands they name are not available in Osaurus. The skill lists
+  every checkable claim, checks each against the member's wiki and supplied
+  documents, and names the original record for the rest; it cannot look a
+  claim up on the web. Verdicts use Verso's rule (one definitive source, or two
+  independent sources) with sources counted by site. `skills.manifest` lists
+  seven skills; Engine must also list it for the app to install it.
+
 ### Changed
 - Simplified skill cards to a linked title, summary and attribution, removing
   repeated identifiers, separate read links and the standalone reference badge.
