@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.2",
-  "released_at": "2026-11-06T15:50:33Z",
-  "release_sequence": 49,
+  "released_at": "2026-11-11T11:52:24Z",
+  "release_sequence": 51,
   "products": {
     "mycroft": {
-      "version": "0.4.0",
+      "version": "0.4.1",
       "repo": "buriedsignals/mycroft",
-      "ref": "672f737fac6480931dc33b57d1a2de1d669e2665",
+      "ref": "57a43160a88c4f2eeb2bc7727231a555cc31bccd",
       "source": {
-        "url": "https://github.com/buriedsignals/mycroft/archive/672f737fac6480931dc33b57d1a2de1d669e2665.tar.gz",
-        "sha256": "2762f6083d04f65be9858d58e90e64e6d0ba342b0522de7b7939a210d4929bbb",
-        "size_bytes": 3269707,
-        "prefix": "mycroft-672f737fac6480931dc33b57d1a2de1d669e2665"
+        "url": "https://github.com/buriedsignals/mycroft/archive/57a43160a88c4f2eeb2bc7727231a555cc31bccd.tar.gz",
+        "sha256": "c2fe69ed5c2e9ba101bff22c2f167a38aee980a97afa46c6d5b72436c8473295",
+        "size_bytes": 3290415,
+        "prefix": "mycroft-57a43160a88c4f2eeb2bc7727231a555cc31bccd"
       },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "672f737fac6480931dc33b57d1a2de1d669e2665",
+        "source_commit": "57a43160a88c4f2eeb2bc7727231a555cc31bccd",
         "digest": "8a632c8bc4563b9b27d9a533a853b85285170edff95401dbadaf8ed317dc1477",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -60,19 +60,19 @@
       "coming_soon": true
     },
     "spotlight": {
-      "version": "2.32.0",
+      "version": "2.33.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "2b1886f5a8f86bacbe9d374a1d25c4dd3085244f",
+      "ref": "cb965853ee4500d865333952d8bcf983e6974140",
       "source": {
-        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.32.0/spotlight-2b1886f5a8f86bacbe9d374a1d25c4dd3085244f.tar.gz",
-        "sha256": "06f6461524889881bdfb1b30f864f04fa7e7a73ecdf433ef21323078a79cd5b5",
-        "size_bytes": 2429286,
-        "prefix": "spotlight-2b1886f5a8f86bacbe9d374a1d25c4dd3085244f"
+        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.33.0/spotlight-cb965853ee4500d865333952d8bcf983e6974140.tar.gz",
+        "sha256": "d43980eb2fb18dfbcff224429ed7abae68ba9042d4e9318ea6179fdb1e7ce560",
+        "size_bytes": 2426836,
+        "prefix": "spotlight-cb965853ee45"
       },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "2b1886f5a8f86bacbe9d374a1d25c4dd3085244f",
+        "source_commit": "cb965853ee4500d865333952d8bcf983e6974140",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1011,9 +1011,9 @@
     },
     {
       "id": "osaurus-app-darwin-arm64",
-      "url": "https://github.com/osaurus-ai/osaurus/releases/download/0.25.28/Osaurus-0.25.28.dmg",
-      "sha256": "7999f9438f65105e34a026a7493b0991c4321047765e86d9e263c3ead22d901f",
-      "size_bytes": 85895633
+      "url": "https://github.com/osaurus-ai/osaurus/releases/download/1.0.1/Osaurus-1.0.1.dmg",
+      "sha256": "69c3b0115778a729c6981d0d65bb90ab1be18be97a7e146bc1e1df732b5027c5",
+      "size_bytes": 121418335
     },
     {
       "id": "embeddinggemma2-q8-0",
@@ -1138,7 +1138,7 @@
   ],
   "integrations": null,
   "osaurus": {
-    "min_version": "0.25.28",
+    "min_version": "1.0.1",
     "app_artifact": "osaurus-app-darwin-arm64",
     "mycroft_model": "OsaurusAI/gemma-4-12B-it-qat-MXFP4",
     "spotlight_model": "tomvaillant/qwen3.5-9b-spotlight-r3-optiq-mlx",
