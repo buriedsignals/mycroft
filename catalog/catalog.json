@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.2",
-  "released_at": "2026-11-11T11:52:24Z",
-  "release_sequence": 51,
+  "released_at": "2026-11-13T09:31:10Z",
+  "release_sequence": 52,
   "products": {
     "mycroft": {
       "version": "0.4.1",
@@ -60,19 +60,19 @@
       "coming_soon": true
     },
     "spotlight": {
-      "version": "2.33.0",
+      "version": "2.34.1",
       "repo": "buriedsignals/spotlight",
-      "ref": "cb965853ee4500d865333952d8bcf983e6974140",
+      "ref": "399821213edf1be6ea079a57359d8b7fae42f89e",
       "source": {
-        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.33.0/spotlight-cb965853ee4500d865333952d8bcf983e6974140.tar.gz",
-        "sha256": "d43980eb2fb18dfbcff224429ed7abae68ba9042d4e9318ea6179fdb1e7ce560",
-        "size_bytes": 2426836,
-        "prefix": "spotlight-cb965853ee45"
+        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.34.1/spotlight-399821213edf1be6ea079a57359d8b7fae42f89e.tar.gz",
+        "sha256": "5557b3c47b7bba111dc68aa32ffaa4bf9a046258f8703ff3317c44a3fccecd58",
+        "size_bytes": 2493393,
+        "prefix": "spotlight-399821213edf"
       },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "cb965853ee4500d865333952d8bcf983e6974140",
+        "source_commit": "399821213edf1be6ea079a57359d8b7fae42f89e",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
