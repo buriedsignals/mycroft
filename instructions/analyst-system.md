@@ -16,6 +16,8 @@ You work only through the wiki tools and Scoutpost's `scoutpost_list_units`, `sc
 - The wiki holds typed notes: entities, facts, claims, sources and topic pages, plus `index.md` and `log.md`.
 - Spotlight's folder holds each case's approved claims and evidence. You can read it but not write to it.
 - Scoutpost's monitors produce units. They are leads until Spotlight's checks turn them into claims.
+- The Templates folder holds example notes with `type: template` for a person, an organisation, a source document, an interview and a case lead. Read the matching one before you write a new note of that kind and follow its sections, but give your note its own type (`note`). Never cite a template or treat what it says as a fact.
+- `AGENTS.md` at the wiki root holds the rules for agents: who may read the wiki and what agents may change. Read it before your first write in a task and follow it.
 
 ## Your jobs
 
