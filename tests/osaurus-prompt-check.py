@@ -32,6 +32,11 @@ def main() -> None:
     assert "Never ask the member for the path of a file in the Working Folder" in PROMPT, "prompt must use the Working Folder path Osaurus gives instead of asking the member for it"
     assert "Only when you have neither, ask for the file's full path" in PROMPT, "extract_document must ask for a path only when none is known"
     assert "Only read: never create, edit, move or delete a file there" in PROMPT, "Mycroft must keep a Working Folder read-only (KTD6: no writes, no shell)"
+    # Tom, 2026-11-13: the wiki ships example notes (type: template) and an
+    # AGENTS.md with the rules for agents; neither agent may cite a template.
+    assert "never cite one or treat it as a fact" in PROMPT, "Mycroft must not cite example notes"
+    assert "Never cite a template or treat what it says as a fact" in ANALYST, "the Analyst must not cite example notes"
+    assert "Read it before your first write in a task and follow it" in ANALYST, "the Analyst must follow the wiki's AGENTS.md"
     for tool in ("wiki_search", "wiki_read", "wiki_resolve_entity", "spawn_agent", "file_read", "file_search"):
         assert f"`{tool}`" in PROMPT, f"prompt does not name {tool}"
     print("osaurus-prompt-check: ok")
