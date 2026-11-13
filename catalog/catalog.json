@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.2",
-  "released_at": "2026-11-13T09:31:10Z",
-  "release_sequence": 52,
+  "released_at": "2026-11-13T12:10:41Z",
+  "release_sequence": 53,
   "products": {
     "mycroft": {
       "version": "0.4.1",
       "repo": "buriedsignals/mycroft",
-      "ref": "57a43160a88c4f2eeb2bc7727231a555cc31bccd",
+      "ref": "3ad345cc9db2ab5ad762b468cd93ea01b172d0b2",
       "source": {
-        "url": "https://github.com/buriedsignals/mycroft/archive/57a43160a88c4f2eeb2bc7727231a555cc31bccd.tar.gz",
-        "sha256": "c2fe69ed5c2e9ba101bff22c2f167a38aee980a97afa46c6d5b72436c8473295",
-        "size_bytes": 3290415,
-        "prefix": "mycroft-57a43160a88c4f2eeb2bc7727231a555cc31bccd"
+        "url": "https://github.com/buriedsignals/mycroft/archive/3ad345cc9db2ab5ad762b468cd93ea01b172d0b2.tar.gz",
+        "sha256": "6f6e886e19531249b2cee464b47aa04ec67a870d40987098c284f70b7aeba4db",
+        "size_bytes": 3291291,
+        "prefix": "mycroft-3ad345cc9db2ab5ad762b468cd93ea01b172d0b2"
       },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "57a43160a88c4f2eeb2bc7727231a555cc31bccd",
+        "source_commit": "3ad345cc9db2ab5ad762b468cd93ea01b172d0b2",
         "digest": "8a632c8bc4563b9b27d9a533a853b85285170edff95401dbadaf8ed317dc1477",
         "writer_mode": "engine_v2",
         "choice_schema": {
