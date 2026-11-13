@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.2",
-  "released_at": "2026-11-13T12:10:41Z",
-  "release_sequence": 53,
+  "released_at": "2026-11-13T12:42:23Z",
+  "release_sequence": 54,
   "products": {
     "mycroft": {
-      "version": "0.4.1",
+      "version": "0.4.2",
       "repo": "buriedsignals/mycroft",
       "ref": "3ad345cc9db2ab5ad762b468cd93ea01b172d0b2",
       "source": {
