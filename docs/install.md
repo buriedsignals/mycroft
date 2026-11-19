@@ -42,9 +42,10 @@ it. Indicator Lab manages the same Engine lifecycle through its interface.
 ## After installation
 
 Open Osaurus to use Mycroft and Spotlight. OpenKnowledge holds your wiki.
-The Analyst proposes wiki changes for you to confirm; it also has an
-OpenKnowledge agent entry. If it is not enabled there, open OpenKnowledge's
-Settings → Agent connections.
+Mycroft files new notes into your wiki itself, in the From Mycroft folder, and
+it never changes a note you already have. The Analyst runs in OpenKnowledge's
+Agents panel and proposes wiki changes for you to confirm. It starts switched
+off, so turn it on in OpenKnowledge's Settings → Agent connections.
 
 Navigator and Scoutpost require their service connections. Cloud research
 requires the corresponding provider setup; it is separate from local inference.

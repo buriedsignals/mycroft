@@ -45,9 +45,9 @@ manual guide for configuration input and private key entry.
 
 | Agent | Role | Where it runs |
 |---|---|---|
-| Mycroft | Searches your wiki, finds OSINT tools with Navigator, works with Scoutpost monitors and extracts fields from documents. | On-device in Osaurus |
+| Mycroft | Searches your wiki, files new notes into it, finds OSINT tools with Navigator, works with Scoutpost monitors and extracts fields from documents. It adds notes but never changes or deletes one you already have. | On-device in Osaurus |
 | Spotlight | Runs an investigation, with your review of the method and findings. | On-device in Osaurus |
-| Analyst | Connects findings and proposes sourced additions to your wiki. You confirm writes before they land. | On-device; available through Osaurus and OpenKnowledge's Agents panel |
+| Analyst | Connects findings and proposes sourced additions to your wiki. You confirm writes before they land. | On-device, in OpenKnowledge's Agents panel, where it starts switched off |
 | Watson | Does web research when you select the cloud option. It has no wiki access. | Cloud, through OpenRouter using Mistral EU endpoints with zero data retention |
 
 On-device inference does not make every connected service local. Navigator

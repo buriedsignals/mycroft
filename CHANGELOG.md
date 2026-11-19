@@ -19,6 +19,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
   seven skills; Engine must also list it for the app to install it.
 
 ### Changed
+- Mycroft in Osaurus files new notes into the wiki itself with
+  `wiki_file_note` and `wiki_propose_entity`, after reading the wiki's rules
+  with `wiki_guide`. The tools only add, so a note that already exists is never
+  changed. Mycroft no longer hands wiki work to the Analyst, and the prompts no
+  longer send members to a Wiki changes page that Indicator Lab does not have.
+  The Analyst stays in OpenKnowledge's Agents panel.
 - Simplified skill cards to a linked title, summary and attribution, removing
   repeated identifiers, separate read links and the standalone reference badge.
 - Removed section masks from the shared foreground canvas and rendered hero
