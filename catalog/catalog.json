@@ -1,23 +1,23 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.2.2",
-  "released_at": "2026-11-13T12:42:23Z",
-  "release_sequence": 54,
+  "min_engine_version": "0.2.3",
+  "released_at": "2026-11-19T17:06:13Z",
+  "release_sequence": 55,
   "products": {
     "mycroft": {
-      "version": "0.4.2",
+      "version": "0.4.3",
       "repo": "buriedsignals/mycroft",
-      "ref": "3ad345cc9db2ab5ad762b468cd93ea01b172d0b2",
+      "ref": "c581f4305beca94c3b2fde3a281228d155f4c52a",
       "source": {
-        "url": "https://github.com/buriedsignals/mycroft/archive/3ad345cc9db2ab5ad762b468cd93ea01b172d0b2.tar.gz",
-        "sha256": "6f6e886e19531249b2cee464b47aa04ec67a870d40987098c284f70b7aeba4db",
-        "size_bytes": 3291291,
-        "prefix": "mycroft-3ad345cc9db2ab5ad762b468cd93ea01b172d0b2"
+        "url": "https://github.com/buriedsignals/mycroft/archive/c581f4305beca94c3b2fde3a281228d155f4c52a.tar.gz",
+        "sha256": "2cbbaf7e7986067ffdf64b59e88c3e2d8cb30487507f8feee3b0d0f95380fc47",
+        "size_bytes": 3291435,
+        "prefix": "mycroft-c581f4305beca94c3b2fde3a281228d155f4c52a"
       },
       "entitlement": "mycroft.core",
       "install_contract": {
         "schema_version": "mycroft-install-contract/v1",
-        "source_commit": "3ad345cc9db2ab5ad762b468cd93ea01b172d0b2",
+        "source_commit": "c581f4305beca94c3b2fde3a281228d155f4c52a",
         "digest": "8a632c8bc4563b9b27d9a533a853b85285170edff95401dbadaf8ed317dc1477",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1011,9 +1011,9 @@
     },
     {
       "id": "osaurus-app-darwin-arm64",
-      "url": "https://github.com/osaurus-ai/osaurus/releases/download/1.0.1/Osaurus-1.0.1.dmg",
-      "sha256": "69c3b0115778a729c6981d0d65bb90ab1be18be97a7e146bc1e1df732b5027c5",
-      "size_bytes": 121418335
+      "url": "https://github.com/osaurus-ai/osaurus/releases/download/1.0.5/Osaurus-1.0.5.dmg",
+      "sha256": "b0607595a2ed103c8745b0f591d00aa2eb6e6d0ac97ee758df9c0ee42866b63a",
+      "size_bytes": 121848194
     },
     {
       "id": "embeddinggemma2-q8-0",
@@ -1063,8 +1063,7 @@
     "crawl4ai": "0.9.0",
     "firecrawl-cli": "1.9.8",
     "navigator-cli": "0.3.4",
-    "scoutpost-cli": "0.1.22",
-    "searxng-image": "searxng/searxng@sha256:4ebe6ab0297397426fe7ca015caab8f5ed3b50784cf968bfbda7887ea6b16f6e"
+    "scoutpost-cli": "0.1.22"
   },
   "runtime_packs": [
     {
@@ -1138,7 +1137,7 @@
   ],
   "integrations": null,
   "osaurus": {
-    "min_version": "1.0.1",
+    "min_version": "1.0.5",
     "app_artifact": "osaurus-app-darwin-arm64",
     "mycroft_model": "OsaurusAI/gemma-4-12B-it-qat-MXFP4",
     "spotlight_model": "tomvaillant/qwen3.5-9b-spotlight-r3-optiq-mlx",
