@@ -33,8 +33,5 @@ plugins/
 mycroft-config.json
 __pycache__/
 
-# The Analyst's pinned runtime (npm ci installs it next to the checkout)
-!analyst/package.json
-
 # Local design critique snapshots and overlay runtime
 .impeccable/

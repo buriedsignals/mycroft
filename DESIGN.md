@@ -325,9 +325,9 @@ Fact-checking credits Verso and Buried Signals. Its card links to the installed
 Osaurus edition, which works without web access or a shell; it is not a claim
 that the old Goose workflow ships in Osaurus.
 
-Knowledge flows from the wiki, Spotlight and Scoutpost through the Analyst's
-proposed writes into connected notes. The Analyst is described as an on-device
-model; approval stays explicit. The diagram becomes vertical on phones.
+Knowledge flows from the wiki, Spotlight and Scoutpost through the notes
+Mycroft files into connected notes. Mycroft is described as an on-device
+model that adds notes and never changes an existing one. The diagram becomes vertical on phones.
 
 The Installer tab uses the supplied Indicator Lab screenshot, cropped to its
 top at 16:9. All three installer/partner image views use the same landscape

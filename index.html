@@ -1069,7 +1069,7 @@ a.pill:focus-visible { outline: 2px solid var(--oxide); outline-offset: 2px; }
 .ui-installer__steps .is-done span { background: #2b5247; }
 .ui-installer__steps .is-now span { background: var(--oxide); }
 
-/* OpenKnowledge mock · tree, note, Analyst panel */
+/* OpenKnowledge mock · tree, note, agent panel */
 .ui-ok__body { display: grid; grid-template-columns: 190px 1fr 240px; min-height: 340px; background: #fdfcf9; font-size: 14px; }
 .ui-ok__tree { padding: 18px 16px; border-right: 1px solid #e3dccb; background: #f3eee3; }
 .ui-ok__tree p { margin: 0 0 8px; color: #4a4439; }
@@ -2678,7 +2678,7 @@ button.day-card.is-settled:focus-visible {
 .knowledge-map__down { display: none; }
 .knowledge-map__arrow { width: 64px; }
 .knowledge-map svg { stroke: var(--oxide); stroke-width: 1.5; }
-.knowledge-map__analyst { padding: 24px 20px; border: 1px solid var(--rule); background: var(--vellum-bright); }
+.knowledge-map__agent { padding: 24px 20px; border: 1px solid var(--rule); background: var(--vellum-bright); }
 .knowledge-map__label { display: block; font-size: 12px; line-height: 1.5; color: var(--ink-soft); margin-bottom: 12px; }
 .knowledge-map__approval { display: block; margin-top: 20px; padding-top: 12px; border-top: var(--hairline); font-size: 13px; color: var(--oxide-active); }
 .knowledge-map__wiki { padding: 24px; background: var(--vellum-bright); }
@@ -2707,7 +2707,7 @@ button.day-card.is-settled:focus-visible {
   .knowledge-map__merge { display: none; }
   .knowledge-map__down { display: block; width: 32px; height: 48px; justify-self: center; }
   .knowledge-map__arrow { width: 32px; height: 48px; justify-self: center; transform: rotate(90deg); }
-  .knowledge-map__analyst, .knowledge-map__wiki { padding: 24px; }
+  .knowledge-map__agent, .knowledge-map__wiki { padding: 24px; }
   .knowledge-map figcaption { align-items: flex-start; }
 }
 
@@ -3489,8 +3489,8 @@ html.js .is-in .tw__in {
       <article class="day-frame" style="--tilt:0.9deg; --offset:2.5vw; --delay: 300ms">
         <aside class="day-time"><span class="day-time__hour">06</span></aside>
         <div class="day-card">
-          <p class="card__kicker"><span>§ File · <strong>Analyst</strong></span></p>
-          <h3 class="card__title">The <a class="pill" href="https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md" target="_blank" rel="noreferrer">Analyst</a> uses an on-device model to connect Spotlight findings and Scoutpost alerts with the knowledge in your wiki.</h3>
+          <p class="card__kicker"><span>§ File · <strong>Mycroft</strong></span></p>
+          <h3 class="card__title">Ask Mycroft to file a Spotlight finding or a Scoutpost alert into your wiki as a new note.</h3>
         </div>
       </article>
 
@@ -3550,10 +3550,10 @@ html.js .is-in .tw__in {
       </div>
       <svg class="knowledge-map__merge" viewBox="0 0 64 288" preserveAspectRatio="none" fill="none" aria-hidden="true"><path d="M0 48C40 48 24 144 64 144M0 144H64M0 240C40 240 24 144 64 144"/><path d="m56 138 8 6-8 6"/></svg>
       <svg class="knowledge-map__down" viewBox="0 0 32 48" fill="none" aria-hidden="true"><path d="M16 0V46m-6-8 6 8 6-8"/></svg>
-      <div class="knowledge-map__analyst"><span class="knowledge-map__label">On-device model</span><h3>Analyst</h3><p>Connects findings to what you know. Proposes notes and links.</p><span class="knowledge-map__approval">You approve each write</span></div>
+      <div class="knowledge-map__agent"><span class="knowledge-map__label">On-device model</span><h3>Mycroft</h3><p>Files what you found as new notes and adds the people and companies in them.</p><span class="knowledge-map__approval">It never changes a note you already have</span></div>
       <svg class="knowledge-map__arrow" viewBox="0 0 64 32" fill="none" aria-hidden="true"><path d="M0 16H62m-8-6 8 6-8 6"/></svg>
       <div class="knowledge-map__wiki"><span class="knowledge-map__label">OpenKnowledge · on your machine</span><h3>Connected knowledge</h3><div class="knowledge-map__links" aria-hidden="true"><span>People</span><span>Cases</span><span>Sources</span><span>Methods</span></div><p>Find the shared director. Revisit the original source. Follow a connection into the next case.</p></div>
-      <figcaption id="knowledge-map-caption"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7H7a4 4 0 0 0-4 4v4a4 4 0 0 0 4 4h10m-3-17 5 5-5 5"/></svg><span><strong>Each case gives the next one a head start.</strong> Approved notes and links become part of the wiki your agents can search again.</span></figcaption>
+      <figcaption id="knowledge-map-caption"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M19 7H7a4 4 0 0 0-4 4v4a4 4 0 0 0 4 4h10m-3-17 5 5-5 5"/></svg><span><strong>Each case gives the next one a head start.</strong> The notes and entries Mycroft files become part of the wiki your agents can search again.</span></figcaption>
     </figure>
   </section>
 
@@ -3575,7 +3575,7 @@ html.js .is-in .tw__in {
       <article class="stamp" style="--delay: 0ms; --tilt: -1.4deg">
         <span class="stamp__seal" style="--seal-tilt: -8deg"><span>Default</span></span>
         <h3 class="stamp__title">On-device by default</h3>
-        <p class="stamp__body">Mycroft, Spotlight, the Analyst and document extraction run on local models in Osaurus.</p>
+        <p class="stamp__body">Mycroft, Spotlight and document extraction run on local models in Osaurus.</p>
         <p class="stamp__foot">Osaurus · on-device</p>
       </article>
 
@@ -3722,7 +3722,7 @@ html.js .is-in .tw__in {
       <li><a href="https://huggingface.co/OsaurusAI/gemma-4-12B-it-qat-MXFP4" target="_blank" rel="noreferrer">Gemma 4</a> <span>— Google · Mycroft's on-device model</span></li>
       <li><a href="https://huggingface.co/Qwen/Qwen3.5-9B" target="_blank" rel="noreferrer">Qwen3.5</a> <span>— Qwen · Spotlight's on-device model</span></li>
       <li><a href="https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M" target="_blank" rel="noreferrer">NuExtract3</a> <span>— NuMind · on-device document extraction</span></li>
-      <li><a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noreferrer">Pi</a> <span>— badlogic · the agent loop under the Analyst and Spotlight</span></li>
+      <li><a href="https://github.com/badlogic/pi-mono" target="_blank" rel="noreferrer">Pi</a> <span>— badlogic · the agent loop under Spotlight</span></li>
       <li><a href="https://threejs.org/" target="_blank" rel="noreferrer">Three.js</a> <span>— WebGL and CSS3D rendering for this site</span></li>
     </ul>
   </section>
@@ -8964,7 +8964,6 @@ export {
   };
   // Model and agent references use an example of the interface they run in.
   tools['https://huggingface.co/OsaurusAI/NuExtract3-JANG_6M'] = { ...tools['https://osaurus.ai/'], name: 'Document extraction in Osaurus' };
-  tools['https://github.com/buriedsignals/mycroft/blob/main/instructions/analyst-system.md'] = { ...tools['https://openknowledge.ai/'], name: 'Analyst in OpenKnowledge' };
   tools['https://openrouter.ai/mistralai/mistral-large-4-0'] = { ...tools['https://osaurus.ai/'], name: 'Watson in Osaurus' };
   tools['https://huggingface.co/LiquidAI/LFM3-VL-2B'] = { ...tools['https://osaurus.ai/'], name: 'Splash visual model', image: 'assets/previews/splash.jpg', alt: 'Splash interface preview.' };
   const panel = document.createElement('aside');

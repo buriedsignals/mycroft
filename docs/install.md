@@ -14,7 +14,7 @@ Indicator’s Lab-tier members install through Indicator Lab, using Engine for
 setup, repair and updates. Use the member interface to obtain managed software.
 
 You may also use this public repository to experiment with self-managed setup.
-It contains Mycroft’s instructions, skills and Analyst dependency pins; it does
+It contains Mycroft’s instructions and skills; it does
 not include Engine or the models. The commands below assume you already have
 Engine. Private artifact download endpoints are not part of this guide.
 
@@ -43,9 +43,7 @@ it. Indicator Lab manages the same Engine lifecycle through its interface.
 
 Open Osaurus to use Mycroft and Spotlight. OpenKnowledge holds your wiki.
 Mycroft files new notes into your wiki itself, in the From Mycroft folder, and
-it never changes a note you already have. The Analyst runs in OpenKnowledge's
-Agents panel and proposes wiki changes for you to confirm. It starts switched
-off, so turn it on in OpenKnowledge's Settings → Agent connections.
+it never changes a note you already have.
 
 Navigator and Scoutpost require their service connections. Cloud research
 requires the corresponding provider setup; it is separate from local inference.

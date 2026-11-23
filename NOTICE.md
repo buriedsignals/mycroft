@@ -21,6 +21,5 @@ The fact-checking skill adapts claim extraction and evidence routes from
 LLC) and credits Verso and Buried Signals. Its Osaurus edition is bundled in the
 installation (`skills/osaurus/fact-check/`).
 
-The website imports Three.js and lil-gui; the Analyst pins Pi and pi-acp in
-`analyst/package.json` and its lockfile. These projects retain their own licences.
+The website imports Three.js and lil-gui. These projects retain their own licences.
 Runtime-pack notices are preserved in [`runtimes/NOTICE.txt`](runtimes/NOTICE.txt).

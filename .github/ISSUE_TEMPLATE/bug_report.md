@@ -17,7 +17,7 @@ For landing bugs: attach a screenshot of index.html.
 - macOS version (or browser and operating system for website issues):
 - Osaurus version: Osaurus › About
 - Mycroft version / commit, if known:
-- Agent: Mycroft / Spotlight / Analyst / Watson
+- Agent: Mycroft / Spotlight / Watson
 
 **Logs / output**
 ```
