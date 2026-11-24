@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "min_engine_version": "0.2.3",
-  "released_at": "2026-11-19T17:06:13Z",
-  "release_sequence": 55,
+  "min_engine_version": "0.2.4",
+  "released_at": "2026-11-24T00:00:00Z",
+  "release_sequence": 56,
   "products": {
     "mycroft": {
-      "version": "0.4.3",
+      "version": "0.4.4",
       "repo": "buriedsignals/mycroft",
       "ref": "c581f4305beca94c3b2fde3a281228d155f4c52a",
       "source": {
@@ -60,19 +60,19 @@
       "coming_soon": true
     },
     "spotlight": {
-      "version": "2.34.1",
+      "version": "2.35.0",
       "repo": "buriedsignals/spotlight",
-      "ref": "399821213edf1be6ea079a57359d8b7fae42f89e",
+      "ref": "b5a83408292d283370abb56e3c0a1dc2e86a2f53",
       "source": {
-        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.34.1/spotlight-399821213edf1be6ea079a57359d8b7fae42f89e.tar.gz",
-        "sha256": "5557b3c47b7bba111dc68aa32ffaa4bf9a046258f8703ff3317c44a3fccecd58",
-        "size_bytes": 2493393,
-        "prefix": "spotlight-399821213edf"
+        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.35.0/spotlight-b5a83408292d283370abb56e3c0a1dc2e86a2f53.tar.gz",
+        "sha256": "21516a1bac2994fb08691833ba888d670abc9e96d7a11e4a27e5e8142008fe7f",
+        "size_bytes": 1565202,
+        "prefix": "spotlight-b5a83408292d"
       },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "399821213edf1be6ea079a57359d8b7fae42f89e",
+        "source_commit": "b5a83408292d283370abb56e3c0a1dc2e86a2f53",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1011,9 +1011,9 @@
     },
     {
       "id": "osaurus-app-darwin-arm64",
-      "url": "https://github.com/osaurus-ai/osaurus/releases/download/1.0.5/Osaurus-1.0.5.dmg",
-      "sha256": "b0607595a2ed103c8745b0f591d00aa2eb6e6d0ac97ee758df9c0ee42866b63a",
-      "size_bytes": 121848194
+      "url": "https://github.com/osaurus-ai/osaurus/releases/download/1.0.11/Osaurus-1.0.11.dmg",
+      "sha256": "1d590108f16e632141b5c9da6515821111847fd6a2fdab83f50f62efe320d4d4",
+      "size_bytes": 125971692
     },
     {
       "id": "embeddinggemma2-q8-0",
@@ -1137,9 +1137,27 @@
   ],
   "integrations": null,
   "osaurus": {
-    "min_version": "1.0.5",
+    "min_version": "1.0.11",
     "app_artifact": "osaurus-app-darwin-arm64",
-    "mycroft_model": "OsaurusAI/gemma-4-12B-it-qat-MXFP4",
+    "mycroft_model": "OsaurusAI/Inkling-2-Mini-JANGH2",
+    "mycroft_model_size_bytes": 10211744574,
+    "mycroft_context_by_ram": [
+      {
+        "min_ram_gb": 24,
+        "context": 32768
+      },
+      {
+        "min_ram_gb": 32,
+        "context": 65536
+      },
+      {
+        "min_ram_gb": 36,
+        "context": 131072
+      }
+    ],
+    "retired_mycroft_models": [
+      "OsaurusAI/gemma-4-12B-it-qat-MXFP4"
+    ],
     "spotlight_model": "tomvaillant/qwen3.5-9b-spotlight-r3-optiq-mlx",
     "spotlight_model_size_bytes": 8032502266,
     "spotlight_model_files": {
@@ -1162,9 +1180,8 @@
       "mistralai/mistral-large-4-0",
       "mistralai/mistral-medium-3-5"
     ],
-    "analyst": true,
     "windows": {
-      "min_version": "0.1.10",
+      "min_version": "1.0.5",
       "mycroft_model": {
         "repo": "google/gemma-4-12B-it-qat-q4_0-gguf",
         "revision": "29d097773436b69ff9feafd636ab4cf873786537",
