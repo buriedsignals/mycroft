@@ -61,7 +61,7 @@ jobs:
       cancel-in-progress: false
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry_1.outputs.page_url || steps.deployment_retry_2.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -69,5 +69,22 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: "."
+      # The uploaded artifact can take from under a second to about a minute to
+      # become visible to deploy-pages (actions/deploy-pages#451), and a lookup
+      # that finds nothing fails the step. Re-running the job cannot recover
+      # it, because a second upload leaves two artifacts with the same name, so
+      # the lookup is retried here instead.
       - id: deployment
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+      - if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+      - id: deployment_retry_1
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+      - if: steps.deployment_retry_1.outcome == 'failure'
+        run: sleep 60
+      - id: deployment_retry_2
+        if: steps.deployment_retry_1.outcome == 'failure'
         uses: actions/deploy-pages@v5
