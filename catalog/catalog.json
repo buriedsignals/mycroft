@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "min_engine_version": "0.2.4",
-  "released_at": "2026-11-24T00:00:00Z",
-  "release_sequence": 56,
+  "released_at": "2026-11-25T00:00:00Z",
+  "release_sequence": 58,
   "products": {
     "mycroft": {
       "version": "0.4.4",
@@ -60,19 +60,19 @@
       "coming_soon": true
     },
     "spotlight": {
-      "version": "2.35.0",
+      "version": "2.36.3",
       "repo": "buriedsignals/spotlight",
-      "ref": "b5a83408292d283370abb56e3c0a1dc2e86a2f53",
+      "ref": "6caf265fc2716950ac2bd9d1fbf0a9a83e51d255",
       "source": {
-        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.35.0/spotlight-b5a83408292d283370abb56e3c0a1dc2e86a2f53.tar.gz",
-        "sha256": "21516a1bac2994fb08691833ba888d670abc9e96d7a11e4a27e5e8142008fe7f",
-        "size_bytes": 1565202,
-        "prefix": "spotlight-b5a83408292d"
+        "url": "https://github.com/buriedsignals/spotlight/releases/download/v2.36.3/spotlight-6caf265fc2716950ac2bd9d1fbf0a9a83e51d255.tar.gz",
+        "sha256": "a48b8a03c429eeb848f803cf11671266e1f60a8da5e8a2fd20d38e06b5cfa7d8",
+        "size_bytes": 1584302,
+        "prefix": "spotlight-6caf265fc271"
       },
       "entitlement": "spotlight.core",
       "install_contract": {
         "schema_version": "spotlight-install-contract/v1",
-        "source_commit": "b5a83408292d283370abb56e3c0a1dc2e86a2f53",
+        "source_commit": "6caf265fc2716950ac2bd9d1fbf0a9a83e51d255",
         "digest": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
         "writer_mode": "engine_v2",
         "choice_schema": {
@@ -1092,6 +1092,15 @@
       "sha256": "6e15212f7a958ddb68d5a44e864cd914b2f0d71e720e661a82e210df628f7336",
       "size_bytes": 589327191,
       "files_sha256": "ed6c95c56cf582daa1a4904eedad8b7c469d3ab2330544f5619b13f833cf681b"
+    },
+    {
+      "version": "2026.11.05-1",
+      "os": "windows",
+      "arch": "amd64",
+      "url": "https://github.com/buriedsignals/mycroft/releases/download/runtime-pack-2026.11.05-1/runtime-pack-2026.11.05-1-windows-amd64.zip",
+      "sha256": "74cd510acf6ace090de5bb2206f679a3487b0b779e0517852ab909abf47f81f3",
+      "size_bytes": 648054164,
+      "files_sha256": "09984faf777a5b3537946157c4525232b5be7dac5d51e44aaf7f2ffbee31c215"
     }
   ],
   "models": [
@@ -1199,6 +1208,17 @@
           "mmproj-NuExtract3-BF16.gguf"
         ],
         "size_bytes": 3459015168
+      },
+      "spotlight_model": {
+        "repo": "tomvaillant/qwen3.5-9b-spotlight-r3-GGUF",
+        "revision": "eb5445fdab80478fa3a4a7e69f11af3fcae01db8",
+        "files": [
+          "qwen3.5-9b-spotlight-r3-Q4_K_M.gguf"
+        ],
+        "size_bytes": 5629108768,
+        "sha256": {
+          "qwen3.5-9b-spotlight-r3-Q4_K_M.gguf": "751199e4ea5f41cffb867102ea12bbab87d5c967728917f5d3db7e5d239884c0"
+        }
       }
     }
   },
