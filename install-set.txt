@@ -8,5 +8,4 @@
 # and documentation).
 skills
 instructions
-analyst
 .claude-plugin

@@ -13,8 +13,7 @@ python3 -m http.server 8765
 ```
 
 Open `http://127.0.0.1:8765/`. The site is static HTML, JavaScript, CSS and media;
-there is no build or npm install step. The `analyst/package.json` belongs to
-the installed Analyst runtime, not the website.
+there is no build or npm install step.
 
 ## Change a skill
 

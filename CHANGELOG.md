@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 
 ## [Unreleased]
 
+### Removed
+- The Analyst, which was removed as a product on 2026-11-23. Its pinned Pi and
+  pi-acp runtime (`analyst/`) and its system prompt
+  (`instructions/analyst-system.md`) are gone, and the site, README and install
+  guide no longer describe it. Engine takes an installed Analyst out of
+  OpenKnowledge on the next Mycroft update. Mycroft files new notes into the
+  wiki itself.
+
 ### Added
 - Fact-checking is an installed skill again: `skills/osaurus/fact-check/`, the
   Osaurus edition of the skill removed with the Goose runtime on 2026-10-29.

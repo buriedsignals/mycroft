@@ -47,7 +47,6 @@ manual guide for configuration input and private key entry.
 |---|---|---|
 | Mycroft | Searches your wiki, files new notes into it, finds OSINT tools with Navigator, works with Scoutpost monitors and extracts fields from documents. It adds notes but never changes or deletes one you already have. | On-device in Osaurus |
 | Spotlight | Runs an investigation, with your review of the method and findings. | On-device in Osaurus |
-| Analyst | Connects findings and proposes sourced additions to your wiki. You confirm writes before they land. | On-device, in OpenKnowledge's Agents panel, where it starts switched off |
 | Watson | Does web research when you select the cloud option. It has no wiki access. | Cloud, through OpenRouter using Mistral EU endpoints with zero data retention |
 
 On-device inference does not make every connected service local. Navigator
@@ -55,9 +54,7 @@ and Scoutpost are hosted services. Osaurus asks before calls that create
 something or send text to them. Keep confidential source identities out of
 external requests.
 
-The system instructions are in [`instructions/`](instructions/). The Analyst's
-Pi and ACP dependencies are pinned in [`analyst/`](analyst/); Engine installs
-them beside the managed checkout. Model choices come from Engine's signed
+The system instructions are in [`instructions/`](instructions/). Model choices come from Engine's signed
 catalogue rather than this README.
 
 ## Skills
@@ -98,7 +95,6 @@ and the [provenance record](docs/amditis-catalogue.md).
 | [`index.html`](index.html), [`DESIGN.md`](DESIGN.md) | Static landing page and its visual rules |
 | [`assets/`](assets/), [`fonts/`](fonts/) | Product media, partner marks and typefaces |
 | [`instructions/`](instructions/), [`skills/`](skills/) | Agent instructions and installed skills |
-| [`analyst/`](analyst/) | Pinned Analyst runtime dependencies |
 | [`install/contracts/`](install/contracts/) | Install schemas, templates and fixtures imported by Engine |
 | [`catalog/`](catalog/) | Signed Engine catalogue mirror and website-only featured methods |
 | [`runtimes/`](runtimes/) | Runtime-pack release record and licence notices |
@@ -112,7 +108,7 @@ Preview the site with `python3 -m http.server 8765`, then open
 
 Built by [Buried Signals](https://buriedsignals.com/), with
 [Osaurus](https://osaurus.ai/) and [OpenKnowledge](https://openknowledge.ai/).
-The Analyst uses [Pi](https://github.com/earendil-works/pi); the website uses
+The website uses
 [Three.js](https://threejs.org/). Model versions and availability are controlled
 by Engine. Media provenance is recorded beside the
 [preview clips](assets/previews/README.md) and [screenshots](assets/screenshots/README.md).

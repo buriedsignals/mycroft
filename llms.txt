@@ -6,9 +6,9 @@ Mycroft is installed through Buried Signals Engine. Indicator Lab submits the ma
 
 ## What you use it for
 
-Use Mycroft as a local reporting assistant: ask questions of your wiki, find investigation methods, set up monitoring, and extract fields from documents. Launch Spotlight for a bounded investigation with editorial gates. Mycroft files new notes into your wiki itself, and the Analyst in OpenKnowledge proposes changes for you to confirm. Watson handles cloud web research only when selected.
+Use Mycroft as a local reporting assistant: ask questions of your wiki, find investigation methods, set up monitoring, and extract fields from documents. Launch Spotlight for a bounded investigation with editorial gates. Mycroft files new notes into your wiki itself and never changes a note you already have. Watson handles cloud web research only when selected.
 
-**Input:** your question, selected local material, and an explicit request for any connected service. **Output:** answers, proposed research or monitoring actions, investigation casework, or proposed wiki entries depending on the agent. Review evidence and proposed changes before relying on them.
+**Input:** your question, selected local material, and an explicit request for any connected service. **Output:** answers, proposed research or monitoring actions, investigation casework, or new wiki notes depending on the agent. Review evidence and proposed changes before relying on them.
 
 ## Where the work runs
 
@@ -24,7 +24,6 @@ Mycroft and Spotlight can run on-device in Osaurus; OpenKnowledge holds the wiki
 ## Agents
 
 - [instructions/osaurus-system.md](instructions/osaurus-system.md): Mycroft's system prompt in Osaurus
-- [instructions/analyst-system.md](instructions/analyst-system.md): the Analyst's system prompt in OpenKnowledge
 
 ## Skills
 
