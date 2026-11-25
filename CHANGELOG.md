@@ -68,6 +68,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
   journalism author credits stay on skill cards.
 - Aligned membership pricing with the current join page and kept the 3D page
   aligned after dynamic content and viewport changes.
+- The landing page credits Inkling 2 Mini (Thinking Machines Lab) as Mycroft's
+  on-device model, in place of Gemma 4, following Engine catalog 56. The File
+  card and the connected-knowledge diagram name Mycroft as the on-device model
+  that files notes, now that the Analyst is removed.
+- The Spotlight hover preview is the research-swarm cut of the Spotlight 2.0
+  teaser, and the Installer tab plays a screen recording of the Indicator Lab
+  app instead of a still rendered from a design export.
 
 ### Removed
 - The Goose runtime. Mycroft now runs only in Osaurus, so the Goose recipes,

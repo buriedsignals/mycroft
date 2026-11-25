@@ -8,10 +8,11 @@ Copied from the existing Indicator workshop assets on 2026-10-29:
 These are partner presentation images, not captures of a configured Mycroft install.
 The landing-page captions make that distinction.
 
-`indicator-lab-setup.jpg` is rendered from the supplied
-`nina-mode/Main.dc.html` design export on 2026-10-29. The exported UI was
-rendered at 3× browser zoom in a 3840px-wide viewport; the top crop is
-2304×1296 (16:9), corresponding to `(256, 8, 1024, 440)` at its original
-layout size. This replaces the earlier crop of `demo.png`; it is a native
-high-resolution render, not an enlarged raster. The supplied export is a
-design reference, so the site labels it as an installer preview.
+`indicator-lab-installer.mp4` is a screen recording of the Indicator Lab app
+(`bureau/video/installer-2.mp4`, file dated 2026-11-06, also the source of the
+technology page's desktop clip). It is the 1442×1080 recording at 30 fps,
+cropped to the 1442×812 band starting 100px from the top so the app window
+fills the 16:9 frame (H.264, CRF 27, fast-start, no audio). `indicator-lab-installer.jpg` is its frame at
+two seconds, used as the poster. The
+sections and labels it shows were checked against the Engine renderer source
+on 2026-11-25, not against a fresh install.
